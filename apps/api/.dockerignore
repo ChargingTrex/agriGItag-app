@@ -1,0 +1,8 @@
+# Keep the build context small and free of local state (Dockerfile in this folder).
+.venv
+**/__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.env
+tests

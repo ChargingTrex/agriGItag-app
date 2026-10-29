@@ -1,0 +1,103 @@
+# Local AgriTrace stack: Postgres 16 + PostGIS, Redis, MinIO (+ bucket init), Mosquitto stub, api, worker.
+# Serves: Arch §Deployment (local stand-ins), D-004 (one image, two containers), D-008 (MinIO buckets),
+#   D-009 (Celery worker on Redis). Run and port notes: infra/README.md.
+# Callers: `make up` / `make down` / `make logs`, Verifiers (B00 acceptance), developers.
+# Host ports can be remapped without editing this file: API_PORT, DB_PORT, REDIS_PORT, MINIO_PORT,
+# MINIO_CONSOLE_PORT, MQTT_PORT (environment or infra/.env).
+
+name: agritrace
+
+x-app-env: &app-env
+  ENV: dev
+  DATABASE_URL: postgresql+asyncpg://agritrace:agritrace@db:5432/agritrace
+  REDIS_URL: redis://redis:6379/0
+  S3_ENDPOINT: http://minio:9000
+  S3_ACCESS_KEY: minioadmin
+  S3_SECRET_KEY: minioadmin
+  S3_BUCKET_EVIDENCE: evidence
+  S3_BUCKET_PUBLIC: public-pages
+  S3_BUCKET_IDDOCS: id-docs
+  PUBLIC_BASE_URL: http://localhost:${MINIO_PORT:-9000}/public-pages
+  JWT_SECRET: dev-only-change-me
+  OTP_DEV_CODE: "123456"
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: agritrace
+      POSTGRES_PASSWORD: agritrace
+      POSTGRES_DB: agritrace
+    ports: ["${DB_PORT:-5432}:5432"]
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agritrace -d agritrace"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports: ["${REDIS_PORT:-6379}:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  minio:
+    # The official minio/minio and minio/mc images were withdrawn from Docker Hub and quay.io (verified
+    # 2026-10-29); pgsty/* is a community build of the same AGPL code. Swap here if the Architect picks another.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports: ["${MINIO_PORT:-9000}:9000", "${MINIO_CONSOLE_PORT:-9001}:9001"]
+    volumes: [minio-data:/data]
+
+  minio-init:
+    image: pgsty/mc:RELEASE.2026-10-26T00-00-00Z
+    depends_on: [minio]
+    entrypoint: ["/bin/sh", "/minio-init.sh"]
+    environment:
+      S3_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes: ["./scripts/minio-init.sh:/minio-init.sh:ro"]
+    restart: "no"
+
+  mosquitto:
+    # Stub broker for future sensor feeds (storage_monitoring); anonymous access is dev-only.
+    image: eclipse-mosquitto:2
+    command: mosquitto -c /mosquitto-no-auth.conf
+    ports: ["${MQTT_PORT:-1883}:1883"]
+
+  api:
+    build: ../apps/api
+    image: agritrace-api:dev
+    environment: *app-env
+    ports: ["${API_PORT:-8000}:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      minio-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/healthz', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    build: ../apps/api
+    image: agritrace-api:dev
+    command: celery -A agritrace.worker worker --loglevel=INFO
+    environment: *app-env
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      minio-init: {condition: service_completed_successfully}
+
+volumes:
+  db-data:
+  minio-data:

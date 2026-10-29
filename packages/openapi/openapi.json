@@ -1,0 +1,172 @@
+{
+  "components": {
+    "schemas": {
+      "ErrorBody": {
+        "description": "Inner object of the error envelope.",
+        "properties": {
+          "code": {
+            "description": "Registered snake_case error code (docs/api/error-codes.md).",
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "description": "Context such as failing fields, ids or limits; may be null.",
+            "title": "Details"
+          },
+          "message": {
+            "description": "English message; clients show their own en/ta text for `code`.",
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "ErrorEnvelope": {
+        "description": "Shape of every error response: `{\"error\": {\"code\", \"message\", \"details\"}}`.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody",
+            "description": "The error."
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorEnvelope",
+        "type": "object"
+      },
+      "Health": {
+        "description": "Status of each dependency: `ok` or `error: <reason>`.",
+        "properties": {
+          "db": {
+            "description": "Postgres: `ok` after `SELECT 1`, else `error: <reason>`.",
+            "title": "Db",
+            "type": "string"
+          },
+          "redis": {
+            "description": "Redis: `ok` after `PING`, else `error: <reason>`.",
+            "title": "Redis",
+            "type": "string"
+          },
+          "s3": {
+            "description": "S3: `ok` after HEAD on the evidence bucket, else `error: <reason>`.",
+            "title": "S3",
+            "type": "string"
+          }
+        },
+        "required": [
+          "db",
+          "redis",
+          "s3"
+        ],
+        "title": "Health",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Farm-to-consumer traceability for GI-tagged produce (pilot: Virudhunagar Samba Vathal\ndry chilli, GI 883). Every error uses the envelope `{\"error\": {\"code\", \"message\", \"details\"}}`; codes are\nlisted in docs/api/error-codes.md. Conventions (pagination, units, clocks, idempotency) are in\ndocs/api/conventions.md.",
+    "title": "AgriTrace API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/healthz": {
+      "get": {
+        "description": "Check Postgres, Redis and object storage independently and concurrently.\n\nArgs:\n    response: the outgoing response, whose status is set to 503 when any check fails.\n\nReturns:\n    One status string per dependency.\n\nSide effects:\n    Opens one DB connection, one Redis connection and one S3 request.",
+        "operationId": "healthz_v1_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            },
+            "description": "At least one dependency is failing."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Healthz",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Liveness of the API and its dependencies.",
+      "name": "health"
+    },
+    {
+      "description": "OTP sign-in, tokens, roles, devices, assist sessions, consent.",
+      "name": "identity"
+    },
+    {
+      "description": "FPOs, farmers, plots, crops, GI tags and regions, inputs.",
+      "name": "registry"
+    },
+    {
+      "description": "Append-only farm events, sync push and pull, evidence photos.",
+      "name": "events"
+    },
+    {
+      "description": "Rule checks and the flags they raise.",
+      "name": "rules_flags"
+    },
+    {
+      "description": "Lots, intakes, super-lots, batches and lifecycle gates.",
+      "name": "lots_batches"
+    },
+    {
+      "description": "Standards profiles, instruments, readings and grades.",
+      "name": "quality"
+    },
+    {
+      "description": "Storage monitoring (pilot stub, 501).",
+      "name": "storage_monitoring"
+    },
+    {
+      "description": "Public batch pages and scans.",
+      "name": "publishing"
+    },
+    {
+      "description": "Notifications to farmers and FPO staff.",
+      "name": "notifications"
+    },
+    {
+      "description": "Partner API (pilot stub, 501).",
+      "name": "partner_api"
+    },
+    {
+      "description": "Dashboards and exports.",
+      "name": "reporting"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+"""${message}
+
+Serves: <requirement, e.g. D-012 / FR-xx>. Callers: `alembic upgrade` / `alembic downgrade`.
+
+Revision ID: ${up_revision}
+Revises: ${down_revision | comma,n}
+Create Date: ${create_date}
+"""
+
+from collections.abc import Sequence
+
+import sqlalchemy as sa
+from alembic import op
+${imports if imports else ""}
+
+revision: str = ${repr(up_revision)}
+down_revision: str | Sequence[str] | None = ${repr(down_revision)}
+branch_labels: str | Sequence[str] | None = ${repr(branch_labels)}
+depends_on: str | Sequence[str] | None = ${repr(depends_on)}
+
+
+def upgrade() -> None:
+    """Apply this revision.
+
+    Side effects:
+        Alters the database schema.
+    """
+    ${upgrades if upgrades else "pass"}
+
+
+def downgrade() -> None:
+    """Revert this revision.
+
+    Side effects:
+        Alters the database schema.
+    """
+    ${downgrades if downgrades else "pass"}
