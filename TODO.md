@@ -68,6 +68,12 @@ _(empty)_
 - [ ] B06/B07: map SQLSTATE 23001 (`append_only_violation` trigger) to the registered AppError.
 - [ ] B01 risk: first live `alembic check` may show drift on geography reflection, VARCHAR enums or NULLS NOT DISTINCT; fix model or migration, never env.py. `alembic check` ignores CHECK constraints (enum values pinned by unit test instead).
 - [ ] Tests on append-only tables cannot DELETE; use fresh rows or TRUNCATE.
+- [x] M00 size gate decision: the "15 MB at skeleton" acceptance line was indicative; binding budgets are 40 MB target / 100 MB ceiling (arm64 APK) and 30 MB per-ABI AAB download. Native libs stay uncompressed (installed size matters on 2 GB phones). Skeleton measured 14.68 MiB arm64 (7.06 MB gzipped).
+- [ ] M13: choose a crash-reporting vendor and plug it into the `_report` seam in `apps/mobile/lib/bootstrap.dart`.
+- [ ] Orchestrator at merge: move `apps/mobile/ci-job.yml` and `apps/portal/ci-job.yml` into `.github/workflows/ci.yml` (replace the Q00 stubs) and delete the files.
+- [ ] M05: consider a bold Tamil weight in the subset font.
+- [ ] M00 risk: goldens recorded on macOS; if the first Linux CI run fails, regenerate goldens on Linux rather than raising tolerance. `gen_api.sh` needs network (npx + generator download) in CI.
+- [ ] Dev machine: Android cmdline-tools missing and SDK licences unaccepted; system Java is 1.8 (Android Studio JDK 21 via JAVA_HOME works). Not needed for CI.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user

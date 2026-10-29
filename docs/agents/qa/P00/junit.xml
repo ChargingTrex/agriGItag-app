@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="17" failures="0" errors="0" time="2.849529452">
+    <testsuite name="scripts/gen-error-messages.test.ts" timestamp="2026-10-29T17:46:50.631Z" hostname="Arun-MaAC.local" tests="3" failures="0" errors="0" skipped="0" time="0.041727301">
+        <testcase classname="scripts/gen-error-messages.test.ts" name="parseErrorTable &gt; reads every code with its Meaning column" time="0.009335108">
+        </testcase>
+        <testcase classname="scripts/gen-error-messages.test.ts" name="parseErrorTable &gt; fails loudly when the table format changes" time="0.002810451">
+        </testcase>
+        <testcase classname="scripts/gen-error-messages.test.ts" name="parseErrorTable &gt; renders a module whose keys are the codes" time="0.000539513">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/api/cursor.test.tsx" timestamp="2026-10-29T17:46:50.634Z" hostname="Arun-MaAC.local" tests="2" failures="0" errors="0" skipped="0" time="0.157574868">
+        <testcase classname="src/api/cursor.test.tsx" name="useCursorList &gt; passes the cursor of the previous page and concatenates items until has_more is false" time="0.145054784">
+        </testcase>
+        <testcase classname="src/api/cursor.test.tsx" name="fieldsParam &gt; joins field names and drops duplicates" time="0.000565306">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/api/errors.test.ts" timestamp="2026-10-29T17:46:50.635Z" hostname="Arun-MaAC.local" tests="5" failures="0" errors="0" skipped="0" time="0.035979566">
+        <testcase classname="src/api/errors.test.ts" name="toApiError &gt; reads code, message and details from the envelope" time="0.021070644">
+        </testcase>
+        <testcase classname="src/api/errors.test.ts" name="toApiError &gt; falls back to internal_error for a 5xx body that is not an envelope" time="0.000899343">
+        </testcase>
+        <testcase classname="src/api/errors.test.ts" name="errorMessage &gt; maps a registered code to its generated message" time="0.000452961">
+        </testcase>
+        <testcase classname="src/api/errors.test.ts" name="errorMessage &gt; uses the fallback for unknown codes and non-API errors, and a network message for fetch failures" time="0.000548419">
+        </testcase>
+        <testcase classname="src/api/errors.test.ts" name="isRetryable &gt; retries network errors, 5xx and 429 only" time="0.000755034">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/auth/auth.test.tsx" timestamp="2026-10-29T17:46:50.637Z" hostname="Arun-MaAC.local" tests="5" failures="0" errors="0" skipped="0" time="1.692040912">
+        <testcase classname="src/auth/auth.test.tsx" name="auth guard &gt; redirects a signed-out user from a protected route to the sign-in page" time="0.567569973">
+        </testcase>
+        <testcase classname="src/auth/auth.test.tsx" name="auth guard &gt; shows the protected route and the sidebar to a signed-in user" time="0.223791582">
+        </testcase>
+        <testcase classname="src/auth/auth.test.tsx" name="login with MSW &gt; signs in with phone, SMS code and PIN, then returns to the page the guard came from" time="0.546543589">
+        </testcase>
+        <testcase classname="src/auth/auth.test.tsx" name="login with MSW &gt; shows the message for the error code when the code is wrong" time="0.231223615">
+        </testcase>
+        <testcase classname="src/auth/auth.test.tsx" name="login with MSW &gt; rejects a malformed phone number before calling the API" time="0.110712137">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/DashboardPage.test.tsx" timestamp="2026-10-29T17:46:50.639Z" hostname="Arun-MaAC.local" tests="2" failures="0" errors="0" skipped="0" time="0.922206805">
+        <testcase classname="src/pages/DashboardPage.test.tsx" name="DashboardPage &gt; shows the API health from GET /v1/healthz" time="0.54203772">
+        </testcase>
+        <testcase classname="src/pages/DashboardPage.test.tsx" name="DashboardPage &gt; signs out on a 401 and shows the sign-in page" time="0.368421437">
+        </testcase>
+    </testsuite>
+</testsuites>

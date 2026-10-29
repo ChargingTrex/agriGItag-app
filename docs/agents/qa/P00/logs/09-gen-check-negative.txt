@@ -1,0 +1,43 @@
+# scratch copy: git archive HEAD (14df19f) of worktree -> /tmp/p00-gencheck-neg, git init + commit, node_modules symlinked
+$ npm run gen:check   (baseline, unmodified scratch copy)
+
+> @agritrace/portal@0.1.0 gen:check
+> npm run gen:api && git diff --exit-code -- src/api/generated && test -z "$(git status --porcelain -- src/api/generated)"
+
+
+> @agritrace/portal@0.1.0 gen:api
+> openapi-typescript ../../packages/openapi/openapi.json -o src/api/generated/schema.d.ts && node scripts/gen-error-messages.ts
+
+✨ openapi-typescript 7.13.0
+🚀 ../../packages/openapi/openapi.json → src/api/generated/schema.d.ts [61.7ms]
+EXIT=0
+
+$ sed: openapi.json line 5 description 'Inner object of the error envelope.' -> 'Inner object of the error envelope (verifier edit).'
+ packages/openapi/openapi.json | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+$ npm run gen:check   (after edit)
+
+> @agritrace/portal@0.1.0 gen:check
+> npm run gen:api && git diff --exit-code -- src/api/generated && test -z "$(git status --porcelain -- src/api/generated)"
+
+
+> @agritrace/portal@0.1.0 gen:api
+> openapi-typescript ../../packages/openapi/openapi.json -o src/api/generated/schema.d.ts && node scripts/gen-error-messages.ts
+
+✨ openapi-typescript 7.13.0
+🚀 ../../packages/openapi/openapi.json → src/api/generated/schema.d.ts [59.8ms]
+diff --git a/apps/portal/src/api/generated/schema.d.ts b/apps/portal/src/api/generated/schema.d.ts
+index 08fe666..af93931 100644
+--- a/apps/portal/src/api/generated/schema.d.ts
++++ b/apps/portal/src/api/generated/schema.d.ts
+@@ -50,7 +50,7 @@ export interface components {
+     schemas: {
+         /**
+          * ErrorBody
+-         * @description Inner object of the error envelope.
++         * @description Inner object of the error envelope (verifier edit).
+          */
+         ErrorBody: {
+             /**
+EXIT=1
+# scratch copy /tmp/p00-gencheck-neg removed after run

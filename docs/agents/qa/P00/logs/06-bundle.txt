@@ -1,0 +1,39 @@
+$ find dist -type f (raw bytes / gzip -9 bytes)
+dist/assets/index-BPuQ2Pkf.js                 raw=  580887  gz=  181908
+dist/index.html                               raw=     435  gz=     329
+
+$ gzip -c (default level) main chunk
+dist/assets/index-BPuQ2Pkf.js gz(default)=182203 bytes = 177.93 KB
+
+$ grep -rl msw dist
+exit=1
+$ grep -rl mockServiceWorker dist
+exit=1
+$ grep -o -i 'msw[a-z_]*' dist -r | sort | uniq -c
+
+$ cat dist/index.html
+<!doctype html>
+<!-- Portal HTML entry. Serves: plan §7.3 P00 app shell. Loaded by Vite (dev) and the built dist/. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgriTrace FPO portal</title>
+    <script type="module" crossorigin src="/assets/index-BPuQ2Pkf.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+
+$ npm run size
+
+> @agritrace/portal@0.1.0 size
+> node scripts/bundle-size.ts
+
+| Initial asset | Raw | Gzip (level 6) |
+|---|---|---|
+| assets/index-BPuQ2Pkf.js | 567.3 KB | 177.9 KB |
+| **Total** | | **177.9 KB** (budget 400.0 KB) |
+EXIT=0
+dist removed

@@ -1,0 +1,16 @@
+$ npx vitest run src/auth --reporter=verbose
+
+ RUN  v5.0.5 /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-aeb46962b3a8a19ad/apps/portal
+
+ ✓ src/auth/auth.test.tsx > auth guard > redirects a signed-out user from a protected route to the sign-in page 366ms
+ ✓ src/auth/auth.test.tsx > auth guard > shows the protected route and the sidebar to a signed-in user 133ms
+ ✓ src/auth/auth.test.tsx > login with MSW > signs in with phone, SMS code and PIN, then returns to the page the guard came from 426ms
+ ✓ src/auth/auth.test.tsx > login with MSW > shows the message for the error code when the code is wrong 193ms
+ ✓ src/auth/auth.test.tsx > login with MSW > rejects a malformed phone number before calling the API 95ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  23:17:17
+   Duration  4.55s (environment 35%, tests 28%, import 24%, setup 9%, transform 3%)
+
+EXIT=0

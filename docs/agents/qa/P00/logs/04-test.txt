@@ -1,0 +1,28 @@
+$ npm test -- --run --reporter=junit --reporter=default --outputFile.junit=/Users/fi-it/Documents/projects/agriGitag/docs/agents/qa/P00/junit.xml
+
+> @agritrace/portal@0.1.0 test
+> vitest run --run --reporter=junit --reporter=default --outputFile.junit=/Users/fi-it/Documents/projects/agriGitag/docs/agents/qa/P00/junit.xml
+
+
+ RUN  v5.0.5 /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-aeb46962b3a8a19ad/apps/portal
+
+ ✓ scripts/gen-error-messages.test.ts (3 tests) 42ms
+ ✓ src/api/errors.test.ts (5 tests) 36ms
+ ✓ src/api/cursor.test.tsx (2 tests) 158ms
+ ✓ src/pages/DashboardPage.test.tsx (2 tests) 922ms
+   ✓ DashboardPage (2)
+     ✓ shows the API health from GET /v1/healthz 542ms
+     ✓ signs out on a 401 and shows the sign-in page 368ms
+ ✓ src/auth/auth.test.tsx (5 tests) 1692ms
+   ✓ auth guard (2)
+     ✓ redirects a signed-out user from a protected route to the sign-in page 568ms
+   ✓ login with MSW (3)
+     ✓ signs in with phone, SMS code and PIN, then returns to the page the guard came from 547ms
+
+ Test Files  5 passed (5)
+      Tests  17 passed (17)
+   Start at  23:16:43
+   Duration  6.92s (environment 49%, import 16%, setup 16%, tests 13%, transform 6%)
+
+JUNIT report written to /Users/fi-it/Documents/projects/agriGitag/docs/agents/qa/P00/junit.xml
+EXIT=0

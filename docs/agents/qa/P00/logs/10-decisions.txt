@@ -1,0 +1,14 @@
+$ grep -rn "DECISION D-" src | sort
+src/AppProviders.tsx:5: * DECISION D-018: server state lives in TanStack Query and UI state in React state/context; no other state
+src/api/client.ts:7: * DECISION D-003: the client is `openapi-fetch` typed by `openapi-typescript` output that is never edited.
+
+$ grep -rn "DECISION D-" (all non-node_modules portal files incl. config/scripts/e2e)
+eslint.config.js:5:// DECISION D-018: typescript-eslint strictTypeChecked + eslint-plugin-jsdoc instead of a hand-written doc checker.
+src/AppProviders.tsx:5: * DECISION D-018: server state lives in TanStack Query and UI state in React state/context; no other state
+src/api/client.ts:7: * DECISION D-003: the client is `openapi-fetch` typed by `openapi-typescript` output that is never edited.
+vite.config.ts:6: * DECISION D-020: the dev server proxies only `/v1`, so the portal calls the API with same-origin relative
+
+# check each cited ID in MAIN docs/DECISIONS.md
+D-003: MISSING in main DECISIONS.md
+D-018: MISSING in main DECISIONS.md
+D-020: MISSING in main DECISIONS.md

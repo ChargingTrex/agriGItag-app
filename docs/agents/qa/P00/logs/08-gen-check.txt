@@ -1,0 +1,13 @@
+$ npm run gen:check
+
+> @agritrace/portal@0.1.0 gen:check
+> npm run gen:api && git diff --exit-code -- src/api/generated && test -z "$(git status --porcelain -- src/api/generated)"
+
+
+> @agritrace/portal@0.1.0 gen:api
+> openapi-typescript ../../packages/openapi/openapi.json -o src/api/generated/schema.d.ts && node scripts/gen-error-messages.ts
+
+✨ openapi-typescript 7.13.0
+🚀 ../../packages/openapi/openapi.json → src/api/generated/schema.d.ts [63.6ms]
+EXIT=0
+$ git status --porcelain (worktree)

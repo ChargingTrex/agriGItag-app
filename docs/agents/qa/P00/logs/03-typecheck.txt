@@ -1,0 +1,6 @@
+$ npm run typecheck
+
+> @agritrace/portal@0.1.0 typecheck
+> tsc -b
+
+EXIT=0
