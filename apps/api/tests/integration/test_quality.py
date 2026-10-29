@@ -408,3 +408,41 @@ async def test_profile_versions_need_super_admin_and_allow_incomplete(
     assert r.status_code == 201, r.text
     assert (r.json()["version_no"], r.json()["status"]) == (2, "published")
     assert (await client.get(f"/v1/standards-profiles/{pid}/versions/1")).json()["status"] == "retired"
+
+
+async def test_other_fpo_lot_and_batch_are_not_found(world: tuple[World, AsyncClient]) -> None:
+    """Another FPO's lot and batch answer 404 to reads, readings and grading (FR24, CLAUDE.md §6; r1 F3).
+
+    Args:
+        world: seeded FPO and client (fixture); a second FPO is seeded here.
+    """
+    w, client = world
+    other = await _seed()
+    r = await client.post("/v1/quality-readings", json=_reading(w, lot_id=str(other["lot"])))
+    assert r.status_code == 404, r.text
+    assert r.json()["error"]["code"] == "not_found"
+    batch_reading = _reading(w, lot_id=None, batch_id=str(other["batch"]), stage="grading")
+    assert (await client.post("/v1/quality-readings", json=batch_reading)).status_code == 404
+    assert (await client.get(f"/v1/lots/{other['lot']}/readings")).status_code == 404
+    assert (await client.get(f"/v1/batches/{other['batch']}/readings")).status_code == 404
+    grading = await client.post(f"/v1/batches/{other['batch']}/grading", json={"declared_grade": "Standard"})
+    assert grading.status_code == 404
+    assert (await client.get(f"/v1/batches/{other['batch']}/grade")).status_code == 404
+
+
+async def test_farmer_cannot_touch_another_farmers_lot(world: tuple[World, AsyncClient]) -> None:
+    """A farmer user not linked to the lot's farmer gets 404 on posting and listing its readings (r1 F3).
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    async with get_sessionmaker()() as s:
+        stranger = User(phone=f"+9195{secrets.randbelow(10**8):08d}", name="Other farmer")
+        s.add(stranger)
+        await s.commit()
+    w.act_as(stranger.id, Role.FARMER)
+    r = await client.post("/v1/quality-readings", json=_reading(w, stage="drying_end"))
+    assert r.status_code == 404, r.text
+    assert r.json()["error"]["code"] == "not_found"
+    assert (await client.get(f"/v1/lots/{w.lot}/readings")).status_code == 404

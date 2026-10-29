@@ -76,6 +76,8 @@ __all__ = [
 log = logging.getLogger(__name__)
 
 TRAIL_OVERRIDE_HINT = "moisture_trail_override"
+# Same key as grade_engine._latest, so the engine input is deterministic too (B05 r1 F2).
+READING_ORDER = (QualityReading.measured_at, QualityReading.id)
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -622,7 +624,7 @@ async def _prior_readings(session: AsyncSession, data: QualityReadingIn) -> list
     else:
         lots = select(BatchShare.lot_id).where(BatchShare.batch_id == data.batch_id)
         query = query.where(or_(QualityReading.batch_id == data.batch_id, QualityReading.lot_id.in_(lots)))
-    return [_engine_reading(r) for r in (await session.scalars(query)).all()]
+    return [_engine_reading(r) for r in (await session.scalars(query.order_by(*READING_ORDER))).all()]
 
 
 async def _check_instrument(
@@ -866,7 +868,8 @@ async def lot_gate_passes(session: AsyncSession, lot_id: uuid.UUID, gate: str = 
     version = await latest_profile_version_for_crop(session, lot.crop_id) if lot else None
     if version is None:
         return False
-    rows = (await session.scalars(select(QualityReading).where(QualityReading.lot_id == lot_id))).all()
+    query = select(QualityReading).where(QualityReading.lot_id == lot_id).order_by(*READING_ORDER)
+    rows = (await session.scalars(query)).all()
     return grade_engine.lot_gate(_rules(version), gate, [_engine_reading(r) for r in rows])
 
 
@@ -905,7 +908,8 @@ async def compute_grade_for_batch(
         current_user: the caller; becomes `declared_by` when a grade is declared.
         batch_id: the batch.
         declared_grade: grade the QC officer declares, or None to compute only.
-        reading_ids: readings of the batch to use; None uses all of them.
+        reading_ids: readings of the batch to use; None uses all of them. The Lab-certified badge (FR51)
+            looks at the same set: any lab reading with a NABL number in it, at any stage.
 
     Returns:
         The committed computation: status `incomplete` (a required reading is missing),
@@ -926,7 +930,7 @@ async def compute_grade_for_batch(
     query = select(QualityReading).where(QualityReading.batch_id == batch.id)
     if reading_ids is not None:
         query = query.where(QualityReading.id.in_(reading_ids))
-    rows = (await session.scalars(query)).all()
+    rows = (await session.scalars(query.order_by(*READING_ORDER))).all()
     if reading_ids is not None and (missing := set(reading_ids) - {r.id for r in rows}):
         raise NotFoundError("Reading not on this batch.", {"reading_ids": sorted(str(i) for i in missing)})
     result = grade_engine.compute(rules, [_engine_reading(r) for r in rows])

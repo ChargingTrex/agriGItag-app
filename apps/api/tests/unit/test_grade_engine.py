@@ -59,6 +59,8 @@ def test_compute(case: dict[str, Any]) -> None:
     for key in ("lab_certified", "profile_incomplete", "missing_required", "warnings"):
         if key in want:
             assert getattr(result, key) == want[key], key
+    if "lab_parameters" in want:
+        assert [c for c, p in result.per_parameter.items() if p.lab_certified] == want["lab_parameters"]
     if "capped" in want:
         assert [c for c, p in result.per_parameter.items() if p.capped_by_source] == want["capped"]
 
@@ -107,7 +109,7 @@ def test_yield_outcome(case: dict[str, Any]) -> None:
     Args:
         case: one `yield` fixture case.
     """
-    outcome = ge.yield_outcome(_rules(case["profile"]), Decimal(str(case["kg"])), Decimal(str(case["acres"])))
+    outcome = ge.yield_outcome(_rules(case["profile"]), case["kg"], case["acres"])  # raw JSON types (F11)
     assert outcome == case["expect"]
 
 

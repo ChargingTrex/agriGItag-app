@@ -1,5 +1,5 @@
 {
-  "_about": "Shared grade-engine cases (D-006): run verbatim by apps/api/tests/unit/test_grade_engine.py and by the Dart preview engine (M03). A string `profile` names either a key of `profiles` below or a file apps/api/agritrace/modules/quality/profiles/<name>.json. Serves FR44, FR48-FR50, FR68, Dataflow Stages 5, 7, 8, backend-design.md §4. Readings: {parameter_code, value, unit, stage, source, measured_at?, lab_nabl_no?}. Saffron thresholds are placeholders (edition LOAD_FROM_STANDARD), not ISO 3632 values.",
+  "_about": "Shared grade-engine cases (D-006): run verbatim by apps/api/tests/unit/test_grade_engine.py and by the Dart preview engine (M03). A string `profile` names either a key of `profiles` below or a file apps/api/agritrace/modules/quality/profiles/<name>.json. Serves FR44, FR48-FR50, FR68, Dataflow Stages 5, 7, 8, backend-design.md §4. Readings: {parameter_code, value, unit, stage, source, measured_at?, lab_nabl_no?}. Saffron thresholds are placeholders (edition LOAD_FROM_STANDARD), not ISO 3632 values. Readings are picked by the latest (measured_at, id), null times first. lab_certified: any reading of a profile parameter, any stage, with source lab and a non-blank NABL number; `lab_parameters` lists the parameters that have one.",
   "profiles": {
     "turmeric_agmark_test": {
       "schema_version": 1,
@@ -31,6 +31,17 @@
       ],
       "lab_certified_requires": { "any_parameter_source": "lab", "nabl_no_present": true }
     },
+    "visual_cap_test": {
+      "schema_version": 1,
+      "standard": { "name": "Test profile: a colour parameter that accepts visual readings", "edition": "LOAD_FROM_STANDARD", "clause_ref": "LOAD_FROM_STANDARD" },
+      "grades": ["Special", "Standard"],
+      "fail_grade": "Below grade",
+      "parameters": [
+        { "code": "colour", "unit": "ASTA", "required": true,
+          "limits": { "Special": { "min": 100 }, "Standard": { "min": 60 } }, "plausible": { "min": 0, "max": 400 },
+          "sources_allowed": ["instrument", "lab", "visual"], "max_grade_for_source": { "visual": "Standard" } }
+      ]
+    },
     "coffee_ico420_test": {
       "schema_version": 1,
       "standard": { "name": "ICO Resolution 420; moisture by ISO 6673", "edition": "LOAD_FROM_STANDARD", "clause_ref": "LOAD_FROM_STANDARD" },
@@ -56,7 +67,7 @@
     { "name": "chilli limit is inclusive: 10.0 is Special", "profile": "dry_chilli_agmark_v1",
       "readings": [ { "parameter_code": "moisture", "value": 10.0, "unit": "%", "stage": "grading", "source": "instrument" } ],
       "expect": { "status": "ok", "grade": "Special" } },
-    { "name": "chilli visual 9.8 is capped at Standard", "profile": "dry_chilli_agmark_v1",
+    { "name": "engine only: chilli visual 9.8 is capped at Standard (the API rejects visual moisture at entry)", "profile": "dry_chilli_agmark_v1",
       "readings": [ { "parameter_code": "moisture", "value": 9.8, "unit": "%", "stage": "grading", "source": "visual" } ],
       "expect": { "status": "ok", "grade": "Standard", "capped": ["moisture"] } },
     { "name": "chilli missing required moisture is incomplete", "profile": "dry_chilli_agmark_v1",
@@ -67,9 +78,42 @@
         { "parameter_code": "moisture", "value": 10.6, "unit": "%", "stage": "grading", "source": "instrument", "measured_at": "2026-07-30T10:00:00+05:30" },
         { "parameter_code": "moisture", "value": 9.5, "unit": "%", "stage": "grading", "source": "instrument", "measured_at": "2026-07-30T09:00:00+05:30" } ],
       "expect": { "status": "ok", "grade": "Standard" } },
+    { "name": "equal instants tie-break on id (higher id first in input)", "profile": "dry_chilli_agmark_v1",
+      "readings": [
+        { "id": "018f0000-0000-7000-8000-000000000002", "parameter_code": "moisture", "value": 10.6, "unit": "%", "stage": "grading", "source": "instrument", "measured_at": "2026-07-30T10:00:00+05:30" },
+        { "id": "018f0000-0000-7000-8000-000000000001", "parameter_code": "moisture", "value": 9.5, "unit": "%", "stage": "grading", "source": "instrument", "measured_at": "2026-07-30T04:30:00Z" } ],
+      "expect": { "status": "ok", "grade": "Standard" } },
+    { "name": "equal instants tie-break on id (higher id last in input)", "profile": "dry_chilli_agmark_v1",
+      "readings": [
+        { "id": "018f0000-0000-7000-8000-000000000001", "parameter_code": "moisture", "value": 9.5, "unit": "%", "stage": "grading", "source": "instrument", "measured_at": "2026-07-30T04:30:00Z" },
+        { "id": "018f0000-0000-7000-8000-000000000002", "parameter_code": "moisture", "value": 10.6, "unit": "%", "stage": "grading", "source": "instrument", "measured_at": "2026-07-30T10:00:00+05:30" } ],
+      "expect": { "status": "ok", "grade": "Standard" } },
+    { "name": "two null times tie-break on id", "profile": "dry_chilli_agmark_v1",
+      "readings": [
+        { "id": "018f0000-0000-7000-8000-000000000002", "parameter_code": "moisture", "value": 10.6, "unit": "%", "stage": "grading", "source": "instrument" },
+        { "id": "018f0000-0000-7000-8000-000000000001", "parameter_code": "moisture", "value": 9.5, "unit": "%", "stage": "grading", "source": "instrument" } ],
+      "expect": { "status": "ok", "grade": "Standard" } },
     { "name": "chilli lab reading with NABL number is lab-certified", "profile": "dry_chilli_agmark_v1",
       "readings": [ { "parameter_code": "moisture", "value": 9.1, "unit": "%", "stage": "grading", "source": "lab", "lab_nabl_no": "TC-1234" } ],
-      "expect": { "status": "ok", "grade": "Special", "lab_certified": true } },
+      "expect": { "status": "ok", "grade": "Special", "lab_certified": true, "lab_parameters": ["moisture"] } },
+    { "name": "chilli lab moisture at intake with NABL certifies though grading used the instrument", "profile": "dry_chilli_agmark_v1",
+      "readings": [
+        { "parameter_code": "moisture", "value": 9.4, "unit": "%", "stage": "intake", "source": "lab", "lab_nabl_no": "TC-1234" },
+        { "parameter_code": "moisture", "value": 9.1, "unit": "%", "stage": "grading", "source": "instrument" } ],
+      "expect": { "status": "ok", "grade": "Special", "lab_certified": true, "lab_parameters": ["moisture"] } },
+    { "name": "chilli lab capsaicinoid (label declaration) with NABL certifies", "profile": "dry_chilli_agmark_v1",
+      "readings": [
+        { "parameter_code": "moisture", "value": 9.1, "unit": "%", "stage": "grading", "source": "instrument" },
+        { "parameter_code": "capsaicinoid", "value": 0.6, "unit": "%", "stage": "grading", "source": "lab", "lab_nabl_no": "TC-77" } ],
+      "expect": { "status": "ok", "grade": "Special", "lab_certified": true, "lab_parameters": ["capsaicinoid"] } },
+    { "name": "chilli whitespace NABL number never certifies", "profile": "dry_chilli_agmark_v1",
+      "readings": [ { "parameter_code": "moisture", "value": 9.1, "unit": "%", "stage": "grading", "source": "lab", "lab_nabl_no": "   " } ],
+      "expect": { "status": "ok", "grade": "Special", "lab_certified": false, "lab_parameters": [] } },
+    { "name": "lab reading of a parameter outside the profile never certifies", "profile": "dry_chilli_agmark_v1",
+      "readings": [
+        { "parameter_code": "moisture", "value": 9.1, "unit": "%", "stage": "grading", "source": "instrument" },
+        { "parameter_code": "aflatoxin", "value": 1, "unit": "ppb", "stage": "grading", "source": "lab", "lab_nabl_no": "TC-77" } ],
+      "expect": { "status": "ok", "grade": "Special", "lab_certified": false } },
     { "name": "chilli lab reading without NABL number is not lab-certified", "profile": "dry_chilli_agmark_v1",
       "readings": [ { "parameter_code": "moisture", "value": 9.1, "unit": "%", "stage": "grading", "source": "lab" } ],
       "expect": { "status": "ok", "grade": "Special", "lab_certified": false } },
@@ -102,6 +146,15 @@
         { "parameter_code": "picrocrocin_e257", "value": 80, "unit": "E1%", "stage": "grading", "source": "lab" },
         { "parameter_code": "safranal_e330", "value": 55, "unit": "E1%", "stage": "grading", "source": "lab" } ],
       "expect": { "status": "ok", "grade": "Not categorised" } },
+    { "name": "visual colour 120 is capped at Standard", "profile": "visual_cap_test",
+      "readings": [ { "parameter_code": "colour", "value": 120, "unit": "ASTA", "stage": "grading", "source": "visual" } ],
+      "expect": { "status": "ok", "grade": "Standard", "capped": ["colour"] } },
+    { "name": "instrument colour 120 is Special", "profile": "visual_cap_test",
+      "readings": [ { "parameter_code": "colour", "value": 120, "unit": "ASTA", "stage": "grading", "source": "instrument" } ],
+      "expect": { "status": "ok", "grade": "Special", "capped": [] } },
+    { "name": "visual colour 50 stays Below grade (the cap never raises a grade)", "profile": "visual_cap_test",
+      "readings": [ { "parameter_code": "colour", "value": 50, "unit": "ASTA", "stage": "grading", "source": "visual" } ],
+      "expect": { "status": "ok", "grade": "Below grade", "capped": [] } },
     { "name": "coffee 11.0 in range is S", "profile": "coffee_ico420_test",
       "readings": [ { "parameter_code": "moisture", "value": 11.0, "unit": "%", "stage": "grading", "source": "instrument" } ],
       "expect": { "status": "ok", "grade": "S" } },
@@ -124,6 +177,10 @@
     { "name": "declared with incomplete computation", "profile": "dry_chilli_agmark_v1", "declared": "Special", "computed": null, "expect": "ok" }
   ],
   "plausibility": [
+    { "name": "visual colour is accepted where the profile allows visual", "profile": "visual_cap_test",
+      "reading": { "parameter_code": "colour", "value": 120, "unit": "ASTA", "stage": "grading", "source": "visual" }, "expect": [] },
+    { "name": "broken fruits -5 is implausible", "profile": "dry_chilli_agmark_v1",
+      "reading": { "parameter_code": "broken_fruits", "value": -5, "unit": "%", "stage": "grading", "source": "instrument" }, "expect": ["implausible_value"] },
     { "name": "moisture -1 is implausible", "profile": "dry_chilli_agmark_v1",
       "reading": { "parameter_code": "moisture", "value": -1, "unit": "%", "stage": "drying_end", "source": "instrument" }, "expect": ["implausible_value"] },
     { "name": "moisture 101 is implausible", "profile": "dry_chilli_agmark_v1",
@@ -175,6 +232,8 @@
     { "name": "1350 kg on 1 acre holds (35 % over)", "profile": "dry_chilli_agmark_v1", "kg": 1350, "acres": 1, "expect": "hold" },
     { "name": "exactly 20 % over still passes", "profile": "dry_chilli_agmark_v1", "kg": 1200, "acres": 1, "expect": "pass" },
     { "name": "exactly 30 % over still warns", "profile": "dry_chilli_agmark_v1", "kg": 1950, "acres": 1.5, "expect": "warn" },
+    { "name": "float inputs are read via str: 910 kg on 0.7 acre warns", "profile": "dry_chilli_agmark_v1", "kg": 910.0, "acres": 0.7, "expect": "warn" },
+    { "name": "string inputs: 910.01 kg on 0.7 acre holds", "profile": "dry_chilli_agmark_v1", "kg": "910.01", "acres": "0.7", "expect": "hold" },
     { "name": "zero area is unavailable", "profile": "dry_chilli_agmark_v1", "kg": 100, "acres": 0, "expect": null },
     { "name": "profile without a yield rule is unavailable", "profile": "coffee_ico420_test", "kg": 100, "acres": 1, "expect": null }
   ],

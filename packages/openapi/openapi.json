@@ -124,7 +124,7 @@
             "type": "string"
           },
           "lab_certified": {
-            "description": "A lab reading with a NABL number was used (FR51).",
+            "description": "Any batch reading of a profile parameter is a lab result with a NABL number (FR51).",
             "title": "Lab Certified",
             "type": "boolean"
           },
@@ -687,7 +687,7 @@
                 "type": "null"
               }
             ],
-            "description": "Interval the value must lie in to reach each grade, keyed by grade name. A grade absent from the map cannot be reached through this parameter; `{}` as a range means no constraint. Null: not graded on this parameter (see `status`).",
+            "description": "Interval the value must lie in to reach each grade, keyed by grade name; when set, every grade needs a key (`{}` means no constraint for that grade). Null: not graded on this parameter (see `status`).",
             "title": "Limits"
           },
           "max_grade_for_source": {
@@ -851,7 +851,7 @@
                 "type": "null"
               }
             ],
-            "description": "Interval the value must lie in to reach each grade, keyed by grade name. A grade absent from the map cannot be reached through this parameter; `{}` as a range means no constraint. Null: not graded on this parameter (see `status`).",
+            "description": "Interval the value must lie in to reach each grade, keyed by grade name; when set, every grade needs a key (`{}` means no constraint for that grade). Null: not graded on this parameter (see `status`).",
             "title": "Limits"
           },
           "max_grade_for_source": {
@@ -983,6 +983,12 @@
             ],
             "description": "Grade reached by this parameter (graded only).",
             "title": "Grade"
+          },
+          "lab_certified": {
+            "default": false,
+            "description": "An accredited lab result (source lab, non-blank NABL number) for this parameter is attached to the batch at any stage; lets the public page say which values are lab-measured (FR51).",
+            "title": "Lab Certified",
+            "type": "boolean"
           },
           "limit": {
             "anyOf": [

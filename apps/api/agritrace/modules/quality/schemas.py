@@ -117,9 +117,9 @@ class Parameter(_Strict):
     limits: dict[str, Range] | None = Field(
         None,
         description=(
-            "Interval the value must lie in to reach each grade, keyed by grade name. A grade absent from "
-            "the map cannot be reached through this parameter; `{}` as a range means no constraint. Null: "
-            "not graded on this parameter (see `status`)."
+            "Interval the value must lie in to reach each grade, keyed by grade name; when set, every grade "
+            "needs a key (`{}` means no constraint for that grade). Null: not graded on this parameter "
+            "(see `status`)."
         ),
     )
     plausible: Range | None = Field(
@@ -261,7 +261,8 @@ class StandardsProfileRules(_Strict):
 
         Raises:
             ValueError: duplicate grade or parameter code; `fail_grade` listed as a grade; a `limits`,
-                `max_grade_for_source` or `declare_for_grades` grade not in `grades`; `grading_stage` not
+                `max_grade_for_source` or `declare_for_grades` grade not in `grades`; `limits` set without a
+                key for every grade; `grading_stage` not
                 in `capture_stages`; a `load_from_standard` parameter with limits; a gate or trail rule
                 naming an unknown parameter.
         """
@@ -275,6 +276,11 @@ class StandardsProfileRules(_Strict):
             used = set(p.limits or {}) | set(p.max_grade_for_source.values()) | set(p.declare_for_grades)
             if not used <= grades:
                 raise ValueError(f"{p.code}: unknown grade(s) {sorted(used - grades)}")
+            # A partial map would silently cap every batch (B05 r1 F6), so it must be spelled out.
+            if p.limits is not None and set(p.limits) != grades:
+                raise ValueError(
+                    f"{p.code}: limits needs a key for every grade; missing {sorted(grades - set(p.limits))}"
+                )
             if p.grading_stage not in p.capture_stages:
                 raise ValueError(f"{p.code}: grading_stage {p.grading_stage} not in capture_stages")
             if p.status == "load_from_standard" and p.limits is not None:
@@ -501,6 +507,13 @@ class ParameterResult(BaseModel):
     source: ReadingSource | None = Field(None, description="Source of the reading used.")
     limit: Range | None = Field(None, description="Limit of the grade reached; null for the fail grade.")
     capped_by_source: bool = Field(False, description="True when `max_grade_for_source` lowered the grade.")
+    lab_certified: bool = Field(
+        False,
+        description=(
+            "An accredited lab result (source lab, non-blank NABL number) for this parameter is attached to "
+            "the batch at any stage; lets the public page say which values are lab-measured (FR51)."
+        ),
+    )
 
 
 class GradeOut(BaseModel):
@@ -516,6 +529,8 @@ class GradeOut(BaseModel):
     status: GradeStatus = Field(
         description="ok, incomplete or declared_above_computed (FR49 blocks approval)."
     )
-    lab_certified: bool = Field(description="A lab reading with a NABL number was used (FR51).")
+    lab_certified: bool = Field(
+        description="Any batch reading of a profile parameter is a lab result with a NABL number (FR51)."
+    )
     per_parameter: dict[str, ParameterResult] = Field(description="Contribution of each parameter, by code.")
     computed_at: datetime = Field(description="When the engine ran.")

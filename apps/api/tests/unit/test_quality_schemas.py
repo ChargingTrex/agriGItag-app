@@ -51,9 +51,10 @@ def _broken(path: list[Any], value: Any) -> dict[str, Any]:
     ("path", "value", "message"),
     [
         (["parameters", 0, "limits"], {"Premium": {"max": 9}}, "unknown grade"),
+        (["parameters", 0, "limits"], {"Special": {"max": 10}}, "a key for every grade"),
         (["parameters", 0, "max_grade_for_source"], {"visual": "Gold"}, "unknown grade"),
         (["parameters", 0, "grading_stage"], "storage", "not in capture_stages"),
-        (["parameters", 1, "limits"], {"Special": {"max": 1}}, "load_from_standard"),
+        (["parameters", 1, "limits"], {"Special": {"max": 1}, "Standard": {"max": 2}}, "load_from_standard"),
         (["fail_grade"], "Special", "fail_grade"),
         (["lot_gates", "ready_for_sale", "parameter"], "colour", "unknown parameter"),
         (["trail_rules", 0, "parameter"], "colour", "unknown parameter"),
@@ -73,6 +74,22 @@ def test_cross_checks_reject_inconsistent_profiles(path: list[Any], value: Any, 
     """
     with pytest.raises(ValidationError, match=message):
         StandardsProfileRules.model_validate(_broken(path, value))
+
+
+def test_limits_with_an_empty_range_per_grade_are_accepted() -> None:
+    """`{}` spells out "no constraint" for a grade, so a full map with an open grade is valid (F6)."""
+    rules = StandardsProfileRules.model_validate(
+        _broken(["parameters", 0, "limits"], {"Special": {"max": 10}, "Standard": {}})
+    )
+    assert rules.parameters[0].limits is not None and rules.parameters[0].limits["Standard"].max is None
+
+
+def test_every_percent_parameter_of_the_seed_profile_is_range_checked() -> None:
+    """FR50 ruling (F7): every `%` parameter carries plausible 0–100, pending ones keep limits null."""
+    rules = StandardsProfileRules.model_validate(CHILLI)
+    percent = [p for p in rules.parameters if p.unit == "%"]
+    assert len(percent) == 7
+    assert all(p.plausible is not None and (p.plausible.min, p.plausible.max) == (0, 100) for p in percent)
 
 
 def test_duplicate_parameter_codes_rejected() -> None:
