@@ -1,0 +1,23 @@
+# Static analysis for the AgriTrace mobile app. CLAUDE.md §5 (Documentation Standard): every public member
+# documented, enforced by public_member_api_docs. The farmer no-free-text rule is tool/no_textfield_lint.sh
+# (a grep, because the analyzer has no per-directory banned-type rule without a custom_lint plugin).
+include: package:flutter_lints/flutter.yaml
+
+formatter:
+  page_width: 120
+
+analyzer:
+  exclude:
+    # Generated code: openapi-generator client (D-003) and flutter gen-l10n output.
+    - packages/**
+    - lib/core/l10n/gen/**
+    - build/**
+  language:
+    strict-casts: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    public_member_api_docs: true
+    prefer_single_quotes: true
+    always_declare_return_types: true

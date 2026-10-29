@@ -1,0 +1,11 @@
+# flutter gen-l10n configuration. UserFlows §Design rules "Language first": Tamil is the default (D-016).
+# The Tamil file is the template, so every key exists in Tamil first; required-resource-attributes makes
+# gen-l10n fail when a key has no @description.
+arb-dir: lib/core/l10n
+template-arb-file: app_ta.arb
+output-dir: lib/core/l10n/gen
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+preferred-supported-locales: [ta]
+required-resource-attributes: true
+nullable-getter: false

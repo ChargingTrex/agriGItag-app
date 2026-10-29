@@ -1,0 +1,41 @@
+{
+  "@@locale": "en",
+  "appTitle": "AgriTrace",
+  "@appTitle": {
+    "description": "App name shown in the app bar and the OS task switcher."
+  },
+  "signIn": "Sign in",
+  "@signIn": {
+    "description": "Title of the sign-in placeholder screen (replaced by the OTP flow in M06); at most two words."
+  },
+  "roleFarmer": "Farmer",
+  "@roleFarmer": {
+    "description": "Role name of a farmer, shown on the farmer home placeholder."
+  },
+  "roleFieldOfficer": "Field officer",
+  "@roleFieldOfficer": {
+    "description": "Role name of an FPO field officer, shown on the officer home placeholder."
+  },
+  "roleQc": "QC officer",
+  "@roleQc": {
+    "description": "Role name of a quality-check (grading) officer, shown on the QC home placeholder."
+  },
+  "assistFor": "Helping {farmerId}",
+  "@assistFor": {
+    "description": "Title of the assist-mode placeholder: the field officer is entering data for this farmer.",
+    "placeholders": {
+      "farmerId": {
+        "type": "String",
+        "example": "F-0042"
+      }
+    }
+  },
+  "switchLanguage": "தமிழ்",
+  "@switchLanguage": {
+    "description": "Label of the one-button language switch. It names the language the app switches TO, written in that language."
+  },
+  "playVoice": "Play voice",
+  "@playVoice": {
+    "description": "Screen-reader label of the speaker icon that plays the recorded voice prompt for a button."
+  }
+}
