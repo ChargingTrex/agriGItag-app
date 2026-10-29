@@ -4,6 +4,10 @@
   "batch_code": "FGP8T4033HM7",
   "super_lot_code": "COMBO_LOT_6C1DCCFE",
   "total_quantity": {
+    "value": 20,
+    "unit": "kg"
+  },
+  "procured_quantity": {
     "value": 320,
     "unit": "kg"
   },
@@ -836,7 +840,7 @@
         "unit": "%",
         "source": "instrument"
       },
-      "comment": "20 kg of broken and unripe pods removed at sorting.",
+      "comment": "Graded from the 320 kg procured; 20 kg packed under this batch code.",
       "photos": [
         {
           "thumb_url": "https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/processing/grading-1-thumb.webp",
@@ -855,7 +859,7 @@
       "status": "complete",
       "system_generated": false,
       "quantity": {
-        "value": 300,
+        "value": 20,
         "unit": "kg"
       },
       "photos": [

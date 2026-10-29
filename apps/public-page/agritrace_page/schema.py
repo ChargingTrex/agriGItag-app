@@ -30,21 +30,33 @@ from pydantic import (
 #   ADV: privacy is enforced where the page is built, not trusted to every caller (Arch §Security).
 #   COMPROMISE: a field made public in YAML also needs a field here; that review step is intended.
 # hide_input_in_errors keeps a rejected phone number out of the ValidationError text and the logs.
-_CONFIG = ConfigDict(extra="forbid", hide_input_in_errors=True, str_strip_whitespace=True)
+# revalidate_instances="always" re-runs every check on a model instance passed to render(), so a
+# field changed after construction (review r1 P1-1) cannot skip the privacy check.
+_CONFIG = ConfigDict(
+    extra="forbid",
+    hide_input_in_errors=True,
+    str_strip_whitespace=True,
+    revalidate_instances="always",
+)
 
-# Privacy patterns (CLAUDE.md §6). Number patterns use word boundaries so ids such as FSSAI
-# licence numbers (14 digits) or batch codes do not trip them.
+# Privacy patterns (CLAUDE.md §6). Unknown keys and number/coordinate arrays need no pattern:
+# extra="forbid" and the field types already refuse them.
+# Number patterns run on a copy with spaces and dashes removed, so "987 654 3210" and
+# "98765-43210" are caught. Digit lookarounds (not \b) also catch digits glued to letters or
+# Tamil text, and still pass longer ids such as 14-digit FSSAI numbers.
+_NUMBER_PATTERNS = {
+    "phone number": re.compile(r"(?<!\d)(?:\+?91|0)?[6-9]\d{9}(?!\d)"),
+    "Aadhaar-like number": re.compile(r"(?<!\d)[2-9]\d{11}(?!\d)"),
+}
+# These also run on URLs: a coordinate pair or polygon can hide in a URL path or query.
 _TEXT_PATTERNS = {
-    "phone number": re.compile(r"\b(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}\b"),
-    "Aadhaar-like number": re.compile(r"\b[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}\b"),
-    "land record reference": re.compile(r"(?i)survey\s*(?:no|number)|\bpatta\b|\bchitta\b"),
-    "boundary polygon": re.compile(r"(?i)\bpolygon\b"),
+    "land record reference": re.compile(
+        r"(?i)\b(?:s\.?\s*f\.?|sy\.?|survey)\s*(?:no|number)\b|\bpatta\b|\bchitta\b"
+    ),
+    "boundary polygon": re.compile(r"(?i)polygon"),
     "precise coordinates": re.compile(r"-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}"),
 }
 _TEMP_PATH = re.compile(r"temp_uploads|/tmp/")
-_PRIVATE_KEY = re.compile(
-    r"(?i)phone|mobile|aadha+r|survey|patta|chitta|polygon|geojson|boundary_pts"
-)
 # Photo URLs must point into the permanent evidence bucket (FR61), never a temporary path.
 _EVIDENCE_URL = r"^https?://[^\s/]+/(?:[^\s]*/)?evidence/[^\s]+$"
 
@@ -63,10 +75,10 @@ Stage = Literal[
 
 
 def _privacy_violation(value: Any, path: str = "record") -> str | None:
-    """Find the first personal or unsafe item anywhere in a raw (unvalidated) record.
+    """Find the first personal or unsafe text anywhere in a record.
 
     Args:
-        value: Any JSON-like value (dict, list, str, number, bool, None) or a nested model.
+        value: Any JSON-like value (dict, list, str, number, bool, None) or a model instance.
         path: Dotted location of ``value`` in the record, used in the message.
 
     Returns:
@@ -76,32 +88,27 @@ def _privacy_violation(value: Any, path: str = "record") -> str | None:
     Raises:
         Nothing.
     """
-    if isinstance(value, BaseModel):  # a caller may pass nested models, e.g. Lot(...)
+    if isinstance(value, BaseModel):  # a caller may pass models, e.g. Lot(...) or a whole record
         value = value.model_dump(mode="json")
     if isinstance(value, dict):
-        for key, item in value.items():
-            if _PRIVATE_KEY.search(str(key)):
-                return f"private field name at {path}.{key}"
-            if found := _privacy_violation(item, f"{path}.{key}"):
-                return found
+        items = ((f"{path}.{k}", v) for k, v in value.items())
     elif isinstance(value, list | tuple):
-        # No public field is a list of numbers or of lists: such a value is a coordinate array.
-        if any(
-            isinstance(i, list | tuple | int | float) and not isinstance(i, bool) for i in value
-        ):
-            return f"coordinate array at {path}"
-        for n, item in enumerate(value):
-            if found := _privacy_violation(item, f"{path}[{n}]"):
-                return found
+        items = ((f"{path}[{n}]", v) for n, v in enumerate(value))
     elif isinstance(value, str):
         if _TEMP_PATH.search(value):
             return f"temporary storage path at {path}"
-        # URLs are system-generated paths; digit runs in hashes would false-positive below.
+        checks = dict(_TEXT_PATTERNS)
+        # URLs are system-generated; hash digits in them would false-positive the number checks.
         if not value.startswith(("http://", "https://")):
-            for kind, pattern in _TEXT_PATTERNS.items():
-                if pattern.search(value):
-                    return f"{kind} at {path}"
-    return None
+            checks |= _NUMBER_PATTERNS
+        compact = re.sub(r"[\s-]", "", value)
+        for kind, pattern in checks.items():
+            if pattern.search(compact if kind in _NUMBER_PATTERNS else value):
+                return f"{kind} at {path}"
+        return None
+    else:
+        return None
+    return next((found for p, v in items if (found := _privacy_violation(v, p))), None)
 
 
 class Quantity(BaseModel):
@@ -127,14 +134,29 @@ class Reading(BaseModel):
 
 
 class Photo(BaseModel):
-    """An evidence photo in the three server-made variants (plan §13 B6, E2)."""
+    """An evidence photo: two server-made WebP variants plus the original JPEG (plan §13 B6, E2).
+
+    The builder (B10) takes ``thumb_url``, ``medium_url``, ``width`` and ``height`` from the
+    variants the server records after a photo is verified (B06 ``evidence_photos.variants``), and
+    ``jpeg_url`` from the original evidence object.
+    """
 
     model_config = _CONFIG
-    thumb_url: str = Field(pattern=_EVIDENCE_URL, description="WebP thumbnail (~60 KB) URL.")
+    thumb_url: str = Field(
+        pattern=_EVIDENCE_URL, description="WebP thumbnail (~60 KB, B06 variant) URL."
+    )
     medium_url: str = Field(pattern=_EVIDENCE_URL, description="WebP medium (~150 KB) URL, on tap.")
-    jpeg_url: str = Field(pattern=_EVIDENCE_URL, description="JPEG fallback for non-WebP browsers.")
-    width: int = Field(gt=0, description="Thumbnail width in pixels (reserves layout space).")
-    height: int = Field(gt=0, description="Thumbnail height in pixels.")
+    jpeg_url: str = Field(
+        pattern=_EVIDENCE_URL,
+        description="Original evidence JPEG object URL (~350 KB after phone compression); "
+        "fallback for browsers without WebP.",
+    )
+    width: int = Field(
+        gt=0, description="Thumbnail width in pixels, from the B06 variants record (layout space)."
+    )
+    height: int = Field(
+        gt=0, description="Thumbnail height in pixels, from the B06 variants record."
+    )
     alt: str = Field(min_length=1, description="Text alternative describing the photo.")
 
 
@@ -245,21 +267,26 @@ class Grade(BaseModel):
     edition: str = Field(min_length=1, description="Edition of the standard.")
     clause: str = Field(min_length=1, description="Clause or schedule, e.g. 'Schedule IV'.")
     readings: list[Reading] = Field(min_length=1, description="Key readings (moisture, colour).")
-    lab_certified: bool = Field(description="True only when an accredited lab result is attached.")
+    lab_certified: bool = Field(
+        description="True only when an accredited lab result is attached; needs a 'lab' reading."
+    )
     lab_name: str | None = Field(None, description="Lab name; allowed only when lab_certified.")
 
     @model_validator(mode="after")
-    def _lab_name_only_when_certified(self) -> "Grade":
-        """Keep the lab name off pages whose grade is not lab-certified (FR51).
+    def _lab_claim_backed(self) -> "Grade":
+        """Show the Lab-certified badge and lab name only with a lab result behind them (FR51).
 
         Returns:
             The grade unchanged.
 
         Raises:
-            ValueError: When ``lab_name`` is set but ``lab_certified`` is false.
+            ValueError: When ``lab_name`` is set but ``lab_certified`` is false, or when
+                ``lab_certified`` is true but no reading has source "lab".
         """
         if self.lab_name and not self.lab_certified:
             raise ValueError("lab_name given for a grade that is not lab-certified")
+        if self.lab_certified and not any(r.source == "lab" for r in self.readings):
+            raise ValueError("lab_certified needs at least one reading with source 'lab'")
         return self
 
 
@@ -288,8 +315,10 @@ class Lot(BaseModel):
     )
     place: Place = Field(description="Farm village, block, district and state.")
     farm_area: Quantity = Field(description="Declared farm area with unit.")
-    quantity: Quantity = Field(description="Quantity this lot contributed to the batch.")
-    share_pct: float = Field(ge=0, le=100, description="This lot's share of the batch, % (FR60).")
+    quantity: Quantity = Field(description="Quantity procured from this lot.")
+    share_pct: float = Field(
+        ge=0, le=100, description="Lot's share of the procured quantity, % (FR60)."
+    )
     farming_type: Literal["irrigated", "rainfed"] = Field(description="Farming type (FR54).")
     irrigation_source: Literal["well", "borewell", "canal", "tank"] | None = Field(
         None, description="Irrigation source (FR54); null for rainfed farms."
@@ -353,14 +382,20 @@ class PublicBatchRecord(BaseModel):
     product_name_local: str = Field(min_length=1, description="Product name in the local language.")
     batch_code: str = Field(min_length=1, description="Batch ID printed on the QR label.")
     super_lot_code: str = Field(min_length=1, description="Super-lot ID the batch was made from.")
-    total_quantity: Quantity = Field(description="Batch quantity with unit.")
+    total_quantity: Quantity = Field(description="Batch quantity packed under this batch code.")
+    procured_quantity: Quantity = Field(
+        description="Quantity procured from the lots (super-lot), with unit; >= batch quantity."
+    )
     gi_tag_number: str = Field(min_length=1, description="GI registration number, e.g. '883'.")
     gi_tag_name: str = Field(min_length=1, description="Registered GI name.")
     gi_verified: bool = Field(
         description="True when every lot passed the GI boundary check (FR29-FR30)."
     )
     gi_verification_note: str | None = Field(None, description="One-line note on the GI check.")
-    boundary_map_url: str | None = Field(None, description="GI boundary map image URL (FR30).")
+    # https only: the value goes into an href, so a javascript: or http: URL must not reach it.
+    boundary_map_url: str | None = Field(
+        None, pattern=r"^https://\S+$", description="GI boundary map image URL, https (FR30)."
+    )
     grade: Grade = Field(description="Computed grade block (FR51).")
     processor: Processor = Field(description="Processor block (FR16, FR62).")
     lots: list[Lot] = Field(min_length=1, description="Component lots in display order.")
@@ -377,16 +412,16 @@ class PublicBatchRecord(BaseModel):
         """Refuse a raw record that carries personal or unsafe data (CLAUDE.md §6).
 
         Args:
-            data: The raw input (dict from JSON, or an already-built model).
+            data: The raw input: a dict from JSON, or a model instance being revalidated.
 
         Returns:
             ``data`` unchanged when it is clean.
 
         Raises:
             ValueError: Naming the kind and path of the first phone number, Aadhaar-like number,
-                land record reference, polygon or coordinate array, or temporary path found.
+                land record reference, polygon, precise coordinates or temporary path found.
         """
-        if isinstance(data, dict) and (found := _privacy_violation(data)):
+        if found := _privacy_violation(data):
             raise ValueError(f"privacy: {found}")
         return data
 
@@ -398,11 +433,15 @@ class PublicBatchRecord(BaseModel):
             The record unchanged.
 
         Raises:
-            ValueError: When lot shares do not add up to 100 % (within 0.1) or the best-before
+            ValueError: When lot shares do not add up to 100 % (within 0.1), the procured
+                quantity is below the batch quantity or in another unit, or the best-before
                 date is not after the pack date.
         """
         if abs(sum(lot.share_pct for lot in self.lots) - 100) > 0.1:
             raise ValueError("lot share_pct values must add up to 100")
+        procured, batch = self.procured_quantity, self.total_quantity
+        if procured.unit != batch.unit or procured.value < batch.value:
+            raise ValueError("procured_quantity must be >= total_quantity, in the same unit")
         if self.best_before_date <= self.pack_date:
             raise ValueError("best_before_date must be after pack_date")
         return self

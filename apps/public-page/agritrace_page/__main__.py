@@ -1,4 +1,7 @@
-"""Entry point for ``python -m agritrace_page`` (W01). Caller: developers and CI; see cli.py."""
+"""Entry point for ``python -m agritrace_page`` (W01; FR15 local build).
+
+Callers: developers and CI; the commands live in cli.py.
+"""
 
 from agritrace_page.cli import main
 

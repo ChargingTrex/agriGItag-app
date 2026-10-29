@@ -8,17 +8,22 @@ worker job and served from object storage. Nothing in this package touches a dat
 ## What it does
 
 - `agritrace_page.schema.PublicBatchRecord` is the full allow-list of what a public page may show.
-  Unknown fields are rejected (`extra="forbid"`). A raw record that carries a phone number, an
-  Aadhaar-like number, a survey/patta/chitta reference, a polygon or coordinate array, precise
-  coordinates in text, or a `temp_uploads` / `/tmp/` path is refused before rendering
-  (CLAUDE.md §6). Farm pins are rounded to 3 decimal places (about 100 m) inside the schema.
-  Photo URLs must point into an `evidence/` path. Events are sorted by date, then instance.
-  `lot_count`, per-lot `event_count`, `farming_event_count`, `processing_event_count` and each
-  lot's `map_link` are computed, so they always match the data.
-- `agritrace_page.render.render(record, *, lang_order=("ta", "en"))` returns
-  `RenderResult(html, data_json)`. Labels are Tamil first, then English. Dates read "14 Feb 2026",
-  numbers use Indian grouping (1,20,000), and every quantity is printed with its unit.
-  A lot whose `farmer_name` is null (the FPO opted out) is shown as "Farmer N".
+  Unknown fields, and lists of numbers or coordinates, are rejected by `extra="forbid"` and the
+  field types. A record whose text carries a phone number (also with a leading 0 or +91, spaced,
+  dashed, or glued to letters or Tamil text), an Aadhaar-like number, a survey/S.F./Sy. No.,
+  patta or chitta reference, a polygon, precise coordinates, or a `temp_uploads` / `/tmp/` path
+  is refused before rendering (CLAUDE.md §6). Model instances are re-validated on every render,
+  so a field changed after construction is checked too. Farm pins are rounded to 3 decimal places
+  (about 100 m) inside the schema. Photo URLs must point into an `evidence/` path, and
+  `boundary_map_url` must be `https://`. The Lab-certified badge needs at least one reading with
+  source `lab`. The procured quantity must be at least the batch quantity, in the same unit.
+  Events are sorted by date, then instance. `lot_count`, per-lot `event_count`,
+  `farming_event_count`, `processing_event_count` and each lot's `map_link` are computed, so they
+  always match the data.
+- `agritrace_page.render.render(record)` returns `RenderResult(html, data_json)`. Labels are
+  Tamil first, then English. Dates read "14 Feb 2026", numbers use Indian grouping (1,20,000),
+  and every quantity is printed with its unit. A lot whose `farmer_name` is null (the FPO opted
+  out) is shown as "Farmer N".
 - The CLI builds and checks pages locally.
 
 ## How the publishing job (B10) calls it
@@ -32,8 +37,16 @@ put("public-pages/batches/{code}/data.json", result.data_json)
 ```
 
 The builder sets `farmer_name` to null when name consent is missing, sends raw pins (the schema
-rounds them), sends the B06 WebP variants (`thumb_url` ~60 KB, `medium_url` ~150 KB) plus the
-JPEG fallback for each photo, and fills `footer.generation` and `footer.page_version`.
+rounds them), and fills `footer.generation` and `footer.page_version`. For each photo it sends:
+
+- `thumb_url` (WebP, about 60 KB) and `medium_url` (WebP, about 150 KB), from the variants B06
+  records after a photo is verified;
+- `width` and `height` of the thumbnail, from the same variants record;
+- `jpeg_url`, the original evidence JPEG object (about 350 KB after phone compression), used only
+  by browsers without WebP.
+
+`total_quantity` is the quantity packed under this batch code. `procured_quantity` is what was
+procured from the lots, and the lot shares are shares of it.
 `data.json` is output only: it contains computed fields, so it is not accepted back as input.
 The portal preview calls the same function through the API.
 

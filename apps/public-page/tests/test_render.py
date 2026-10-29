@@ -79,17 +79,11 @@ def test_crop_name_is_bilingual_tamil_first(record: dict) -> None:
     assert h1 == "விருதுநகர் சம்பா வத்தல் / Virudhunagar Samba Vathal"
 
 
-def test_english_first_when_asked(record: dict) -> None:
-    """lang_order controls label order."""
-    h1 = text(parse(render(record, lang_order=("en", "ta")).html).find(".//h1"))
-    assert h1.startswith("Virudhunagar Samba Vathal / ")
-
-
 def test_every_quantity_carries_a_unit(record: dict) -> None:
     """Every quantity in the record is rendered as a number followed by a unit (FR58)."""
     events = record["processing_events"] + [e for lot in record["lots"] for e in lot["events"]]
     expected = (
-        1  # batch total quantity
+        2  # batch quantity, procured quantity
         + len(record["grade"]["readings"])
         + 3 * len(record["lots"])  # lot quantity, share %, farm area
         + sum(bool(e.get("quantity")) + bool(e.get("moisture")) for e in events)
@@ -180,29 +174,73 @@ def test_rejects_phone_number_without_echoing_it(record: dict) -> None:
     assert "43210" not in str(err.value)
 
 
+PHONE, LAND = "privacy: phone number", "privacy: land record reference"
+
+
 @pytest.mark.parametrize(
-    ("where", "value", "kind"),
+    ("where", "value", "match"),
     [
-        ("boundary", [[78.20, 9.53], [78.21, 9.53], [78.21, 9.54]], "coordinate array"),
-        ("review_note", "Walked POLYGON((78.2 9.5, 78.3 9.5))", "boundary polygon"),
-        ("review_note", "Pin at 9.536271, 78.201934", "precise coordinates"),
-        ("review_note", "Checked against patta records", "land record reference"),
-        ("review_note", "ID 2345 6789 0123 verified", "Aadhaar-like number"),
+        # Unknown keys and coordinate arrays are refused by extra="forbid" and the field types.
+        ("boundary", [[78.20, 9.53], [78.21, 9.53], [78.21, 9.54]], "Extra inputs"),
+        ("survey_number", "45/2", "Extra inputs"),
+        ("practice_tags", [9.536, 78.202], "practice_tags"),
+        ("review_note", "Walked POLYGON((78.2 9.5, 78.3 9.5))", "privacy: boundary polygon"),
+        ("review_note", "Pin at 9.536271, 78.201934", "privacy: precise coordinates"),
+        ("review_note", "Checked against patta records", LAND),
+        ("review_note", "Plot S.F. No. 123/4A", LAND),
+        ("review_note", "Plot Sy. No. 45", LAND),
+        ("review_note", "ID 2345 6789 0123 verified", "privacy: Aadhaar-like number"),
+        ("review_note", "Spoke to farmer on 09876543210", PHONE),
+        ("review_note", "phone9876543210", PHONE),
+        ("review_note", "அழைக்க9876543210", PHONE),
+        ("review_note", "Call 987 654 3210", PHONE),
+        ("review_note", "Call 987-654-3210", PHONE),
+        ("review_note", "Call +91-98765-43210", PHONE),
     ],
 )
 def test_rejects_polygon_and_other_personal_data(
-    record: dict, where: str, value, kind: str
+    record: dict, where: str, value, match: str
 ) -> None:
-    """Polygons, coordinate arrays, precise pins, land records and ID numbers are refused.
+    """Polygons, coordinate arrays, precise pins, land records, ID and phone numbers are refused.
 
     Args:
         record: Sample record.
         where: Lot key to set.
         value: Offending value.
-        kind: Expected privacy category in the error.
+        match: Expected text in the error.
     """
     record["lots"][0][where] = value
-    with pytest.raises(ValidationError, match=f"privacy: {kind}"):
+    with pytest.raises(ValidationError, match=match):
+        render(record)
+
+
+def test_rejects_instance_mutated_after_validation(record: dict) -> None:
+    """A validated record changed afterwards is re-checked by render() (review r1 P1-1)."""
+    rec = PublicBatchRecord.model_validate(record)
+    rec.lots[0].review_note = "Farmer phone 9876543210"
+    with pytest.raises(ValidationError, match=PHONE):
+        render(rec)
+
+
+@pytest.mark.parametrize(
+    ("url", "match"),
+    [
+        ("javascript:alert(document.cookie)", "boundary_map_url"),
+        ("http://static.example/gi/883/boundary-v1.webp", "boundary_map_url"),
+        ("https://maps.example/static?path=9.536271,78.201934", "privacy: precise coordinates"),
+        ("https://static.example/polygon/farm-123.geojson", "privacy: boundary polygon"),
+    ],
+)
+def test_rejects_unsafe_boundary_map_url(record: dict, url: str, match: str) -> None:
+    """The boundary map link must be https and carry no coordinates or polygon (review r1 P1-2).
+
+    Args:
+        record: Sample record.
+        url: Offending URL.
+        match: Expected text in the error.
+    """
+    record["boundary_map_url"] = url
+    with pytest.raises(ValidationError, match=match):
         render(record)
 
 
@@ -262,8 +300,25 @@ def test_lab_badge_only_when_certified(record: dict) -> None:
     """The Lab-certified badge and lab name appear only with an accredited lab result (FR51)."""
     assert "Lab-certified" not in render(record).html
     record["grade"].update(lab_certified=True, lab_name="Demo Spice Lab")
+    record["grade"]["readings"][0]["source"] = "lab"
     html = render(record).html
     assert "Lab-certified" in html and "Demo Spice Lab" in html
+
+
+def test_lab_certified_without_lab_reading_is_rejected(record: dict) -> None:
+    """The badge needs at least one reading whose source is a lab (FR51)."""
+    record["grade"]["lab_certified"] = True
+    with pytest.raises(ValidationError, match="source 'lab'"):
+        render(record)
+
+
+def test_procured_and_batch_quantity_shown_and_checked(record: dict) -> None:
+    """The header shows both quantities; procured below the batch quantity is refused."""
+    dds = [text(dd) for dd in parse(render(record).html).iterfind(".//section//dd")]
+    assert "20 kg" in dds and "320 kg" in dds
+    record["procured_quantity"]["value"] = 10
+    with pytest.raises(ValidationError, match="procured_quantity"):
+        render(record)
 
 
 def test_lab_name_without_certification_is_rejected(record: dict) -> None:

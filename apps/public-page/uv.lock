@@ -8,6 +8,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
+    { name = "markupsafe" },
     { name = "pydantic" },
 ]
 
@@ -22,6 +23,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "jinja2", specifier = ">=3.1,<4" },
+    { name = "markupsafe", specifier = ">=3" },
     { name = "pydantic", specifier = ">=2.7,<3" },
 ]
 

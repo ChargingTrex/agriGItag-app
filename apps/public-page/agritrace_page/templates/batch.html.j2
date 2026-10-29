@@ -1,7 +1,7 @@
 {#- Public batch page (W01). Purpose: the static page a buyer sees after scanning the pack QR.
     Requirements: FR15-FR19, FR30 (GI indicator), FR51 (grade), FR58 (units), FR62 (compliance ids),
     FR63 (date order, counts), FR72 (location method); User Flows §Design rules, §Who uses what.
-    Caller: agritrace_page.render.render, with r (PublicBatchRecord), t (label), pair, local, lang_order.
+    Caller: agritrace_page.render.render, with r (PublicBatchRecord); globals t (label), pair.
     Every quantity goes through qty() so it always carries its unit. -#}
 {% macro qty(q) %}<data class="q" value="{{ q.value }}">{{ q.value|num }} {{ q.unit }}</data>{% endmacro %}
 {% macro timeline(events) %}
@@ -16,7 +16,7 @@
 {% endif %}
 {% if e.seed_variety %}<p>{{ t("seed_variety") }}: {{ e.seed_variety }}</p>
 {% endif %}
-{% if e.input %}<p>{{ t("input") }}: {{ pair({local: e.input.name_local, "en": e.input.name_en}) }}{% if e.input.manufacturer %} ({{ e.input.manufacturer }}){% endif %}</p>
+{% if e.input %}<p>{{ t("input") }}: {{ pair(e.input.name_local, e.input.name_en) }}{% if e.input.manufacturer %} ({{ e.input.manufacturer }}){% endif %}</p>
 {% endif %}
 {% if e.moisture %}<p>{{ t("moisture") }}: {{ qty(e.moisture) }} ({{ t("source." ~ e.moisture.source) }})</p>
 {% endif %}
@@ -28,7 +28,7 @@
 </ol>
 {% endmacro %}
 <!doctype html>
-<html lang="{{ lang_order[0] }}">
+<html lang="ta">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -39,7 +39,7 @@
 <body>
 <header>
 <p class="meta">{{ t("batch") }} <strong>{{ r.batch_code }}</strong></p>
-<h1>{{ pair({local: r.product_name_local, "en": r.product_name_en}) }}</h1>
+<h1>{{ pair(r.product_name_local, r.product_name_en) }}</h1>
 <div class="badges">
 {% if r.gi_verified %}
 <p class="badge ok" id="gi"><i aria-hidden="true">✓</i> {{ t("gi_verified") }}</p>
@@ -58,6 +58,7 @@
 <dt>{{ t("batch_code") }}</dt><dd>{{ r.batch_code }}</dd>
 <dt>{{ t("super_lot") }}</dt><dd>{{ r.super_lot_code }}</dd>
 <dt>{{ t("total_quantity") }}</dt><dd>{{ qty(r.total_quantity) }}</dd>
+<dt>{{ t("procured_quantity") }}</dt><dd>{{ qty(r.procured_quantity) }}</dd>
 <dt>{{ t("lots") }}</dt><dd id="n-lots">{{ r.lot_count }}</dd>
 <dt>{{ t("gi_tag") }}</dt><dd>{{ r.gi_tag_name }} · GI {{ r.gi_tag_number }}
 {% if r.gi_verification_note %}<br><span class="meta">{{ r.gi_verification_note }}</span>{% endif %}
@@ -92,7 +93,7 @@
 <article class="lot" id="lot-{{ loop.index }}">
 <h3>{{ lot.farmer_name or t("farmer_n", n=loop.index) }} <span class="meta">{{ lot.lot_code }}</span></h3>
 <dl>
-<dt>{{ t("location") }}</dt><dd>{{ lot.place|place }}<br><a href="{{ lot.map_link }}" rel="noopener">{{ t("map") }}</a></dd>
+<dt>{{ t("location") }}</dt><dd>{{ lot.place|place }}<br><a href="{{ lot.map_link }}">{{ t("map") }}</a></dd>
 <dt>{{ t("quantity") }}</dt><dd>{{ qty(lot.quantity) }}</dd>
 <dt>{{ t("share") }}</dt><dd>{{ qty({"value": lot.share_pct, "unit": "%"}) }}</dd>
 <dt>{{ t("farm_area") }}</dt><dd>{{ qty(lot.farm_area) }}</dd>

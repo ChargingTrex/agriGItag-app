@@ -11,8 +11,6 @@ the portal preview calls it through the API; ``agritrace_page.cli`` builds from 
 import datetime as dt
 import json
 import re
-from collections.abc import Sequence
-from functools import partial
 from importlib.resources import files
 from typing import Any, NamedTuple
 
@@ -31,7 +29,12 @@ _LABELS: dict[str, dict[str, str]] = {
 
 
 class RenderResult(NamedTuple):
-    """Output of one render: the page and its machine-readable twin."""
+    """Output of one render: the page and its machine-readable twin.
+
+    Attributes:
+        html: The complete ``index.html``, with all CSS and JS inlined.
+        data_json: ``data.json``: the validated record plus computed counts and map links.
+    """
 
     html: str
     data_json: str
@@ -106,44 +109,36 @@ def place(value: Place) -> str:
     return ", ".join(dict.fromkeys([value.village, value.block, value.district, value.state]))
 
 
-def _pair(texts: dict[str, str], *, lang_order: Sequence[str]) -> Markup:
-    """Show the same text in each page language, in ``lang_order`` (Tamil first by default).
+def _pair(ta: str, en: str) -> Markup:
+    """Show the same text in Tamil, then English (User Flows §Design rules: language first).
 
     Args:
-        texts: Text per language code; languages missing from it are skipped.
-        lang_order: Language codes in display order.
+        ta: Tamil (local-language) text.
+        en: English text.
 
     Returns:
-        Escaped ``<span lang=..>`` elements joined by " / ".
+        Two escaped ``<span lang=..>`` elements joined by " / ".
 
     Raises:
         Nothing.
     """
-    spans = [
-        Markup('<span lang="{}">{}</span>').format(lang, texts[lang])
-        for lang in lang_order
-        if lang in texts
-    ]
-    return Markup(" / ").join(spans)
+    return Markup('<span lang="ta">{}</span> / <span lang="en">{}</span>').format(ta, en)
 
 
-def _label(key: str, *, lang_order: Sequence[str], **fmt: Any) -> Markup:
-    """Look up a bilingual UI label from i18n/<lang>.json.
+def _label(key: str, **fmt: Any) -> Markup:
+    """Look up a bilingual UI label from i18n/ta.json and i18n/en.json.
 
     Args:
         key: Label key, e.g. "stage.harvest".
-        lang_order: Language codes in display order.
         **fmt: Values for ``{placeholders}`` in the label, e.g. ``n=2``.
 
     Returns:
-        The label in every language of ``lang_order``.
+        The label in Tamil, then English.
 
     Raises:
         KeyError: When a label file lacks ``key`` (fails the build rather than show a gap).
     """
-    return _pair(
-        {lang: _LABELS[lang][key].format(**fmt) for lang in lang_order}, lang_order=lang_order
-    )
+    return _pair(_LABELS["ta"][key].format(**fmt), _LABELS["en"][key].format(**fmt))
 
 
 # DECISION D-007: the page is plain server-rendered HTML with inline CSS/JS, built once per publish.
@@ -157,35 +152,24 @@ _ENV = Environment(
     lstrip_blocks=True,
 )
 _ENV.filters.update(num=indian_number, day=day, utc=utc, place=place)
+_ENV.globals.update(t=_label, pair=_pair)
 
 
-def render(
-    record: PublicBatchRecord | dict, *, lang_order: Sequence[str] = ("ta", "en")
-) -> RenderResult:
+def render(record: PublicBatchRecord | dict) -> RenderResult:
     """Render one batch's public page and data file.
 
     Args:
-        record: A validated record, or a dict that is validated (and privacy-checked) here.
-        lang_order: Label languages in display order; each needs an i18n/<lang>.json file.
+        record: A dict or a ``PublicBatchRecord``; both are (re)validated and privacy-checked here.
 
     Returns:
         ``RenderResult(html, data_json)``; ``data_json`` includes the computed counts and map links.
 
     Raises:
-        pydantic.ValidationError: When a dict record is invalid or carries personal data.
-        ValueError: When ``lang_order`` names a language without a label file.
+        pydantic.ValidationError: When the record is invalid or carries personal data.
         KeyError: When a label key is missing from a label file.
     """
     rec = PublicBatchRecord.model_validate(record)
-    if unknown := set(lang_order) - _LABELS.keys():
-        raise ValueError(f"no label file for {sorted(unknown)}")
-    html = _ENV.get_template("batch.html.j2").render(
-        r=rec,
-        lang_order=lang_order,
-        local=next((lang for lang in lang_order if lang != "en"), "en"),
-        t=partial(_label, lang_order=lang_order),
-        pair=partial(_pair, lang_order=lang_order),
-    )
+    html = _ENV.get_template("batch.html.j2").render(r=rec)
     return RenderResult(html=html, data_json=rec.model_dump_json())
 
 
