@@ -6,9 +6,10 @@ targets:
     builders:
       drift_dev:
         options:
-          # Store DateTime as ISO-8601 text with milliseconds instead of whole Unix seconds: sync latency metrics
-          # ("Sent" ≤ 5 s) and the three clocks need sub-second precision. Drift compares such values through
-          # julianday(), so time zones stored with each value do not break comparisons.
+          # DECISION D-026: store DateTime as ISO-8601 text with milliseconds instead of whole Unix seconds.
+          #   ADV: millisecond precision for the "Sent" ≤ 5 s metric and the three clocks; readable in a DB dump.
+          #   COMPROMISE: SQL comparisons go through julianday() (Drift does it; order by column.julianday), so
+          #   indexes on date columns help less; changing it later means migrating every date column.
           store_date_time_values_as_text: true
           databases:
             default: lib/core/db/database.dart

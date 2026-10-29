@@ -34,7 +34,7 @@ void main() {
     await counts.cancel();
   });
 
-  test('nextBatch: due waiting rows only, entries before media, oldest first', () async {
+  test('nextBatch: due waiting entry rows only, oldest first; media are left to MediaDao', () async {
     final a = entryAt(at: t0);
     final b = entryAt(at: t0.add(const Duration(seconds: 1)));
     final later = entryAt(at: t0.add(const Duration(hours: 1)));
@@ -44,15 +44,8 @@ void main() {
 
     final batch = await db.outboxDao.nextBatch(now: t0.add(const Duration(minutes: 1)), maxBytes: 1 << 20);
     final ids = [a.entryId.value, b.entryId.value];
-    expect(batch.map((i) => (i.row.kind, i.entry?.entryId ?? i.media!.entryId)), [
-      (OutboxKind.entry, ids[0]),
-      (OutboxKind.entry, ids[1]),
-      (OutboxKind.media, ids[0]),
-      (OutboxKind.media, ids[1]),
-    ]);
+    expect(batch.map((i) => (i.row.kind, i.entry.entryId)), [(OutboxKind.entry, ids[0]), (OutboxKind.entry, ids[1])]);
     expect(await db.outboxDao.nextBatch(now: t0.add(const Duration(minutes: 1)), limit: 1), hasLength(1));
-    // Default 256 KB cap: the two small entries fit, the first ~300 KB photo would not.
-    expect(await db.outboxDao.nextBatch(now: t0.add(const Duration(minutes: 1))), hasLength(2));
   });
 
   test('nextBatch respects the byte cap but always returns the first row', () async {
@@ -95,5 +88,18 @@ void main() {
     expect((await db.select(db.outbox).getSingle()).status, OutboxStatus.sending);
     expect(await db.outboxDao.resetStaleSending(now: t0.add(const Duration(minutes: 6))), 1);
     expect((await db.select(db.outbox).getSingle()).status, OutboxStatus.waiting);
+  });
+
+  test('resetStaleSending also retries a row left in sent (killed before the acknowledgement)', () async {
+    final entry = entryAt();
+    await db.entriesDao.save(entry, const []);
+    final seq = (await db.select(db.outbox).getSingle()).seq;
+    await db.outboxDao.markSending([seq], t0);
+    await db.entriesDao.markSent(entry.entryId.value);
+
+    final restart = t0.add(const Duration(minutes: 6));
+    expect(await db.outboxDao.nextBatch(now: restart), isEmpty);
+    expect(await db.outboxDao.resetStaleSending(now: restart), 1);
+    expect((await db.outboxDao.nextBatch(now: restart)).single.row.seq, seq);
   });
 }

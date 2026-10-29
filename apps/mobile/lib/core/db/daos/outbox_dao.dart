@@ -1,6 +1,6 @@
 // Outbox DAO: pick the next batch to send, record attempt outcomes, recover from a killed app, and count what is
 // still pending for the cloud icon.
-// Requirement: mobile-design.md §3 (oldest-first batches ≤ 50 rows or ≤ 256 KB, backoff, needs_attention,
+// Requirement: mobile-design.md §3 (oldest-first entry batches ≤ 50 rows or ≤ 256 KB, backoff, needs_attention,
 //   kill-safety "sending older than 5 min → waiting on start", cloud icon = count(status != confirmed));
 //   Arch §Offline-first "Outbox queue", "Small first, photos second"; FR4.
 // Callers: M02 outbox_processor.dart, photo_uploader.dart and sync_service.dart (start-up reset);
@@ -14,34 +14,35 @@ import '../database.dart';
 
 part 'outbox_dao.g.dart';
 
-/// One outbox row picked by [OutboxDao.nextBatch], with the entry or media row it points to.
-typedef OutboxBatchItem = ({OutboxItem row, Entry? entry, MediaFile? media});
+/// One entry outbox row picked by [OutboxDao.nextBatch], with the entry it sends.
+typedef OutboxBatchItem = ({OutboxItem row, Entry entry});
 
 /// Reads and updates the send queue.
-@DriftAccessor(tables: [Outbox, Entries, Media])
+@DriftAccessor(tables: [Outbox, Entries])
 class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   /// Creates the DAO on [db]; use `db.outboxDao` instead of calling this.
   OutboxDao(super.db);
 
-  /// The next rows to send at [now]: `waiting` rows due at or before [now], entries before media, oldest first.
+  /// The next entries to push at [now]: `waiting` entry rows due at or before [now], oldest first.
   ///
-  /// Takes at most [limit] rows and stops before the row that would push the total size over [maxBytes] (entry
-  /// size = UTF-8 bytes of its payload, media size = its file size). The first row is always returned, so one
-  /// oversized item cannot block the queue. Returns an empty list when nothing is due; throws nothing.
+  /// Media rows are not returned: photos go through `MediaDao.pendingUploads`, which waits for the entry's
+  /// confirmation (the presigned URL comes with it). Takes at most [limit] rows and stops before the row that would
+  /// push the total payload size (UTF-8 bytes) over [maxBytes]. The first row is always returned, so one oversized
+  /// entry cannot block the queue. Returns an empty list when nothing is due; throws nothing.
   Future<List<OutboxBatchItem>> nextBatch({required DateTime now, int limit = 50, int maxBytes = 256 * 1024}) async {
-    final query =
-        select(outbox).join([
-            leftOuterJoin(entries, outbox.kind.equalsValue(OutboxKind.entry) & entries.entryId.equalsExp(outbox.refId)),
-            leftOuterJoin(media, outbox.kind.equalsValue(OutboxKind.media) & media.mediaId.equalsExp(outbox.refId)),
-          ])
-          ..where(outbox.status.equalsValue(OutboxStatus.waiting) & outbox.nextAttemptAt.isSmallerOrEqualValue(now))
-          ..orderBy([OrderingTerm.asc(outbox.priority), OrderingTerm.asc(outbox.seq)])
-          ..limit(limit);
+    final query = select(outbox).join([innerJoin(entries, entries.entryId.equalsExp(outbox.refId))])
+      ..where(
+        outbox.kind.equalsValue(OutboxKind.entry) &
+            outbox.status.equalsValue(OutboxStatus.waiting) &
+            outbox.nextAttemptAt.isSmallerOrEqualValue(now),
+      )
+      ..orderBy([OrderingTerm.asc(outbox.seq)])
+      ..limit(limit);
     final batch = <OutboxBatchItem>[];
     var total = 0;
     for (final r in await query.get()) {
-      final item = (row: r.readTable(outbox), entry: r.readTableOrNull(entries), media: r.readTableOrNull(media));
-      total += item.entry != null ? utf8.encode(item.entry!.payloadJson).length : item.media?.bytes ?? 0;
+      final item = (row: r.readTable(outbox), entry: r.readTable(entries));
+      total += utf8.encode(item.entry.payloadJson).length;
       if (batch.isNotEmpty && total > maxBytes) break;
       batch.add(item);
     }
@@ -83,14 +84,15 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
     OutboxCompanion(status: const Value(OutboxStatus.needsAttention), lastError: Value(error)),
   );
 
-  /// Kill-safety on start: rows `sending` since before [now] − [olderThan] go back to `waiting`, due at [now].
+  /// Kill-safety on start: rows `sending` or `sent` (no acknowledgement) since before [now] − [olderThan] go back to
+  /// `waiting`, due at [now]. `nextAttemptAt` still holds the attempt start written by [markSending].
   ///
   /// A send the app was killed during is retried; the server deduplicates it by its client id (D-005).
   /// Returns the number of rows reset; throws nothing.
   Future<int> resetStaleSending({required DateTime now, Duration olderThan = const Duration(minutes: 5)}) =>
       (update(outbox)..where(
             (o) =>
-                o.status.equalsValue(OutboxStatus.sending) &
+                o.status.isInValues([OutboxStatus.sending, OutboxStatus.sent]) &
                 o.nextAttemptAt.isSmallerOrEqualValue(now.subtract(olderThan)),
           ))
           .write(OutboxCompanion(status: const Value(OutboxStatus.waiting), nextAttemptAt: Value(now)));

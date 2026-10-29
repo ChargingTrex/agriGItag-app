@@ -62,15 +62,20 @@ class EntriesDao extends DatabaseAccessor<AppDatabase> with _$EntriesDaoMixin {
     await _setOutbox(entryId, const OutboxCompanion(status: Value(OutboxStatus.confirmed)));
   });
 
-  /// Records a server rejection of [entryId]: status `rejected`, outbox row `needsAttention` with [error] (the
-  /// server error code, e.g. `stale_version`). Entries never die; an officer resolves it. Throws nothing for an
+  /// Records a server rejection of [entryId]: status `rejected`; its outbox row and its media outbox rows go to
+  /// `needsAttention` with [error] (the server error code, e.g. `stale_version`), so no photo of a rejected entry
+  /// waits for an upload that cannot come. Entries never die; an officer resolves it. Throws nothing for an
   /// unknown id.
   Future<void> markRejected(String entryId, String error) => transaction(() async {
     await _setStatus(entryId, EntryStatus.rejected, from: [EntryStatus.saved, EntryStatus.sent]);
-    await _setOutbox(
-      entryId,
-      OutboxCompanion(status: const Value(OutboxStatus.needsAttention), lastError: Value(error)),
-    );
+    final attention = OutboxCompanion(status: const Value(OutboxStatus.needsAttention), lastError: Value(error));
+    await _setOutbox(entryId, attention);
+    final photos = selectOnly(media)
+      ..addColumns([media.mediaId])
+      ..where(media.entryId.equals(entryId));
+    await (update(
+      outbox,
+    )..where((o) => o.kind.equalsValue(OutboxKind.media) & o.refId.isInQuery(photos))).write(attention);
   });
 
   /// Latest version of every event on [lotId]: rows that no other row supersedes, oldest event first.
@@ -83,7 +88,11 @@ class EntriesDao extends DatabaseAccessor<AppDatabase> with _$EntriesDaoMixin {
       ..where(
         (e) =>
             e.lotId.equals(lotId) &
-            notExistsQuery(select(newer)..where((n) => n.supersedesEntryId.equalsExp(e.entryId))),
+            notExistsQuery(
+              // Served by the unique (rootId, version) index; a linear chain makes "no higher version" equal to
+              // "not superseded".
+              select(newer)..where((n) => n.rootId.equalsExp(e.rootId) & n.version.isBiggerThan(e.version)),
+            ),
       )
       // UUIDv7 ids sort by creation time, so ordering by rootId lists events in the order they were first logged.
       ..orderBy([(e) => OrderingTerm.asc(e.rootId)]);

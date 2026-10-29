@@ -4,6 +4,8 @@
 //   mobile-design.md §2; CLAUDE.md §6 (append-only farm events).
 // Callers: `flutter test test/db`.
 
+import 'dart:io';
+
 import 'package:agritrace/core/db/daos/entries_dao.dart';
 import 'package:agritrace/core/db/database.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
@@ -17,27 +19,34 @@ void main() {
   setUp(() => db = memoryDb());
   tearDown(() => db.close());
 
-  test('500 entries + 500 media save in under 2 s (host)', () async {
-    Future<void> saveMany(int n, int from) async {
-      for (var i = from; i < from + n; i++) {
-        final entry = entryAt(at: t0.add(Duration(seconds: i)));
-        await db.entriesDao.save(entry, [photoOf(entry.entryId.value)]);
+  // Tagged `perf` and skipped on CI: shared runners are too noisy for a 2 s limit (1.4–1.7 s on the dev host); the
+  // binding figure is the Verifier's on the Go AVD with a file-backed database.
+  test(
+    '500 entries + 500 media save in under 2 s (host)',
+    tags: 'perf',
+    skip: Platform.environment['CI'] != null,
+    () async {
+      Future<void> saveMany(int n, int from) async {
+        for (var i = from; i < from + n; i++) {
+          final entry = entryAt(at: t0.add(Duration(seconds: i)));
+          await db.entriesDao.save(entry, [photoOf(entry.entryId.value)]);
+        }
       }
-    }
 
-    // Warm-up outside the timing: the test VM JIT-compiles Drift on first use; the release app is AOT-compiled.
-    await saveMany(20, 0);
-    final watch = Stopwatch()..start();
-    await saveMany(500, 20);
-    watch.stop();
-    // Host figure only; the Go-emulator figure is recorded by Q01.
-    // ignore: avoid_print
-    print('M01 perf: 500 saves (500 entries + 500 media + 1000 outbox rows) in ${watch.elapsedMilliseconds} ms');
-    expect(await db.select(db.entries).get(), hasLength(520));
-    expect(await db.select(db.media).get(), hasLength(520));
-    expect(await db.select(db.outbox).get(), hasLength(1040));
-    expect(watch.elapsed, lessThan(const Duration(seconds: 2)));
-  });
+      // Warm-up outside the timing: the test VM JIT-compiles Drift on first use; the release app is AOT-compiled.
+      await saveMany(20, 0);
+      final watch = Stopwatch()..start();
+      await saveMany(500, 20);
+      watch.stop();
+      // Host figure only; the Go-emulator figure is recorded by Q01.
+      // ignore: avoid_print
+      print('M01 perf: 500 saves (500 entries + 500 media + 1000 outbox rows) in ${watch.elapsedMilliseconds} ms');
+      expect(await db.select(db.entries).get(), hasLength(520));
+      expect(await db.select(db.media).get(), hasLength(520));
+      expect(await db.select(db.outbox).get(), hasLength(1040));
+      expect(watch.elapsed, lessThan(const Duration(seconds: 2)));
+    },
+  );
 
   test('save writes status saved, media pending, and outbox rows entry first then media', () async {
     final entry = entryAt().copyWith(status: const Value(EntryStatus.confirmed));
@@ -131,16 +140,25 @@ void main() {
     expect((await row()).serverReceivedAt!.isAtSameMomentAs(ack), isTrue);
   });
 
-  test('markRejected sets rejected and puts the outbox row in needsAttention with the error', () async {
+  test('markRejected sets rejected and moves the entry and its media outbox rows to needsAttention', () async {
     final entry = entryAt();
-    await db.entriesDao.save(entry, const []);
+    await db.entriesDao.save(entry, [photoOf(entry.entryId.value)]);
+    final other = entryAt();
+    await db.entriesDao.save(other, [photoOf(other.entryId.value)]);
     await db.entriesDao.markRejected(entry.entryId.value, 'stale_version');
-    expect((await db.select(db.entries).getSingle()).status, EntryStatus.rejected);
-    final row = await db.select(db.outbox).getSingle();
-    expect((row.status, row.lastError), (OutboxStatus.needsAttention, 'stale_version'));
+
+    final rejected = await (db.select(db.entries)..where((e) => e.entryId.equals(entry.entryId.value))).getSingle();
+    expect(rejected.status, EntryStatus.rejected);
+    final rows = await (db.select(db.outbox)..orderBy([(o) => OrderingTerm.asc(o.seq)])).get();
+    expect(rows.map((r) => (r.kind, r.status, r.lastError)), [
+      (OutboxKind.entry, OutboxStatus.needsAttention, 'stale_version'),
+      (OutboxKind.media, OutboxStatus.needsAttention, 'stale_version'),
+      (OutboxKind.entry, OutboxStatus.waiting, null),
+      (OutboxKind.media, OutboxStatus.waiting, null),
+    ]);
   });
 
-  test('append-only guard: updating a saved payload or deleting an entry throws', () async {
+  test('append-only guard: updating a saved payload, replacing or deleting an entry throws', () async {
     final entry = entryAt();
     await db.entriesDao.save(entry, const []);
     final byId = db.update(db.entries)..where((e) => e.entryId.equals(entry.entryId.value));
@@ -150,6 +168,20 @@ void main() {
       throwsA(isA<SqliteException>().having((e) => e.message, 'message', contains('append-only'))),
     );
     await expectLater(db.delete(db.entries).go(), throwsA(isA<SqliteException>()));
+    // INSERT OR REPLACE deletes the old row implicitly; recursive_triggers (beforeOpen) makes that delete abort.
+    await expectLater(
+      db
+          .into(db.entries)
+          .insert(
+            entryAt(id: entry.entryId.value, payload: '{"tampered":true}'),
+            mode: InsertMode.insertOrReplace,
+          ),
+      throwsA(isA<SqliteException>().having((e) => e.message, 'message', contains('append-only'))),
+    );
     expect((await db.select(db.entries).getSingle()).payloadJson, entry.payloadJson.value);
+    // The allowed paths still work with the pragma on.
+    await db.entriesDao.markConfirmed(entry.entryId.value, t0);
+    await db.entriesDao.undo(entry.entryId.value, now: t0);
+    expect(await db.select(db.entries).get(), hasLength(2));
   });
 }

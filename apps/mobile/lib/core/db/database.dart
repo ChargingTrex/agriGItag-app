@@ -84,7 +84,8 @@ class AppDatabase extends _$AppDatabase {
 
   /// Creates every table, index and trigger on first open; upgrades older files step by step.
   ///
-  /// `beforeOpen` turns on foreign keys (off by default in SQLite) so `Media.entryId` must name an existing entry.
+  /// `beforeOpen` turns on foreign keys (off by default in SQLite) so `Media.entryId` must name an existing entry,
+  /// and recursive triggers, so the implicit delete of `INSERT OR REPLACE` fires `entries_no_delete` too.
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
@@ -97,6 +98,8 @@ class AppDatabase extends _$AppDatabase {
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
+      // Without this, REPLACE deletes the old entry row silently and bypasses the append-only triggers.
+      await customStatement('PRAGMA recursive_triggers = ON');
     },
   );
 }
