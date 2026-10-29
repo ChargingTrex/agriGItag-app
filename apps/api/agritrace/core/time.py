@@ -1,7 +1,8 @@
 """UTC clock and the three-clocks skew check.
 
 Serves: Arch §Offline-first (device, GPS and server clocks), B06/B08 `clock_skew` flag.
-Callers: events service (stamps `server_received_at`), rules_flags clock_skew rule, tests/unit/test_time.py.
+Callers: events service (stamps `server_received_at`), rules_flags clock_skew rule,
+tests/unit/test_schemas.py.
 """
 
 from datetime import UTC, datetime, timedelta

@@ -38,7 +38,15 @@ def _client_for(endpoint: str) -> Any:
         aws_access_key_id=s.s3_access_key,
         aws_secret_access_key=s.s3_secret_key,
         region_name=s.s3_region,
-        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}, connect_timeout=3),
+        # Short timeouts, 2 retries (3 attempts): a hung S3 must not pin threads (health probe, presign, head
+        # run in the default executor) for botocore's default 60 s read timeout x 5 legacy attempts.
+        config=Config(
+            signature_version="s3v4",
+            s3={"addressing_style": "path"},
+            connect_timeout=3,
+            read_timeout=10,
+            retries={"max_attempts": 2, "mode": "standard"},
+        ),
     )
 
 
@@ -67,9 +75,12 @@ def presign_put(key: str, content_type: str, sha256: str, expires: int = 900) ->
         The presigned URL on `S3_PUBLIC_ENDPOINT`, the host the phone can reach (signing needs no network).
 
     Raises:
-        ValueError: `sha256` is not valid hex.
+        ValueError: `sha256` is not 64 hex characters (a 32-byte SHA-256 digest).
     """
-    checksum = base64.b64encode(bytes.fromhex(sha256)).decode()
+    digest = bytes.fromhex(sha256)
+    if len(digest) != 32:
+        raise ValueError("sha256 must be 64 hex characters")
+    checksum = base64.b64encode(digest).decode()
     url: str = _client_for(get_settings().s3_public_endpoint).generate_presigned_url(
         "put_object",
         Params={

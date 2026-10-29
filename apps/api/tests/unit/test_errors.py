@@ -22,6 +22,7 @@ REQUIRED = {
     "not_implemented_pilot": 501,
     "gate_not_met": 409,
     "append_only_violation": 409,
+    "payload_too_large": 413,
 }
 
 
@@ -101,3 +102,12 @@ async def test_validation_and_unknown_path_use_envelope() -> None:
     assert missing.status_code == 404
     assert set(missing.json()["error"]) == {"code", "message", "details"}
     assert missing.json()["error"]["code"] == "not_found"
+
+
+async def test_wrong_method_keeps_allow_header() -> None:
+    """405 uses the envelope and keeps the `Allow` header (RFC 9110)."""
+    async with _client() as c:
+        r = await c.post("/num/1")
+    assert r.status_code == 405
+    assert r.json()["error"]["code"] == "method_not_allowed"
+    assert r.headers["allow"] == "GET"

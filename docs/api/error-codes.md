@@ -14,6 +14,7 @@ Clients map `code` to their own English/Tamil text via the message key.
 | `append_only_violation` | 409 | Records of this kind cannot be changed or deleted. | Submit a correction as a new version instead of editing the old one. | `error.append_only_violation` | — |
 | `conflict` | 409 | The request conflicts with the current state. | Reload the resource and retry with fresh data. | `error.conflict` | — |
 | `gate_not_met` | 409 | The conditions for this step are not met yet. | Resolve the items listed in `details` (flags, missing evidence) and retry. | `error.gate_not_met` | — |
+| `payload_too_large` | 413 | The request is too large. | Split the request into smaller batches (see `details` for the limit) and send each one. | `error.payload_too_large` | — |
 | `validation_error` | 422 | The request has invalid or implausible values. | Correct the fields listed in `details` and send again. | `error.validation_error` | — |
 | `rate_limited` | 429 | Too many requests. | Wait for the `Retry-After` interval, then retry with backoff. | `error.rate_limited` | — |
 | `internal_error` | 500 | Something went wrong on the server. | Retry later; if it persists, report the time and request path to support. | `error.internal_error` | — |

@@ -9,6 +9,7 @@ import asyncio
 import importlib
 import importlib.metadata
 import importlib.util
+import logging
 import pkgutil
 from collections.abc import Awaitable, Callable
 
@@ -24,6 +25,8 @@ from agritrace.core.config import get_settings
 from agritrace.core.db import get_engine
 from agritrace.core.errors import install_handlers
 from agritrace.core.schemas import ErrorEnvelope
+
+log = logging.getLogger(__name__)
 
 DESCRIPTION = """Farm-to-consumer traceability for GI-tagged produce (pilot: Virudhunagar Samba Vathal
 dry chilli, GI 883). Every error uses the envelope `{"error": {"code", "message", "details"}}`; codes are
@@ -47,11 +50,11 @@ TAGS = [
 
 
 class Health(BaseModel):
-    """Status of each dependency: `ok` or `error: <reason>`."""
+    """Status of each dependency: `ok` or `error: <ExceptionClass>` (details go to the server log only)."""
 
-    db: str = Field(description="Postgres: `ok` after `SELECT 1`, else `error: <reason>`.")
-    redis: str = Field(description="Redis: `ok` after `PING`, else `error: <reason>`.")
-    s3: str = Field(description="S3: `ok` after HEAD on the evidence bucket, else `error: <reason>`.")
+    db: str = Field(description="Postgres: `ok` after `SELECT 1`, else `error: <ExceptionClass>`.")
+    redis: str = Field(description="Valkey/Redis: `ok` after `PING`, else `error: <ExceptionClass>`.")
+    s3: str = Field(description="S3: `ok` after HEAD on the evidence bucket, else `error: <ExceptionClass>`.")
 
 
 async def _check(probe: Callable[[], Awaitable[object]]) -> str:
@@ -61,12 +64,17 @@ async def _check(probe: Callable[[], Awaitable[object]]) -> str:
         probe: coroutine function that raises when the dependency is unhealthy.
 
     Returns:
-        `ok`, or `error: <reason>` when the probe raised or timed out.
+        `ok`, or `error: <ExceptionClass>` when the probe raised or timed out (e.g. `error: TimeoutError`).
+
+    Side effects:
+        Logs the full exception text at WARNING; only the class name leaves the server, because the
+        message can carry host names, roles or bucket names and this route is public.
     """
     try:
         await asyncio.wait_for(probe(), timeout=3)
     except Exception as e:  # noqa: BLE001 - a health check reports failures instead of raising them
-        return f"error: {str(e) or type(e).__name__}"
+        log.warning("health probe %s failed: %r", probe.__name__, e)
+        return f"error: {type(e).__name__}"
     return "ok"
 
 
@@ -120,6 +128,19 @@ async def healthz(response: Response) -> Health:
     return Health(db=db, redis=redis, s3=s3)
 
 
+async def reachable() -> Response:
+    """Answer HEAD /v1/healthz without touching any dependency.
+
+    This is the phones' reachability probe (plan §13 A1, 3 s timeout before every sync run). It must not
+    depend on S3 or the DB: a slow S3 would make every phone think it is offline and stop pushing
+    entries, and a deep check per probe would multiply backend load on a public route.
+
+    Returns:
+        An empty 200 response.
+    """
+    return Response(status_code=200)
+
+
 def create_app() -> FastAPI:
     """Build the FastAPI application.
 
@@ -142,16 +163,23 @@ def create_app() -> FastAPI:
     #   ADV: apps from last season keep working; oasdiff can diff one prefix.
     #   COMPROMISE: deprecated fields linger for a season.
     v1 = APIRouter(prefix="/v1", responses={"default": {"model": ErrorEnvelope, "description": "Error"}})
-    # HEAD is the mobile reachability probe (plan §13 A1); one route per method keeps operation ids unique.
-    for method in ("GET", "HEAD"):
-        v1.add_api_route(
-            "/healthz",
-            healthz,
-            methods=[method],
-            tags=["health"],
-            response_model=Health,
-            responses={503: {"model": Health, "description": "At least one dependency is failing."}},
-        )
+    v1.add_api_route(
+        "/healthz",
+        healthz,
+        methods=["GET"],
+        tags=["health"],
+        response_model=Health,
+        responses={503: {"model": Health, "description": "At least one dependency is failing."}},
+    )
+    # HEAD is the phones' cheap reachability probe (see `reachable`); a separate route keeps operation ids
+    # unique.
+    v1.add_api_route(
+        "/healthz",
+        reachable,
+        methods=["HEAD"],
+        tags=["health"],
+        responses={200: {"description": "The API is reachable; dependencies are not checked."}},
+    )
     # DECISION D-004: each module exposes `router` in `modules/<name>/router.py`; it is mounted here by
     # discovery so parallel work packages never edit this file.
     #   ADV: no merge conflicts in main.py; adding a module needs no wiring.

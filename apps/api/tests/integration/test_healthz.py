@@ -19,6 +19,7 @@ async def test_healthz_all_ok(client: AsyncClient) -> None:
     r = await client.get("/v1/healthz")
     assert r.status_code == 200
     assert r.json() == {"db": "ok", "redis": "ok", "s3": "ok"}
+    assert (await client.head("/v1/healthz")).status_code == 200
 
 
 async def test_healthz_reports_each_failure_independently(
@@ -37,4 +38,4 @@ async def test_healthz_reports_each_failure_independently(
     assert r.status_code == 503
     body = r.json()
     assert body["db"] == "ok" and body["s3"] == "ok"
-    assert body["redis"].startswith("error: ")
+    assert body["redis"] == "error: ConnectionError"  # class name only, no host or port

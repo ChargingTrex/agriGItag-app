@@ -8,30 +8,37 @@ Serves: Arch §Deployment, D-004, D-008, D-009, D-021, plan §13 C1. Readers: de
 ```sh
 make up        # docker compose -f infra/docker-compose.yml up -d --build --wait
 curl -s localhost:8000/v1/healthz   # {"db":"ok","redis":"ok","s3":"ok"}
-curl -sI localhost:8000/v1/healthz  # HEAD: the mobile reachability probe
+curl -sI localhost:8000/v1/healthz  # HEAD: 200 without checking dependencies (phones' reachability probe)
 make logs      # follow all services
 make down      # stop; the db-data volume keeps the database
 docker compose -f infra/docker-compose.yml down -v   # stop and wipe the database
 ```
 
-Host-side tools (`uv run alembic ...`, `uv run pytest`) read `apps/api/.env`; copy
-`apps/api/.env.example` to start.
+Host-side tools (`uv run alembic ...`, `uv run uvicorn ...`) read `apps/api/.env`; copy
+`apps/api/.env.example` to start. `JWT_SECRET` has no code default, so the API does not start without
+it, and the OTP bypass is off unless `OTP_DEV_CODE` is set. Compose and `.env.example` set dev values.
+
+`GET /v1/healthz` checks db, Valkey and S3 and returns 503 with `error: <ExceptionClass>` for a failing
+one (the full error is in the api log, never in the response). `HEAD /v1/healthz` only says the API is
+reachable.
 
 ## Services and ports
 
 | Service | Image | Host port (override variable) | Notes |
 |---|---|---|---|
-| `db` | postgis/postgis:16-3.4 | 5432 (`DB_PORT`) | user/password/db `agritrace` |
-| `valkey` | valkey/valkey:8-alpine | 6379 (`REDIS_PORT`) | Celery broker and cache, Redis protocol (D-021) |
-| `s3` | localstack/localstack:4.14.0, `SERVICES=s3` | 4566 (`S3_PORT`) | S3 stand-in (D-008); credentials `test`/`test`, region ap-south-1 |
-| `s3-init` | amazon/aws-cli | — | one-shot, runs `scripts/s3-init.sh` once `s3` is healthy, then exits 0 |
-| `mosquitto` | eclipse-mosquitto:2 | 1883 (`MQTT_PORT`) | stub for future sensor feeds; anonymous, dev only |
-| `api` | built from `apps/api` | 8000 (`API_PORT`) | uvicorn `agritrace.main:app`; healthy when `/v1/healthz` is all ok |
+| `db` | postgis/postgis:16-3.4 | 127.0.0.1:5432 (`DB_PORT`) | user/password/db `agritrace` |
+| `valkey` | valkey/valkey:8-alpine | 127.0.0.1:6379 (`REDIS_PORT`) | Celery broker and cache, Redis protocol (D-021) |
+| `s3` | localstack/localstack:4.14.0, `SERVICES=s3` | 4566 (`S3_PORT`), all interfaces | S3 stand-in (D-008); credentials `test`/`test`, region ap-south-1; presigned-URL signatures are validated (`S3_SKIP_SIGNATURE_VALIDATION=0`) |
+| `s3-init` | amazon/aws-cli:2.39.1 | — | one-shot, runs `scripts/s3-init.sh` once `s3` is healthy, then exits 0 |
+| `mosquitto` | eclipse-mosquitto:2 | 127.0.0.1:1883 (`MQTT_PORT`) | stub for future sensor feeds; anonymous, dev only |
+| `api` | built from `apps/api` | 8000 (`API_PORT`), all interfaces | uvicorn `agritrace.main:app`; healthy when `/v1/healthz` is all ok |
 | `worker` | same image as `api` | — | `celery -A agritrace.worker worker` (D-004, D-009) |
 
 If a port is taken on your machine, remap it without editing the compose file, e.g.
 `DB_PORT=5433 API_PORT=8001 make up` (or put the variables in `infra/.env`, which is git-ignored).
 `api` and `worker` reach the other services by service name, so remapping host ports does not affect them.
+db, valkey and mosquitto bind to 127.0.0.1 only (dev credentials, no auth); api and s3 bind to all
+interfaces so a phone on the same Wi-Fi can reach them.
 
 **Valkey, not Redis (D-021).** Redis 7.4+ images are RSAL/SSPL-licensed; Valkey is the BSD-3 fork with the
 same protocol. `REDIS_URL`, the `redis` Python client and Celery's redis transport are unchanged.

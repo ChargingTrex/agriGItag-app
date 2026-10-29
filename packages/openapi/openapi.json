@@ -41,20 +41,20 @@
         "type": "object"
       },
       "Health": {
-        "description": "Status of each dependency: `ok` or `error: <reason>`.",
+        "description": "Status of each dependency: `ok` or `error: <ExceptionClass>` (details go to the server log only).",
         "properties": {
           "db": {
-            "description": "Postgres: `ok` after `SELECT 1`, else `error: <reason>`.",
+            "description": "Postgres: `ok` after `SELECT 1`, else `error: <ExceptionClass>`.",
             "title": "Db",
             "type": "string"
           },
           "redis": {
-            "description": "Redis: `ok` after `PING`, else `error: <reason>`.",
+            "description": "Valkey/Redis: `ok` after `PING`, else `error: <ExceptionClass>`.",
             "title": "Redis",
             "type": "string"
           },
           "s3": {
-            "description": "S3: `ok` after HEAD on the evidence bucket, else `error: <reason>`.",
+            "description": "S3: `ok` after HEAD on the evidence bucket, else `error: <ExceptionClass>`.",
             "title": "S3",
             "type": "string"
           }
@@ -118,28 +118,16 @@
         ]
       },
       "head": {
-        "description": "Check Postgres, Redis and object storage independently and concurrently.\n\nArgs:\n    response: the outgoing response, whose status is set to 503 when any check fails.\n\nReturns:\n    One status string per dependency.\n\nSide effects:\n    Opens one DB connection, one Redis connection and one S3 request.",
-        "operationId": "healthz_v1_healthz_head",
+        "description": "Answer HEAD /v1/healthz without touching any dependency.\n\nThis is the phones' reachability probe (plan \u00a713 A1, 3 s timeout before every sync run). It must not\ndepend on S3 or the DB: a slow S3 would make every phone think it is offline and stop pushing\nentries, and a deep check per probe would multiply backend load on a public route.\n\nReturns:\n    An empty 200 response.",
+        "operationId": "reachable_v1_healthz_head",
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Health"
-                }
+                "schema": {}
               }
             },
-            "description": "Successful Response"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Health"
-                }
-              }
-            },
-            "description": "At least one dependency is failing."
+            "description": "The API is reachable; dependencies are not checked."
           },
           "default": {
             "content": {
@@ -152,7 +140,7 @@
             "description": "Error"
           }
         },
-        "summary": "Healthz",
+        "summary": "Reachable",
         "tags": [
           "health"
         ]

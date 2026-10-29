@@ -22,8 +22,8 @@ test: ## All backend tests (integration tests need Docker)
 test-unit: ## Backend unit tests, no Docker needed
 	$(API) uv run pytest tests/unit
 
-lint: ## ruff + mypy + import-linter (D-004) + interrogate (100 % docstrings)
-	$(API) uv run ruff check . && uv run mypy agritrace && uv run lint-imports && uv run interrogate agritrace
+lint: ## ruff + ruff format --check + mypy + import-linter (D-004) + interrogate (100 % docstrings)
+	$(API) uv run ruff check . && uv run ruff format --check . && uv run mypy agritrace && uv run lint-imports && uv run interrogate agritrace
 
 openapi: ## Regenerate packages/openapi/openapi.json
 	$(API) uv run python -m agritrace.export_openapi
@@ -39,5 +39,5 @@ seed: ## Placeholder until B12: demo FPO and reference batch
 progress: ## Refresh the completion line in CHECKLIST.md
 	python3 infra/scripts/checklist-progress.py
 
-error-codes: ## Regenerate docs/api/error-codes.md; fails on unregistered raised errors
+error-codes: ## Regenerate docs/api/error-codes.md (CI: add --check); fails on unregistered raised errors
 	$(API) uv run python ../../infra/scripts/gen-error-codes.py

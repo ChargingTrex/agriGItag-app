@@ -2,14 +2,17 @@
 """Render docs/api/error-codes.md from the AppError registry and fail on unregistered raised errors.
 
 Serves: CLAUDE.md §5.5 (error-codes.md is generated; raising an unregistered code fails CI).
-Callers: `make error-codes` (runs inside the apps/api uv environment), CI.
+Callers: `make error-codes` (writes the doc) and CI (`--check`), both inside the apps/api uv environment.
 
+Usage: `gen-error-codes.py` rewrites the doc; `gen-error-codes.py --check` only compares and never writes.
 Exit codes: 0 when every `raise XxxError` in apps/api/agritrace is a builtin exception or a registered
-AppError subclass; 1 otherwise (the names are printed to stderr). The doc is written in both cases.
+AppError subclass and (with `--check`) the committed doc is current; 1 otherwise (reasons on stderr).
 """
 
+import argparse
 import builtins
 import importlib
+import os
 import pathlib
 import pkgutil
 import re
@@ -28,8 +31,10 @@ def import_all() -> None:
         ImportError: a module fails to import.
 
     Side effects:
-        Adds apps/api to `sys.path`; imports the whole package.
+        Adds apps/api to `sys.path`; sets a placeholder JWT_SECRET if none is set (importing
+        `agritrace.worker` reads the settings, which require it; no secret is used here); imports the package.
     """
+    os.environ.setdefault("JWT_SECRET", "gen-error-codes-placeholder")
     sys.path.insert(0, str(PKG.parent))
     pkg = importlib.import_module("agritrace")
     for mod in pkgutil.walk_packages(pkg.__path__, "agritrace."):
@@ -50,19 +55,16 @@ def find_raisers() -> dict[str, list[str]]:
     return found
 
 
-def main() -> int:
-    """Write the doc and check that every raised error is registered.
+def render(registry: dict[str, type], raisers: dict[str, list[str]]) -> str:
+    """Build the Markdown table of every registered code.
+
+    Args:
+        registry: `agritrace.core.errors.REGISTRY` (code -> AppError subclass).
+        raisers: output of `find_raisers`.
 
     Returns:
-        Process exit code (0 ok, 1 unregistered errors found).
-
-    Side effects:
-        Overwrites docs/api/error-codes.md; prints a summary.
+        The full document text.
     """
-    import_all()
-    from agritrace.core.errors import REGISTRY
-
-    raisers = find_raisers()
     lines = [
         "# Error codes",
         "",
@@ -74,20 +76,50 @@ def main() -> int:
         "| Code | HTTP | Meaning | How to fix | Message key | Raised by |",
         "|---|---|---|---|---|---|",
     ]
-    for code, cls in sorted(REGISTRY.items(), key=lambda kv: (kv[1].status, kv[0])):
+    for code, cls in sorted(registry.items(), key=lambda kv: (kv[1].status, kv[0])):
         where = "<br>".join(f"`{loc}`" for loc in raisers.get(cls.__name__, [])) or "—"
         lines.append(
             f"| `{code}` | {cls.status} | {cls.message} | {cls.fix} | `{cls.message_key}` | {where} |"
         )
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text("\n".join(lines) + "\n")
-    print(f"wrote {OUT.relative_to(ROOT)} ({len(REGISTRY)} codes)")
+    return "\n".join(lines) + "\n"
+
+
+def main() -> int:
+    """Write (or with `--check`, compare) the doc and check that every raised error is registered.
+
+    Returns:
+        Process exit code (0 ok, 1 unregistered errors found or, with `--check`, the doc is stale).
+
+    Side effects:
+        Without `--check`, overwrites docs/api/error-codes.md. Prints a summary.
+    """
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--check", action="store_true", help="compare with the committed doc; never write")
+    check = parser.parse_args().check
+
+    import_all()
+    from agritrace.core.errors import REGISTRY
+
+    raisers = find_raisers()
+    text = render(REGISTRY, raisers)
+    rel = OUT.relative_to(ROOT)
+    failed = False
+    if check:
+        if not OUT.exists() or OUT.read_text() != text:
+            print(f"{rel} is stale; run `make error-codes` and commit it", file=sys.stderr)
+            failed = True
+        else:
+            print(f"{rel} is current ({len(REGISTRY)} codes)")
+    else:
+        OUT.parent.mkdir(parents=True, exist_ok=True)
+        OUT.write_text(text)
+        print(f"wrote {rel} ({len(REGISTRY)} codes)")
 
     registered = {cls.__name__ for cls in REGISTRY.values()}
     unknown = sorted(n for n in raisers if n not in registered and not hasattr(builtins, n))
     for name in unknown:
         print(f"unregistered error raised: {name} at {', '.join(raisers[name])}", file=sys.stderr)
-    return 1 if unknown else 0
+    return 1 if failed or unknown else 0
 
 
 if __name__ == "__main__":

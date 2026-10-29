@@ -7,6 +7,7 @@ Callers: every module raises `AppError` subclasses; `agritrace.main` installs `i
 """
 
 import logging
+from collections.abc import Mapping
 from typing import Any, ClassVar
 
 from fastapi import FastAPI, Request
@@ -135,6 +136,14 @@ class RateLimitedError(AppError):
     fix = "Wait for the `Retry-After` interval, then retry with backoff."
 
 
+class PayloadTooLargeError(AppError):
+    """The request body is over the endpoint's limit (sync push: 50 entries or 256 KB)."""
+
+    code, status, message_key = "payload_too_large", 413, "error.payload_too_large"
+    message = "The request is too large."
+    fix = "Split the request into smaller batches (see `details` for the limit) and send each one."
+
+
 class InternalError(AppError):
     """Unexpected server failure; the cause is logged, not returned."""
 
@@ -151,7 +160,9 @@ class NotImplementedPilotError(AppError):
     fix = "No client action; the feature is planned after the pilot."
 
 
-def _envelope(status: int, code: str, message: str, details: Any = None) -> JSONResponse:
+def _envelope(
+    status: int, code: str, message: str, details: Any = None, headers: Mapping[str, str] | None = None
+) -> JSONResponse:
     """Render the standard error envelope.
 
     Args:
@@ -159,12 +170,13 @@ def _envelope(status: int, code: str, message: str, details: Any = None) -> JSON
         code: registered snake_case error code.
         message: human-readable English message.
         details: JSON-serialisable context, or None.
+        headers: response headers to keep, e.g. `Allow` on 405.
 
     Returns:
         `{"error": {"code", "message", "details"}}` as a JSON response.
     """
     body = {"error": {"code": code, "message": message, "details": details}}
-    return JSONResponse(jsonable_encoder(body), status_code=status)
+    return JSONResponse(jsonable_encoder(body), status_code=status, headers=headers)
 
 
 async def _app_error(_: Request, exc: Exception) -> JSONResponse:
@@ -204,11 +216,12 @@ async def _http_error(_: Request, exc: Exception) -> JSONResponse:
         exc: the `StarletteHTTPException`.
 
     Returns:
-        Envelope using the first registered code with the same status, else `internal_error`.
+        Envelope using the first registered code with the same status, else `internal_error`; the
+        exception's headers (e.g. `Allow` on 405, RFC 9110) are kept.
     """
     assert isinstance(exc, StarletteHTTPException)
     cls = next((c for c in REGISTRY.values() if c.status == exc.status_code), InternalError)
-    return _envelope(exc.status_code, cls.code, cls.message, None)
+    return _envelope(exc.status_code, cls.code, cls.message, None, exc.headers)
 
 
 async def _unhandled(_: Request, exc: Exception) -> JSONResponse:

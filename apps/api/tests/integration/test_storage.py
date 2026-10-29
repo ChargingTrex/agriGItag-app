@@ -16,7 +16,7 @@ pytestmark = pytest.mark.integration
 
 
 def test_presigned_put_checks_sha256(stack: None) -> None:
-    """Matching bytes are stored and visible via head(); different bytes are refused.
+    """Matching bytes are stored; wrong bytes give 400, a missing checksum or other Content-Type give 403.
 
     Args:
         stack: the running containers (fixture).
@@ -27,6 +27,10 @@ def test_presigned_put_checks_sha256(stack: None) -> None:
     headers = {"Content-Type": "image/jpeg", "x-amz-checksum-sha256": base64.b64encode(digest).decode()}
 
     assert httpx.put(url, content=b"tampered", headers=headers).status_code == 400
+    # Signed headers (S3_SKIP_SIGNATURE_VALIDATION=0): dropping the checksum or changing the type fails.
+    no_checksum = {"Content-Type": "image/jpeg"}
+    assert httpx.put(url, content=body, headers=no_checksum).status_code == 403
+    assert httpx.put(url, content=body, headers={**headers, "Content-Type": "image/png"}).status_code == 403
     assert storage.head("t/photo.jpg") is None
     assert httpx.put(url, content=body, headers=headers).status_code == 200
     meta = storage.head("t/photo.jpg")

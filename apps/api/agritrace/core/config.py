@@ -11,11 +11,13 @@ from typing import Literal, Self
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-DEV_JWT_SECRET = "dev-only-change-me"  # noqa: S105 - deliberately public dev default, refused in prod
-
 
 class Settings(BaseSettings):
-    """Typed view of the environment. Defaults target the local docker-compose stack."""
+    """Typed view of the environment. Defaults target the local docker-compose stack.
+
+    Secrets have no code defaults (fail closed): `JWT_SECRET` must come from the environment or `.env`,
+    and the dev OTP bypass is off unless `OTP_DEV_CODE` is set. `.env.example` and compose set dev values.
+    """
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -40,9 +42,9 @@ class Settings(BaseSettings):
     public_base_url: str = Field(
         "http://localhost:4566/public-pages", description="Base URL consumers open for a public batch page."
     )
-    jwt_secret: str = Field(DEV_JWT_SECRET, description="HMAC secret for access tokens; must be set in prod.")
+    jwt_secret: str = Field(description="HMAC secret for access tokens; required, at least 32 bytes in prod.")
     otp_dev_code: str | None = Field(
-        "123456", description="Fixed OTP accepted outside prod so testers need no SMS; must be unset in prod."
+        None, description="Fixed OTP for testers outside prod (no SMS); off when unset; refused in prod."
     )
 
     @model_validator(mode="after")
@@ -53,10 +55,10 @@ class Settings(BaseSettings):
             The validated settings, unchanged.
 
         Raises:
-            ValueError: `ENV=prod` with the default `JWT_SECRET` or with `OTP_DEV_CODE` set.
+            ValueError: `ENV=prod` with a `JWT_SECRET` shorter than 32 bytes or with `OTP_DEV_CODE` set.
         """
-        if self.env == "prod" and (self.jwt_secret == DEV_JWT_SECRET or self.otp_dev_code):
-            raise ValueError("ENV=prod requires a real JWT_SECRET and an empty OTP_DEV_CODE")
+        if self.env == "prod" and (len(self.jwt_secret.encode()) < 32 or self.otp_dev_code):
+            raise ValueError("ENV=prod requires JWT_SECRET of at least 32 bytes and no OTP_DEV_CODE")
         return self
 
 
@@ -68,6 +70,6 @@ def get_settings() -> Settings:
         The cached `Settings`. Tests call `get_settings.cache_clear()` after changing the environment.
 
     Raises:
-        pydantic.ValidationError: an environment variable has an invalid value.
+        pydantic.ValidationError: `JWT_SECRET` is missing or a variable has an invalid value.
     """
     return Settings()

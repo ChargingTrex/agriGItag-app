@@ -93,7 +93,7 @@ asyncio_mode = "auto"
 # One event loop for the whole session so the cached async engine never crosses loops.
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
-markers = ["integration: needs Docker (testcontainers for PostGIS, Redis, MinIO)"]
+markers = ["integration: needs Docker (testcontainers for PostGIS, Valkey, LocalStack S3)"]
 
 [tool.importlinter]
 root_package = "agritrace"
@@ -104,19 +104,8 @@ root_package = "agritrace"
 [[tool.importlinter.contracts]]
 name = "D-004 modules import other modules only via models and service"
 type = "independence"
-modules = [
-    "agritrace.modules.identity",
-    "agritrace.modules.registry",
-    "agritrace.modules.events",
-    "agritrace.modules.rules_flags",
-    "agritrace.modules.lots_batches",
-    "agritrace.modules.quality",
-    "agritrace.modules.storage_monitoring",
-    "agritrace.modules.publishing",
-    "agritrace.modules.notifications",
-    "agritrace.modules.partner_api",
-    "agritrace.modules.reporting",
-]
+# Wildcard: every package under agritrace.modules is covered, including modules added later.
+modules = ["agritrace.modules.*"]
 ignore_imports = [
     "agritrace.modules.** -> agritrace.modules.*.models",
     "agritrace.modules.** -> agritrace.modules.*.service",

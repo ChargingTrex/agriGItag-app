@@ -43,7 +43,10 @@ def stack() -> Iterator[None]:
         #   COMPROMISE: newer project; Redis-only modules are not available.
         RedisContainer("valkey/valkey:8-alpine") as rd,
         # LocalStack 4.14.0 is the last tag that starts without an auth token (D-008).
-        LocalStackContainer("localstack/localstack:4.14.0", region_name=REGION).with_services("s3") as ls,
+        # S3_SKIP_SIGNATURE_VALIDATION=0: LocalStack checks presigned signatures like AWS (signed headers).
+        LocalStackContainer("localstack/localstack:4.14.0", region_name=REGION)
+        .with_services("s3")
+        .with_env("S3_SKIP_SIGNATURE_VALIDATION", "0") as ls,
     ):
         os.environ.update(
             ENV="test",
@@ -54,6 +57,8 @@ def stack() -> Iterator[None]:
             S3_REGION=REGION,
             S3_ACCESS_KEY="test",
             S3_SECRET_KEY="test",
+            JWT_SECRET="integration-test-secret",
+            OTP_DEV_CODE="123456",
         )
         for cached in (get_settings, db.get_engine, db.get_sessionmaker, storage._client_for):
             cached.cache_clear()

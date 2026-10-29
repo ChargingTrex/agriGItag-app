@@ -66,10 +66,32 @@ def test_page_shape() -> None:
     assert page.model_dump() == {"items": [1, 2], "next_cursor": "abc", "has_more": True}
 
 
-def test_prod_refuses_dev_secrets() -> None:
-    """ENV=prod with the default JWT secret or a dev OTP code does not start."""
-    with pytest.raises(ValidationError):
-        Settings(env="prod")
-    with pytest.raises(ValidationError):
-        Settings(env="prod", jwt_secret="x" * 32)
-    assert Settings(env="prod", jwt_secret="x" * 32, otp_dev_code=None).env == "prod"
+def test_secrets_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No JWT secret means no start, and the dev OTP bypass is off unless explicitly set.
+
+    Args:
+        monkeypatch: pytest monkeypatch fixture.
+    """
+    for var in ("ENV", "JWT_SECRET", "OTP_DEV_CODE"):
+        monkeypatch.delenv(var, raising=False)
+    with pytest.raises(ValidationError, match="jwt_secret"):
+        Settings(_env_file=None)
+    dev = Settings(_env_file=None, jwt_secret="dev-only-change-me")
+    assert (dev.env, dev.otp_dev_code) == ("dev", None)
+
+
+def test_prod_guard(monkeypatch: pytest.MonkeyPatch) -> None:
+    """ENV=prod needs a JWT secret of at least 32 bytes and refuses any dev OTP code.
+
+    Args:
+        monkeypatch: pytest monkeypatch fixture.
+    """
+    monkeypatch.delenv("OTP_DEV_CODE", raising=False)
+    with pytest.raises(ValidationError, match="32 bytes"):
+        Settings(_env_file=None, env="prod", jwt_secret="x" * 31)
+    with pytest.raises(ValidationError, match="OTP_DEV_CODE"):
+        Settings(_env_file=None, env="prod", jwt_secret="x" * 32, otp_dev_code="123456")
+    assert Settings(_env_file=None, env="prod", jwt_secret="x" * 32).env == "prod"
+    # Outside prod a short secret and the OTP bypass are allowed (local stack, tests).
+    dev = Settings(_env_file=None, env="dev", jwt_secret="short", otp_dev_code="123456")
+    assert dev.otp_dev_code == "123456"

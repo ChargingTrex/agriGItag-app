@@ -30,7 +30,8 @@ Every error response, whatever the status, has this body:
 - `details` is optional context (failing fields, ids, limits). For `validation_error` it is a list of
   `{loc, msg, type}`.
 - Status use: 401 no or bad token, 403 role or FPO scope, 404 not found (also for other FPOs' data),
-  409 state conflicts and gate violations, 422 validation and plausibility, 429 rate limit, 501 pilot stubs.
+  405 wrong method (with an `Allow` header), 409 state conflicts and gate violations, 413 body too large,
+  422 validation and plausibility, 429 rate limit, 501 pilot stubs.
 
 ## Lists: cursor pagination and `?fields=`
 
@@ -67,8 +68,8 @@ Every error response, whatever the status, has this body:
 
 ## Request limits
 
-- `POST /v1/sync/push` accepts at most **50 entries or 256 KB** per request, whichever comes first; more
-  is a 422 `validation_error`. Photos never travel in the push: each photo is a single presigned PUT
+- `POST /v1/sync/push` accepts at most **50 entries or 256 KB** per request, whichever comes first. More
+  than 50 entries is a 422 `validation_error`; a body over 256 KB is a 413 `payload_too_large`. Photos never travel in the push: each photo is a single presigned PUT
   (D-011) with its SHA-256 checked by object storage.
 - Other JSON bodies should stay well under 256 KB.
 
