@@ -1,0 +1,16 @@
+$ ls -la apps/mobile/assets/fonts; head -5 NotoSansTamil-OFL.txt
+total 88
+drwxr-xr-x@ 4 fi-it  staff    128 Oct 29 22:52 .
+drwxr-xr-x@ 3 fi-it  staff     96 Oct 29 22:52 ..
+-rw-r--r--@ 1 fi-it  staff   4381 Oct 29 22:52 NotoSansTamil-OFL.txt
+-rw-r--r--@ 1 fi-it  staff  35320 Oct 29 22:52 NotoSansTamil-sub.ttf
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/tamil)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+https://scripts.sil.org/OFL
+1
+
+$ grep -n "WP-M00 —" CHANGELOG.md (worktree)
+12:- WP-M00 — Flutter skeleton (M3 theme + FarmerTokens, FarmerButton with 56/64 dp goldens, go_router role redirect, ta/en gen-l10n, generated dart-dio client + dio wrapper, size/lint scripts, CI job) — reviewer pending, verifier pending.
+6:## [Unreleased]

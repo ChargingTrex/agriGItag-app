@@ -46,9 +46,22 @@ jobs:
         run: uvx ruff@0.17.3 check infra/scripts qa
       - name: Docstring coverage of the QA layer
         run: uvx interrogate@1.7.0 -vv --fail-under 100 infra/scripts qa/robot/lib qa/scripts
+      # Flutter and Node toolchains so doc-coverage.py can run the Dart and TS documentation lints.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.38.4
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: apps/mobile
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/portal/package-lock.json
+      - run: npm ci
+        working-directory: apps/portal
       - name: Doc coverage of the apps (BM-10)
-        # TODO(M00/P00): add Flutter / Node setup here once apps/mobile / apps/portal exist; the script
-        # fails (not skips) when an app exists but its tool is missing.
         run: uv run --no-project python infra/scripts/doc-coverage.py
       - name: Libraries ledger (D-018)
         run: uv run --no-project --with pyyaml python infra/scripts/libraries-check.py
@@ -85,11 +98,34 @@ jobs:
         run: docker compose -f infra/docker-compose.yml down -v
 
   mobile:
-    # TODO(M00): flutter analyze --fatal-infos, flutter test, size check (BM-04). Skipped until M00 lands.
-    if: false
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
     steps:
-      - run: echo "added by M00"
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.38.4
+          channel: stable
+          cache: true
+      # Java 17 for Gradle (size check) and openapi-generator (gen_api.sh); Node is preinstalled on the runner.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: flutter pub get
+      - name: Farmer screens have no free-text fields
+        run: tool/no_textfield_lint.sh
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - name: Analyze (incl. public_member_api_docs)
+        run: flutter analyze --fatal-infos
+      - name: Tests (unit, widget, goldens)
+        run: flutter test
+      - name: Generated API client and l10n match the spec and ARB files
+        run: tool/gen_api.sh && git diff --exit-code -- packages/agritrace_api lib/core/l10n/gen
+      - name: Size budget (arm64 APK; skipped when the runner has no Android SDK)
+        run: tool/size_check.sh
 
   portal:
     runs-on: ubuntu-latest

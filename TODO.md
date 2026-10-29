@@ -79,6 +79,8 @@ _(empty)_
 - [ ] Compliance (F5, DPDP Act 2023): append-only tables need an erasure runbook for valid deletion requests; the API's database role must not own the tables (so it cannot disable triggers); consider redacting phone, plot pin and survey number from audit diffs. Owner: SEC review before G5.
 - [ ] B03 (F7, Architect-Gate ruling): create a `users` row for every farmer who has a phone, including feature-phone farmers, so the phone has exactly one home.
 - [ ] B01 r2 / B03 (F8): the shared `Address` schema needs a `taluk` field for FR53's taluk check.
+- [ ] M00 P3s (review M00-r1): CI mobile job needs `timeout-minutes`; the regen-and-diff check misses untracked files (`git status --porcelain` is stricter); unknown sub-paths show go_router's English "Page Not Found" (add a farmer-friendly error page in M07); first Verifier with disk should re-run `size_check.sh` with bundletool to measure the AAB download size.
+- [ ] Q01: re-record FarmerButton goldens on Linux (Flutter 3.38.4), then remove the macOS-only skip in test/widget/farmer_button_golden_test.dart.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user

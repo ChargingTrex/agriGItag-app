@@ -1,0 +1,15 @@
+$ flutter emulators (cwd: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile, 2026-10-29T18:11:22Z)
+2 available emulators:
+
+Id                    • Name                  • Manufacturer • Platform
+
+apple_ios_simulator   • iOS Simulator         • Apple        • ios
+Medium_Phone_API_36.1 • Medium Phone API 36.1 • Generic      • android
+
+To run an emulator, run 'flutter emulators --launch <emulator id>'.
+To create a new emulator, run 'flutter emulators --create [--name xyz]'.
+
+You can find more information on managing emulators at the links below:
+  https://developer.android.com/studio/run/managing-avds
+  https://developer.android.com/studio/command-line/avdmanager
+exit=0

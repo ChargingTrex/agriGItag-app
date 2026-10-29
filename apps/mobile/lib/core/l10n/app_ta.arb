@@ -1,0 +1,41 @@
+{
+  "@@locale": "ta",
+  "appTitle": "அக்ரிட்ரேஸ்",
+  "@appTitle": {
+    "description": "App name shown in the app bar and the OS task switcher."
+  },
+  "signIn": "உள்நுழை",
+  "@signIn": {
+    "description": "Title of the sign-in placeholder screen (replaced by the OTP flow in M06); at most two words."
+  },
+  "roleFarmer": "விவசாயி",
+  "@roleFarmer": {
+    "description": "Role name of a farmer, shown on the farmer home placeholder."
+  },
+  "roleFieldOfficer": "கள அலுவலர்",
+  "@roleFieldOfficer": {
+    "description": "Role name of an FPO field officer, shown on the officer home placeholder."
+  },
+  "roleQc": "தர ஆய்வாளர்",
+  "@roleQc": {
+    "description": "Role name of a quality-check (grading) officer, shown on the QC home placeholder."
+  },
+  "assistFor": "உதவி: {farmerId}",
+  "@assistFor": {
+    "description": "Title of the assist-mode placeholder: the field officer is entering data for this farmer.",
+    "placeholders": {
+      "farmerId": {
+        "type": "String",
+        "example": "F-0042"
+      }
+    }
+  },
+  "switchLanguage": "English",
+  "@switchLanguage": {
+    "description": "Label of the one-button language switch. It names the language the app switches TO, written in that language."
+  },
+  "playVoice": "குரல் கேள்",
+  "@playVoice": {
+    "description": "Screen-reader label of the speaker icon that plays the recorded voice prompt for a button."
+  }
+}

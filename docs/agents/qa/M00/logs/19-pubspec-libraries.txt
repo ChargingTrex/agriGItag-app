@@ -1,0 +1,10 @@
+# pubspec deps (incl dev) -> LIBRARIES.md row: name | licence (worktree docs/LIBRARIES.md)
+dio ->  dio | MIT 
+flutter_riverpod ->  flutter_riverpod | MIT 
+go_router ->  go_router | BSD-3-Clause 
+intl ->  intl | BSD-3-Clause 
+flutter_localizations ->  flutter_localizations (Flutter SDK) | BSD-3-Clause 
+flutter_test ->  flutter_test (Flutter SDK, dev) | BSD-3-Clause 
+flutter_lints ->  flutter_lints | BSD-3-Clause 
+flutter (sdk) -> no row; SDK packages are excluded by libraries-check.py; framework choice is D-002
+agritrace_api (path) -> in-repo generated package, excluded by libraries-check.py; its deps have rows (built_value, built_collection, one_of, build_runner, openapi-generator)

@@ -1,0 +1,8 @@
+# dart-dio generator options for packages/agritrace_api (read by tool/gen_api.sh). D-003.
+# serializationLibrary stays at the generator default, built_value: json_serializable is marked BETA in
+# openapi-generator 7.26 and its output pins Dart SDK >=3.5, which current json_serializable rejects.
+pubName: agritrace_api
+pubVersion: 0.1.0
+pubAuthor: AgriTrace
+pubPublishTo: none
+pubDescription: "Generated AgriTrace API client. Never edit by hand; run apps/mobile/tool/gen_api.sh."

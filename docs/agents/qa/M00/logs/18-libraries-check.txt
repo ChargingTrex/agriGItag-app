@@ -1,0 +1,9 @@
+# main's infra/scripts/libraries-check.py run on a scratch tree = worktree docs/LIBRARIES.md + worktree manifests (commit 01c05f2); PyYAML supplied via uv
+$ uv run --no-project --with pyyaml python infra/scripts/libraries-check.py
+check   apps/api/pyproject.toml: 21 dependencies, ok
+check   apps/public-page/pyproject.toml: 7 dependencies, ok
+check   apps/mobile/pubspec.yaml: 5 dependencies, ok
+skip    apps/portal/package.json (not on disk)
+skip    qa/robot/requirements.txt (not on disk)
+libraries-check: PASS (43 ledger rows)
+exit=0

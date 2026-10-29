@@ -1,0 +1,112 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 91.0.0 (110.0.0 available)
+  analyzer 8.4.1 (14.6.0 available)
+  built_collection 5.1.1 (6.0.0 available)
+  characters 1.4.0 (1.4.1 available)
+  clock 1.1.2 (1.1.3 available)
+  flutter_riverpod 3.3.2 (3.4.3 available)
+  frontend_server_client 4.1.0 (4.2.0 available)
+  go_router 17.5.0 (18.1.2 available)
+  intl 0.20.2 (0.20.3 available)
+  matcher 0.12.17 (0.12.20 available)
+  material_color_utilities 0.11.1 (0.13.1 available)
+  meta 1.17.0 (1.19.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  riverpod 3.3.2 (3.4.3 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test 1.26.3 (1.33.0 available)
+  test_api 0.7.7 (0.7.15 available)
+  test_core 0.6.12 (0.6.21 available)
+  vector_math 2.2.0 (2.4.4 available)
+  web 1.1.1 (1.1.2 available)
+Got dependencies!
+20 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+{"protocolVersion":"0.1.1","runnerVersion":"1.26.3","pid":25987,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/api_client_test.dart"},"type":"suite","time":1}
+{"test":{"id":1,"name":"loading /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/api_client_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":4}
+{"suite":{"id":2,"platform":"vm","path":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart"},"type":"suite","time":14}
+{"test":{"id":3,"name":"loading /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart","suiteID":2,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":14}
+{"suite":{"id":4,"platform":"vm","path":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/locale_switch_test.dart"},"type":"suite","time":15}
+{"test":{"id":5,"name":"loading /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/locale_switch_test.dart","suiteID":4,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":15}
+{"suite":{"id":6,"platform":"vm","path":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart"},"type":"suite","time":15}
+{"test":{"id":7,"name":"loading /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart","suiteID":6,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":16}
+{"suite":{"id":8,"platform":"vm","path":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_test.dart"},"type":"suite","time":16}
+{"test":{"id":9,"name":"loading /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_test.dart","suiteID":8,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":16}
+{"suite":{"id":10,"platform":"vm","path":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/text_scale_test.dart"},"type":"suite","time":17}
+{"test":{"id":11,"name":"loading /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/text_scale_test.dart","suiteID":10,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":17}
+{"count":7,"time":19,"type":"allSuites"}
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":5976}
+{"group":{"id":12,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":2,"line":null,"column":null,"url":null},"type":"group","time":5982}
+{"test":{"id":13,"name":"healthz parses Health and sends device, auth headers and timeouts","suiteID":0,"groupIDs":[12],"metadata":{"skip":false,"skipReason":null},"line":52,"column":3,"url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/api_client_test.dart"},"type":"testStart","time":5984}
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+{"testID":13,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":6247}
+{"test":{"id":14,"name":"no Authorization header when signed out; 503 surfaces as DioException","suiteID":0,"groupIDs":[12],"metadata":{"skip":false,"skipReason":null},"line":75,"column":3,"url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/api_client_test.dart"},"type":"testStart","time":6249}
+{"testID":14,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":6288}
+{"suite":{"id":15,"platform":"vm","path":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_golden_test.dart"},"type":"suite","time":6351}
+{"test":{"id":16,"name":"loading /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_golden_test.dart","suiteID":15,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":6352}
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":6370}
+{"group":{"id":17,"suiteID":2,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":4,"line":null,"column":null,"url":null},"type":"group","time":6371}
+{"test":{"id":18,"name":"redirectFor signed out","suiteID":2,"groupIDs":[17],"metadata":{"skip":false,"skipReason":null},"line":52,"column":5,"url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart"},"type":"testStart","time":6371}
+{"testID":18,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":6460}
+{"test":{"id":19,"name":"redirectFor farmer","suiteID":2,"groupIDs":[17],"metadata":{"skip":false,"skipReason":null},"line":52,"column":5,"url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart"},"type":"testStart","time":6461}
+{"testID":19,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":6470}
+{"test":{"id":20,"name":"redirectFor field_officer","suiteID":2,"groupIDs":[17],"metadata":{"skip":false,"skipReason":null},"line":52,"column":5,"url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart"},"type":"testStart","time":6471}
+{"testID":20,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":6478}
+{"test":{"id":21,"name":"redirectFor qc","suiteID":2,"groupIDs":[17],"metadata":{"skip":false,"skipReason":null},"line":52,"column":5,"url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart"},"type":"testStart","time":6479}
+{"testID":21,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":6486}
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+{"testID":5,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":7148}
+{"group":{"id":22,"suiteID":4,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":1,"line":null,"column":null,"url":null},"type":"group","time":7149}
+{"test":{"id":23,"name":"language button switches the farmer screen from English to Tamil","suiteID":4,"groupIDs":[22],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":13,"root_column":3,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/locale_switch_test.dart"},"type":"testStart","time":7149}
+{"testID":7,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":7488}
+{"group":{"id":24,"suiteID":6,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":1,"line":null,"column":null,"url":null},"type":"group","time":7489}
+{"test":{"id":25,"name":"role redirect","suiteID":6,"groupIDs":[24],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":14,"root_column":3,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart"},"type":"testStart","time":7489}
+{"testID":9,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":8090}
+{"group":{"id":26,"suiteID":8,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":5,"line":null,"column":null,"url":null},"type":"group","time":8091}
+{"test":{"id":27,"name":"FarmerButton en 56 dp size and semantics","suiteID":8,"groupIDs":[26],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":20,"root_column":7,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_test.dart"},"type":"testStart","time":8091}
+{"testID":11,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":8123}
+{"group":{"id":28,"suiteID":10,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":4,"line":null,"column":null,"url":null},"type":"group","time":8126}
+{"test":{"id":29,"name":"system text scale 0.8 -> 10 sp renders at 10.0","suiteID":10,"groupIDs":[28],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":15,"root_column":5,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/text_scale_test.dart"},"type":"testStart","time":8126}
+{"testID":16,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":9026}
+{"group":{"id":30,"suiteID":15,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":4,"line":null,"column":null,"url":null},"type":"group","time":9027}
+{"test":{"id":31,"name":"FarmerButton en 56 dp golden","suiteID":15,"groupIDs":[30],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":32,"root_column":7,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_golden_test.dart"},"type":"testStart","time":9027}
+{"testID":27,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":10892}
+{"test":{"id":32,"name":"FarmerButton en 64 dp size and semantics","suiteID":8,"groupIDs":[26],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":20,"root_column":7,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_test.dart"},"type":"testStart","time":10893}
+{"testID":32,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11056}
+{"test":{"id":33,"name":"FarmerButton ta 56 dp size and semantics","suiteID":8,"groupIDs":[26],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":20,"root_column":7,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_test.dart"},"type":"testStart","time":11056}
+{"testID":23,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11065}
+{"testID":33,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11136}
+{"test":{"id":34,"name":"FarmerButton ta 64 dp size and semantics","suiteID":8,"groupIDs":[26],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":20,"root_column":7,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_test.dart"},"type":"testStart","time":11136}
+{"testID":34,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11216}
+{"test":{"id":35,"name":"FarmerButton rejects labels longer than two words","suiteID":8,"groupIDs":[26],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":38,"root_column":3,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_test.dart"},"type":"testStart","time":11217}
+{"testID":35,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11329}
+{"testID":29,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11430}
+{"test":{"id":36,"name":"system text scale 1.0 -> 10 sp renders at 10.0","suiteID":10,"groupIDs":[28],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":15,"root_column":5,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/text_scale_test.dart"},"type":"testStart","time":11430}
+{"testID":36,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11564}
+{"test":{"id":37,"name":"system text scale 1.3 -> 10 sp renders at 13.0","suiteID":10,"groupIDs":[28],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":15,"root_column":5,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/text_scale_test.dart"},"type":"testStart","time":11565}
+{"testID":37,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11659}
+{"test":{"id":38,"name":"system text scale 2.0 -> 10 sp renders at 15.0","suiteID":10,"groupIDs":[28],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":15,"root_column":5,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/text_scale_test.dart"},"type":"testStart","time":11660}
+{"testID":25,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11697}
+{"testID":31,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11746}
+{"test":{"id":39,"name":"FarmerButton en 64 dp golden","suiteID":15,"groupIDs":[30],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":32,"root_column":7,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_golden_test.dart"},"type":"testStart","time":11746}
+{"testID":38,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11760}
+{"testID":39,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11841}
+{"test":{"id":40,"name":"FarmerButton ta 56 dp golden","suiteID":15,"groupIDs":[30],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":32,"root_column":7,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_golden_test.dart"},"type":"testStart","time":11841}
+{"testID":40,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":11918}
+{"test":{"id":41,"name":"FarmerButton ta 64 dp golden","suiteID":15,"groupIDs":[30],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":32,"root_column":7,"root_url":"file:///Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/farmer_button_golden_test.dart"},"type":"testStart","time":11919}
+{"testID":41,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":12016}
+{"success":true,"type":"done","time":12057}

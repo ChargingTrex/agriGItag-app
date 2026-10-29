@@ -1,0 +1,166 @@
+$ env JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home bash tool/gen_api.sh (cwd: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile, 2026-10-29T18:08:04Z)
+[main] WARN  o.o.codegen.DefaultCodegen - OpenAPI 3.1 support is still in beta. To report an issue related to 3.1 spec, please kindly open an issue in the Github repo: https://github.com/openAPITools/openapi-generator.
+[main] INFO  o.o.codegen.DefaultGenerator - Generating with dryRun=false
+[main] INFO  o.o.codegen.DefaultGenerator - OpenAPI Generator: dart-dio (client)
+[main] INFO  o.o.codegen.DefaultGenerator - Generator 'dart-dio' is considered stable.
+[main] INFO  o.o.c.languages.AbstractDartCodegen - Environment variable DART_POST_PROCESS_FILE not defined so the Dart code may not be properly formatted. To define it, try `export DART_POST_PROCESS_FILE="/usr/local/bin/dartfmt -w"` (Linux/Mac)
+[main] INFO  o.o.c.languages.AbstractDartCodegen - NOTE: To enable file post-processing, 'enablePostProcessFile' must be set to `true` (--enable-post-process-file for CLI).
+[main] INFO  o.o.codegen.utils.URLPathUtils - 'host' (OAS 2.0) or 'servers' (OAS 3.0) not defined in the spec. Default to [http://localhost] for server URL [http://localhost/]
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/model/error_body.dart
+[main] INFO  o.o.codegen.TemplateManager - Ignored /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/test/error_body_test.dart (Ignored by rule in ignore file.)
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/doc/ErrorBody.md
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/model/error_envelope.dart
+[main] INFO  o.o.codegen.TemplateManager - Ignored /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/test/error_envelope_test.dart (Ignored by rule in ignore file.)
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/doc/ErrorEnvelope.md
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/model/health.dart
+[main] INFO  o.o.codegen.TemplateManager - Ignored /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/test/health_test.dart (Ignored by rule in ignore file.)
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/doc/Health.md
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/api/health_api.dart
+[main] INFO  o.o.codegen.TemplateManager - Ignored /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/test/health_api_test.dart (Ignored by rule in ignore file.)
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/doc/HealthApi.md
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/pubspec.yaml
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/analysis_options.yaml
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/.gitignore
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/README.md
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/agritrace_api.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/api.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/auth/api_key_auth.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/auth/basic_auth.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/auth/bearer_auth.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/auth/oauth.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/auth/auth.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/serializers.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/api_util.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/model/date.dart
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/lib/src/date_serializer.dart
+[main] INFO  o.o.codegen.TemplateManager - Skipped /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/.openapi-generator-ignore (Skipped by supportingFiles options supplied by user.)
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/.openapi-generator/VERSION
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api/.openapi-generator/FILES
+############################################################################################
+# Thanks for using OpenAPI Generator.                                                      #
+# We appreciate your support! Please consider donating to help us maintain this project.   #
+# https://opencollective.com/openapi_generator/donate                                      #
+############################################################################################
+Resolving dependencies...
+Downloading packages...
++ _fe_analyzer_shared 99.0.0 (110.0.0 available)
++ analyzer 12.1.0 (14.6.0 available)
++ args 2.7.0
++ async 2.13.1
++ boolean_selector 2.1.2
++ build 4.0.7 (5.0.0 available)
++ build_config 1.3.3 (1.4.0 available)
++ build_daemon 4.1.2 (4.1.7 available)
++ build_runner 2.15.1 (2.17.1 available)
++ built_collection 5.1.1 (6.0.0 available)
++ built_value 8.12.7 (8.13.0 available)
++ built_value_generator 8.12.5 (8.13.0 available)
++ checked_yaml 2.0.4
++ cli_config 0.2.0
++ cli_util 0.6.0
++ collection 1.19.1
++ convert 3.1.2
++ coverage 1.16.0
++ crypto 3.0.8
++ dart_style 3.1.8 (3.1.14 available)
++ dio 5.11.1
++ dio_web_adapter 2.2.2
++ ffi 2.2.0
++ file 7.0.1
++ fixnum 1.1.1
++ frontend_server_client 4.1.0 (4.2.0 available)
++ glob 2.2.0
++ graphs 2.3.2
++ http_multi_server 3.2.3
++ http_parser 4.1.2
++ io 1.1.0
++ json_annotation 4.12.0
++ logging 1.3.0
++ matcher 0.12.20
++ meta 1.19.0
++ mime 2.1.0
++ node_preamble 2.0.2
++ one_of 1.5.0
++ one_of_serializer 1.5.0
++ package_config 2.2.0 (3.0.0 available)
++ path 1.9.1
++ pool 1.5.3
++ pub_semver 2.2.1
++ pubspec_parse 1.7.0
++ quiver 3.2.2
++ shelf 1.4.3
++ shelf_packages_handler 3.0.2
++ shelf_static 1.2.0
++ shelf_web_socket 3.0.0
++ source_gen 4.2.4 (4.3.1 available)
++ source_map_stack_trace 2.1.2
++ source_maps 0.10.14
++ source_span 1.10.2
++ stack_trace 1.12.2
++ stream_channel 2.1.4
++ stream_transform 2.1.2
++ string_scanner 1.4.1
++ term_glyph 1.2.2
++ test 1.31.1 (1.33.0 available)
++ test_api 0.7.12 (0.7.15 available)
++ test_core 0.6.18 (0.6.21 available)
++ typed_data 1.4.0
++ vm_service 15.4.0
++ watcher 1.2.1
++ web 1.1.1 (1.1.2 available)
++ web_socket 1.0.1
++ web_socket_channel 3.0.3
++ webkit_inspection_protocol 1.2.1
++ yaml 3.1.4
+Changed 69 dependencies!
+17 packages have newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+  1s compiling builders/aot
+  2s compiling builders/aot
+  3s compiling builders/aot
+  4s compiling builders/aot
+  5s compiling builders/aot
+  6s compiling builders/aot
+  7s compiling builders/aot
+  8s compiling builders/aot
+  9s compiling builders/aot
+  10s compiling builders/aot
+  11s compiling builders/aot
+  12s compiling builders/aot
+  13s compiling builders/aot
+  15s compiling builders/aot
+  16s compiling builders/aot
+  17s compiling builders/aot
+  18s compiling builders/aot
+  19s compiling builders/aot
+  20s compiling builders/aot
+  21s compiling builders/aot
+  22s compiling builders/aot
+  23s compiling builders/aot
+  24s compiling builders/aot
+  25s compiling builders/aot
+  26s compiling builders/aot
+  27s compiling builders/aot
+  28s compiling builders/aot
+  29s compiling builders/aot
+  30s compiling builders/aot
+  31s compiling builders/aot
+  32s compiling builders/aot
+  34s compiling builders/aot
+  35s compiling builders/aot
+  36s compiling builders/aot
+  37s compiling builders/aot
+  38s compiling builders/aot
+  39s compiling builders/aot
+  40s compiling builders/aot
+  41s compiling builders/aot
+  42s compiling builders/aot
+  43s compiling builders/aot
+  0s built_value_generator:built_value on 15 inputs; lib/agritrace_api.dart
+  2s built_value_generator:built_value on 15 inputs: 11 not triggered, 1 output; spent 2s sdk; lib/src/model/error_envelope.dart
+  2s built_value_generator:built_value on 15 inputs: 11 not triggered, 4 output; spent 2s sdk
+  0s source_gen:combining_builder on 15 inputs; lib/agritrace_api.dart
+  0s source_gen:combining_builder on 15 inputs: 4 output, 11 no-op
+  Built with build_runner/aot in 46s; wrote 8 outputs.
+gen_api.sh: client written to /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/packages/agritrace_api
+exit=0

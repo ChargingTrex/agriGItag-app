@@ -1,0 +1,16 @@
+$ grep -rn "DECISION D-" lib tool
+lib/app.dart:28:      // DECISION D-016: Tamil and English ship in the app; Tamil is the default (session starts in ta).
+lib/core/api/api_client.dart:14:/// DECISION D-003: call the API only through the generated `agritrace_api` package; this class only
+lib/core/router/app_router.dart:37:/// DECISION D-013: go_router with one redirect function instead of per-route guards.
+lib/core/router/session.dart:48:/// DECISION D-013: Riverpod Notifier for session state, read by go_router's redirect.
+tool/size_check.sh:27:# DECISION D-002: the per-ABI arm64 APK is the number checked, in MiB; it is what a pilot phone downloads from
+
+# other DECISION comments outside lib/tool (android, pubspec)
+android/app/build.gradle.kts:28:        // DECISION D-002: Android 8+ (API 26) and iOS 13+ only.
+pubspec.yaml:36:    # DECISION D-016: Tamil ships inside the app so first run works offline with consistent glyphs.
+
+# each ID looked up in main /Users/fi-it/Documents/projects/agriGitag/DECISIONS.md
+D-002 present: 9:| D-002 | Flutter + Material 3 for Android and iOS, 100 MB hard size ceiling, 30 MB download target | 2026-10-29 | Accepted | [D-002.md](docs/adr/D-002.md) |
+D-003 present: 10:| D-003 | Monorepo with clients generated from one OpenAPI contract | 2026-10-29 | Accepted | [D-003.md](docs/adr/D-003.md) |
+D-013 present: 20:| D-013 | Riverpod and go_router in the Flutter app | 2026-10-29 | Accepted | [D-013.md](docs/adr/D-013.md) |
+D-016 present: 23:| D-016 | Tamil and English voice and icons bundled in the app; everything else as downloadable bundles | 2026-10-29 | Accepted | [D-016.md](docs/adr/D-016.md) |

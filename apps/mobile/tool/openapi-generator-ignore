@@ -1,0 +1,5 @@
+# Files openapi-generator must not write into packages/agritrace_api (copied there by tool/gen_api.sh).
+# The generated package is consumed as a library; its own test stubs, CI and git helpers are noise.
+test/**
+.travis.yml
+git_push.sh

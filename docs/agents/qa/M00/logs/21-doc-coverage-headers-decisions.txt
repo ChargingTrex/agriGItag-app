@@ -1,0 +1,6 @@
+# main's infra/scripts/doc-coverage.py: headers() and decision_refs() gates, ROOT = scratch dir with apps/ packages/ qa/ symlinked to the worktree (01c05f2) and main's DECISIONS.md.
+# language gates not re-run here: dart = flutter analyze --fatal-infos (log 03, PASS); python apps are not part of M00.
+('DECISION ids', 'DECISIONS.md', 'PASS', '17 comment(s) in apps, packages, infra, qa; 0 unknown')
+('file headers', 'apps/', 'PASS', '85 file(s); 0 without header')
+apps/mobile .dart files checked: 44
+exit=0

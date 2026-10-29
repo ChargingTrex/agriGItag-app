@@ -1,0 +1,22 @@
+success  skipped=False  healthz parses Health and sends device, auth headers and timeouts
+success  skipped=False  no Authorization header when signed out; 503 surfaces as DioException
+success  skipped=False  redirectFor signed out
+success  skipped=False  redirectFor farmer
+success  skipped=False  redirectFor field_officer
+success  skipped=False  redirectFor qc
+success  skipped=False  FarmerButton en 56 dp size and semantics
+success  skipped=False  FarmerButton en 64 dp size and semantics
+success  skipped=False  language button switches the farmer screen from English to Tamil
+success  skipped=False  FarmerButton ta 56 dp size and semantics
+success  skipped=False  FarmerButton ta 64 dp size and semantics
+success  skipped=False  FarmerButton rejects labels longer than two words
+success  skipped=False  system text scale 0.8 -> 10 sp renders at 10.0
+success  skipped=False  system text scale 1.0 -> 10 sp renders at 10.0
+success  skipped=False  system text scale 1.3 -> 10 sp renders at 13.0
+success  skipped=False  role redirect
+success  skipped=False  FarmerButton en 56 dp golden
+success  skipped=False  system text scale 2.0 -> 10 sp renders at 15.0
+success  skipped=False  FarmerButton en 64 dp golden
+success  skipped=False  FarmerButton ta 56 dp golden
+success  skipped=False  FarmerButton ta 64 dp golden
+total 21 success 21

@@ -1,0 +1,46 @@
+$ flutter test -x golden --reporter expanded (cwd: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile, 2026-10-29T18:06:54Z)
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 91.0.0 (110.0.0 available)
+  analyzer 8.4.1 (14.6.0 available)
+  built_collection 5.1.1 (6.0.0 available)
+  characters 1.4.0 (1.4.1 available)
+  clock 1.1.2 (1.1.3 available)
+  flutter_riverpod 3.3.2 (3.4.3 available)
+  frontend_server_client 4.1.0 (4.2.0 available)
+  go_router 17.5.0 (18.1.2 available)
+  intl 0.20.2 (0.20.3 available)
+  matcher 0.12.17 (0.12.20 available)
+  material_color_utilities 0.11.1 (0.13.1 available)
+  meta 1.17.0 (1.19.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  riverpod 3.3.2 (3.4.3 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test 1.26.3 (1.33.0 available)
+  test_api 0.7.7 (0.7.15 available)
+  test_core 0.6.12 (0.6.21 available)
+  vector_math 2.2.0 (2.4.4 available)
+  web 1.1.1 (1.1.2 available)
+Got dependencies!
+20 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/api_client_test.dart
+00:00 +0: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/api_client_test.dart: healthz parses Health and sends device, auth headers and timeouts
+00:00 +1: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/api_client_test.dart: no Authorization header when signed out; 503 surfaces as DioException
+00:00 +2: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart: redirectFor signed out
+00:00 +3: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart: redirectFor farmer
+00:00 +4: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart: redirectFor field_officer
+00:00 +5: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/unit/redirect_test.dart: redirectFor qc
+00:01 +6: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/locale_switch_test.dart: language button switches the farmer screen from English to Tamil
+00:05 +7: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:06 +8: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:06 +9: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:06 +10: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:06 +11: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:06 +12: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:06 +13: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:06 +14: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:07 +15: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/router_test.dart: role redirect
+00:07 +16: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ab56ce3a62f9a39df/apps/mobile/test/widget/text_scale_test.dart: system text scale 2.0 -> 10 sp renders at 15.0
+00:07 +17: All tests passed!
+exit=0
