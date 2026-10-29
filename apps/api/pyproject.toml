@@ -25,6 +25,8 @@ dependencies = [
     "httpx>=0.28",
     "shapely>=2.0",
     "pyproj>=3.6",
+    "pyjwt>=2.10",
+    "argon2-cffi>=23.1",
 ]
 
 [dependency-groups]

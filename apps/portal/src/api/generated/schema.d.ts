@@ -4,6 +4,279 @@
  */
 
 export interface paths {
+    "/v1/assist/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assist End
+         * @description End an assist session (idempotent).
+         *
+         *     Args:
+         *         body: the session id.
+         *         session: database session.
+         *         user: the field officer.
+         *
+         *     Returns:
+         *         The ended session.
+         *
+         *     Raises:
+         *         ForbiddenError: not a field officer.
+         *         NotFoundError: not this officer's session.
+         */
+        post: operations["assist_end_v1_assist_end_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assist/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assist Start
+         * @description Start entering data for a farmer; send the returned `id` as `X-Assist-Session` afterwards.
+         *
+         *     Idempotent by `client_id`: a retry returns the stored session.
+         *
+         *     Args:
+         *         body: client id, farmer, optional start time and position.
+         *         session: database session.
+         *         user: the field officer.
+         *
+         *     Returns:
+         *         The assist session.
+         *
+         *     Raises:
+         *         ForbiddenError: not a field officer.
+         *         NotFoundError: the farmer is not in the officer's FPO.
+         *         ConflictError: the client id belongs to another officer's or farmer's session.
+         */
+        post: operations["assist_start_v1_assist_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Logout
+         * @description Sign this device out: its refresh token and access tokens stop working.
+         *
+         *     Args:
+         *         user: the signed-in caller.
+         *         response: the outgoing response (the web refresh cookie is cleared).
+         *         session: database session.
+         *
+         *     Raises:
+         *         UnauthorizedError: not signed in.
+         *
+         *     Side effects:
+         *         Revokes the device; deletes the refresh cookie.
+         */
+        post: operations["logout_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Otp Request
+         * @description Send a 6-digit sign-in code by SMS (valid 5 minutes; one request per phone per 60 s).
+         *
+         *     The answer is the same for registered and unknown numbers.
+         *
+         *     Args:
+         *         body: the phone number.
+         *         session: database session.
+         *
+         *     Raises:
+         *         RateLimitedError: a code was requested for this phone less than 60 s ago.
+         *
+         *     Side effects:
+         *         Stores a hashed challenge; enqueues the SMS (not with `OTP_DEV_CODE` set, dev only).
+         */
+        post: operations["otp_request_v1_auth_otp_request_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Otp Verify
+         * @description Trade the SMS code for a session (farmers) or a `pin_token` (office roles, D-024).
+         *
+         *     Args:
+         *         body: phone, code and device details.
+         *         request: the incoming request (`X-Client: web` selects the cookie transport).
+         *         response: the outgoing response (refresh cookie for web).
+         *         session: database session.
+         *
+         *     Returns:
+         *         `{kind: "session", ...}` or `{kind: "pin_required", pin_token, expires_in, pin_set}`.
+         *
+         *     Raises:
+         *         OtpInvalidError: wrong code, or a phone that cannot sign in.
+         *         OtpExpiredError: the code is older than 5 minutes.
+         *         OtpLockedError: 5 wrong codes.
+         */
+        post: operations["otp_verify_v1_auth_otp_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pin Set
+         * @description Set or change the caller's 4-digit PIN (office roles); a change needs the current PIN.
+         *
+         *     Args:
+         *         body: the new PIN and, when one is set, the current PIN.
+         *         session: database session.
+         *         user: the signed-in office user.
+         *
+         *     Raises:
+         *         UnauthorizedError: not signed in.
+         *         ForbiddenError: farmers have no PIN.
+         *         PinInvalidError: the current PIN is missing or wrong.
+         *         PinLockedError: 5 wrong current PINs.
+         *
+         *     Side effects:
+         *         Stores the Argon2id hash and clears any PIN lock.
+         */
+        post: operations["pin_set_v1_auth_pin_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/pin/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pin Verify
+         * @description Trade the `pin_token` (as Bearer) and the 4-digit PIN for a full session.
+         *
+         *     On an office user's first sign-in (`pin_set: false`) the PIN sent here becomes their PIN.
+         *
+         *     Args:
+         *         body: the PIN.
+         *         request: the incoming request (`X-Client: web` selects the cookie transport).
+         *         response: the outgoing response (refresh cookie for web).
+         *         session: database session.
+         *         credentials: `Authorization: Bearer <pin_token>`.
+         *
+         *     Returns:
+         *         The session.
+         *
+         *     Raises:
+         *         UnauthorizedError: no pin token, an access/expired/forged token in its place, or a pin token
+         *             already used for a sign-in.
+         *         PinInvalidError: wrong PIN.
+         *         PinLockedError: 5 wrong PINs.
+         */
+        post: operations["pin_verify_v1_auth_pin_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh
+         * @description Rotate the refresh token and get a new 15-minute access token.
+         *
+         *     Mobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie.
+         *     A token read from the cookie is always answered through the cookie. Presenting the token rotated out
+         *     last signs the device out (`refresh_reused`).
+         *
+         *     Args:
+         *         body: the refresh token (mobile) or nothing (web).
+         *         request: the incoming request (cookie and `X-Client`).
+         *         response: the outgoing response (new cookie for web).
+         *         session: database session.
+         *
+         *     Returns:
+         *         A new session; the old refresh token is now invalid.
+         *
+         *     Raises:
+         *         UnauthorizedError: no or unknown token, signed-out device.
+         *         RefreshReusedError: reuse of a rotated token.
+         */
+        post: operations["refresh_v1_auth_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/batches/{batch_id}/grade": {
         parameters: {
             query?: never;
@@ -58,6 +331,71 @@ export interface paths {
         get: operations["list_batch_readings_v1_batches__batch_id__readings_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Consent Create
+         * @description Record a farmer's consent (the farmer, or an officer in assist mode); idempotent by `client_id`.
+         *
+         *     Args:
+         *         body: the consent.
+         *         user: the caller.
+         *         session: database session.
+         *
+         *     Returns:
+         *         The stored consent.
+         *
+         *     Raises:
+         *         ForbiddenError: an officer outside assist mode for this farmer.
+         *         NotFoundError: the farmer is outside the caller's scope.
+         *         ConsentConflictError: the client id holds a different consent.
+         */
+        post: operations["consent_create_v1_consents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/consents/{consent_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Consent Revoke
+         * @description Withdraw a consent (sets `revoked_at` only; the record itself is kept).
+         *
+         *     Args:
+         *         consent_id: the consent.
+         *         user: the farmer, or an officer in assist mode for that farmer.
+         *         session: database session.
+         *
+         *     Returns:
+         *         The consent with `revoked_at` set.
+         *
+         *     Raises:
+         *         NotFoundError: unknown consent or outside the caller's scope.
+         *         ForbiddenError: an officer outside assist mode for this farmer.
+         */
+        post: operations["consent_revoke_v1_consents__consent_id__revoke_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -146,6 +484,37 @@ export interface paths {
          * @description Approve a pending farmer as a genuine member (FPO admin).
          */
         post: operations["approve_farmer_v1_farmers__farmer_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consent List
+         * @description List a farmer's consents (revoked included), oldest first.
+         *
+         *     Args:
+         *         farmer_id: the farmer.
+         *         user: the farmer themself or any role in the same FPO.
+         *         session: database session.
+         *
+         *     Returns:
+         *         One page holding every consent of the farmer.
+         *
+         *     Raises:
+         *         NotFoundError: the farmer is outside the caller's scope.
+         */
+        get: operations["consent_list_v1_farmers__farmer_id__consents_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -316,6 +685,36 @@ export interface paths {
          * @description Drying-end and intake readings of a lot (its moisture trail, Dataflow Stages 5 and 7).
          */
         get: operations["list_lot_readings_v1_lots__lot_id__readings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Me
+         * @description Return the signed-in user, their FPO memberships and this session's device.
+         *
+         *     Args:
+         *         user: the signed-in caller.
+         *         session: database session.
+         *
+         *     Returns:
+         *         Profile, memberships and device.
+         *
+         *     Raises:
+         *         UnauthorizedError: not signed in.
+         */
+        get: operations["me_v1_me_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -551,6 +950,166 @@ export interface components {
             village?: string | null;
         };
         /**
+         * AssistEndIn
+         * @description Close an assist session.
+         */
+        AssistEndIn: {
+            /**
+             * Assist Session Id
+             * Format: uuid
+             * @description The session to end (its client id).
+             */
+            assist_session_id: string;
+        };
+        /**
+         * AssistSessionOut
+         * @description An assist session; send its `id` as `X-Assist-Session` on every request made for the farmer.
+         */
+        AssistSessionOut: {
+            /**
+             * Ended At
+             * @description When it ended; null while open.
+             */
+            ended_at: string | null;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer being assisted.
+             */
+            farmer_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Assist session id (the client id it was started with).
+             */
+            id: string;
+            /**
+             * Officer User Id
+             * Format: uuid
+             * @description Field officer doing the entries.
+             */
+            officer_user_id: string;
+            /**
+             * Started At
+             * Format: date-time
+             * @description When the session started.
+             */
+            started_at: string;
+        };
+        /**
+         * AssistStartIn
+         * @description Start entering data on a farmer's behalf; `client_id` becomes the assist session id (D-005).
+         */
+        AssistStartIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 generated on the device; resending it is a no-op.
+             */
+            client_id: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer being assisted; must be in the officer's FPO.
+             */
+            farmer_id: string;
+            /**
+             * Started At
+             * @description Device time the session started (offline start); defaults to server time.
+             */
+            started_at?: string | null;
+            /** @description Where the session started, if a fix was taken. */
+            started_gps?: components["schemas"]["GeoPoint"] | null;
+        };
+        /**
+         * ConsentIn
+         * @description Record a farmer's consent; resending the same `client_id` returns the stored record (D-005).
+         */
+        ConsentIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 generated on the device; resending it is a no-op.
+             */
+            client_id: string;
+            /** @description What is consented to. */
+            consent_type: components["schemas"]["ConsentType"];
+            /**
+             * Consent Version
+             * @description Version of the consent text played, e.g. `v1-ta`.
+             */
+            consent_version: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer who consents (the caller, or the assisted farmer).
+             */
+            farmer_id: string;
+            /**
+             * Given At
+             * Format: date-time
+             * @description When the farmer agreed (device clock), ISO 8601.
+             */
+            given_at: string;
+            /**
+             * Recording Ref
+             * @description Object key of the consent recording played or captured, if any.
+             */
+            recording_ref?: string | null;
+        };
+        /**
+         * ConsentOut
+         * @description A stored consent record.
+         */
+        ConsentOut: {
+            /** @description What was consented to. */
+            consent_type: components["schemas"]["ConsentType"];
+            /**
+             * Consent Version
+             * @description Version of the consent text.
+             */
+            consent_version: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer who consented.
+             */
+            farmer_id: string;
+            /**
+             * Given At
+             * Format: date-time
+             * @description When consent was given.
+             */
+            given_at: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Consent id (the client id it was recorded with).
+             */
+            id: string;
+            /**
+             * Recording Ref
+             * @description Object key of the recording, if any.
+             */
+            recording_ref: string | null;
+            /**
+             * Revoked At
+             * @description When it was withdrawn; null while in force.
+             */
+            revoked_at: string | null;
+            /**
+             * Witnessed By User Id
+             * @description Officer who witnessed it (assist mode).
+             */
+            witnessed_by_user_id: string | null;
+        };
+        /**
+         * ConsentType
+         * @description What a farmer consented to (FR41, CLAUDE.md §6).
+         * @enum {string}
+         */
+        ConsentType: "data_collection" | "public_name" | "partner_share";
+        /**
          * CropOut
          * @description A crop farmers can grow, with its GI tag and event schema (FR22, FR55).
          */
@@ -598,6 +1157,33 @@ export interface components {
              * @description Crop name in the local script.
              */
             name_local: string | null;
+        };
+        /**
+         * DeviceOut
+         * @description The device this session is tied to.
+         */
+        DeviceOut: {
+            /**
+             * App Version
+             * @description App version last reported.
+             */
+            app_version: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Device id generated by the app.
+             */
+            id: string;
+            /**
+             * Last Seen At
+             * @description Last sign-in or token refresh from it.
+             */
+            last_seen_at: string | null;
+            /**
+             * Platform
+             * @description `android`, `ios` or `web`.
+             */
+            platform: string;
         };
         /**
          * ErrorBody
@@ -1413,6 +1999,35 @@ export interface components {
             stage: components["schemas"]["ReadingStage"];
         };
         /**
+         * MeOut
+         * @description Who is signed in, where, and on which device.
+         */
+        MeOut: {
+            /** @description The device of this session; null if it was deleted. */
+            device: components["schemas"]["DeviceOut"] | null;
+            /**
+             * Memberships
+             * @description Every FPO role of the user, oldest first.
+             */
+            memberships: components["schemas"]["MembershipOut"][];
+            /** @description The user. */
+            user: components["schemas"]["UserOut"];
+        };
+        /**
+         * MembershipOut
+         * @description One role in one FPO.
+         */
+        MembershipOut: {
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description The FPO.
+             */
+            fpo_id: string;
+            /** @description Role inside that FPO. */
+            role: components["schemas"]["Role"];
+        };
+        /**
          * MultiPolygonGeoJSON
          * @description A GeoJSON MultiPolygon in WGS84, e.g. a GI production-area outline (FR27).
          */
@@ -1435,6 +2050,68 @@ export interface components {
          * @enum {string}
          */
         OrgKind: "fpo" | "company" | "coop";
+        /**
+         * OtpRequestIn
+         * @description Ask for a one-time code by SMS.
+         */
+        OtpRequestIn: {
+            /**
+             * Phone
+             * @description Mobile number in E.164 form, e.g. `+919876543210`.
+             */
+            phone: string;
+        };
+        /**
+         * OtpVerifyIn
+         * @description Trade the SMS code for a session (farmers) or a `pin_token` (office roles).
+         */
+        OtpVerifyIn: {
+            /**
+             * App Version
+             * @description App version, e.g. `1.0.3`.
+             */
+            app_version?: string | null;
+            /**
+             * Code
+             * @description The 6-digit code from the SMS.
+             */
+            code: string;
+            /**
+             * Device Id
+             * Format: uuid
+             * @description UUID the app generated once per installation; the session is tied to it (D-005).
+             */
+            device_id: string;
+            /**
+             * Phone
+             * @description The number the code was sent to, E.164.
+             */
+            phone: string;
+            /**
+             * Platform
+             * @description Client platform of this device.
+             * @enum {string}
+             */
+            platform: "android" | "ios" | "web";
+        };
+        /** Page[ConsentOut] */
+        Page_ConsentOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["ConsentOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
         /** Page[FarmerOut] */
         Page_FarmerOut_: {
             /**
@@ -1763,11 +2440,64 @@ export interface components {
             value?: string | null;
         };
         /**
+         * PinChangeIn
+         * @description Set the office PIN (first time) or change it (the current PIN is then required).
+         */
+        PinChangeIn: {
+            /**
+             * Current Pin
+             * @description The PIN in force; required when a PIN is already set.
+             */
+            current_pin?: string | null;
+            /**
+             * Pin
+             * @description Exactly 4 digits.
+             */
+            pin: string;
+        };
+        /**
+         * PinIn
+         * @description A 4-digit office PIN.
+         */
+        PinIn: {
+            /**
+             * Pin
+             * @description Exactly 4 digits.
+             */
+            pin: string;
+        };
+        /**
          * PinMethod
          * @description How a plot pin was placed (FR64).
          * @enum {string}
          */
         PinMethod: "live_gps" | "map_pin";
+        /**
+         * PinRequiredOut
+         * @description The OTP passed for an office role; the PIN step must follow before any session is released.
+         */
+        PinRequiredOut: {
+            /**
+             * Expires In
+             * @description Pin token lifetime in seconds (300).
+             */
+            expires_in: number;
+            /**
+             * @description Discriminator: PIN step next. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            kind: "pin_required";
+            /**
+             * Pin Set
+             * @description False on first sign-in: the PIN sent to `/v1/auth/pin/verify` becomes the user's PIN.
+             */
+            pin_set: boolean;
+            /**
+             * Pin Token
+             * @description Single-purpose token for `POST /v1/auth/pin/verify` only; carries no role or FPO.
+             */
+            pin_token: string;
+        };
         /**
          * PlotCorrection
          * @description An FPO admin's correction of an onboarded plot; only the fields sent change (FR70, FR71).
@@ -2414,6 +3144,17 @@ export interface components {
          */
         ReadingStage: "drying_end" | "intake" | "grading" | "storage";
         /**
+         * RefreshIn
+         * @description Rotate the refresh token. Web clients omit the body field and send the httpOnly cookie.
+         */
+        RefreshIn: {
+            /**
+             * Refresh Token
+             * @description The current refresh token; omit when the cookie carries it (web).
+             */
+            refresh_token?: string | null;
+        };
+        /**
          * RegionCheckOut
          * @description Result of the automatic GI region check run on create or correct (FR67).
          */
@@ -2440,6 +3181,49 @@ export interface components {
              * @enum {string}
              */
             status: "inside" | "near_edge" | "outside";
+        };
+        /**
+         * Role
+         * @description A user's role inside one FPO (FR14, Dataflow §3 role matrix).
+         * @enum {string}
+         */
+        Role: "farmer" | "field_officer" | "qc_officer" | "fpo_admin" | "viewer";
+        /**
+         * SessionOut
+         * @description A signed-in session: short-lived access token plus the device's refresh token.
+         */
+        SessionOut: {
+            /**
+             * Access Token
+             * @description JWT for `Authorization: Bearer`; expires after `expires_in` s.
+             */
+            access_token: string;
+            /**
+             * Expires In
+             * @description Access token lifetime in seconds (900).
+             */
+            expires_in: number;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description FPO the session is scoped to (the user's first membership).
+             */
+            fpo_id: string;
+            /**
+             * @description Discriminator: a full session. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            kind: "session";
+            /**
+             * Refresh Token
+             * @description Opaque token for `POST /v1/auth/refresh`, rotated on every use. Null for web clients (`X-Client: web`), which receive it as an httpOnly cookie instead (D-022).
+             */
+            refresh_token: string | null;
+            /**
+             * Roles
+             * @description Roles in force: the membership role (`farmer`, `field_officer`, `qc_officer`, `fpo_admin`, `viewer`), plus `super_admin` when the user holds that flag.
+             */
+            roles: string[];
         };
         /**
          * SignedQuantity
@@ -2713,6 +3497,43 @@ export interface components {
             tolerance: number;
         };
         /**
+         * UserOut
+         * @description The signed-in user's own profile.
+         */
+        UserOut: {
+            /**
+             * Id
+             * Format: uuid
+             * @description User id.
+             */
+            id: string;
+            /**
+             * Is Super Admin
+             * @description Platform compliance team flag.
+             */
+            is_super_admin: boolean;
+            /**
+             * Lang
+             * @description Preferred UI language: `ta` or `en`.
+             */
+            lang: string;
+            /**
+             * Name
+             * @description Display name in English script.
+             */
+            name: string;
+            /**
+             * Name Local
+             * @description Display name in the local script (Tamil).
+             */
+            name_local: string | null;
+            /**
+             * Phone
+             * @description The user's own mobile number, E.164.
+             */
+            phone: string;
+        };
+        /**
          * VillageOut
          * @description A village from the LGD directory, as offered in the onboarding picker (FR53).
          */
@@ -2825,10 +3646,352 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get_batch_grade_v1_batches__batch_id__grade_get: {
+    assist_end_v1_assist_end_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistEndIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistSessionOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    assist_start_v1_assist_start_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistSessionOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    logout_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    otp_request_v1_auth_otp_request_post: {
         parameters: {
             query?: never;
             header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OtpRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `rate_limited`. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    otp_verify_v1_auth_otp_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OtpVerifyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"] | components["schemas"]["PinRequiredOut"];
+                };
+            };
+            /** @description `otp_locked` after 5 wrong codes. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `otp_invalid`, `otp_expired` or `validation_error`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    pin_set_v1_auth_pin_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PinChangeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `pin_locked` after 5 wrong current PINs. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `pin_invalid`: current PIN missing or wrong. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    pin_verify_v1_auth_pin_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PinIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description Missing, expired or wrong-type pin token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `pin_locked` for 5 minutes after 5 wrong PINs. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `pin_invalid`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    refresh_v1_auth_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description `unauthorized` (signed out) or `refresh_reused` (device revoked). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_batch_grade_v1_batches__batch_id__grade_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Batch id. */
                 batch_id: string;
@@ -2878,7 +4041,12 @@ export interface operations {
     grade_batch_v1_batches__batch_id__grading_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Batch id. */
                 batch_id: string;
@@ -2946,7 +4114,12 @@ export interface operations {
                 /** @description Page size, 1–200. */
                 limit?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Batch id. */
                 batch_id: string;
@@ -2993,10 +4166,89 @@ export interface operations {
             };
         };
     };
+    consent_create_v1_consents_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    consent_revoke_v1_consents__consent_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                consent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_crops_v1_crops_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3032,7 +4284,12 @@ export interface operations {
                 /** @description Status filter. */
                 status?: components["schemas"]["FarmerStatus"] | null;
             };
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3061,7 +4318,12 @@ export interface operations {
     create_farmer_v1_farmers_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3094,7 +4356,12 @@ export interface operations {
     get_farmer_v1_farmers__farmer_id__get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Farmer id. */
                 farmer_id: string;
@@ -3126,7 +4393,12 @@ export interface operations {
     update_farmer_v1_farmers__farmer_id__patch: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Farmer id. */
                 farmer_id: string;
@@ -3162,7 +4434,12 @@ export interface operations {
     approve_farmer_v1_farmers__farmer_id__approve_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Farmer id. */
                 farmer_id: string;
@@ -3191,10 +4468,51 @@ export interface operations {
             };
         };
     };
+    consent_list_v1_farmers__farmer_id__consents_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ConsentOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_fpos_v1_fpos_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3223,7 +4541,12 @@ export interface operations {
     create_fpo_v1_fpos_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3256,7 +4579,12 @@ export interface operations {
     get_region_v1_gi_tags__gi_tag_id__region_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description GI tag id. */
                 gi_tag_id: string;
@@ -3288,7 +4616,12 @@ export interface operations {
     create_region_version_v1_gi_tags__gi_tag_id__region_versions_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description GI tag id. */
                 gi_tag_id: string;
@@ -3391,7 +4724,12 @@ export interface operations {
     list_inputs_v1_inputs_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3420,7 +4758,12 @@ export interface operations {
     create_input_v1_inputs_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3460,7 +4803,12 @@ export interface operations {
                 /** @description Page size, 1–200. */
                 limit?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3489,7 +4837,12 @@ export interface operations {
     create_instrument_v1_instruments_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3545,7 +4898,12 @@ export interface operations {
                 /** @description Page size, 1–200. */
                 limit?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Lot id. */
                 lot_id: string;
@@ -3583,10 +4941,49 @@ export interface operations {
             };
         };
     };
+    me_v1_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     create_plot_v1_plots_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3628,7 +5025,12 @@ export interface operations {
     get_plot_v1_plots__plot_id__get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Plot id (client-generated, D-005). */
                 plot_id: string;
@@ -3660,7 +5062,12 @@ export interface operations {
     correct_plot_v1_plots__plot_id__correct_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Plot id (client-generated, D-005). */
                 plot_id: string;
@@ -3696,7 +5103,12 @@ export interface operations {
     list_processors_v1_processors_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3725,7 +5137,12 @@ export interface operations {
     create_processor_v1_processors_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3758,7 +5175,12 @@ export interface operations {
     create_quality_reading_v1_quality_readings_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3843,7 +5265,12 @@ export interface operations {
                 /** @description Page size, 1–200. */
                 limit?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -3872,7 +5299,12 @@ export interface operations {
     create_standards_profile_version_v1_standards_profiles__profile_id__versions_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Profile id. */
                 profile_id: string;
@@ -3935,7 +5367,12 @@ export interface operations {
     get_standards_profile_version_v1_standards_profiles__profile_id__versions__version_no__get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path: {
                 /** @description Profile id. */
                 profile_id: string;
@@ -3989,7 +5426,12 @@ export interface operations {
                 /** @description Part of the village name. */
                 q?: string | null;
             };
-            header?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };

@@ -4,7 +4,9 @@
  * Serves: docs/api/conventions.md "Error envelope". Called by: src/api/errors.ts.
  */
 export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
+  refresh_reused: "This sign-in was used elsewhere and has been closed.",
   unauthorized: "Sign-in is required.",
+  assist_session_invalid: "The assist session is not open for you.",
   forbidden: "Your role does not allow this action.",
   gi_region_missing: "No GI region is loaded for this GI tag yet.",
   not_found: "Not found.",
@@ -12,9 +14,13 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   append_only_violation: "Records of this kind cannot be changed or deleted.",
   client_id_conflict: "This id is already used by another record.",
   conflict: "The request conflicts with the current state.",
+  consent_conflict: "A different consent was already saved with this id.",
+  device_in_use: "This device is signed in for another user.",
   farmer_not_pending: "This farmer is not waiting for approval.",
   farmer_phone_taken: "Another farmer in this FPO already has this phone number.",
   gate_not_met: "The conditions for this step are not met yet.",
+  otp_locked: "Too many wrong codes.",
+  pin_locked: "Too many wrong PINs; try again in 5 minutes.",
   plot_locked: "The plot location is locked after onboarding.",
   payload_too_large: "The request is too large.",
   implausible_value: "The value is outside the plausible range for this parameter.",
@@ -22,6 +28,9 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   invalid_geometry: "The shape is not a valid outline.",
   moisture_trail_violation: "The value rose since the previous stage.",
   no_published_profile: "The crop has no published standards profile.",
+  otp_expired: "The code has expired.",
+  otp_invalid: "The code is not correct.",
+  pin_invalid: "The PIN is not correct.",
   profile_incomplete_not_allowed: "Some grading parameters have no limits yet (load_from_standard).",
   reason_required: "A reason is required for this correction.",
   source_not_allowed: "This measurement source is not accepted for this parameter.",
