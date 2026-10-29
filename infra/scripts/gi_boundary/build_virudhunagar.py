@@ -33,6 +33,7 @@ from shapely.geometry.base import BaseGeometry
 
 HERE = pathlib.Path(__file__).resolve().parent
 SCRIPT_REF = "infra/scripts/gi_boundary/build_virudhunagar.py"
+ATTRIBUTION = "Boundary data © geoBoundaries contributors, ODbL-1.0; derived region shared under ODbL-1.0"
 
 
 def norm(name: object) -> str:
@@ -151,6 +152,9 @@ def build(args: argparse.Namespace) -> int:
     digest = hashlib.sha256(args.subdistricts.read_bytes()).hexdigest()[:16]
     common = {
         "licence": args.licence,
+        "attribution": args.attribution,
+        # ODbL-1.0 §4.4: a derived database we publish is offered under the same licence.
+        "share_alike": args.licence.upper().startswith("ODBL"),
         "confidence": "district_derived",
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "district": args.district,
@@ -238,6 +242,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--taluks", type=pathlib.Path, default=HERE / "taluks.json", help="GI taluk list")
     parser.add_argument("--source-url", help="where the sub-district file was downloaded from (recorded)")
     parser.add_argument("--licence", help="licence of the source data, e.g. ODbL-1.0 (recorded)")
+    parser.add_argument(
+        "--attribution",
+        default=ATTRIBUTION,
+        help="attribution line written into the outputs (change it for a non-geoBoundaries source)",
+    )
     parser.add_argument("--buffer-m", type=float, default=150.0, help="tolerance buffer in metres (FR32)")
     parser.add_argument("--out", type=pathlib.Path, default=pathlib.Path("."), help="output directory")
     parser.add_argument(

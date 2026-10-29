@@ -106,6 +106,8 @@ def test_builds_v0_district_and_v1_taluk_union_with_provenance(subdistricts: Pat
         assert props["version_no"] == version and props["licence"] == "ODbL-1.0"
         assert props["confidence"] == "district_derived" and URL in props["source_ref"]
         assert props["built_at"] and props["tolerance_buffer_m"] == 150
+        assert props["attribution"].startswith("Boundary data © geoBoundaries")
+        assert props["share_alike"] is True
     assert v1["properties"]["taluks"] == ["Sattur", "Aruppukottai", "Tiruchuli"]
     assert v1["properties"]["taluks_confirmed"] is False
     sivakasi, madurai, reference = Point(78.2, 9.45), Point(78.1, 9.9), Point(78.133521, 9.559806)

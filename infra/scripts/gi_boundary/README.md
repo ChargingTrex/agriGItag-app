@@ -9,7 +9,9 @@ outline from an open sub-district (taluk) boundary file, and records where they 
 | `gi_region_v1.geojson` | 1 | Union of the taluks in `taluks.json` (Sattur, Aruppukottai, Tiruchuli; `confirmed: false`) |
 
 Each is a FeatureCollection with one MultiPolygon feature whose properties are `version_no`, `source_ref`
-(download URL, file name and SHA-256 prefix, build method), `licence`, `confidence: district_derived`,
+(download URL, file name and SHA-256 prefix, build method), `licence`, `attribution` (default "Boundary
+data © geoBoundaries contributors, ODbL-1.0; derived region shared under ODbL-1.0", `--attribution` to
+change it), `share_alike` (true for an ODbL source), `confidence: district_derived`,
 `taluks`, `taluks_confirmed`, `built_at`, `district`, `tolerance_buffer_m` (150). The script prints one
 JSON line per version: these are the fields of `POST /v1/gi-tags/{id}/region-versions` (put the file's
 `geometry` in `geometry`). Nothing is downloaded by the script or by CI.
@@ -24,8 +26,8 @@ JSON line per version: these are the fields of `POST /v1/gi-tags/{id}/region-ver
 - Source named by geoBoundaries: Pathways Data Pvt. Ltd., lgdirectory.gov.in (LGD sub-districts).
 - Licence: **Open Data Commons Open Database License 1.0 (ODbL-1.0)**. Use is commercial-safe with
   attribution; a *published derived database* must be offered under ODbL too. Our derived outline is
-  shown only as a simplified boundary map, with attribution "Boundaries © geoBoundaries / Pathways Data,
-  ODbL".
+  shown only as a simplified boundary map, with the `attribution` line from the output files. The API
+  stores `attribution` and `share_alike` inside `source_ref` (no column for them yet).
 
 Why not the file D-019 names: the Datameet maps repository (<https://github.com/datameet/maps>, CC BY 4.0)
 has Census 2011 **district** outlines (`Districts/Census_2011/2011_Dist.shp`) but no sub-district layer,

@@ -48,8 +48,9 @@ class GeoResult:
 # DECISION D-019: the region check uses the latest effective `gi_region_versions` row and its own buffer.
 #   ADV: an official or better outline replaces the district/taluk-derived one by inserting a version;
 #     no code or schema change, and old checks stay explainable by version id.
-#   COMPROMISE: the outline is an approximation (2011-era admin boundaries), so points within the buffer
-#     are `near_edge` (reviewed, FR70), never silently confirmed or rejected.
+#   COMPROMISE: the outline is an approximation (taluk outlines from geoBoundaries / LGD, ODbL-1.0, not the
+#     GI registry's own map), so points within the buffer are `near_edge` (reviewed, FR70), never silently
+#     confirmed or rejected.
 # ST_Covers (not ST_Contains) so a pin exactly on the outline counts as inside; geography keeps metres.
 _LOCATE_SQL = text(
     """
@@ -165,8 +166,8 @@ async def simplify_region(
     Args:
         session: open database session.
         region_version_id: `gi_region_versions.id` to simplify.
-        tolerance_m: Douglas-Peucker tolerance in metres (converted to degrees at the equator rate;
-            slightly coarser east-west at 9° N, which is harmless at 50 m).
+        tolerance_m: Douglas-Peucker tolerance in metres (converted to degrees at the latitude rate;
+            slightly finer east-west at 9° N, about 49.4 m for 50 m, which is harmless).
 
     Returns:
         GeoJSON geometry dict (MultiPolygon or Polygon), coordinates rounded to 6 decimal places.

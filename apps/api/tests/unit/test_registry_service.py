@@ -13,6 +13,7 @@ from typing import Any
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from pydantic import ValidationError
 
 from agritrace.core.auth import CurrentUser, get_current_user
 from agritrace.core.db import get_session
@@ -21,13 +22,14 @@ from agritrace.core.errors import ValidationFailedError
 from agritrace.core.schemas import Address, Quantity
 from agritrace.main import create_app
 from agritrace.modules.registry.geo import GeoResult
-from agritrace.modules.registry.schemas import format_address
+from agritrace.modules.registry.schemas import GiRegionVersionIn, PlotCorrection, format_address
 from agritrace.modules.registry.service import (
     _page,
     area_gap,
     decode_cursor,
     encode_cursor,
     location_status,
+    region_source_ref,
     to_acres,
 )
 
@@ -63,7 +65,8 @@ def test_to_acres_accepts_acres_and_cents_only() -> None:
     """100 cents = 1 acre; other units and zero are refused."""
     assert to_acres(Quantity(value=Decimal("150"), unit="cents")) == Decimal("1.500")
     assert to_acres(Quantity(value=Decimal("2.5"), unit="acre")) == Decimal("2.500")
-    for bad in (Quantity(value=Decimal("1"), unit="ha"), Quantity(value=Decimal("0"), unit="acre")):
+    tiny = (Quantity(value=Decimal("0.04"), unit="cent"), Quantity(value=Decimal("0.004"), unit="acre"))
+    for bad in (Quantity(value=Decimal("1"), unit="ha"), Quantity(value=Decimal("0"), unit="acre"), *tiny):
         with pytest.raises(ValidationFailedError):
             to_acres(bad)
 
@@ -81,14 +84,46 @@ def _geo(status: str) -> GeoResult:
 
 
 def test_location_status_mapping() -> None:
-    """Live pin: inside→confirmed, near_edge, outside; unreviewed map pin or no region→needs_review."""
-    live = PinMethod.LIVE_GPS
-    assert location_status(_geo("inside"), live, reviewed=False) == LocationStatus.CONFIRMED
-    assert location_status(_geo("near_edge"), live, reviewed=False) == LocationStatus.NEAR_EDGE
-    assert location_status(_geo("outside"), live, reviewed=False) == LocationStatus.OUTSIDE
-    assert location_status(None, live, reviewed=False) == LocationStatus.NEEDS_REVIEW
-    assert location_status(_geo("inside"), PinMethod.MAP_PIN, reviewed=False) == LocationStatus.NEEDS_REVIEW
-    assert location_status(_geo("inside"), PinMethod.MAP_PIN, reviewed=True) == LocationStatus.CONFIRMED
+    """Live pin follows the check; a map pin needs an accepted review; a rejected review never confirms."""
+    live, mapped = PinMethod.LIVE_GPS, PinMethod.MAP_PIN
+    assert location_status(_geo("inside"), live, None) == LocationStatus.CONFIRMED
+    assert location_status(_geo("near_edge"), live, None) == LocationStatus.NEAR_EDGE
+    assert location_status(_geo("outside"), live, None) == LocationStatus.OUTSIDE
+    assert location_status(None, live, None) == LocationStatus.NEEDS_REVIEW
+    assert location_status(_geo("inside"), mapped, None) == LocationStatus.NEEDS_REVIEW
+    assert location_status(_geo("inside"), mapped, "accepted") == LocationStatus.CONFIRMED
+    assert location_status(_geo("inside"), mapped, "rejected") == LocationStatus.NEEDS_REVIEW
+    assert location_status(_geo("inside"), live, "rejected") == LocationStatus.NEEDS_REVIEW
+
+
+def test_review_method_and_outcome_come_together() -> None:
+    """A review is recorded only with both its method and an `accepted`/`rejected` outcome (FR70)."""
+    assert PlotCorrection(reason_code="x", review_method="field_visit", review_outcome="rejected")
+    for partial in ({"review_method": "satellite"}, {"review_outcome": "accepted"}, {"review_outcome": "ok"}):
+        with pytest.raises(ValidationError):
+            PlotCorrection.model_validate({"reason_code": "x", **partial})
+
+
+def test_region_version_requires_taluks_confidence_and_attribution() -> None:
+    """D-019 provenance is mandatory; attribution and share-alike are folded into `source_ref`."""
+    base = {
+        "geometry": {"type": "MultiPolygon", "coordinates": [[[[78, 9], [78.1, 9], [78.1, 9.1], [78, 9]]]]},
+        "tolerance_buffer_m": 150,
+        "source_ref": "https://example.org/adm3.geojson",
+        "licence": "ODbL-1.0",
+        "taluks": ["Sattur"],
+        "confidence": "district_derived",
+        "attribution": "Boundary data © geoBoundaries contributors, ODbL-1.0",
+        "share_alike": True,
+    }
+    body = GiRegionVersionIn.model_validate(base)
+    assert region_source_ref(body) == (
+        "https://example.org/adm3.geojson; attribution: Boundary data © geoBoundaries contributors, "
+        "ODbL-1.0; share_alike: true"
+    )
+    for bad in ({"taluks": []}, {"taluks": None}, {"confidence": "surveyed"}, {"confidence": None}):
+        with pytest.raises(ValidationError):
+            GiRegionVersionIn.model_validate(base | bad)
 
 
 def test_address_line_has_no_repeated_segment() -> None:
@@ -107,12 +142,17 @@ def test_cursor_round_trip_and_paging() -> None:
     """Cursors round-trip, garbage is a validation error, and a page knows whether more follow."""
     cursor = encode_cursor(["Tiruchuli", "018f0000-0000-7000-8000-000000000000"])
     assert decode_cursor(cursor, 2) == ["Tiruchuli", "018f0000-0000-7000-8000-000000000000"]
-    for bad in ("not-base64!", encode_cursor(["only-one"])):
+    for bad in ("not-base64!", encode_cursor(["only-one"]), encode_cursor(["Abc", "not-a-uuid"])):
         with pytest.raises(ValidationFailedError):
             decode_cursor(bad, 2)
-    items, next_cursor, has_more = _page([1, 2, 3], 2, lambda n: [str(n)])
-    assert (items, has_more) == ([1, 2], True) and next_cursor and decode_cursor(next_cursor, 1) == ["2"]
-    assert _page([1, 2], 2, lambda n: [str(n)]) == ([1, 2], None, False)
+    ids = [uuid.uuid4() for _ in range(3)]
+    items, next_cursor, has_more = _page(ids, 2, lambda i: [str(i)])
+    assert (
+        (items, has_more) == (ids[:2], True)
+        and next_cursor
+        and decode_cursor(next_cursor, 1) == [str(ids[1])]
+    )
+    assert _page(ids[:2], 2, lambda i: [str(i)]) == (ids[:2], None, False)
 
 
 def test_every_registry_field_and_parameter_is_described() -> None:
@@ -204,8 +244,20 @@ async def test_fpo_admin_uploading_a_region_is_403() -> None:
         "tolerance_buffer_m": 150,
         "source_ref": "test",
         "licence": "CC0-1.0",
+        "taluks": ["Tiruchuli"],
+        "confidence": "fixture",
+        "attribution": "project test data",
+        "share_alike": False,
     }
     async with _client(Role.FPO_ADMIN) as client:
         response = await client.post(f"/v1/gi-tags/{uuid.uuid4()}/region-versions", json=body)
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "forbidden"
+
+
+async def test_field_officer_cannot_add_an_input() -> None:
+    """FPO entries need the FPO admin or a super-admin; a field officer (not super-admin) gets 403."""
+    body = {"name_en": "Urea", "category": "chemical_fertilizer", "unit": "kg"}
+    async with _client(Role.FIELD_OFFICER) as client:
+        response = await client.post("/v1/inputs", json=body)
+    assert response.status_code == 403

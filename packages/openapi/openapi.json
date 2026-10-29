@@ -809,10 +809,20 @@
       "GiRegionVersionIn": {
         "description": "A new version of a GI tag's production-area outline with its provenance (FR27, FR31, FR32, D-019).",
         "properties": {
+          "attribution": {
+            "description": "Attribution line the source licence requires, e.g. `Boundary data \u00a9 geoBoundaries contributors, ODbL-1.0; ...`; stored inside `source_ref` (no column for it).",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Attribution",
+            "type": "string"
+          },
           "confidence": {
-            "default": "district_derived",
-            "description": "How the outline was derived: district_derived, taluk_derived, official, surveyed.",
-            "maxLength": 40,
+            "description": "How the outline was derived: official (registry or surveyed file), district_derived (admin boundaries, D-019) or fixture (test data, never for real checks).",
+            "enum": [
+              "official",
+              "district_derived",
+              "fixture"
+            ],
             "title": "Confidence",
             "type": "string"
           },
@@ -840,6 +850,11 @@
             "title": "Licence",
             "type": "string"
           },
+          "share_alike": {
+            "description": "True when the derived outline must be shared under the same licence (ODbL); stored inside `source_ref`.",
+            "title": "Share Alike",
+            "type": "boolean"
+          },
           "source_ref": {
             "description": "Source dataset, file and build script reference (D-019).",
             "maxLength": 500,
@@ -848,19 +863,13 @@
             "type": "string"
           },
           "taluks": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
             "description": "Taluks named in the GI registration that this outline unions (D-019).",
-            "title": "Taluks"
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Taluks",
+            "type": "array"
           },
           "tolerance_buffer_m": {
             "anyOf": [
@@ -880,8 +889,12 @@
         "required": [
           "geometry",
           "tolerance_buffer_m",
+          "taluks",
           "source_ref",
-          "licence"
+          "licence",
+          "confidence",
+          "attribution",
+          "share_alike"
         ],
         "title": "GiRegionVersionIn",
         "type": "object"
@@ -918,7 +931,7 @@
             "type": "string"
           },
           "source_ref": {
-            "description": "Source dataset and build script reference.",
+            "description": "Source dataset and build script reference, then `; attribution: \u2026; share_alike: \u2026`.",
             "title": "Source Ref",
             "type": "string"
           },
@@ -1469,20 +1482,23 @@
                 "type": "null"
               }
             ],
-            "description": "How a flagged location was reviewed (FR70); records `reviewed_at`.",
+            "description": "How a flagged location was reviewed (FR70); send with `review_outcome`.",
             "title": "Review Method"
           },
           "review_outcome": {
             "anyOf": [
               {
-                "maxLength": 500,
+                "enum": [
+                  "accepted",
+                  "rejected"
+                ],
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "description": "Reviewer's outcome and note (FR70).",
+            "description": "Review result (FR70): `accepted` lets the region check decide the status (also for a map pin); `rejected` keeps the plot `needs_review`. Put the reviewer's note in `reason_text`.",
             "title": "Review Outcome"
           },
           "soil_type": {
@@ -1818,7 +1834,7 @@
                 "type": "null"
               }
             ],
-            "description": "Reviewer's outcome and note.",
+            "description": "accepted or rejected (FR70); null when not reviewed.",
             "title": "Review Outcome"
           },
           "reviewed_at": {
@@ -2271,7 +2287,7 @@
   "paths": {
     "/v1/crops": {
       "get": {
-        "description": "List active crops.\n\nArgs:\n    session: database session.\n    _user: the caller (any signed-in role).\n\nReturns:\n    Active crops.",
+        "description": "List active crops.",
         "operationId": "list_crops_v1_crops_get",
         "responses": {
           "200": {
@@ -2307,7 +2323,7 @@
     },
     "/v1/farmers": {
       "get": {
-        "description": "List farmers of the caller's FPO (a farmer sees only themself).\n\nArgs:\n    session: database session.\n    user: the caller.\n    cursor: cursor from the previous page.\n    limit: page size.\n    farmer_status: status filter.\n\nReturns:\n    One page in onboarding order.\n\nRaises:\n    ValidationFailedError: invalid cursor.",
+        "description": "List farmers of the caller's FPO (a farmer sees only themself).",
         "operationId": "list_farmers_v1_farmers_get",
         "parameters": [
           {
@@ -2389,7 +2405,7 @@
         ]
       },
       "post": {
-        "description": "Onboard a farmer, pending approval (field officer or FPO admin).\n\nArgs:\n    body: the farmer.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The stored farmer.\n\nRaises:\n    FarmerPhoneTakenError: phone already used by a farmer of this FPO.\n    ValidationFailedError: unknown village.",
+        "description": "Onboard a farmer, pending approval (field officer or FPO admin).",
         "operationId": "create_farmer_v1_farmers_post",
         "requestBody": {
           "content": {
@@ -2431,7 +2447,7 @@
     },
     "/v1/farmers/{farmer_id}": {
       "get": {
-        "description": "Read one farmer of the caller's FPO.\n\nArgs:\n    farmer_id: farmer id.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The farmer.\n\nRaises:\n    NotFoundError: missing or out of scope (never 403).",
+        "description": "Read one farmer of the caller's FPO.",
         "operationId": "get_farmer_v1_farmers__farmer_id__get",
         "parameters": [
           {
@@ -2475,7 +2491,7 @@
         ]
       },
       "patch": {
-        "description": "Change a farmer's profile (field officer or FPO admin).\n\nArgs:\n    farmer_id: farmer id.\n    body: the changes.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The updated farmer.\n\nRaises:\n    NotFoundError: missing or out of scope.\n    ValidationFailedError: unknown village.",
+        "description": "Change a farmer's profile (field officer or FPO admin).",
         "operationId": "update_farmer_v1_farmers__farmer_id__patch",
         "parameters": [
           {
@@ -2531,7 +2547,7 @@
     },
     "/v1/farmers/{farmer_id}/approve": {
       "post": {
-        "description": "Approve a pending farmer as a genuine member (FPO admin).\n\nArgs:\n    farmer_id: farmer id.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The active farmer.\n\nRaises:\n    NotFoundError: missing or out of scope.\n    FarmerNotPendingError: not pending.",
+        "description": "Approve a pending farmer as a genuine member (FPO admin).",
         "operationId": "approve_farmer_v1_farmers__farmer_id__approve_post",
         "parameters": [
           {
@@ -2577,7 +2593,7 @@
     },
     "/v1/fpos": {
       "get": {
-        "description": "List FPOs visible to the caller.\n\nArgs:\n    session: database session.\n    user: the caller.\n\nReturns:\n    All FPOs for a super-admin, else the caller's own.",
+        "description": "List FPOs visible to the caller.",
         "operationId": "list_fpos_v1_fpos_get",
         "responses": {
           "200": {
@@ -2611,7 +2627,7 @@
         ]
       },
       "post": {
-        "description": "Create an FPO (super-admin only).\n\nArgs:\n    body: the FPO.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The stored FPO.\n\nRaises:\n    ForbiddenError: not a super-admin.\n    ConflictError: code already used.",
+        "description": "Create an FPO (super-admin only).",
         "operationId": "create_fpo_v1_fpos_post",
         "requestBody": {
           "content": {
@@ -2653,7 +2669,7 @@
     },
     "/v1/gi-tags/{gi_tag_id}/region": {
       "get": {
-        "description": "Return the GI tag's region in effect today, simplified.\n\nArgs:\n    gi_tag_id: GI tag id.\n    session: database session.\n    _user: the caller (any signed-in role).\n\nReturns:\n    Version metadata and outline.\n\nRaises:\n    GiRegionMissingError: no region loaded.",
+        "description": "Return the GI tag's region in effect today, simplified.",
         "operationId": "get_region_v1_gi_tags__gi_tag_id__region_get",
         "parameters": [
           {
@@ -2699,7 +2715,7 @@
     },
     "/v1/gi-tags/{gi_tag_id}/region-versions": {
       "post": {
-        "description": "Store a new region outline version (super-admin only; FPO admins get 403, FR31).\n\nArgs:\n    gi_tag_id: GI tag id.\n    body: outline and provenance.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The stored version's metadata.\n\nRaises:\n    ForbiddenError: not a super-admin.\n    NotFoundError: no such GI tag.\n    InvalidGeometryError: invalid outline.",
+        "description": "Store a new region outline version (super-admin only; FPO admins get 403, FR31).",
         "operationId": "create_region_version_v1_gi_tags__gi_tag_id__region_versions_post",
         "parameters": [
           {
@@ -2825,7 +2841,7 @@
     },
     "/v1/inputs": {
       "get": {
-        "description": "List active inputs: global plus the caller's FPO's own.\n\nArgs:\n    session: database session.\n    user: the caller.\n\nReturns:\n    Inputs by category and name.",
+        "description": "List active inputs: global plus the caller's FPO's own.",
         "operationId": "list_inputs_v1_inputs_get",
         "responses": {
           "200": {
@@ -2859,7 +2875,7 @@
         ]
       },
       "post": {
-        "description": "Add an input to the FPO's list (FPO admin) or the global list (super-admin).\n\nArgs:\n    body: the input.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The stored input.\n\nRaises:\n    ForbiddenError: global entry by a non-super-admin.",
+        "description": "Add an input to the FPO's list (FPO admin) or the global list (super-admin).",
         "operationId": "create_input_v1_inputs_post",
         "requestBody": {
           "content": {
@@ -2901,7 +2917,7 @@
     },
     "/v1/plots": {
       "post": {
-        "description": "Register a plot and run the GI region check; a resend returns 200 with the stored plot.\n\nArgs:\n    body: the plot.\n    response: used to answer 200 for a resend.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The plot with its region check.\n\nRaises:\n    NotFoundError: farmer out of scope.\n    ClientIdConflictError: id used by another FPO's or farmer's plot.\n    PlotLockedError: id exists with a different pin or size.\n    ValidationFailedError: bad size unit.\n    InvalidGeometryError: bad walked boundary.\n\nSide effects:\n    Enqueues `rules.check_plot` after commit when the plot is new.",
+        "description": "Register a plot and run the GI region check; a resend returns 200 with the stored plot.",
         "operationId": "create_plot_v1_plots_post",
         "requestBody": {
           "content": {
@@ -2953,7 +2969,7 @@
     },
     "/v1/plots/{plot_id}": {
       "get": {
-        "description": "Read one plot of the caller's FPO.\n\nArgs:\n    plot_id: plot id.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The plot.\n\nRaises:\n    NotFoundError: missing or out of scope.",
+        "description": "Read one plot of the caller's FPO.",
         "operationId": "get_plot_v1_plots__plot_id__get",
         "parameters": [
           {
@@ -2999,7 +3015,7 @@
     },
     "/v1/plots/{plot_id}/correct": {
       "post": {
-        "description": "Correct an onboarded plot (FPO admin), keeping the old state as a revision.\n\nArgs:\n    plot_id: plot id.\n    body: changes and reason.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The corrected plot with the re-run region check.\n\nRaises:\n    ReasonRequiredError: no reason code.\n    NotFoundError: missing or out of scope.\n    ValidationFailedError: bad size unit.\n    InvalidGeometryError: bad walked boundary.\n\nSide effects:\n    Enqueues `rules.check_plot` after commit.",
+        "description": "Correct an onboarded plot (FPO admin), keeping the old state as a revision.",
         "operationId": "correct_plot_v1_plots__plot_id__correct_post",
         "parameters": [
           {
@@ -3055,7 +3071,7 @@
     },
     "/v1/processors": {
       "get": {
-        "description": "List the FPO's processors and shared ones.\n\nArgs:\n    session: database session.\n    user: the caller.\n\nReturns:\n    Processors ordered by name.",
+        "description": "List the FPO's processors and shared ones.",
         "operationId": "list_processors_v1_processors_get",
         "responses": {
           "200": {
@@ -3089,7 +3105,7 @@
         ]
       },
       "post": {
-        "description": "Register a processor for the caller's FPO (FPO admin).\n\nArgs:\n    body: the processor.\n    session: database session.\n    user: the caller.\n\nReturns:\n    The stored processor.",
+        "description": "Register a processor for the caller's FPO (FPO admin).",
         "operationId": "create_processor_v1_processors_post",
         "requestBody": {
           "content": {
@@ -3131,7 +3147,7 @@
     },
     "/v1/villages": {
       "get": {
-        "description": "Search villages for the onboarding picker (FR53).\n\nArgs:\n    session: database session.\n    _user: the caller (any signed-in role).\n    cursor: cursor from the previous page.\n    limit: page size.\n    district: district filter.\n    block: block filter.\n    q: name search.\n\nReturns:\n    One page ordered by name.\n\nRaises:\n    ValidationFailedError: invalid cursor.",
+        "description": "Search villages for the onboarding picker (FR53).",
         "operationId": "list_villages_v1_villages_get",
         "parameters": [
           {

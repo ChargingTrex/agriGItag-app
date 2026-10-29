@@ -57,6 +57,7 @@ GiTagId = Annotated[uuid.UUID, Path(description="GI tag id.")]
 async def list_fpos(session: Session, user: AnyRole) -> list[FpoOut]:
     """List FPOs visible to the caller.
 
+    \f
     Args:
         session: database session.
         user: the caller.
@@ -71,6 +72,7 @@ async def list_fpos(session: Session, user: AnyRole) -> list[FpoOut]:
 async def create_fpo(body: FpoIn, session: Session, user: AnyRole) -> FpoOut:
     """Create an FPO (super-admin only).
 
+    \f
     Args:
         body: the FPO.
         session: database session.
@@ -92,6 +94,7 @@ async def create_fpo(body: FpoIn, session: Session, user: AnyRole) -> FpoOut:
 async def list_processors(session: Session, user: AnyRole) -> list[ProcessorOut]:
     """List the FPO's processors and shared ones.
 
+    \f
     Args:
         session: database session.
         user: the caller.
@@ -111,6 +114,7 @@ async def list_processors(session: Session, user: AnyRole) -> list[ProcessorOut]
 async def create_processor(body: ProcessorIn, session: Session, user: Admin) -> ProcessorOut:
     """Register a processor for the caller's FPO (FPO admin).
 
+    \f
     Args:
         body: the processor.
         session: database session.
@@ -136,6 +140,7 @@ async def list_villages(
 ) -> Page[VillageOut]:
     """Search villages for the onboarding picker (FR53).
 
+    \f
     Args:
         session: database session.
         _user: the caller (any signed-in role).
@@ -164,6 +169,7 @@ async def list_farmers(
 ) -> Page[FarmerOut]:
     """List farmers of the caller's FPO (a farmer sees only themself).
 
+    \f
     Args:
         session: database session.
         user: the caller.
@@ -186,6 +192,7 @@ async def list_farmers(
 async def create_farmer(body: FarmerIn, session: Session, user: Staff) -> FarmerOut:
     """Onboard a farmer, pending approval (field officer or FPO admin).
 
+    \f
     Args:
         body: the farmer.
         session: database session.
@@ -207,6 +214,7 @@ async def create_farmer(body: FarmerIn, session: Session, user: Staff) -> Farmer
 async def get_farmer(farmer_id: FarmerId, session: Session, user: AnyRole) -> FarmerOut:
     """Read one farmer of the caller's FPO.
 
+    \f
     Args:
         farmer_id: farmer id.
         session: database session.
@@ -225,6 +233,7 @@ async def get_farmer(farmer_id: FarmerId, session: Session, user: AnyRole) -> Fa
 async def update_farmer(farmer_id: FarmerId, body: FarmerPatch, session: Session, user: Staff) -> FarmerOut:
     """Change a farmer's profile (field officer or FPO admin).
 
+    \f
     Args:
         farmer_id: farmer id.
         body: the changes.
@@ -247,6 +256,7 @@ async def update_farmer(farmer_id: FarmerId, body: FarmerPatch, session: Session
 async def approve_farmer(farmer_id: FarmerId, session: Session, user: Admin) -> FarmerOut:
     """Approve a pending farmer as a genuine member (FPO admin).
 
+    \f
     Args:
         farmer_id: farmer id.
         session: database session.
@@ -274,6 +284,7 @@ async def approve_farmer(farmer_id: FarmerId, session: Session, user: Admin) -> 
 async def create_plot(body: PlotIn, response: Response, session: Session, user: PlotCapturer) -> PlotOut:
     """Register a plot and run the GI region check; a resend returns 200 with the stored plot.
 
+    \f
     Args:
         body: the plot.
         response: used to answer 200 for a resend.
@@ -306,6 +317,7 @@ async def create_plot(body: PlotIn, response: Response, session: Session, user: 
 async def get_plot(plot_id: PlotId, session: Session, user: AnyRole) -> PlotOut:
     """Read one plot of the caller's FPO.
 
+    \f
     Args:
         plot_id: plot id.
         session: database session.
@@ -324,6 +336,7 @@ async def get_plot(plot_id: PlotId, session: Session, user: AnyRole) -> PlotOut:
 async def correct_plot(plot_id: PlotId, body: PlotCorrection, session: Session, user: Admin) -> PlotOut:
     """Correct an onboarded plot (FPO admin), keeping the old state as a revision.
 
+    \f
     Args:
         plot_id: plot id.
         body: changes and reason.
@@ -352,6 +365,7 @@ async def correct_plot(plot_id: PlotId, body: PlotCorrection, session: Session, 
 async def list_crops(session: Session, _user: AnyRole) -> list[CropOut]:
     """List active crops.
 
+    \f
     Args:
         session: database session.
         _user: the caller (any signed-in role).
@@ -368,6 +382,7 @@ async def list_crops(session: Session, _user: AnyRole) -> list[CropOut]:
 async def get_region(gi_tag_id: GiTagId, session: Session, _user: AnyRole) -> GiRegionOut:
     """Return the GI tag's region in effect today, simplified.
 
+    \f
     Args:
         gi_tag_id: GI tag id.
         session: database session.
@@ -393,6 +408,7 @@ async def create_region_version(
 ) -> GiRegionVersionOut:
     """Store a new region outline version (super-admin only; FPO admins get 403, FR31).
 
+    \f
     Args:
         gi_tag_id: GI tag id.
         body: outline and provenance.
@@ -416,6 +432,7 @@ async def create_region_version(
 async def list_inputs(session: Session, user: AnyRole) -> list[InputOut]:
     """List active inputs: global plus the caller's FPO's own.
 
+    \f
     Args:
         session: database session.
         user: the caller.
@@ -427,9 +444,10 @@ async def list_inputs(session: Session, user: AnyRole) -> list[InputOut]:
 
 
 @router.post("/inputs", response_model=InputOut, status_code=status.HTTP_201_CREATED, summary="Add an input")
-async def create_input(body: InputIn, session: Session, user: Admin) -> InputOut:
+async def create_input(body: InputIn, session: Session, user: AnyRole) -> InputOut:
     """Add an input to the FPO's list (FPO admin) or the global list (super-admin).
 
+    \f
     Args:
         body: the input.
         session: database session.

@@ -41,6 +41,14 @@ FIXTURE = API_DIR / "agritrace" / "seed" / "fixtures" / "gi_region_fixture.geojs
 REFERENCE = {"lat": 9.559806, "lon": 78.133521, "accuracy_m": 6.2}
 NEAR_EDGE = {"lat": 9.55, "lon": 78.300911, "accuracy_m": 5.0}  # ~100 m east of the fixture edge
 MADURAI = {"lat": 9.9252, "lon": 78.1198, "accuracy_m": 5.0}
+PROVENANCE = {
+    "source_ref": "fixture",
+    "licence": "CC0-1.0",
+    "taluks": ["Tiruchuli", "Aruppukottai"],
+    "confidence": "fixture",
+    "attribution": "project test data",
+    "share_alike": False,
+}
 NOW = datetime(2026, 3, 4, 8, 12, tzinfo=UTC).isoformat()
 
 
@@ -145,7 +153,7 @@ async def _region(client: AsyncClient, caller: Caller, ids: dict[str, Any]) -> d
     """
     _as(caller, ids, "super_admin", "fpo_a", Role.FPO_ADMIN)
     geometry = json.loads(FIXTURE.read_text())["features"][0]["geometry"]
-    body = {"geometry": geometry, "tolerance_buffer_m": 150, "source_ref": "fixture", "licence": "CC0-1.0"}
+    body = {"geometry": geometry, "tolerance_buffer_m": 150, **PROVENANCE}
     response = await client.post(f"/v1/gi-tags/{ids['gi_tag']}/region-versions", json=body)
     assert response.status_code == 201, response.text
     result: dict[str, Any] = response.json()
@@ -209,7 +217,7 @@ async def test_region_upload_check_and_bundle_size(
     client, caller = api
     _as(caller, ids, "admin_a", "fpo_a", Role.FPO_ADMIN)
     geometry = json.loads(FIXTURE.read_text())["features"][0]["geometry"]
-    body = {"geometry": geometry, "tolerance_buffer_m": 150, "source_ref": "fixture", "licence": "CC0-1.0"}
+    body = {"geometry": geometry, "tolerance_buffer_m": 150, **PROVENANCE}
     denied = await client.post(f"/v1/gi-tags/{ids['gi_tag']}/region-versions", json=body)
     assert denied.status_code == 403
     first = await _region(client, caller, ids)
@@ -229,6 +237,16 @@ async def test_region_upload_check_and_bundle_size(
     assert region.status_code == 200
     assert region.json()["version"]["version_no"] == second["version_no"]
     assert len(json.dumps(region.json()["geometry"])) <= 50_000
+    assert (
+        region.json()["version"]["source_ref"]
+        == "fixture; attribution: project test data; share_alike: false"
+    )
+    async with get_sessionmaker()() as s:
+        audited = await s.scalar(
+            text("SELECT count(*) FROM audit_log WHERE entity_id = :id AND action = 'create'"),
+            {"id": uuid.UUID(second["id"])},
+        )
+    assert audited == 1  # region uploads are audited (FR31)
 
 
 async def test_plot_region_statuses(api: tuple[AsyncClient, Caller], ids: dict[str, Any]) -> None:
@@ -285,6 +303,13 @@ async def test_plot_idempotency_lock_walked_gap_and_reference_bump(
     assert again.status_code == 200 and again.json()["id"] == created.json()["id"]
     moved = await client.post("/v1/plots", json={**body, "pin": NEAR_EDGE})
     assert moved.status_code == 409 and moved.json()["error"]["code"] == "plot_locked"
+    other_farmer = await _farmer(client, caller, ids)  # same FPO, different owner
+    taken = await client.post("/v1/plots", json={**body, "farmer_id": other_farmer["id"]})
+    assert taken.status_code == 409 and taken.json()["error"]["code"] == "client_id_conflict"
+    farmer_b = await _farmer(client, caller, ids, fpo="fpo_b")  # caller is now FPO B's admin
+    foreign = await client.post("/v1/plots", json={**body, "farmer_id": farmer_b["id"]})
+    assert foreign.status_code == 409 and foreign.json()["error"]["code"] == "client_id_conflict"
+    assert (await client.get(f"/v1/plots/{created.json()['id']}")).status_code == 404
     async with get_sessionmaker()() as s:
         after = await s.scalar(text("SELECT max(version) FROM reference_versions WHERE part = 'plots'"))
         on_plot = await event_within_plot(
@@ -319,10 +344,25 @@ async def test_plot_correction_needs_reason_and_keeps_revision(
     assert fixed.status_code == 200, fixed.text
     assert fixed.json()["revision_no"] == 2 and fixed.json()["location_status"] == "confirmed"
     async with get_sessionmaker()() as s:
-        revision = await s.scalar(select(PlotRevision).where(PlotRevision.plot_id == uuid.UUID(plot["id"])))
+        revision = await s.scalar(
+            select(PlotRevision).where(
+                PlotRevision.plot_id == uuid.UUID(plot["id"]), PlotRevision.revision_no == 1
+            )
+        )
     assert revision is not None and revision.revision_no == 1 and revision.reason_code == "gps_drift"
     old_pin = wkt.loads(revision.snapshot["pin"])
     assert (old_pin.x, old_pin.y) == pytest.approx((NEAR_EDGE["lon"], NEAR_EDGE["lat"]))
+
+    url, gi_tag = f"/v1/plots/{plot['id']}/correct", str(ids["gi_tag"])
+    review = {"reason_code": "field_visit", "review_method": "field_visit", "review_outcome": "rejected"}
+    rejected = (await client.post(url, json={**review, "gi_tag_id": gi_tag})).json()
+    assert rejected["location_status"] == "needs_review" and rejected["review_outcome"] == "rejected"
+    repinned = await client.post(
+        url, json={"reason_code": "gps_drift", "pin": REFERENCE, "gi_tag_id": gi_tag}
+    )
+    moved = repinned.json()
+    assert (moved["reviewed_at"], moved["review_method"], moved["review_outcome"]) == (None, None, None)
+    assert moved["location_status"] == "confirmed" and moved["revision_no"] == 4
 
 
 async def test_farmers_scope_users_row_and_approval(

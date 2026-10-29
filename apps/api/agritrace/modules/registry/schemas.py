@@ -14,7 +14,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, computed_field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from agritrace.core.enums import (
     FarmerStatus,
@@ -26,6 +26,8 @@ from agritrace.core.enums import (
     PinMethod,
 )
 from agritrace.core.schemas import Address, GeoPoint, Quantity
+
+ReviewOutcome = Literal["accepted", "rejected"]
 
 # Positions are [lon, lat] (GeoJSON order, RFC 7946); a third value (altitude) is accepted and ignored.
 Position = list[float]
@@ -307,11 +309,27 @@ class PlotCorrection(BaseModel):
     irrigation_source: IrrigationSource | None = Field(None, description="Corrected irrigation source.")
     soil_type: str | None = Field(None, max_length=60, description="Corrected soil type.")
     review_method: Literal["land_record", "satellite", "field_visit"] | None = Field(
-        None, description="How a flagged location was reviewed (FR70); records `reviewed_at`."
+        None, description="How a flagged location was reviewed (FR70); send with `review_outcome`."
     )
-    review_outcome: str | None = Field(
-        None, max_length=500, description="Reviewer's outcome and note (FR70)."
+    review_outcome: ReviewOutcome | None = Field(
+        None,
+        description="Review result (FR70): `accepted` lets the region check decide the status (also for a "
+        "map pin); `rejected` keeps the plot `needs_review`. Put the reviewer's note in `reason_text`.",
     )
+
+    @model_validator(mode="after")
+    def _review_complete(self) -> "PlotCorrection":
+        """Require `review_method` and `review_outcome` together.
+
+        Returns:
+            The model unchanged.
+
+        Raises:
+            ValueError: only one of the two was sent (FastAPI answers 422 `validation_error`).
+        """
+        if (self.review_method is None) != (self.review_outcome is None):
+            raise ValueError("send review_method and review_outcome together")
+        return self
 
 
 class RegionCheckOut(BaseModel):
@@ -357,7 +375,7 @@ class PlotOut(BaseModel):
     revision_no: int = Field(description="Current revision; bumps on every admin correction.")
     reviewed_at: datetime | None = Field(description="When a flagged location was reviewed (FR70).")
     review_method: str | None = Field(description="land_record, satellite or field_visit.")
-    review_outcome: str | None = Field(description="Reviewer's outcome and note.")
+    review_outcome: str | None = Field(description="accepted or rejected (FR70); null when not reviewed.")
     region_check: RegionCheckOut | None = Field(
         None, description="Region check run by this request (create or correct); null on reads."
     )
@@ -386,8 +404,8 @@ class GiRegionVersionIn(BaseModel):
     tolerance_buffer_m: Decimal = Field(
         ge=0, le=5000, description="GPS-drift buffer around the outline in metres (FR32), e.g. 150."
     )
-    taluks: list[str] | None = Field(
-        None, description="Taluks named in the GI registration that this outline unions (D-019)."
+    taluks: list[str] = Field(
+        min_length=1, description="Taluks named in the GI registration that this outline unions (D-019)."
     )
     source_ref: str = Field(
         min_length=1, max_length=500, description="Source dataset, file and build script reference (D-019)."
@@ -395,10 +413,19 @@ class GiRegionVersionIn(BaseModel):
     licence: str = Field(
         min_length=1, max_length=120, description="Licence of the source data, e.g. ODbL-1.0."
     )
-    confidence: str = Field(
-        "district_derived",
-        max_length=40,
-        description="How the outline was derived: district_derived, taluk_derived, official, surveyed.",
+    confidence: Literal["official", "district_derived", "fixture"] = Field(
+        description="How the outline was derived: official (registry or surveyed file), district_derived "
+        "(admin boundaries, D-019) or fixture (test data, never for real checks)."
+    )
+    attribution: str = Field(
+        min_length=1,
+        max_length=300,
+        description="Attribution line the source licence requires, e.g. `Boundary data © geoBoundaries "
+        "contributors, ODbL-1.0; ...`; stored inside `source_ref` (no column for it).",
+    )
+    share_alike: bool = Field(
+        description="True when the derived outline must be shared under the same licence (ODbL); stored "
+        "inside `source_ref`."
     )
     effective_from: date | None = Field(None, description="First day checks use it; default today.")
 
@@ -411,7 +438,9 @@ class GiRegionVersionOut(_Out):
     version_no: int = Field(description="Version number, 0 upwards.")
     tolerance_buffer_m: Decimal = Field(description="GPS-drift buffer in metres.")
     taluks: list[str] | None = Field(description="Taluks this outline unions.")
-    source_ref: str = Field(description="Source dataset and build script reference.")
+    source_ref: str = Field(
+        description="Source dataset and build script reference, then `; attribution: …; share_alike: …`."
+    )
     licence: str = Field(description="Licence of the source data.")
     confidence: str = Field(description="How the outline was derived.")
     effective_from: date = Field(description="First day checks use it.")

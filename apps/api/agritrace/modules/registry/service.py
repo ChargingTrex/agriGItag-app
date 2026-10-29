@@ -109,6 +109,7 @@ log = logging.getLogger(__name__)
 
 AREA_GAP_LIMIT_PCT = Decimal(20)  # FR66: walked vs declared gap above this is flagged for review (FR70)
 CENTS_PER_ACRE = Decimal(100)
+MIN_ACRES = Decimal("0.01")
 REGION_SIMPLIFY_M = 50.0
 LABELS = {"walked": "Boundary walked", PinMethod.LIVE_GPS: "Live GPS pin", PinMethod.MAP_PIN: "Map pin"}
 
@@ -136,7 +137,7 @@ def decode_cursor(cursor: str, size: int) -> list[str]:
         size: number of sort-key values the endpoint expects.
 
     Returns:
-        The sort-key values.
+        The sort-key values; the last one (the row id) is checked to be a UUID.
 
     Raises:
         ValidationFailedError: the cursor is not one this endpoint issued (`validation_error`).
@@ -147,6 +148,10 @@ def decode_cursor(cursor: str, size: int) -> list[str]:
         raise ValidationFailedError(details={"cursor": "invalid"}) from e
     if not (isinstance(values, list) and len(values) == size and all(isinstance(v, str) for v in values)):
         raise ValidationFailedError(details={"cursor": "invalid"})
+    try:
+        uuid.UUID(values[-1])
+    except ValueError as e:
+        raise ValidationFailedError(details={"cursor": "invalid"}) from e
     return values
 
 
@@ -176,15 +181,15 @@ def to_acres(quantity: Quantity) -> Decimal:
         Acres, to 0.001.
 
     Raises:
-        ValidationFailedError: another unit, or a size of zero.
+        ValidationFailedError: another unit, or less than 0.01 acre (1 cent) after conversion.
     """
     unit = quantity.unit.lower().rstrip("s")
     if unit not in ("acre", "cent"):
         raise ValidationFailedError(details={"declared_area.unit": "use `acre` or `cent`"})
-    if quantity.value <= 0:
-        raise ValidationFailedError(details={"declared_area.value": "must be more than 0"})
-    acres = quantity.value if unit == "acre" else quantity.value / CENTS_PER_ACRE
-    return acres.quantize(Decimal("0.001"))
+    acres = (quantity.value if unit == "acre" else quantity.value / CENTS_PER_ACRE).quantize(Decimal("0.001"))
+    if acres < MIN_ACRES:  # also keeps the walked-gap percentage from dividing by zero
+        raise ValidationFailedError(details={"declared_area.value": "must be at least 0.01 acre (1 cent)"})
+    return acres
 
 
 def area_gap(declared_acres: Decimal, walked_acres: Decimal | None) -> tuple[Decimal | None, bool]:
@@ -204,18 +209,25 @@ def area_gap(declared_acres: Decimal, walked_acres: Decimal | None) -> tuple[Dec
     return pct, abs(pct) > AREA_GAP_LIMIT_PCT
 
 
-def location_status(result: GeoResult | None, pin_method: PinMethod, reviewed: bool) -> LocationStatus:
+def location_status(
+    result: GeoResult | None, pin_method: PinMethod, review_outcome: str | None
+) -> LocationStatus:
     """Turn a region check into the plot's location status (FR64, FR67, FR70).
 
     Args:
         result: region check, or None when no region could be checked (no GI tag or no region loaded).
         pin_method: how the pin was placed.
-        reviewed: True once a reviewer recorded an outcome (a reviewed map pin is judged by the check).
+        review_outcome: `accepted`, `rejected` or None (not reviewed since the pin was last set).
 
     Returns:
-        needs_review for an unreviewed map pin or no check; else confirmed, near_edge or outside.
+        needs_review for a rejected review, an unaccepted map pin or no check; else confirmed, near_edge
+        or outside from the check.
     """
-    if (pin_method == PinMethod.MAP_PIN and not reviewed) or result is None:
+    if (
+        review_outcome == "rejected"
+        or (pin_method == PinMethod.MAP_PIN and review_outcome != "accepted")
+        or result is None
+    ):
         return LocationStatus.NEEDS_REVIEW
     return {"inside": LocationStatus.CONFIRMED, "near_edge": LocationStatus.NEAR_EDGE}.get(
         result.status, LocationStatus.OUTSIDE
@@ -868,7 +880,7 @@ async def create_plot(session: AsyncSession, user: CurrentUser, body: PlotIn) ->
         revision_no=1,
     )
     check = await _check_region(session, body.pin, body.gi_tag_id)
-    plot.location_status = location_status(check, body.pin_method, reviewed=False)
+    plot.location_status = location_status(check, body.pin_method, review_outcome=None)
     plot.location_method_label = _label(plot)
     session.add(plot)
     await session.flush()
@@ -952,10 +964,13 @@ async def correct_plot(
         plot.review_method = body.review_method
         plot.review_outcome = body.review_outcome
         plot.reviewed_at = now
+    elif body.pin is not None or body.pin_method is not None:
+        # A new pin was never reviewed: an old outcome must not confirm (or block) it (FR70).
+        plot.reviewed_at = plot.review_method = plot.review_outcome = None
     plot.revision_no += 1
     pin = body.pin or _pin(plot)
     check = await _check_region(session, pin, body.gi_tag_id)
-    plot.location_status = location_status(check, plot.pin_method, reviewed=plot.reviewed_at is not None)
+    plot.location_status = location_status(check, plot.pin_method, plot.review_outcome)
     plot.location_method_label = _label(plot)
     await session.flush()
     await session.refresh(plot)
@@ -1025,6 +1040,18 @@ async def get_region(session: AsyncSession, gi_tag_id: uuid.UUID) -> GiRegionOut
     )
 
 
+def region_source_ref(body: GiRegionVersionIn) -> str:
+    """Fold the attribution and share-alike duty into `source_ref` (D-019; no columns for them).
+
+    Args:
+        body: the uploaded region version.
+
+    Returns:
+        `<source_ref>; attribution: <text>; share_alike: true|false`.
+    """
+    return f"{body.source_ref}; attribution: {body.attribution}; share_alike: {str(body.share_alike).lower()}"
+
+
 async def create_region_version(
     session: AsyncSession, user: CurrentUser, gi_tag_id: uuid.UUID, body: GiRegionVersionIn
 ) -> GiRegionVersionOut:
@@ -1045,7 +1072,7 @@ async def create_region_version(
         InvalidGeometryError: outline invalid.
 
     Side effects:
-        Inserts a `gi_region_versions` row; its trigger bumps the `gi_region` bundle part.
+        Inserts a `gi_region_versions` row (audited, FR31); its trigger bumps the `gi_region` bundle part.
     """
     await _require_super_admin(session, user)
     if await session.get(GiTag, gi_tag_id) is None:
@@ -1060,7 +1087,7 @@ async def create_region_version(
         geom=WKTElement(outline.wkt, srid=4326),
         tolerance_buffer_m=body.tolerance_buffer_m,
         taluks=body.taluks,
-        source_ref=body.source_ref,
+        source_ref=region_source_ref(body),
         licence=body.licence,
         confidence=body.confidence,
         effective_from=body.effective_from or datetime.now(UTC).date(),
@@ -1104,12 +1131,13 @@ async def create_input(session: AsyncSession, user: CurrentUser, body: InputIn) 
         The stored input.
 
     Raises:
-        ForbiddenError: `global_entry` requested by someone who is not a super-admin.
+        ForbiddenError: a global entry by a non-super-admin, or an FPO entry by someone who is neither the
+            FPO admin nor a super-admin.
 
     Side effects:
         Inserts an `inputs_master` row; its trigger bumps the `inputs` bundle part.
     """
-    if body.global_entry:
+    if body.global_entry or user.role != Role.FPO_ADMIN:
         await _require_super_admin(session, user)
     item = InputMaster(
         **body.model_dump(exclude={"global_entry"}), fpo_id=None if body.global_entry else user.fpo_id
