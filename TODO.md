@@ -95,6 +95,8 @@ _(empty)_
 - [ ] At every backend merge: run `npm run gen:api` in apps/portal and commit the regenerated client so the portal `gen:check` CI step stays green (B05-r1 F4).
 - [x] Compliance (B05) visual-moisture question answered: rejected at entry is correct; cap applies to visual-capable parameters.
 - [ ] W02 follow-ups: retag or delete the BM-16 placeholder in `qa/robot/mobile/network_profiles.robot` (the real test lives in `qa/robot/public/page.robot`) so `gate-readiness G1` passes; add `apps/public-page/package.json` to `libraries-check.py`'s manifest list; @lhci/cli 0.15.1 brings 16 npm-audit advisories in dev-only tools (not shipped) — revisit at G5; adding npm tools in apps/public-page needs `npm install --legacy-peer-deps` (npm ci works); re-check both Lighthouse profiles after W03 adds CSS; the new coordinate rules fail closed on a few prose shapes (`calculated: 12.3456`).
+- [ ] B03/P01: admin-issued initial PIN for office users (pilot accepts first-OTP-sets-PIN, B02 review P2-6 shortcut).
+- [ ] B02 P3s (review B02-r1, 13 items): see the review file; pick up in the SEC pass before G5.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
