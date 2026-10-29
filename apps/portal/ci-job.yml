@@ -1,0 +1,28 @@
+# CI job for the portal, to be pasted under `jobs:` in .github/workflows/ci.yml.
+# Serves: plan §7.3 P00 (install, lint, typecheck, test, build, size report, client regeneration diff check).
+# Called by: GitHub Actions once the Orchestrator moves it into ci.yml (that file did not exist on the P00
+# branch, and P00 may not create it).
+portal:
+  runs-on: ubuntu-latest
+  timeout-minutes: 15
+  defaults:
+    run:
+      working-directory: apps/portal
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: npm
+        cache-dependency-path: apps/portal/package-lock.json
+    - run: npm ci
+    # D-003: regenerate the client from packages/openapi/openapi.json and the error table from
+    # docs/api/error-codes.md; fails when the committed files differ.
+    - run: npm run gen:check
+    - run: npm run lint
+    - run: npm run typecheck
+    - run: npm test
+    - run: npm run build
+    - name: Initial bundle size (fails above 400 KB gzipped)
+      shell: bash # explicit bash adds -o pipefail, so the budget failure survives the tee
+      run: node scripts/bundle-size.ts | tee -a "$GITHUB_STEP_SUMMARY"
