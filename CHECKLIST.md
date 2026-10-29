@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 15 % (9/59 items)
+Completion: 17 % (10/59 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -12,7 +12,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] CHECKLIST.md, CHANGELOG.md, TODO.md, docs/LIBRARIES.md
 - [x] docs/agents: roles, checkpoint protocol, QA rubric, acceptance files
 - [x] CodeGraph initialised (`codegraph init .`) — 2026-10-29, re-run `codegraph sync` after every merge
-- [ ] Ponytail plugin installed for this project (user runs `/plugin install ponytail@ponytail`)
+- [x] Ponytail plugin installed for this project (user reloaded plugins 2026-10-30; reviewers run `/ponytail-review` from here on)
 
 ## G0 Foundation
 

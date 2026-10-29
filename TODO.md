@@ -97,11 +97,13 @@ _(empty)_
 - [ ] W02 follow-ups: retag or delete the BM-16 placeholder in `qa/robot/mobile/network_profiles.robot` (the real test lives in `qa/robot/public/page.robot`) so `gate-readiness G1` passes; add `apps/public-page/package.json` to `libraries-check.py`'s manifest list; @lhci/cli 0.15.1 brings 16 npm-audit advisories in dev-only tools (not shipped) — revisit at G5; adding npm tools in apps/public-page needs `npm install --legacy-peer-deps` (npm ci works); re-check both Lighthouse profiles after W03 adds CSS; the new coordinate rules fail closed on a few prose shapes (`calculated: 12.3456`).
 - [ ] B03/P01: admin-issued initial PIN for office users (pilot accepts first-OTP-sets-PIN, B02 review P2-6 shortcut).
 - [ ] B02 P3s (review B02-r1, 13 items): see the review file; pick up in the SEC pass before G5.
+- [ ] B03 P3s (review B03-r1): `create_farmer` edge cases (phone already holding a staff role in the same FPO gets no farmer membership; two concurrent creates with the same new phone → 500); move cursor helpers to `core/` once a second module needs them; the ≤ 50 KB simplify test only runs on the 1 KB fixture.
+- [ ] Verifier watch-list for B03 on the live stack: geography `ST_Covers` on MULTIPOLYGON vs point; asyncpg parameter typing in raw SQL; the 100 m point classified `near_edge` not `outside`.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).
-- [ ] Run `/plugin install ponytail@ponytail` in this project.
+- [x] Run `/plugin install ponytail@ponytail` in this project (done 2026-10-30).
 - [ ] Provide SMS/OTP provider credentials when moving past the console OTP sender.
 - [ ] Record Tamil voice prompts (about 150 clips).
 - [ ] Decide on the Datameet / Census 2011 sub-district file versus a surveyed GI boundary.
