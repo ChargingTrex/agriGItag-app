@@ -94,6 +94,11 @@ class Audited:
     """Mixin marking a model whose inserts, updates and deletes are written to `audit_log` (FR25).
 
     Append-only tables (event_versions, evidence_photos) are their own history and do not use it.
+
+    The listener only sees ORM unit-of-work flushes. Core statements (`insert()`/`update()`/`delete()`,
+    including the sync push's `INSERT … ON CONFLICT (id) DO NOTHING`, backend-design.md §3) and ORM bulk
+    statements bypass it, so code writing audited tables that way must add its audit rows itself
+    (e.g. `session.execute(insert(AUDIT_LOG), rows)` in the same transaction).
     """
 
 

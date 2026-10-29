@@ -83,7 +83,12 @@ class Address(BaseModel):
     """
 
     village: str | None = Field(None, max_length=120, description="Village or hamlet name.")
-    block: str | None = Field(None, max_length=120, description="Block or taluk (sub-district).")
+    block: str | None = Field(None, max_length=120, description="Development block.")
+    taluk: str | None = Field(
+        None,
+        max_length=120,
+        description="Taluk (sub-district); second GI check against registered taluks (FR53).",
+    )
     district: str | None = Field(None, max_length=120, description="District, e.g. `Virudhunagar`.")
     state: str | None = Field(None, max_length=120, description="State, e.g. `Tamil Nadu`.")
     pin: str | None = Field(None, pattern=r"^[1-9][0-9]{5}$", description="Six-digit Indian PIN code.")

@@ -1,9 +1,12 @@
 """Initial schema: every table of backend-design.md §2, PostGIS, append-only and reference triggers.
 
 Serves: D-012 (schema-first: one initial migration before module work packages start), D-005 (append-only
-event versions, evidence photos, audit log and consents), D-014, D-019, FR25, FR61, FR4 (reference bundles,
-backend-design.md §3). Callers: `alembic upgrade` / `alembic downgrade` (apps/api/alembic.ini);
-tests/integration/test_schema.py.
+event versions, evidence photos, audit log and consents), D-014, D-019, D-023 (enums as VARCHAR + CHECK),
+FR25, FR61, FR4 (reference bundles, backend-design.md §3). Callers: `alembic upgrade` / `alembic downgrade`
+(apps/api/alembic.ini); tests/integration/test_schema.py.
+
+Requires PostgreSQL ≥ 15 (`NULLS NOT DISTINCT` on `uq_reference_versions_part`) with PostGIS; the stack
+and tests use PostgreSQL 16 + PostGIS 3.4.
 
 The create_table / create_index calls mirror the models in agritrace/modules/*/models.py exactly, so
 `alembic check` reports no drift; the raw SQL at the end (functions, triggers, sequence) is invisible to
@@ -78,8 +81,11 @@ APPEND_ONLY: dict[str, tuple[str, ...]] = {
 }
 
 # Every change to a table feeding an offline reference bundle bumps that part's version for the row's FPO
-# (fpo_id NULL for global rows) to the next value of one sequence, so `GET /v1/sync/reference?since=<n>`
-# compares a single number across parts (backend-design.md §3). Trigger-inserted rows get a random UUID id.
+# (fpo_id NULL for global rows) to the next value of one sequence. The value is drawn inside DO UPDATE,
+# i.e. under the row lock, so a part's version never goes backwards under concurrent writers. The sequence
+# orders transaction starts, not commits, so one global `since` can miss a part that commits late: B06 must
+# compare per part (the manifest's version/etag), not trust a single cross-part `since` (review B01-r1 F1).
+# Trigger-inserted rows get a random UUID id.
 BUMP_REFERENCE_VERSION = """
 CREATE FUNCTION bump_reference_version() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
@@ -93,7 +99,7 @@ BEGIN
     INSERT INTO reference_versions (id, part, fpo_id, version)
     VALUES (gen_random_uuid(), TG_ARGV[0], (row_data ->> 'fpo_id')::uuid, nextval('reference_version_seq'))
     ON CONFLICT ON CONSTRAINT uq_reference_versions_part
-    DO UPDATE SET version = EXCLUDED.version, updated_at = now();
+    DO UPDATE SET version = nextval('reference_version_seq'), updated_at = now();
     RETURN NULL;
 END
 $$

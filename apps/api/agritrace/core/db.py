@@ -59,13 +59,13 @@ class Base(DeclarativeBase):
         Decimal: Numeric(12, 3),
         datetime: DateTime(timezone=True),
         dict[str, Any]: JSONB(),
-        # DECISION D-014: enums are VARCHAR(32) + CHECK constraint, not Postgres ENUM types.
+        # DECISION D-023: enums are VARCHAR(32) + CHECK constraint, not Postgres ENUM types.
         #   ADV: event types and statuses grow additively (D-014, D-020); a new value is a plain
         #     DROP/ADD CONSTRAINT inside the migration transaction, with no `ALTER TYPE ... ADD VALUE`
         #     (unusable in the transaction that adds it) and no type objects to drop on downgrade.
         #   COMPROMISE: `alembic check` does not compare CHECK constraints, so a value added to a StrEnum
-        #     without a migration is not caught as drift; the DB still rejects the value at insert, and
-        #     tests/unit/test_models.py pins each column's allowed values to its StrEnum.
+        #     without a migration is not caught as drift; tests/integration/test_schema.py compares every
+        #     live CHECK (pg_get_constraintdef) with its StrEnum instead.
         enum.Enum: Enum(
             enum.Enum, native_enum=False, create_constraint=True, length=32, values_callable=_enum_values
         ),

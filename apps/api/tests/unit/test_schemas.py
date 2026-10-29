@@ -120,7 +120,7 @@ def test_empty_otp_is_off_and_secrets_stay_hidden() -> None:
 
 def test_jsonb_shapes_round_trip_and_validate() -> None:
     """Address, PracticeTags, Reconciliation and YieldCheck validate and round-trip through JSON."""
-    address = Address(village="P Thottiyangulam", block="Tiruchuli", district="Virudhunagar", pin="626129")
+    address = Address(village="P Thottiyangulam", taluk="Tiruchuli", district="Virudhunagar", pin="626129")
     assert Address.model_validate_json(address.model_dump_json()) == address
     with pytest.raises(ValidationError):
         Address(pin="06261")  # five digits, leading zero

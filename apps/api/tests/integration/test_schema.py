@@ -1,12 +1,15 @@
 """Integration tests of migration 0001 on a real PostGIS database.
 
-Covers: no drift, append-only triggers, SRID, reference version bumps and audit rows.
+Covers: no drift, enum CHECKs equal to the StrEnums, append-only triggers, SRID, reference version bumps
+and audit rows.
 
 Serves: B01 acceptance (`alembic upgrade head && alembic check` no drift; `UPDATE event_versions ...`
-raises `append_only_violation`; plots SRID 4326), D-005, D-012, FR25, FR61, backend-design.md §3 bundles.
+raises `append_only_violation`; plots SRID 4326), D-005, D-012, D-023, FR25, FR61, backend-design.md §3.
 Callers: pytest (`make test`); needs Docker (PostGIS container from tests/conftest.py `stack`).
 """
 
+import importlib
+import re
 import secrets
 import subprocess
 import sys
@@ -17,11 +20,11 @@ from pathlib import Path
 
 import pytest
 from geoalchemy2 import WKTElement
-from sqlalchemy import text
+from sqlalchemy import Enum, text
 from sqlalchemy.exc import DBAPIError
 
 from agritrace.core.audit import AuditContext, reset_audit_context, set_audit_context
-from agritrace.core.db import get_engine, get_sessionmaker
+from agritrace.core.db import Base, get_engine, get_sessionmaker
 from agritrace.core.enums import ChangeKind, EventSubject, EventType, OrgKind, PinMethod
 from agritrace.core.ids import lot_code, uuid7
 from agritrace.core.schemas import GeoPoint
@@ -29,6 +32,10 @@ from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto
 from agritrace.modules.identity.models import User
 from agritrace.modules.lots_batches.models import Lot
 from agritrace.modules.registry.models import Crop, Farmer, Fpo, Plot
+
+# The enum drift guard walks every table, so load the models of the modules not imported above too.
+for _name in ("notifications", "publishing", "quality", "reporting", "rules_flags"):
+    importlib.import_module(f"agritrace.modules.{_name}.models")
 
 pytestmark = pytest.mark.integration
 
@@ -162,6 +169,31 @@ def test_upgrade_head_then_check_reports_no_drift(schema: None) -> None:
     _alembic("downgrade", "base")
     _alembic("upgrade", "head")
     assert "No new upgrade operations detected" in _alembic("check")
+
+
+async def test_live_enum_checks_match_the_strenums(schema: None) -> None:
+    """Every enum column's CHECK in the database allows exactly its StrEnum's values (D-023 drift guard).
+
+    `alembic check` ignores CHECK constraints, so a value added to a StrEnum without a migration is caught
+    here instead of at the first production insert.
+
+    Args:
+        schema: the migrated database (fixture).
+    """
+    expected = {
+        f"ck_{table.name}_{column.type.name}": (column.name, {m.value for m in column.type.enum_class})
+        for table in Base.metadata.tables.values()
+        for column in table.columns
+        if isinstance(column.type, Enum) and column.type.enum_class is not None
+    }
+    query = text("SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE contype = 'c'")
+    async with get_engine().connect() as conn:
+        live = dict((await conn.execute(query)).tuples().all())
+    assert len(expected) == 32
+    for name, (column, values) in expected.items():
+        assert name in live, f"{name} missing in the database"
+        assert f"({column})::text" in live[name], f"{name} does not check {column}: {live[name]}"
+        assert set(re.findall(r"'([^']*)'::", live[name])) == values, f"{name}: {live[name]}"
 
 
 @pytest.mark.parametrize(

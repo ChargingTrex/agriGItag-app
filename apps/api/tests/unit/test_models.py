@@ -3,7 +3,7 @@
 Covers completeness against the spec, documentation, enums, mixins, spatial columns, key constraints,
 and agreement between the models and migration 0001.
 
-Serves: D-012 (schema-first), CLAUDE.md §5 (every model documented, every column commented), D-005, D-014,
+Serves: D-012 (schema-first), CLAUDE.md §5 (every model documented, every column commented), D-005, D-023,
 backend-design.md §2. Callers: pytest (`make test-unit`); no database needed.
 """
 
@@ -103,7 +103,7 @@ def _enum_columns() -> list[tuple[str, Enum]]:
 
 @pytest.mark.parametrize(("where", "type_"), _enum_columns())
 def test_enum_columns_store_values_and_round_trip(where: str, type_: Enum) -> None:
-    """Enum columns are VARCHAR + CHECK of the StrEnum values and convert both ways (D-014).
+    """Enum columns are VARCHAR + CHECK of the StrEnum values and convert both ways (D-023).
 
     Args:
         where: `table.column`, for the failure message.
