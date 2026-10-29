@@ -34,7 +34,7 @@ Written for: whoever resumes the multi-agent build tomorrow (human or the Orches
 
 | WP | Branch / commit | State at close | Next step |
 |---|---|---|---|
-| M01 Drift offline store | `worktree-agent-abd04c405cb9f3ca4` @ cba87cf | review r1 in progress | if PASS → verify → merge |
+| M01 Drift offline store | `worktree-agent-abd04c405cb9f3ca4` @ cba87cf (+ round 2 possibly committed after close) | review r1 PASS with 2 P2 (`PRAGMA recursive_triggers = ON`; reset rows stuck in `sent`); round 2 requested 00:24 | read `docs/agents/reports/M01.md` Round 2 → confirm the P2 fixes (quick Orchestrator check or reviewer) → verify (`flutter test test/db`) → merge; write ADR **D-026** (dates stored as ISO text with ms in Drift) which the worker cites |
 | M05 farmer widget kit | `worktree-agent-afab3dd3b4350ce54` @ 8d5bd91 | **unreviewed** (finished 00:14) | spawn MOB reviewer (use `/ponytail-review`) → verify → merge; conflicts expected with M01 in `docs/LIBRARIES.md`, `CHANGELOG.md`, `pubspec.yaml`, `ios/` files |
 
 ## 2. Blockers only a human can clear (do these first tomorrow)
@@ -48,7 +48,7 @@ Written for: whoever resumes the multi-agent build tomorrow (human or the Orches
 
 1. `git status` clean on `main`; `git worktree list` shows the four branches above.
 2. Finish the in-flight reviews: read `docs/agents/reviews/B02-r2.md` / `W02-r1.md` / `M01-r1.md` if they exist (agents may have written them after this handover); otherwise spawn the reviewer per `docs/agents/checkpoint-protocol.md`.
-3. Merge order: M01 → M05 (W02 merged 00:19, B02 merged 00:20). For each: `git merge --no-ff <branch>`; append-only conflicts in `CHANGELOG.md`, `TODO.md`, `docs/LIBRARIES.md` are resolved by keeping both sides; after any backend merge run `cd apps/api && uv run python -m agritrace.export_openapi && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py && cd ../portal && npm run gen:api`, then `cd apps/api && uv run pytest tests/unit -q && uv run lint-imports`; then `codegraph sync .`, tick `CHECKLIST.md`, `python3 infra/scripts/checklist-progress.py`, commit.
+3. Merge order: M01 (after its round 2) → M05 (W02 merged 00:19, B02 merged 00:20). Both touch `pubspec.yaml`, `docs/LIBRARIES.md`, `CHANGELOG.md`, `ios/Podfile` and the xcconfig files: expect conflicts, keep both sides. For each: `git merge --no-ff <branch>`; append-only conflicts in `CHANGELOG.md`, `TODO.md`, `docs/LIBRARIES.md` are resolved by keeping both sides; after any backend merge run `cd apps/api && uv run python -m agritrace.export_openapi && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py && cd ../portal && npm run gen:api`, then `cd apps/api && uv run pytest tests/unit -q && uv run lint-imports`; then `codegraph sync .`, tick `CHECKLIST.md`, `python3 infra/scripts/checklist-progress.py`, commit.
 4. Then start Wave 3 per `PLAN.md` §7.6: **B04 notifications**, **B06 events + sync push** (B02 and B03 are merged, so it can start immediately), **B13 config-driven fields + masters**, **M04 capture kit**, **M06 auth** (needs B02 contract in `docs/api/conventions.md`), **M02 sync engine** (needs B06). Worker prompt pattern: role card + acceptance file + spec sections + "DOCUMENTATION RULES ARE NOT OPTIONAL" + Ponytail; keep ≤ 4 workers while disk is tight.
 5. Reviewers now invoke the `ponytail:ponytail-review` skill (plugin loaded 2026-10-30); at the end of each wave run `ponytail:ponytail-audit` and file `docs/agents/audits/wave-<n>.md`.
 
@@ -59,6 +59,8 @@ Written for: whoever resumes the multi-agent build tomorrow (human or the Orches
 - Process deviations (logged in G0.md): Q00 had 4 worker rounds, B00 4, B02 will have 2; several packages merged on PASS-PENDING-STACK because Docker was down.
 
 ## 4a. Small chores left at close
+- Write `docs/adr/D-026.md` (Drift stores dates as ISO-8601 text with millisecond precision; ADV ms precision for the save→ack metric, COMPROMISE julianday() comparisons) and add the DECISIONS.md row.
+- M01 P3s (review M01-r1): Linux CI may need `libsqlite3-dev`; add a CI check that Drift generated code and the schema dump are current; M02 must map camelCase enum names to the server's snake_case; perf test must be measured file-backed on the Go AVD by Q01.
 - Delete the BM-16 placeholder test in `qa/robot/mobile/network_profiles.robot` (the real one is in `qa/robot/public/page.robot`), so `gate-readiness.py G1` passes.
 - Spawn the formal W02 Verifier (no Docker needed).
 
