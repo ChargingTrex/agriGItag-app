@@ -161,6 +161,90 @@ class NotImplementedPilotError(AppError):
     fix = "No client action; the feature is planned after the pilot."
 
 
+class ClientIdConflictError(AppError):
+    """A client-generated id is already used by a record of another user or FPO (D-005)."""
+
+    code, status, message_key = "client_id_conflict", 409, "error.client_id_conflict"
+    message = "This id already belongs to another record."
+    fix = "Generate a new UUIDv7 for the entry on the device and send it again."
+
+
+# Quality readings and grading (B05; PRD §6.8 FR47–FR50). Plausibility codes equal the grade engine's
+# `Violation.code` values, so the phone preview (D-006) shows the same reason.
+
+
+class ImplausibleValueError(AppError):
+    """A reading lies outside the parameter's physically plausible range (FR50)."""
+
+    code, status, message_key = "implausible_value", 422, "error.implausible_value"
+    message = "The value is outside the plausible range for this parameter."
+    fix = "Re-measure and enter the value shown by the instrument; `details` gives the allowed range."
+
+
+class UnitMismatchError(AppError):
+    """A reading's unit differs from the unit its Standards Profile parameter uses (FR42, FR58)."""
+
+    code, status, message_key = "unit_mismatch", 422, "error.unit_mismatch"
+    message = "The unit does not match the standards profile."
+    fix = "Send the value in the unit named in `details` (convert it on the device if needed)."
+
+
+class UnknownParameterError(AppError):
+    """A reading names a parameter the crop's Standards Profile does not define (FR46)."""
+
+    code, status, message_key = "unknown_parameter", 422, "error.unknown_parameter"
+    message = "This parameter is not part of the crop's standards profile."
+    fix = "Refresh the standards bundle and pick a parameter from the current profile."
+
+
+class SourceNotAllowedError(AppError):
+    """The measurement source (lab, instrument, visual) is not accepted for this parameter (FR44)."""
+
+    code, status, message_key = "source_not_allowed", 422, "error.source_not_allowed"
+    message = "This measurement source is not accepted for this parameter."
+    fix = "Measure with one of the sources listed in `details` (e.g. a calibrated instrument or a lab)."
+
+
+class InstrumentCalibrationExpiredError(AppError):
+    """The instrument was past its calibration due date (or has none) when the reading was taken (FR50)."""
+
+    code, status, message_key = "instrument_calibration_expired", 422, "error.instrument_calibration_expired"
+    message = "The instrument's calibration has expired."
+    fix = "Recalibrate the instrument and update its calibration dates, or use another calibrated instrument."
+
+
+class MoistureTrailViolationError(AppError):
+    """A later-stage reading rose above the earlier stage beyond the tolerance, without a reason (FR50)."""
+
+    code, status, message_key = "moisture_trail_violation", 422, "error.moisture_trail_violation"
+    message = "The value rose since the previous stage."
+    fix = "Re-measure, or send the reading again with a `reason_code` (it is then accepted and flagged)."
+
+
+class UnknownGradeForProfileError(AppError):
+    """The declared grade is not in the Standards Profile applied (FR49), e.g. "A" for AGMARK chilli."""
+
+    code, status, message_key = "unknown_grade_for_profile", 422, "error.unknown_grade_for_profile"
+    message = "This grade does not exist in the standards profile."
+    fix = "Declare one of the grades listed in `details`."
+
+
+class NoPublishedProfileError(AppError):
+    """The crop has no published Standards Profile, so readings cannot be checked or graded (FR47)."""
+
+    code, status, message_key = "no_published_profile", 422, "error.no_published_profile"
+    message = "The crop has no published standards profile."
+    fix = "Ask the compliance team (super-admin) to publish a standards profile for the crop."
+
+
+class ProfileIncompleteNotAllowedError(AppError):
+    """Publishing a profile version whose grading parameters still say load_from_standard (FR47, D-015)."""
+
+    code, status, message_key = "profile_incomplete_not_allowed", 422, "error.profile_incomplete_not_allowed"
+    message = "Some grading parameters have no limits yet (load_from_standard)."
+    fix = "Enter the limits from the standard, or publish with `allow_incomplete: true` (public note shown)."
+
+
 def _envelope(
     status: int, code: str, message: str, details: Any = None, headers: Mapping[str, str] | None = None
 ) -> JSONResponse:

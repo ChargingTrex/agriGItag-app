@@ -4,6 +4,66 @@
  */
 
 export interface paths {
+    "/v1/batches/{batch_id}/grade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a batch's latest grade
+         * @description The batch's most recent grade computation with its per-parameter breakdown (FR48–FR51).
+         */
+        get: operations["get_batch_grade_v1_batches__batch_id__grade_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/grading": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Grade a batch
+         * @description Records any inline readings, then computes the grade from the batch's readings against the crop's profile (FR48) and compares it with the declared grade (FR49). Status `incomplete` (a required reading is missing) or `declared_above_computed` blocks the admin's approval (B09). A declared grade the profile does not know is rejected with `unknown_grade_for_profile`.
+         */
+        post: operations["grade_batch_v1_batches__batch_id__grading_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a batch's quality readings
+         * @description Grading and storage readings recorded on a batch (Dataflow Stage 8).
+         */
+        get: operations["list_batch_readings_v1_batches__batch_id__readings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/healthz": {
         parameters: {
             query?: never;
@@ -44,6 +104,130 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/instruments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the FPO's instruments
+         * @description Moisture meters, colorimeters, hygrometers and scales with their calibration dates (FR42).
+         */
+        get: operations["list_instruments_v1_instruments_get"];
+        put?: never;
+        /**
+         * Register an instrument
+         * @description Adds an instrument with its calibration dates to the caller's FPO. Readings measured after `calibration_due_on` are rejected (FR50). QC officer or FPO admin.
+         */
+        post: operations["create_instrument_v1_instruments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/lots/{lot_id}/readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a lot's quality readings
+         * @description Drying-end and intake readings of a lot (its moisture trail, Dataflow Stages 5 and 7).
+         */
+        get: operations["list_lot_readings_v1_lots__lot_id__readings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/quality-readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a quality reading
+         * @description Stores one measured parameter of a lot or batch (FR42). Checked at entry against the crop's published profile (FR50): `unknown_parameter`, `unit_mismatch`, `implausible_value`, `source_not_allowed`, `instrument_calibration_expired`, `moisture_trail_violation` (accepted and flagged when `reason_code` is given). `client_id` is the idempotency key: resending it returns the stored reading with 200.
+         */
+        post: operations["create_quality_reading_v1_quality_readings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/standards-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Standards Profiles
+         * @description Profiles per crop with the number of the version currently published (FR47).
+         */
+        get: operations["list_standards_profiles_v1_standards_profiles_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/standards-profiles/{profile_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a Standards Profile version (super-admin)
+         * @description Validates the rules JSON (grades, limits, stages, gates, trail rules) and stores the next version. Publishing retires the previous published version. Publishing while a grading parameter is still `load_from_standard` needs `allow_incomplete: true` and stamps a `public_note`. Super-admin only.
+         */
+        post: operations["create_standards_profile_version_v1_standards_profiles__profile_id__versions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/standards-profiles/{profile_id}/versions/{version_no}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one Standards Profile version
+         * @description The rules JSON of one version (backend-design.md §4) with its edition and status.
+         */
+        get: operations["get_standards_profile_version_v1_standards_profiles__profile_id__versions__version_no__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -78,6 +262,108 @@ export interface components {
             error: components["schemas"]["ErrorBody"];
         };
         /**
+         * GeoPoint
+         * @description A WGS84 point with the device's reported accuracy.
+         */
+        GeoPoint: {
+            /**
+             * Accuracy M
+             * @description Horizontal accuracy radius in metres.
+             */
+            accuracy_m?: number | null;
+            /**
+             * Lat
+             * @description Latitude in decimal degrees (WGS84).
+             */
+            lat: number;
+            /**
+             * Lon
+             * @description Longitude in decimal degrees (WGS84).
+             */
+            lon: number;
+        };
+        /**
+         * GradeOut
+         * @description A stored grade computation of a batch (FR48, FR49, FR51).
+         */
+        GradeOut: {
+            /**
+             * Batch Id
+             * Format: uuid
+             * @description Batch graded.
+             */
+            batch_id: string;
+            /**
+             * Computed At
+             * Format: date-time
+             * @description When the engine ran.
+             */
+            computed_at: string;
+            /**
+             * Computed Grade
+             * @description Lowest grade every parameter meets; null when incomplete.
+             */
+            computed_grade: string | null;
+            /**
+             * Declared Grade
+             * @description Grade the QC officer declared.
+             */
+            declared_grade: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Computation id.
+             */
+            id: string;
+            /**
+             * Lab Certified
+             * @description Any batch reading of a profile parameter is a lab result with a NABL number (FR51).
+             */
+            lab_certified: boolean;
+            /**
+             * Per Parameter
+             * @description Contribution of each parameter, by code.
+             */
+            per_parameter: {
+                [key: string]: components["schemas"]["ParameterResult"];
+            };
+            /**
+             * Profile Version Id
+             * Format: uuid
+             * @description Profile version applied.
+             */
+            profile_version_id: string;
+            /** @description ok, incomplete or declared_above_computed (FR49 blocks approval). */
+            status: components["schemas"]["GradeStatus"];
+        };
+        /**
+         * GradeStatus
+         * @description Outcome of a grade computation (FR48, FR49).
+         * @enum {string}
+         */
+        GradeStatus: "incomplete" | "ok" | "declared_above_computed";
+        /**
+         * GradingIn
+         * @description Grade a batch: the declared grade plus the readings to use (Dataflow Stage 8, FR48, FR49).
+         */
+        GradingIn: {
+            /**
+             * Declared Grade
+             * @description Grade the QC officer declares.
+             */
+            declared_grade: string;
+            /**
+             * Reading Ids
+             * @description Readings of this batch to use; omitted: every reading of the batch.
+             */
+            reading_ids?: string[] | null;
+            /**
+             * Readings
+             * @description Readings to record first, then used too; their subject is forced to this batch.
+             */
+            readings?: components["schemas"]["QualityReadingIn"][];
+        };
+        /**
          * Health
          * @description Status of each dependency: `ok` or `error: <ExceptionClass>` (details go to the server log only).
          */
@@ -98,6 +384,1082 @@ export interface components {
              */
             s3: string;
         };
+        /**
+         * InstrumentIn
+         * @description A moisture meter, colorimeter, hygrometer or scale registered by the FPO (FR42, FR50).
+         */
+        InstrumentIn: {
+            /**
+             * Active
+             * @description False hides it from new readings.
+             * @default true
+             */
+            active: boolean;
+            /**
+             * Calibrated On
+             * @description Date of last calibration (YYYY-MM-DD).
+             */
+            calibrated_on?: string | null;
+            /**
+             * Calibration Cert Photo Id
+             * @description Evidence photo of the certificate.
+             */
+            calibration_cert_photo_id?: string | null;
+            /**
+             * Calibration Due On
+             * @description Calibration due date; readings measured after it are rejected (FR50).
+             */
+            calibration_due_on?: string | null;
+            /** @description Instrument kind. */
+            kind: components["schemas"]["InstrumentKind"];
+            /**
+             * Make Model
+             * @description Make and model.
+             */
+            make_model: string;
+            /**
+             * Serial No
+             * @description Serial number.
+             */
+            serial_no: string;
+        };
+        /**
+         * InstrumentKind
+         * @description Kind of registered measuring instrument (FR42, PRD §5 Instrument).
+         * @enum {string}
+         */
+        InstrumentKind: "moisture_meter" | "colorimeter" | "hygrometer" | "scale";
+        /**
+         * InstrumentOut
+         * @description A registered instrument.
+         */
+        InstrumentOut: {
+            /**
+             * Active
+             * @description False hides it from new readings.
+             * @default true
+             */
+            active: boolean;
+            /**
+             * Calibrated On
+             * @description Date of last calibration (YYYY-MM-DD).
+             */
+            calibrated_on?: string | null;
+            /**
+             * Calibration Cert Photo Id
+             * @description Evidence photo of the certificate.
+             */
+            calibration_cert_photo_id?: string | null;
+            /**
+             * Calibration Due On
+             * @description Calibration due date; readings measured after it are rejected (FR50).
+             */
+            calibration_due_on?: string | null;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Instrument id.
+             */
+            id: string;
+            /** @description Instrument kind. */
+            kind: components["schemas"]["InstrumentKind"];
+            /**
+             * Make Model
+             * @description Make and model.
+             */
+            make_model: string;
+            /**
+             * Serial No
+             * @description Serial number.
+             */
+            serial_no: string;
+        };
+        /**
+         * LabCertifiedRequires
+         * @description What makes a grade "Lab-certified" on the public page (FR51).
+         */
+        LabCertifiedRequires: {
+            /**
+             * @description At least one reading used for the grade must have this source.
+             * @default lab
+             */
+            any_parameter_source: components["schemas"]["ReadingSource"];
+            /**
+             * Nabl No Present
+             * @description That reading must also carry a NABL accreditation number.
+             * @default true
+             */
+            nabl_no_present: boolean;
+        };
+        /**
+         * LotGate
+         * @description A reading condition a lot must meet before a lifecycle step, e.g. ready for sale (Dataflow Stage 5).
+         */
+        "LotGate-Input": {
+            /**
+             * Max
+             * @description Highest passing value, inclusive, e.g. moisture ≤ 11 %.
+             */
+            max?: number | string | null;
+            /**
+             * Min
+             * @description Lowest passing value, inclusive.
+             */
+            min?: number | string | null;
+            /**
+             * Parameter
+             * @description Parameter code checked.
+             */
+            parameter: string;
+            /** @description Stage whose latest reading is checked. */
+            stage: components["schemas"]["ReadingStage"];
+        };
+        /**
+         * LotGate
+         * @description A reading condition a lot must meet before a lifecycle step, e.g. ready for sale (Dataflow Stage 5).
+         */
+        "LotGate-Output": {
+            /**
+             * Max
+             * @description Highest passing value, inclusive, e.g. moisture ≤ 11 %.
+             */
+            max?: number | null;
+            /**
+             * Min
+             * @description Lowest passing value, inclusive.
+             */
+            min?: number | null;
+            /**
+             * Parameter
+             * @description Parameter code checked.
+             */
+            parameter: string;
+            /** @description Stage whose latest reading is checked. */
+            stage: components["schemas"]["ReadingStage"];
+        };
+        /** Page[InstrumentOut] */
+        Page_InstrumentOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["InstrumentOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[QualityReadingOut] */
+        Page_QualityReadingOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["QualityReadingOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[StandardsProfileOut] */
+        Page_StandardsProfileOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["StandardsProfileOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /**
+         * Parameter
+         * @description One quality parameter of a profile: unit, method, where it is captured and its limit per grade.
+         */
+        "Parameter-Input": {
+            /**
+             * Capture Stages
+             * @description Stages where this parameter is captured (FR43 moisture: drying end, intake, grading).
+             */
+            capture_stages?: components["schemas"]["ReadingStage"][];
+            /**
+             * Code
+             * @description Stable snake_case code readings use, e.g. `moisture`.
+             */
+            code: string;
+            /**
+             * Declare For Grades
+             * @description Grades whose label must declare this value (role label_declaration).
+             */
+            declare_for_grades?: string[];
+            /**
+             * Exception Flags
+             * @description Batch attributes (e.g. `monsooned` coffee) under which a value outside the limits is a warning, not a fail: the parameter then does not lower the grade.
+             */
+            exception_flags?: string[];
+            /**
+             * @description Stage whose latest reading is used to compute the grade.
+             * @default grading
+             */
+            grading_stage: components["schemas"]["ReadingStage"];
+            /**
+             * Limits
+             * @description Interval the value must lie in to reach each grade, keyed by grade name; when set, every grade needs a key (`{}` means no constraint for that grade). Null: not graded on this parameter (see `status`).
+             */
+            limits?: {
+                [key: string]: components["schemas"]["Range-Input"];
+            } | null;
+            /**
+             * Max Grade For Source
+             * @description Best grade a reading from that source can earn, e.g. visual → Standard (FR44).
+             */
+            max_grade_for_source?: {
+                [key: string]: string;
+            };
+            /**
+             * Method Ref
+             * @description Test method the standard prescribes (FR42).
+             */
+            method_ref?: string | null;
+            /**
+             * Name En
+             * @description English label for forms and the public page.
+             */
+            name_en?: string | null;
+            /**
+             * Name Local
+             * @description Label in the local script (Tamil for the pilot).
+             */
+            name_local?: string | null;
+            /** @description Physically sensible range; readings outside it are rejected at entry (FR50). */
+            plausible?: components["schemas"]["Range-Input"] | null;
+            /**
+             * Required
+             * @description A grading reading is needed for a complete grade (only when `limits` is set).
+             * @default false
+             */
+            required: boolean;
+            /**
+             * Role
+             * @description `grading` takes part in the grade; `label_declaration` is printed on the label for `declare_for_grades`; `contract_spec` is a buyer specification, recorded but never graded.
+             * @default grading
+             * @enum {string}
+             */
+            role: "grading" | "label_declaration" | "contract_spec";
+            /**
+             * Sources Allowed
+             * @description Measurement sources accepted at entry for this parameter (FR42, FR44).
+             */
+            sources_allowed?: components["schemas"]["ReadingSource"][];
+            /**
+             * Status
+             * @description `load_from_standard`: limits still to be copied from the standard; graded as missing.
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "load_from_standard";
+            /**
+             * Unit
+             * @description Unit every reading must carry, e.g. `%`.
+             */
+            unit: string;
+        };
+        /**
+         * Parameter
+         * @description One quality parameter of a profile: unit, method, where it is captured and its limit per grade.
+         */
+        "Parameter-Output": {
+            /**
+             * Capture Stages
+             * @description Stages where this parameter is captured (FR43 moisture: drying end, intake, grading).
+             */
+            capture_stages?: components["schemas"]["ReadingStage"][];
+            /**
+             * Code
+             * @description Stable snake_case code readings use, e.g. `moisture`.
+             */
+            code: string;
+            /**
+             * Declare For Grades
+             * @description Grades whose label must declare this value (role label_declaration).
+             */
+            declare_for_grades?: string[];
+            /**
+             * Exception Flags
+             * @description Batch attributes (e.g. `monsooned` coffee) under which a value outside the limits is a warning, not a fail: the parameter then does not lower the grade.
+             */
+            exception_flags?: string[];
+            /**
+             * @description Stage whose latest reading is used to compute the grade.
+             * @default grading
+             */
+            grading_stage: components["schemas"]["ReadingStage"];
+            /**
+             * Limits
+             * @description Interval the value must lie in to reach each grade, keyed by grade name; when set, every grade needs a key (`{}` means no constraint for that grade). Null: not graded on this parameter (see `status`).
+             */
+            limits?: {
+                [key: string]: components["schemas"]["Range-Output"];
+            } | null;
+            /**
+             * Max Grade For Source
+             * @description Best grade a reading from that source can earn, e.g. visual → Standard (FR44).
+             */
+            max_grade_for_source?: {
+                [key: string]: string;
+            };
+            /**
+             * Method Ref
+             * @description Test method the standard prescribes (FR42).
+             */
+            method_ref?: string | null;
+            /**
+             * Name En
+             * @description English label for forms and the public page.
+             */
+            name_en?: string | null;
+            /**
+             * Name Local
+             * @description Label in the local script (Tamil for the pilot).
+             */
+            name_local?: string | null;
+            /** @description Physically sensible range; readings outside it are rejected at entry (FR50). */
+            plausible?: components["schemas"]["Range-Output"] | null;
+            /**
+             * Required
+             * @description A grading reading is needed for a complete grade (only when `limits` is set).
+             * @default false
+             */
+            required: boolean;
+            /**
+             * Role
+             * @description `grading` takes part in the grade; `label_declaration` is printed on the label for `declare_for_grades`; `contract_spec` is a buyer specification, recorded but never graded.
+             * @default grading
+             * @enum {string}
+             */
+            role: "grading" | "label_declaration" | "contract_spec";
+            /**
+             * Sources Allowed
+             * @description Measurement sources accepted at entry for this parameter (FR42, FR44).
+             */
+            sources_allowed?: components["schemas"]["ReadingSource"][];
+            /**
+             * Status
+             * @description `load_from_standard`: limits still to be copied from the standard; graded as missing.
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "load_from_standard";
+            /**
+             * Unit
+             * @description Unit every reading must carry, e.g. `%`.
+             */
+            unit: string;
+        };
+        /**
+         * ParameterResult
+         * @description How one parameter contributed to the grade (`grade_computations.per_parameter`).
+         */
+        ParameterResult: {
+            /**
+             * Capped By Source
+             * @description True when `max_grade_for_source` lowered the grade.
+             * @default false
+             */
+            capped_by_source: boolean;
+            /**
+             * Grade
+             * @description Grade reached by this parameter (graded only).
+             */
+            grade?: string | null;
+            /**
+             * Lab Certified
+             * @description An accredited lab result (source lab, non-blank NABL number) for this parameter is attached to the batch at any stage; lets the public page say which values are lab-measured (FR51).
+             * @default false
+             */
+            lab_certified: boolean;
+            /** @description Limit of the grade reached; null for the fail grade. */
+            limit?: components["schemas"]["Range-Output"] | null;
+            /**
+             * Outcome
+             * @description graded: limits applied; missing: no reading at the grading stage; profile_incomplete: limits still load_from_standard; not_graded: label or contract value; exception: limits waived by a batch exception flag (warning).
+             * @enum {string}
+             */
+            outcome: "graded" | "missing" | "profile_incomplete" | "not_graded" | "exception";
+            /**
+             * Parameter
+             * @description Parameter code.
+             */
+            parameter: string;
+            /**
+             * Reading Id
+             * @description Reading used.
+             */
+            reading_id?: string | null;
+            /** @description Source of the reading used. */
+            source?: components["schemas"]["ReadingSource"] | null;
+            /**
+             * Unit
+             * @description Unit of the value.
+             */
+            unit?: string | null;
+            /**
+             * Value
+             * @description Value used.
+             */
+            value?: string | null;
+        };
+        /**
+         * ProfileVersionIn
+         * @description A new version of a profile's rules, created by the compliance team (super-admin, FR47).
+         */
+        ProfileVersionIn: {
+            /**
+             * Allow Incomplete
+             * @description Required to publish while a grading parameter is still `load_from_standard`; the grade is then computed from the other parameters and a `public_note` is stamped if none is given.
+             * @default false
+             */
+            allow_incomplete: boolean;
+            /** @description The rules JSON (backend-design.md §4). */
+            rules: components["schemas"]["StandardsProfileRules-Input"];
+            /**
+             * Status
+             * @description `published` makes it the version used for new readings and retires the previous one.
+             * @default published
+             * @enum {string}
+             */
+            status: "draft" | "published";
+        };
+        /**
+         * ProfileVersionOut
+         * @description One version of a profile with its rules (FR47).
+         */
+        ProfileVersionOut: {
+            /**
+             * Clause Ref
+             * @description Clause cited.
+             */
+            clause_ref: string;
+            /**
+             * Edition
+             * @description Edition of the standard cited.
+             */
+            edition: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Version id; readings and grade computations reference it.
+             */
+            id: string;
+            /**
+             * Profile Id
+             * Format: uuid
+             * @description Profile.
+             */
+            profile_id: string;
+            /**
+             * Published At
+             * @description When it was published.
+             */
+            published_at: string | null;
+            /** @description The rules JSON. */
+            rules: components["schemas"]["StandardsProfileRules-Output"];
+            /** @description draft, published or retired. */
+            status: components["schemas"]["ProfileVersionStatus"];
+            /**
+             * Version No
+             * @description Version number, 1 upwards.
+             */
+            version_no: number;
+        };
+        /**
+         * ProfileVersionStatus
+         * @description Publication state of a standards profile version (FR47).
+         * @enum {string}
+         */
+        ProfileVersionStatus: "draft" | "published" | "retired";
+        /**
+         * QualityReadingIn
+         * @description One measured parameter of a lot or batch at a stage (FR42–FR46). Also the sync `quality_reading` data.
+         *
+         *     Exactly one of `lot_id` and `batch_id` is set.
+         */
+        QualityReadingIn: {
+            /**
+             * Batch Id
+             * @description Batch measured (grading, storage).
+             */
+            batch_id?: string | null;
+            /**
+             * Certificate Photo Id
+             * @description Evidence photo of the lab certificate.
+             */
+            certificate_photo_id?: string | null;
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 from the device; primary and idempotency key (D-005).
+             */
+            client_id: string;
+            /**
+             * Device Time
+             * @description Phone clock at capture.
+             */
+            device_time?: string | null;
+            /**
+             * Evidence Photo Id
+             * @description Photo of the meter display or colour card.
+             */
+            evidence_photo_id?: string | null;
+            /** @description Where it was measured (FR42). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Gps Time
+             * @description GPS fix time at capture.
+             */
+            gps_time?: string | null;
+            /**
+             * Instrument Id
+             * @description Instrument used; required when source=instrument.
+             */
+            instrument_id?: string | null;
+            /**
+             * Lab Nabl No
+             * @description NABL number; needed for Lab-certified.
+             */
+            lab_nabl_no?: string | null;
+            /**
+             * Lab Name
+             * @description Laboratory name, for lab results.
+             */
+            lab_name?: string | null;
+            /**
+             * Lot Id
+             * @description Lot measured (drying end, intake).
+             */
+            lot_id?: string | null;
+            /**
+             * Measured At
+             * Format: date-time
+             * @description When it was measured, ISO 8601 with offset.
+             */
+            measured_at: string;
+            /** @description Value with its unit, e.g. {value: 9.8, unit: %}. Negative values pass the schema so the plausibility check can answer `implausible_value`. */
+            measurement: components["schemas"]["SignedQuantity-Input"];
+            /**
+             * Method Ref
+             * @description Test method reference (FR42).
+             */
+            method_ref?: string | null;
+            /**
+             * Parameter Code
+             * @description Profile parameter code.
+             */
+            parameter_code: string;
+            /**
+             * Reason Code
+             * @description Reason accepted for a trail-rule override, e.g. `rain_exposure`.
+             */
+            reason_code?: string | null;
+            /**
+             * Sample Id
+             * @description Sample identifier (FR42).
+             */
+            sample_id?: string | null;
+            /** @description lab, instrument or visual (FR42, FR44). */
+            source: components["schemas"]["ReadingSource"];
+            /** @description drying_end, intake, grading or storage (FR43, FR45). */
+            stage: components["schemas"]["ReadingStage"];
+        };
+        /**
+         * QualityReadingOut
+         * @description A stored quality reading.
+         */
+        QualityReadingOut: {
+            /**
+             * Batch Id
+             * @description Batch measured.
+             */
+            batch_id: string | null;
+            /**
+             * Calibration Due On At Time
+             * @description Instrument's calibration due date when read.
+             */
+            calibration_due_on_at_time: string | null;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Reading id (= client_id).
+             */
+            id: string;
+            /**
+             * Instrument Id
+             * @description Instrument used.
+             */
+            instrument_id: string | null;
+            /**
+             * Lab Nabl No
+             * @description NABL number.
+             */
+            lab_nabl_no: string | null;
+            /**
+             * Lab Name
+             * @description Laboratory name.
+             */
+            lab_name: string | null;
+            /**
+             * Lot Id
+             * @description Lot measured.
+             */
+            lot_id: string | null;
+            /**
+             * Measured At
+             * Format: date-time
+             * @description When it was measured.
+             */
+            measured_at: string;
+            /**
+             * Measured By User Id
+             * Format: uuid
+             * @description Who measured.
+             */
+            measured_by_user_id: string;
+            /** @description Value with its unit. */
+            measurement: components["schemas"]["SignedQuantity-Output"];
+            /**
+             * Method Ref
+             * @description Test method reference.
+             */
+            method_ref: string | null;
+            /**
+             * Parameter Code
+             * @description Parameter code.
+             */
+            parameter_code: string;
+            /**
+             * Profile Version Id
+             * @description Profile version it was checked against.
+             */
+            profile_version_id: string | null;
+            /**
+             * Reason Code
+             * @description Trail-override reason, if any.
+             */
+            reason_code: string | null;
+            /**
+             * Sample Id
+             * @description Sample identifier.
+             */
+            sample_id: string | null;
+            /**
+             * Server Received At
+             * Format: date-time
+             * @description When the server received it.
+             */
+            server_received_at: string;
+            /** @description lab, instrument or visual. */
+            source: components["schemas"]["ReadingSource"];
+            /** @description Stage. */
+            stage: components["schemas"]["ReadingStage"];
+        };
+        /**
+         * Range
+         * @description An inclusive numeric interval; a missing bound is open (no limit on that side).
+         */
+        "Range-Input": {
+            /**
+             * Max
+             * @description Highest allowed value, inclusive; null means no upper bound.
+             */
+            max?: number | string | null;
+            /**
+             * Min
+             * @description Lowest allowed value, inclusive; null means no lower bound.
+             */
+            min?: number | string | null;
+        };
+        /**
+         * Range
+         * @description An inclusive numeric interval; a missing bound is open (no limit on that side).
+         */
+        "Range-Output": {
+            /**
+             * Max
+             * @description Highest allowed value, inclusive; null means no upper bound.
+             */
+            max?: number | null;
+            /**
+             * Min
+             * @description Lowest allowed value, inclusive; null means no lower bound.
+             */
+            min?: number | null;
+        };
+        /**
+         * ReadingSource
+         * @description How a quality value was measured (FR42, FR44).
+         * @enum {string}
+         */
+        ReadingSource: "lab" | "instrument" | "visual";
+        /**
+         * ReadingStage
+         * @description Where in the chain a quality reading was taken (FR43, FR45).
+         * @enum {string}
+         */
+        ReadingStage: "drying_end" | "intake" | "grading" | "storage";
+        /**
+         * SignedQuantity
+         * @description A quantity that may be negative, used only for adjustments and differences.
+         */
+        "SignedQuantity-Input": {
+            /**
+             * Unit
+             * @description Unit code, e.g. `kg`, `acre`, `l`, `count`.
+             */
+            unit: string;
+            /**
+             * Value
+             * @description Amount; negative allowed (adjustment or difference).
+             */
+            value: number | string;
+        };
+        /**
+         * SignedQuantity
+         * @description A quantity that may be negative, used only for adjustments and differences.
+         */
+        "SignedQuantity-Output": {
+            /**
+             * Unit
+             * @description Unit code, e.g. `kg`, `acre`, `l`, `count`.
+             */
+            unit: string;
+            /**
+             * Value
+             * @description Amount; negative allowed (adjustment or difference).
+             */
+            value: string;
+        };
+        /**
+         * StandardRef
+         * @description The published standard a profile version cites (FR47, FR51: shown on the public page with edition).
+         */
+        StandardRef: {
+            /**
+             * Clause Ref
+             * @description Clause cited; `LOAD_FROM_STANDARD` until copied from the standard text.
+             */
+            clause_ref: string;
+            /**
+             * Edition
+             * @description Edition or year cited; `LOAD_FROM_STANDARD` until copied from the text.
+             */
+            edition: string;
+            /**
+             * Name
+             * @description Full name of the standard, e.g. AGMARK Dry Chillies rules.
+             */
+            name: string;
+            /**
+             * Schedule
+             * @description Schedule or part of the standard, e.g. `IV`.
+             */
+            schedule?: string | null;
+        };
+        /**
+         * StandardsProfileOut
+         * @description A Standards Profile with the number of its current published version (FR47).
+         */
+        StandardsProfileOut: {
+            /**
+             * Crop Id
+             * Format: uuid
+             * @description Crop the profile grades.
+             */
+            crop_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Profile id.
+             */
+            id: string;
+            /**
+             * Name
+             * @description Profile name.
+             */
+            name: string;
+            /**
+             * Published Version No
+             * @description Version number currently published; null when none is published.
+             */
+            published_version_no: number | null;
+            /** @description agmark, iso, fssai or custom. */
+            scheme: components["schemas"]["StandardsScheme"];
+            /**
+             * Standard Ref
+             * @description Standard document reference.
+             */
+            standard_ref: string;
+        };
+        /**
+         * StandardsProfileRules
+         * @description The rules JSON of one Standards Profile version, interpreted by `grade_engine` (§4, D-015, FR47).
+         *
+         *     Grades are listed best first; `fail_grade` is what a batch gets when a parameter meets no grade.
+         */
+        "StandardsProfileRules-Input": {
+            /**
+             * Fail Grade
+             * @description Grade given when a limit is not met, e.g. Below grade.
+             */
+            fail_grade: string;
+            /**
+             * Grades
+             * @description Grade names, best first, e.g. [Special, Standard].
+             */
+            grades: string[];
+            /** @description Condition for the Lab-certified badge (FR51); null: never lab-certified. */
+            lab_certified_requires?: components["schemas"]["LabCertifiedRequires"] | null;
+            /**
+             * Lot Gates
+             * @description Named lot gates, e.g. `ready_for_sale` (Dataflow Stage 5).
+             */
+            lot_gates?: {
+                [key: string]: components["schemas"]["LotGate-Input"];
+            };
+            /**
+             * Parameters
+             * @description Every parameter of the standard (FR46).
+             */
+            parameters: components["schemas"]["Parameter-Input"][];
+            /**
+             * Public Note
+             * @description Shown on the public page next to the grade (FR51); stamped when a version is published with parameters still `load_from_standard`.
+             */
+            public_note?: string | null;
+            /**
+             * Schema Version
+             * @description Version of this JSON layout; only 1 exists.
+             * @constant
+             */
+            schema_version: 1;
+            /** @description Standard, edition and clause the limits come from (FR47). */
+            standard: components["schemas"]["StandardRef"];
+            /**
+             * Trail Rules
+             * @description Stage-to-stage rules (FR50).
+             */
+            trail_rules?: components["schemas"]["TrailRule-Input"][];
+            /** @description Yield-ceiling parameters (FR68); null: no yield check for the crop. */
+            yield?: components["schemas"]["YieldRule-Input"] | null;
+        };
+        /**
+         * StandardsProfileRules
+         * @description The rules JSON of one Standards Profile version, interpreted by `grade_engine` (§4, D-015, FR47).
+         *
+         *     Grades are listed best first; `fail_grade` is what a batch gets when a parameter meets no grade.
+         */
+        "StandardsProfileRules-Output": {
+            /**
+             * Fail Grade
+             * @description Grade given when a limit is not met, e.g. Below grade.
+             */
+            fail_grade: string;
+            /**
+             * Grades
+             * @description Grade names, best first, e.g. [Special, Standard].
+             */
+            grades: string[];
+            /** @description Condition for the Lab-certified badge (FR51); null: never lab-certified. */
+            lab_certified_requires?: components["schemas"]["LabCertifiedRequires"] | null;
+            /**
+             * Lot Gates
+             * @description Named lot gates, e.g. `ready_for_sale` (Dataflow Stage 5).
+             */
+            lot_gates?: {
+                [key: string]: components["schemas"]["LotGate-Output"];
+            };
+            /**
+             * Parameters
+             * @description Every parameter of the standard (FR46).
+             */
+            parameters: components["schemas"]["Parameter-Output"][];
+            /**
+             * Public Note
+             * @description Shown on the public page next to the grade (FR51); stamped when a version is published with parameters still `load_from_standard`.
+             */
+            public_note?: string | null;
+            /**
+             * Schema Version
+             * @description Version of this JSON layout; only 1 exists.
+             * @constant
+             */
+            schema_version: 1;
+            /** @description Standard, edition and clause the limits come from (FR47). */
+            standard: components["schemas"]["StandardRef"];
+            /**
+             * Trail Rules
+             * @description Stage-to-stage rules (FR50).
+             */
+            trail_rules?: components["schemas"]["TrailRule-Output"][];
+            /** @description Yield-ceiling parameters (FR68); null: no yield check for the crop. */
+            yield?: components["schemas"]["YieldRule-Output"] | null;
+        };
+        /**
+         * StandardsScheme
+         * @description Grading scheme of a standards profile (FR47).
+         * @enum {string}
+         */
+        StandardsScheme: "agmark" | "iso" | "fssai" | "custom";
+        /**
+         * TrailRule
+         * @description How a parameter may change from one capture stage to the next (FR50: moisture must not rise).
+         */
+        "TrailRule-Input": {
+            /**
+             * Override With Reason
+             * @description A violating reading is accepted when it carries a `reason_code` (then flagged).
+             * @default false
+             */
+            override_with_reason: boolean;
+            /**
+             * Parameter
+             * @description Parameter code the rule follows.
+             */
+            parameter: string;
+            /**
+             * Rule
+             * @description `non_increasing`: a later stage may not be higher.
+             * @constant
+             */
+            rule: "non_increasing";
+            /**
+             * Stages
+             * @description Stages in chain order, earliest first.
+             */
+            stages: components["schemas"]["ReadingStage"][];
+            /**
+             * Tolerance
+             * @description Rise tolerated before it counts as a violation (meter noise).
+             * @default 0
+             */
+            tolerance: number | string;
+        };
+        /**
+         * TrailRule
+         * @description How a parameter may change from one capture stage to the next (FR50: moisture must not rise).
+         */
+        "TrailRule-Output": {
+            /**
+             * Override With Reason
+             * @description A violating reading is accepted when it carries a `reason_code` (then flagged).
+             * @default false
+             */
+            override_with_reason: boolean;
+            /**
+             * Parameter
+             * @description Parameter code the rule follows.
+             */
+            parameter: string;
+            /**
+             * Rule
+             * @description `non_increasing`: a later stage may not be higher.
+             * @constant
+             */
+            rule: "non_increasing";
+            /**
+             * Stages
+             * @description Stages in chain order, earliest first.
+             */
+            stages: components["schemas"]["ReadingStage"][];
+            /**
+             * Tolerance
+             * @description Rise tolerated before it counts as a violation (meter noise).
+             * @default 0
+             */
+            tolerance: number;
+        };
+        /**
+         * YieldRule
+         * @description Plausible yield per acre with the warn and hold margins of the yield-ceiling check (FR68, Stage 7).
+         */
+        "YieldRule-Input": {
+            /**
+             * Ceiling Kg Per Acre
+             * @description Plausible maximum harvest per acre, in kg/acre.
+             */
+            ceiling_kg_per_acre: number | string;
+            /**
+             * Hold Margin Pct
+             * @description Excess above which the lot is held out of GI, %.
+             */
+            hold_margin_pct: number | string;
+            /**
+             * Note
+             * @description Where the ceiling came from; calibrate after season 1.
+             */
+            note?: string | null;
+            /**
+             * Warn Margin Pct
+             * @description Excess over the ceiling still passing silently, %.
+             */
+            warn_margin_pct: number | string;
+        };
+        /**
+         * YieldRule
+         * @description Plausible yield per acre with the warn and hold margins of the yield-ceiling check (FR68, Stage 7).
+         */
+        "YieldRule-Output": {
+            /**
+             * Ceiling Kg Per Acre
+             * @description Plausible maximum harvest per acre, in kg/acre.
+             */
+            ceiling_kg_per_acre: number;
+            /**
+             * Hold Margin Pct
+             * @description Excess above which the lot is held out of GI, %.
+             */
+            hold_margin_pct: number;
+            /**
+             * Note
+             * @description Where the ceiling came from; calibrate after season 1.
+             */
+            note?: string | null;
+            /**
+             * Warn Margin Pct
+             * @description Excess over the ceiling still passing silently, %.
+             */
+            warn_margin_pct: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -107,6 +1469,174 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_batch_grade_v1_batches__batch_id__grade_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GradeOut"];
+                };
+            };
+            /** @description `forbidden`: farmers. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: batch not visible or never graded. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    grade_batch_v1_batches__batch_id__grading_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GradingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GradeOut"];
+                };
+            };
+            /** @description `forbidden`: role not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: batch, or a reading id not on this batch. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `unknown_grade_for_profile`, `no_published_profile`, `validation_error`, or any reading error of `POST /quality-readings` for an inline reading. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_batch_readings_v1_batches__batch_id__readings_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_QualityReadingOut_"];
+                };
+            };
+            /** @description `forbidden`: farmers. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: batch not in the caller's FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     healthz_v1_healthz_get: {
         parameters: {
             query?: never;
@@ -161,6 +1691,359 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_instruments_v1_instruments_get: {
+        parameters: {
+            query?: {
+                /** @description Only active (true) or inactive (false) ones. */
+                active?: boolean | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_InstrumentOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_instrument_v1_instruments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstrumentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentOut"];
+                };
+            };
+            /** @description `forbidden`: role not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_lot_readings_v1_lots__lot_id__readings_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Lot id. */
+                lot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_QualityReadingOut_"];
+                };
+            };
+            /** @description `not_found`: lot not visible to the caller. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_quality_reading_v1_quality_readings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QualityReadingIn"];
+            };
+        };
+        responses: {
+            /** @description Already stored with this `client_id` (duplicate). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityReadingOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityReadingOut"];
+                };
+            };
+            /** @description `forbidden`: role not allowed (viewers; farmers on batches). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: lot, batch or instrument not in the caller's FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `client_id_conflict`: the id belongs to another user's reading. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error`, `no_published_profile`, `unknown_parameter`, `unit_mismatch`, `implausible_value`, `source_not_allowed`, `instrument_calibration_expired`, `moisture_trail_violation`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_standards_profiles_v1_standards_profiles_get: {
+        parameters: {
+            query?: {
+                /** @description Only this crop's profiles. */
+                crop_id?: string | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_StandardsProfileOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_standards_profile_version_v1_standards_profiles__profile_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id. */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileVersionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileVersionOut"];
+                };
+            };
+            /** @description `forbidden`: the caller is not a super-admin. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: no such profile. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error` (invalid rules JSON) or `profile_incomplete_not_allowed`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_standards_profile_version_v1_standards_profiles__profile_id__versions__version_no__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id. */
+                profile_id: string;
+                /** @description Version number. */
+                version_no: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileVersionOut"];
+                };
+            };
+            /** @description `not_found`: no such version. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */

@@ -33,7 +33,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B02 — Identity — wave 2 — worker: — reviewer: — verifier:
 - [ ] B03 — Registry + PostGIS geo — wave 2 — worker: — reviewer: — verifier:
 - [ ] B04 — Notifications — wave 2 — worker: — reviewer: — verifier:
-- [ ] B05 — Quality + grade engine — wave 2 — worker: — reviewer: — verifier:
+- [ ] B05 — Quality + grade engine — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
 - [ ] M01 — Drift store + DAOs + migrations + schema test — wave 2 — worker: — reviewer: — verifier:
 - [ ] M04 — Capture kit: camera (no gallery), compress to long edge 1600 px at JPEG q≈80 stepping down — wave 2 — worker: — reviewer: — verifier:
 - [ ] M05 — Farmer widget kit: FarmerButton, PictureCardGrid, BigStepper, NumberPad, StatusBadge, Voic — wave 2 — worker: — reviewer: — verifier:

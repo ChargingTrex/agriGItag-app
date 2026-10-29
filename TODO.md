@@ -108,3 +108,8 @@ _(empty)_
 - [ ] Record Tamil voice prompts (about 150 clips).
 - [ ] Decide on the Datameet / Census 2011 sub-district file versus a surveyed GI boundary.
 - [ ] Allow the `localstack/localstack` image to run if a permission prompt appears for the Verifier (replaces MinIO, D-008).
+- [ ] B05: `?fields=` on the quality list endpoints (docs/api/conventions.md) is not implemented; add with the shared helper when B03 or a core WP provides one.
+- [ ] B05: no `POST /standards-profiles` (profiles are created only by the seed loader) and no instrument update/deactivate route; add when the compliance and admin screens need them.
+- [ ] B05: B08 must turn `grade_computations.per_parameter[*].outcome == "profile_incomplete"` into the info flag `profile_incomplete`, handle `rules.check_lot` kwargs `{lot_id, batch_id, reading_id, hint: "moisture_trail_override"}`, and sweep readings with `reason_code` in case an enqueue was lost.
+- [ ] B05: coffee-style `exception_flags` (e.g. `monsooned`) are supported by the engine but no API field sets them on a batch yet.
+- [ ] B05: the AGMARK chilli profile allows only instrument/lab moisture, so visual moisture is rejected at entry (`source_not_allowed`) even though the profile caps visual at Standard; confirm the intended policy with compliance.
