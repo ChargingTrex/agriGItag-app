@@ -1,0 +1,115 @@
+# AgriTrace CI: backend lint and tests, documentation gates, Robot smoke against the compose stack.
+# Serves: plan §3 (G0 "CI green on empty tests"; every gate: LIBRARIES.md in sync, error codes regenerated),
+#         §4 item 6 (doc coverage, BM-10), §9.1 (Robot suites in CI), D-010, D-018.
+# Owners: Q00 wrote this file; B00 owns the Makefile targets and infra/docker-compose.yml it calls;
+#         M00 and P00 replace the mobile/portal stubs at the bottom.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: agritrace
+          POSTGRES_PASSWORD: agritrace
+          POSTGRES_DB: agritrace
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U agritrace" --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      # TODO(B00): align these names with apps/api/agritrace/core/config.py if they differ.
+      DATABASE_URL: postgresql+asyncpg://agritrace:agritrace@localhost:5432/agritrace
+      REDIS_URL: redis://localhost:6379/0
+      S3_ENDPOINT_URL: http://localhost:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --directory apps/api
+      - run: make lint
+      - run: make test-unit
+      - name: Start MinIO
+        # Service containers cannot pass the `server /data` argument MinIO needs, so it runs as a step.
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin minio/minio server /data
+          for _ in $(seq 30); do curl -sf http://localhost:9000/minio/health/live && break; sleep 2; done
+      - run: make test
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: QA script self-tests (privacy lint, benchmark collector, ledger parser)
+        run: uv run --no-project --with pytest --with pyyaml pytest qa/tests -q
+      - name: Doc coverage (BM-10)
+        # TODO(M00/P00): add Flutter / Node setup here once apps/mobile / apps/portal exist; the script
+        # fails (not skips) when an app exists but its tool is missing.
+        run: uv run --no-project python infra/scripts/doc-coverage.py
+      - name: Libraries ledger (D-018)
+        run: uv run --no-project --with pyyaml python infra/scripts/libraries-check.py
+      - name: Error codes registry
+        run: uv run --project apps/api python infra/scripts/gen-error-codes.py --check
+
+  robot-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Start stack
+        run: docker compose -f infra/docker-compose.yml up -d --wait
+      - name: Install Robot toolchain
+        run: |
+          uv venv qa/.venv --python 3.12
+          uv pip install --python qa/.venv/bin/python -r qa/robot/requirements.txt
+      - name: Robot smoke (api/healthz.robot)
+        run: qa/.venv/bin/robot --outputdir qa/robot/results/ci --exclude not-ready qa/robot/api/healthz.robot
+      - name: Stack logs
+        if: failure()
+        run: docker compose -f infra/docker-compose.yml logs --no-color --tail 200
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: robot-smoke
+          path: qa/robot/results/ci
+      - name: Stop stack
+        if: always()
+        run: docker compose -f infra/docker-compose.yml down -v
+
+  mobile:
+    # TODO(M00): flutter analyze --fatal-infos, flutter test, size check (BM-04). Skipped until M00 lands.
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "added by M00"
+
+  portal:
+    # TODO(P00): npm ci, lint (eslint-plugin-jsdoc), vitest, build budget, Playwright. Skipped until P00 lands.
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "added by P00"

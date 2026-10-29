@@ -1,0 +1,36 @@
+# Emulator network profiles for the mobile suites and qa/scripts/network.sh.
+# Serves: plan §13 (4G brief G1-G6, BM-11..BM-16) and §7.5 Q01 (offline/online matrix).
+# Read by: qa/scripts/network.sh, qa/robot/lib/agritrace_keywords.py, qa/robot/mobile/*.robot.
+#
+# These numbers are SIMULATOR DEFAULTS copied from the 4G brief, NOT field readings (plan §13).
+# Replace them with measurements from the pilot villages when available; no code change is needed.
+#
+# Units: down_kbps / up_kbps in kilobits per second (emulator console `network speed <up>:<down>`);
+# delay_min_ms / delay_max_ms in milliseconds (emulator console `network delay <min>:<max>`, used as RTT);
+# data: false turns mobile data off (`gsm data off`).
+profiles:
+  normal_4g:
+    down_kbps: 10000
+    up_kbps: 5000
+    delay_min_ms: 60
+    delay_max_ms: 60
+    data: true
+  weak_4g:
+    down_kbps: 1000
+    up_kbps: 500
+    delay_min_ms: 300
+    delay_max_ms: 300
+    data: true
+  edge:
+    # The Android emulator's built-in EDGE preset (237/118 kbps, 80-400 ms).
+    down_kbps: 237
+    up_kbps: 118
+    delay_min_ms: 80
+    delay_max_ms: 400
+    data: true
+  offline:
+    down_kbps: 0
+    up_kbps: 0
+    delay_min_ms: 0
+    delay_max_ms: 0
+    data: false

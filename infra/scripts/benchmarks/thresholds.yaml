@@ -1,0 +1,81 @@
+# Pass/fail thresholds for benchmarks BM-01..BM-16.
+# Serves: plan §8 (BM-01..BM-10) and §13 (BM-11..BM-16; where the 4G brief is tighter, its number wins).
+# Read by: infra/scripts/benchmarks/collect.py. Owned by the QA Lead; change a number only with a TODO/ADR note.
+#
+# Each metric has exactly one operator: max (value <= limit), min (value >= limit), lt (value < limit),
+# equals (value == limit). Units are in the metric name (_s seconds, _ms milliseconds, _kb kilobytes,
+# _mb megabytes, _pct percent).
+BM-01:
+  title: Time to log an event (3-tap harvest x10, Go AVD)
+  metrics:
+    p50_s: {max: 60}
+    p95_s: {max: 90}
+BM-02:
+  title: Entry and photo reach the server on 4G
+  metrics:
+    entry_s: {max: 5}
+    photo_300kb_s: {max: 10}
+BM-03:
+  title: Public page on Slow 3G (Lighthouse CI)
+  metrics:
+    performance_score: {min: 90}
+    lcp_s: {max: 2}
+    transfer_kb: {max: 500}
+BM-04:
+  title: App size
+  metrics:
+    apk_arm64_mb: {max: 100}
+    download_mb: {max: 30}
+BM-05:
+  title: Traceability completeness
+  metrics:
+    demo_completeness_pct: {min: 100}
+    reference_problems_flagged: {min: 9}
+BM-06:
+  title: Sync idempotency (same outbox replayed 3x)
+  metrics:
+    row_count_delta: {equals: 0}
+    photo_checksum_changes: {equals: 0}
+BM-07:
+  title: API latency (locust, 50 users, sync + batch endpoints)
+  metrics:
+    p95_ms: {max: 300}
+BM-08:
+  title: Grade engine correctness (PRD seed rows)
+  metrics:
+    seed_rows_pass_pct: {min: 100}
+BM-09:
+  title: Privacy lint over public pages and partner stub output
+  metrics:
+    hits: {equals: 0}
+BM-10:
+  title: Doc coverage (interrogate / dart doc / eslint-jsdoc)
+  metrics:
+    coverage_pct: {min: 100}
+BM-11:
+  title: Normal 4G entry + 1 photo
+  metrics:
+    sent_s: {max: 5}
+BM-12:
+  title: Weak 4G entry + 1 photo
+  metrics:
+    sent_s: {max: 20}
+BM-13:
+  title: Airplane mode save, then network restored
+  metrics:
+    saved_offline: {equals: true}
+    sent_without_user_action: {equals: true}
+BM-14:
+  title: Kill app mid-upload, relaunch
+  metrics:
+    server_entries: {equals: 1}
+    server_photos: {equals: 1}
+BM-15:
+  title: Same push replayed 5x
+  metrics:
+    server_records: {equals: 1}
+BM-16:
+  title: Public page on the normal 4G profile
+  metrics:
+    initial_kb: {lt: 100}
+    lcp_s: {lt: 2.5}
