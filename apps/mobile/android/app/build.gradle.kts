@@ -20,7 +20,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // shortcut: application id is the flutter create default (in.agritrace.agritrace); fix the final Play id
+        //   before the first store upload (M13), it cannot change afterwards.
         applicationId = "in.agritrace.agritrace"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -35,7 +36,8 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
+            // shortcut: release is signed with the debug keys so `flutter run --release` works; M13 adds the
+            //   upload keystore from CI secrets before any build leaves the team.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }

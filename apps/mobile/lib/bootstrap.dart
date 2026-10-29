@@ -64,8 +64,8 @@ void bootstrap(Flavor flavor) {
 
 /// Installs global error hooks so uncaught errors reach one place.
 ///
-/// shortcut: errors only go to the debug console; no crash vendor is chosen yet. M13 plugs the vendor
-/// (with a LIBRARIES.md row) into [_report]; nothing else needs to change.
+/// shortcut: errors only go to the debug console and release builds drop them; no crash vendor is chosen
+/// yet. M13 plugs the vendor (with a LIBRARIES.md row) into [_report]; nothing else needs to change.
 /// Side effects: replaces [FlutterError.onError] and [PlatformDispatcher.onError]. Throws nothing.
 void initCrashReporting() {
   FlutterError.onError = (details) {
@@ -79,7 +79,8 @@ void initCrashReporting() {
 }
 
 /// Sends one uncaught [error] with its [stack] (may be null) to the crash sink. Returns nothing; throws
-/// nothing. Side effect: prints to the debug console.
+/// nothing. Side effect: prints to the debug console in debug builds only, so nothing an exception
+/// message carries reaches logcat on a farmer's phone.
 void _report(Object error, StackTrace? stack) {
-  debugPrint('Uncaught: $error\n$stack');
+  if (kDebugMode) debugPrint('Uncaught: $error\n$stack');
 }

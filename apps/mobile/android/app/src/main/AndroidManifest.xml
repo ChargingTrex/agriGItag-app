@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Release builds need sockets for sync, OTP and the healthz probe (plan §13 A1). Debug and profile
+         inherit this through manifest merging, so they have no manifest of their own. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="AgriTrace"
         android:name="${applicationName}"

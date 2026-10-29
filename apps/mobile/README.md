@@ -9,10 +9,10 @@ Design contract: `docs/agents/specs/mobile-design.md`. Plan: `docs/agents/plan-s
 | Run against another API | `flutter run -t lib/main_staging.dart --dart-define=API_BASE_URL=https://...` |
 | Release build (prod) | `flutter build appbundle -t lib/main_prod.dart --split-debug-info=build/symbols --dart-define=API_BASE_URL=https://...` |
 | Analyze / test | `flutter analyze` / `flutter test` |
-| Update goldens (macOS, then review the PNGs) | `flutter test --update-goldens` |
+| Goldens (tag `golden`; macOS only until Q01 re-records them on Linux, skipped elsewhere) | update: `flutter test --update-goldens test/widget/farmer_button_golden_test.dart`, review the PNGs; exclude: `flutter test -x golden` |
 | Regenerate the API client after `make openapi` | `tool/gen_api.sh` (needs Node and Java 11+; set `JAVA_HOME`) |
-| Farmer no-free-text lint | `tool/no_textfield_lint.sh` |
-| Size budget (arm64 APK; `MAX_MB=15` for the M00 gate) | `tool/size_check.sh`, then `flutter clean` |
+| Farmer no-free-text lint (farmer features + core/widgets) | `tool/no_textfield_lint.sh` |
+| Size budget in MiB: arm64 APK warn > 40, fail > 100; AAB per-device download fail > 30 when bundletool is installed | `tool/size_check.sh`, then `flutter clean` |
 
 - `packages/agritrace_api/` is generated from `packages/openapi/openapi.json`. Never edit it by hand (D-003).
 - Strings live in `lib/core/l10n/app_ta.arb` (default, template) and `app_en.arb`; `flutter gen-l10n` runs on `pub get`.

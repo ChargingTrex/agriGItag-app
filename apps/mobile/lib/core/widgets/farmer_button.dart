@@ -63,7 +63,8 @@ class FarmerButton extends StatelessWidget {
             style: FilledButton.styleFrom(minimumSize: Size.fromHeight(height), textStyle: theme.textTheme.titleMedium),
           ),
         ),
-        SizedBox(width: tokens.gap / 2),
+        // Full token gap ("wide gaps"): a thumb aimed at the speaker must not trigger the action.
+        SizedBox(width: tokens.gap),
         // The speaker has no text, so it gets a spoken label; MergeSemantics keeps label and tap action
         // on one node for TalkBack / VoiceOver.
         MergeSemantics(

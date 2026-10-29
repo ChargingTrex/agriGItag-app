@@ -1,0 +1,4 @@
+# Test tags for `flutter test` (declared here so the runner does not warn about unknown tags).
+# golden: pixel comparisons against test/goldens/*.png (recorded on macOS; `flutter test -x golden` excludes them).
+tags:
+  golden: {}

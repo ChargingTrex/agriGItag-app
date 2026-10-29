@@ -39,9 +39,11 @@ class StatusGlyph {
   static StatusGlyph lerp(StatusGlyph a, StatusGlyph b, double t) =>
       StatusGlyph(icon: t < 0.5 ? a.icon : b.icon, color: Color.lerp(a.color, b.color, t)!);
 
+  /// Value equality: true when [other] is a [StatusGlyph] with the same icon and colour. Throws nothing.
   @override
   bool operator ==(Object other) => other is StatusGlyph && other.icon == icon && other.color == color;
 
+  /// Hash of icon and colour, consistent with [operator ==]. Throws nothing.
   @override
   int get hashCode => Object.hash(icon, color);
 }

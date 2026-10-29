@@ -45,6 +45,10 @@ class ApiClient {
   static const connectTimeout = Duration(seconds: 10);
 
   /// Time allowed for sending or receiving a request body (plan §13 A6).
+  ///
+  /// In dio 5 `receiveTimeout` and `sendTimeout` limit the gap between chunks, not the whole request: a
+  /// response that keeps dripping bytes can run past 30 s in total. M02 adds a total deadline (e.g. a
+  /// `CancelToken` timer) if the network-profile benchmarks need one.
   static const requestTimeout = Duration(seconds: 30);
 
   /// The configured transport. Exposed for the sync engine's retry interceptor (M02).
@@ -57,7 +61,8 @@ class ApiClient {
   ///
   /// Returns the per-dependency [Health] when the API answers 200. Throws [DioException] on a network
   /// error, a timeout, a 503 (some dependency down; the body is on `exception.response`) or an
-  /// unparseable body.
+  /// unparseable body. A 200 with an empty body (the API never sends one) throws a [TypeError] from the
+  /// null check instead, so callers that classify errors (M02) must treat it as a server fault.
   Future<Health> healthz() async {
     final response = await api.getHealthApi().healthzV1HealthzGet();
     return response.data!;
