@@ -22,19 +22,23 @@ import pathlib
 import re
 import sys
 
-TEXT_SUFFIXES = {
-    ".html", ".htm", ".json", ".geojson", ".js", ".css", ".svg", ".txt", ".xml", ".webmanifest",
-    ".csv", ".tsv", ".ndjson", ".md",
+# Every file is scanned unless its suffix is a binary type below or it fails the text sniff
+# (looks_like_text), so .jsonl, .yaml, .vcf, .map and files without a suffix are covered.
+BINARY_SUFFIXES = {
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".bmp", ".tif", ".tiff", ".ico", ".heic",
+    ".woff", ".woff2", ".ttf", ".otf", ".eot",
+    ".zip", ".gz", ".tgz", ".bz2", ".xz", ".7z", ".rar", ".tar", ".br", ".zst", ".pdf",
+    ".mp3", ".ogg", ".opus", ".wav", ".m4a", ".aac", ".flac", ".mp4", ".webm", ".mov", ".avi", ".mkv",
 }
 JSON_SUFFIXES = {".json", ".geojson", ".webmanifest"}
 
 # Digits are matched on a "shadow" copy of the text with separators removed, so 98765 43210,
 # (987) 654-3210, 98765.43210, 98765–43210 (en dash) and zero-width-split numbers all become ten
-# plain digits. Dashes U+2010-U+2015, NBSP, narrow NBSP, thin and figure spaces count, and so do the
-# HTML entities for a no-break space.
-SEPARATORS = set(" \t\u00a0\u2007\u2009\u202f-.()\u2010\u2011\u2012\u2013\u2014\u2015"
+# plain digits. Dashes U+2010-U+2015, the minus sign U+2212, NBSP, narrow NBSP, thin and figure spaces
+# count, and so do the HTML entities for a no-break space, en dash and em dash.
+SEPARATORS = set(" \t\u00a0\u2007\u2009\u202f-.()\u2010\u2011\u2012\u2013\u2014\u2015\u2212"
                  "\u200b\u200c\u200d\u2060\ufeff")
-SEPARATOR_ENTITIES = re.compile(r"&nbsp;|&#160;|&#x0*a0;", re.IGNORECASE)
+SEPARATOR_ENTITIES = re.compile(r"&nbsp;|&#160;|&#x0*a0;|&ndash;|&mdash;|&#821[12];", re.IGNORECASE)
 PHONE = re.compile(r"(?<!\d)(?:\+?91|0091|0)?[6-9]\d{9}(?!\d)")
 AADHAAR = re.compile(r"(?<!\d)[2-9]\d{11}(?!\d)")
 # Spans whose digits are not personal data: http(s) URL paths (hashed evidence names; query strings
@@ -59,19 +63,31 @@ WORD = (
     r"(?P<w>\b(?:survey|patta|chitta|aadhaa?r|phone|mobile|S\.?\s?F\.?\s?No|Sy\.?\s?No)"
     r"|தொலைபேசி|அலைபேசி|கைபேசி|பட்டா|சிட்டா|சர்வே|ஆதார்|புல எண்)"
 )
-# A year (19xx/20xx, which also starts an ISO date) or a day-first date is not a labelled number.
+# After a bare label (`Pest survey 2026`) a year (19xx/20xx, which also starts an ISO date) or a
+# day-first date is not a labelled number. After an explicit No./Number/எண் any number counts, because
+# patta and survey numbers run into the thousands (`Patta No. 1987`). Whole month names only, so
+# `3 Mariamman Koil Street` is not a date.
 NOT_A_NUMBER = (
     r"(?:19|20)\d\d(?!\d)|\d{1,2}[./-]\d{1,2}[./-]\d{2,4}"
-    r"|\d{1,2}\s*(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b"
+    r"|\d{1,2}\s*(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?"
+    r"|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b"
 )
 LABEL_RULES = [
     # In a JSON key the word needs no boundary: snake_case keys such as "farmer_phone" count.
     re.compile(rf"\"[^\"\n]{{0,40}}?{WORD.replace(r'\b', '')}[^\"\n]{{0,40}}\"\s*:", re.IGNORECASE),
     re.compile(rf"<(?:th|dt|label)\b[^>]*>[^<]{{0,80}}?{WORD}", re.IGNORECASE),
     # Trailing context is a lookahead so neighbouring labels do not swallow each other's digits.
+    # Explicit No./Number/எண்: any number counts. R.S./T.S. (re-survey, town survey) only appear
+    # here, because a bare `Rs.` is rupees.
     re.compile(
-        r"(?P<w>\b(?:survey|patta|chitta|S\.?\s?F\.?|Sy\.?)(?:\s*(?:no\b\.?|number|num\b\.?))?"
-        r"|(?:சர்வே|பட்டா|சிட்டா|புல)(?:\s*எண்)?)"
+        r"(?P<w>\b(?:survey|patta|chitta|S\.?\s?F\.?|Sy\.?|[RT]\.?\s?S\.?)\s*(?:no\b\.?|number|num\b\.?)"
+        r"|(?:சர்வே|பட்டா|சிட்டா|புல)\s*எண்)"
+        r"(?=\s*[:#.\-]?\s*\d)",
+        re.IGNORECASE,
+    ),
+    # Bare label: the year/date guard applies.
+    re.compile(
+        r"(?P<w>\b(?:survey|patta|chitta|S\.?\s?F\.?|Sy\.?)|(?:சர்வே|பட்டா|சிட்டா))"
         rf"(?=\s*[:#.\-]?\s*(?!{NOT_A_NUMBER})\d+(?:/[0-9A-Za-z]+)?)",
         re.IGNORECASE,
     ),
@@ -272,7 +288,7 @@ def scan_text(text: str, canaries: list[str], as_json: bool) -> list[tuple[int, 
 
 
 def looks_like_text(path: pathlib.Path) -> bool:
-    """Tell whether a file without a suffix is text: its first 512 bytes hold no NUL and decode as UTF-8.
+    """Tell whether a file is text: its first 512 bytes hold no NUL and decode as UTF-8.
 
     Args:
         path: the file to sniff.
@@ -308,7 +324,7 @@ def scan_dir(root: pathlib.Path, canaries: list[str]) -> tuple[int, int, list[st
         OSError: a file cannot be read.
     """
     files = sorted(p for p in root.rglob("*") if p.is_file())
-    texts = [p for p in files if p.suffix.lower() in TEXT_SUFFIXES or (not p.suffix and looks_like_text(p))]
+    texts = [p for p in files if p.suffix.lower() not in BINARY_SUFFIXES and looks_like_text(p)]
     report = []
     for path in texts:
         text = path.read_text(encoding="utf-8", errors="replace")
@@ -349,7 +365,7 @@ def main(argv: list[str] | None = None) -> int:
     scanned, skipped, report = scan_dir(args.directory, args.canary)
     if scanned == 0:
         # An empty folder usually means a wrong path; passing it silently would hide a leak.
-        print(f"privacy-lint: no text files ({', '.join(sorted(TEXT_SUFFIXES))}) under {args.directory}", file=sys.stderr)
+        print(f"privacy-lint: no text files under {args.directory}", file=sys.stderr)
         return 2
     print("\n".join(report + [f"privacy-lint: {len(report)} hit(s) in {scanned} file(s) scanned, {skipped} non-text skipped"]))
     return 1 if report else 0

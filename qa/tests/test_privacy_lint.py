@@ -68,6 +68,23 @@ LEAKS = [
     ("feed.ndjson", '{"lot": 1, "lat": 9.5598061}\n', "coordinate_precision"),
     ("notes.md", "Call 98765 43210", "phone"),
     ("README", "Call 98765 43210", "phone"),
+    # Round 4 (review r3): land-record numbers that look like years or dates after an explicit No.,
+    # R.S./T.S. numbers, more dash forms, and every text file type.
+    ("index.html", "<p>S.F. No. 2015/3A</p>", "sensitive_label"),
+    ("index.html", "<p>Patta No. 1987</p>", "sensitive_label"),
+    ("index.html", "<p>Survey No. 2041/2</p>", "sensitive_label"),
+    ("index.html", "<p>சர்வே எண் 2008/1</p>", "sensitive_label"),
+    ("index.html", "<p>Sy. No. 12/3/45</p>", "sensitive_label"),
+    ("index.html", "<p>Survey No. 45 Market Road</p>", "sensitive_label"),
+    ("index.html", "<p>Patta No. 3 Mariamman Koil Street</p>", "sensitive_label"),
+    ("index.html", "<p>R.S. No. 45/2</p>", "sensitive_label"),
+    ("index.html", "<p>T.S. No. 12/3</p>", "sensitive_label"),
+    ("index.html", "<p>98765&ndash;43210</p>", "phone"),
+    ("index.html", "<p>98765\u221243210</p>", "phone"),
+    ("farm.yaml", "phone: 9876543210\n", "phone"),
+    ("feed.jsonl", '{"lat": 9.5598061}\n', "coordinate_precision"),
+    ("farmer.vcf", "BEGIN:VCARD\nTEL:+919876543210\nEND:VCARD\n", "phone"),
+    ("app.js.map", '{"sourcesContent": ["const c = \\"98765 43210\\";"]}', "phone"),
 ]
 
 
@@ -127,6 +144,7 @@ def test_each_leak_format_is_caught(tmp_path: pathlib.Path, name: str, content: 
         "<p>Farmer verified by phone OTP on 2026-10-12</p>",
         "<p>Survey 2026 results</p>",
         "<p>Sy. No. of plots: 3</p>",
+        "<p>Price Rs. 450 per kg</p>",
         (
             '<img src="https://cdn.example.org/evidence/9876543210/'
             '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08.webp">'
@@ -173,5 +191,6 @@ def test_missing_or_empty_directory_is_a_usage_error(tmp_path: pathlib.Path) -> 
         tmp_path: pytest's per-test folder.
     """
     assert run_lint(str(FIXTURES / "does-not-exist")).returncode == 2
-    (tmp_path / "logo.png").write_bytes(b"\x89PNG")
-    assert run_lint(str(tmp_path)).returncode == 2
+    (tmp_path / "logo.png").write_bytes(b"\x89PNG 98765 43210")
+    (tmp_path / "blob").write_bytes(b"\x00\xff 98765 43210")
+    assert run_lint(str(tmp_path)).returncode == 2  # binary suffix and binary content are not scanned
