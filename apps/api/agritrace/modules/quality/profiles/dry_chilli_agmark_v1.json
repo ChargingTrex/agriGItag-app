@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "standard": { "name": "AGMARK Grading and Marking Rules — Dry Chillies and Capsicums", "schedule": "IV", "edition": "LOAD_FROM_STANDARD", "clause_ref": "LOAD_FROM_STANDARD" },
+  "grades": ["Special", "Standard"],
+  "fail_grade": "Below grade",
+  "parameters": [
+    { "code": "moisture", "name_en": "Moisture", "name_local": "ஈரப்பதம்", "unit": "%", "method_ref": "AGMARK Sch. IV moisture method",
+      "required": true, "grading_stage": "grading", "capture_stages": ["drying_end", "intake", "grading"],
+      "limits": { "Special": { "max": 10.0 }, "Standard": { "max": 11.0 } },
+      "plausible": { "min": 0, "max": 100 },
+      "sources_allowed": ["instrument", "lab"], "max_grade_for_source": { "visual": "Standard" } },
+    { "code": "extraneous_matter", "unit": "%", "required": true, "limits": null, "status": "load_from_standard", "plausible": { "min": 0, "max": 100 } },
+    { "code": "unripe_marked_fruits", "unit": "%", "required": true, "limits": null, "status": "load_from_standard" },
+    { "code": "broken_fruits", "unit": "%", "required": true, "limits": null, "status": "load_from_standard" },
+    { "code": "insect_damaged", "unit": "%", "required": true, "limits": null, "status": "load_from_standard" },
+    { "code": "total_ash", "unit": "%", "required": false, "limits": null, "status": "load_from_standard" },
+    { "code": "capsaicinoid", "unit": "%", "required": false, "role": "label_declaration", "declare_for_grades": ["Special"] },
+    { "code": "asta_colour", "unit": "ASTA", "required": false, "role": "contract_spec" }
+  ],
+  "lab_certified_requires": { "any_parameter_source": "lab", "nabl_no_present": true },
+  "lot_gates": { "ready_for_sale": { "parameter": "moisture", "stage": "drying_end", "max": 11.0 } },
+  "trail_rules": [ { "parameter": "moisture", "stages": ["drying_end", "intake", "grading"], "rule": "non_increasing", "tolerance": 0.5, "override_with_reason": true } ],
+  "yield": { "ceiling_kg_per_acre": 1000, "warn_margin_pct": 20, "hold_margin_pct": 30, "note": "illustrative; calibrate after season 1" }
+}

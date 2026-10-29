@@ -40,6 +40,179 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "GeoPoint": {
+        "description": "A WGS84 point with the device's reported accuracy.",
+        "properties": {
+          "accuracy_m": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Horizontal accuracy radius in metres.",
+            "title": "Accuracy M"
+          },
+          "lat": {
+            "description": "Latitude in decimal degrees (WGS84).",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat",
+            "type": "number"
+          },
+          "lon": {
+            "description": "Longitude in decimal degrees (WGS84).",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lon",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "title": "GeoPoint",
+        "type": "object"
+      },
+      "GradeOut": {
+        "description": "A stored grade computation of a batch (FR48, FR49, FR51).",
+        "properties": {
+          "batch_id": {
+            "description": "Batch graded.",
+            "format": "uuid",
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "computed_at": {
+            "description": "When the engine ran.",
+            "format": "date-time",
+            "title": "Computed At",
+            "type": "string"
+          },
+          "computed_grade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lowest grade every parameter meets; null when incomplete.",
+            "title": "Computed Grade"
+          },
+          "declared_grade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Grade the QC officer declared.",
+            "title": "Declared Grade"
+          },
+          "id": {
+            "description": "Computation id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "lab_certified": {
+            "description": "A lab reading with a NABL number was used (FR51).",
+            "title": "Lab Certified",
+            "type": "boolean"
+          },
+          "per_parameter": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ParameterResult"
+            },
+            "description": "Contribution of each parameter, by code.",
+            "title": "Per Parameter",
+            "type": "object"
+          },
+          "profile_version_id": {
+            "description": "Profile version applied.",
+            "format": "uuid",
+            "title": "Profile Version Id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GradeStatus",
+            "description": "ok, incomplete or declared_above_computed (FR49 blocks approval)."
+          }
+        },
+        "required": [
+          "id",
+          "batch_id",
+          "profile_version_id",
+          "computed_grade",
+          "declared_grade",
+          "status",
+          "lab_certified",
+          "per_parameter",
+          "computed_at"
+        ],
+        "title": "GradeOut",
+        "type": "object"
+      },
+      "GradeStatus": {
+        "description": "Outcome of a grade computation (FR48, FR49).",
+        "enum": [
+          "incomplete",
+          "ok",
+          "declared_above_computed"
+        ],
+        "title": "GradeStatus",
+        "type": "string"
+      },
+      "GradingIn": {
+        "description": "Grade a batch: the declared grade plus the readings to use (Dataflow Stage 8, FR48, FR49).",
+        "properties": {
+          "declared_grade": {
+            "description": "Grade the QC officer declares.",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Declared Grade",
+            "type": "string"
+          },
+          "reading_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Readings of this batch to use; omitted: every reading of the batch.",
+            "title": "Reading Ids"
+          },
+          "readings": {
+            "description": "Readings to record first, then used too; their subject is forced to this batch.",
+            "items": {
+              "$ref": "#/components/schemas/QualityReadingIn"
+            },
+            "maxItems": 50,
+            "title": "Readings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "declared_grade"
+        ],
+        "title": "GradingIn",
+        "type": "object"
+      },
       "Health": {
         "description": "Status of each dependency: `ok` or `error: <ExceptionClass>` (details go to the server log only).",
         "properties": {
@@ -66,6 +239,2003 @@
         ],
         "title": "Health",
         "type": "object"
+      },
+      "InstrumentIn": {
+        "description": "A moisture meter, colorimeter, hygrometer or scale registered by the FPO (FR42, FR50).",
+        "properties": {
+          "active": {
+            "default": true,
+            "description": "False hides it from new readings.",
+            "title": "Active",
+            "type": "boolean"
+          },
+          "calibrated_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Date of last calibration (YYYY-MM-DD).",
+            "title": "Calibrated On"
+          },
+          "calibration_cert_photo_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Evidence photo of the certificate.",
+            "title": "Calibration Cert Photo Id"
+          },
+          "calibration_due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Calibration due date; readings measured after it are rejected (FR50).",
+            "title": "Calibration Due On"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/InstrumentKind",
+            "description": "Instrument kind."
+          },
+          "make_model": {
+            "description": "Make and model.",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Make Model",
+            "type": "string"
+          },
+          "serial_no": {
+            "description": "Serial number.",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Serial No",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "make_model",
+          "serial_no"
+        ],
+        "title": "InstrumentIn",
+        "type": "object"
+      },
+      "InstrumentKind": {
+        "description": "Kind of registered measuring instrument (FR42, PRD \u00a75 Instrument).",
+        "enum": [
+          "moisture_meter",
+          "colorimeter",
+          "hygrometer",
+          "scale"
+        ],
+        "title": "InstrumentKind",
+        "type": "string"
+      },
+      "InstrumentOut": {
+        "description": "A registered instrument.",
+        "properties": {
+          "active": {
+            "default": true,
+            "description": "False hides it from new readings.",
+            "title": "Active",
+            "type": "boolean"
+          },
+          "calibrated_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Date of last calibration (YYYY-MM-DD).",
+            "title": "Calibrated On"
+          },
+          "calibration_cert_photo_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Evidence photo of the certificate.",
+            "title": "Calibration Cert Photo Id"
+          },
+          "calibration_due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Calibration due date; readings measured after it are rejected (FR50).",
+            "title": "Calibration Due On"
+          },
+          "fpo_id": {
+            "description": "Owning FPO.",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "id": {
+            "description": "Instrument id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/InstrumentKind",
+            "description": "Instrument kind."
+          },
+          "make_model": {
+            "description": "Make and model.",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Make Model",
+            "type": "string"
+          },
+          "serial_no": {
+            "description": "Serial number.",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Serial No",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "make_model",
+          "serial_no",
+          "id",
+          "fpo_id"
+        ],
+        "title": "InstrumentOut",
+        "type": "object"
+      },
+      "LabCertifiedRequires": {
+        "additionalProperties": false,
+        "description": "What makes a grade \"Lab-certified\" on the public page (FR51).",
+        "properties": {
+          "any_parameter_source": {
+            "$ref": "#/components/schemas/ReadingSource",
+            "default": "lab",
+            "description": "At least one reading used for the grade must have this source."
+          },
+          "nabl_no_present": {
+            "default": true,
+            "description": "That reading must also carry a NABL accreditation number.",
+            "title": "Nabl No Present",
+            "type": "boolean"
+          }
+        },
+        "title": "LabCertifiedRequires",
+        "type": "object"
+      },
+      "LotGate-Input": {
+        "additionalProperties": false,
+        "description": "A reading condition a lot must meet before a lifecycle step, e.g. ready for sale (Dataflow Stage 5).",
+        "properties": {
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Highest passing value, inclusive, e.g. moisture \u2264 11 %.",
+            "title": "Max"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lowest passing value, inclusive.",
+            "title": "Min"
+          },
+          "parameter": {
+            "description": "Parameter code checked.",
+            "title": "Parameter",
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ReadingStage",
+            "description": "Stage whose latest reading is checked."
+          }
+        },
+        "required": [
+          "parameter",
+          "stage"
+        ],
+        "title": "LotGate",
+        "type": "object"
+      },
+      "LotGate-Output": {
+        "additionalProperties": false,
+        "description": "A reading condition a lot must meet before a lifecycle step, e.g. ready for sale (Dataflow Stage 5).",
+        "properties": {
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Highest passing value, inclusive, e.g. moisture \u2264 11 %.",
+            "title": "Max"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lowest passing value, inclusive.",
+            "title": "Min"
+          },
+          "parameter": {
+            "description": "Parameter code checked.",
+            "title": "Parameter",
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ReadingStage",
+            "description": "Stage whose latest reading is checked."
+          }
+        },
+        "required": [
+          "parameter",
+          "stage"
+        ],
+        "title": "LotGate",
+        "type": "object"
+      },
+      "Page_InstrumentOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/InstrumentOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[InstrumentOut]",
+        "type": "object"
+      },
+      "Page_QualityReadingOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/QualityReadingOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[QualityReadingOut]",
+        "type": "object"
+      },
+      "Page_StandardsProfileOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/StandardsProfileOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[StandardsProfileOut]",
+        "type": "object"
+      },
+      "Parameter-Input": {
+        "additionalProperties": false,
+        "description": "One quality parameter of a profile: unit, method, where it is captured and its limit per grade.",
+        "properties": {
+          "capture_stages": {
+            "description": "Stages where this parameter is captured (FR43 moisture: drying end, intake, grading).",
+            "items": {
+              "$ref": "#/components/schemas/ReadingStage"
+            },
+            "minItems": 1,
+            "title": "Capture Stages",
+            "type": "array"
+          },
+          "code": {
+            "description": "Stable snake_case code readings use, e.g. `moisture`.",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "title": "Code",
+            "type": "string"
+          },
+          "declare_for_grades": {
+            "description": "Grades whose label must declare this value (role label_declaration).",
+            "items": {
+              "type": "string"
+            },
+            "title": "Declare For Grades",
+            "type": "array"
+          },
+          "exception_flags": {
+            "description": "Batch attributes (e.g. `monsooned` coffee) under which a value outside the limits is a warning, not a fail: the parameter then does not lower the grade.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Exception Flags",
+            "type": "array"
+          },
+          "grading_stage": {
+            "$ref": "#/components/schemas/ReadingStage",
+            "default": "grading",
+            "description": "Stage whose latest reading is used to compute the grade."
+          },
+          "limits": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/Range-Input"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Interval the value must lie in to reach each grade, keyed by grade name. A grade absent from the map cannot be reached through this parameter; `{}` as a range means no constraint. Null: not graded on this parameter (see `status`).",
+            "title": "Limits"
+          },
+          "max_grade_for_source": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Best grade a reading from that source can earn, e.g. visual \u2192 Standard (FR44).",
+            "propertyNames": {
+              "$ref": "#/components/schemas/ReadingSource"
+            },
+            "title": "Max Grade For Source",
+            "type": "object"
+          },
+          "method_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Test method the standard prescribes (FR42).",
+            "title": "Method Ref"
+          },
+          "name_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "English label for forms and the public page.",
+            "title": "Name En"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Label in the local script (Tamil for the pilot).",
+            "title": "Name Local"
+          },
+          "plausible": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Range-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Physically sensible range; readings outside it are rejected at entry (FR50)."
+          },
+          "required": {
+            "default": false,
+            "description": "A grading reading is needed for a complete grade (only when `limits` is set).",
+            "title": "Required",
+            "type": "boolean"
+          },
+          "role": {
+            "default": "grading",
+            "description": "`grading` takes part in the grade; `label_declaration` is printed on the label for `declare_for_grades`; `contract_spec` is a buyer specification, recorded but never graded.",
+            "enum": [
+              "grading",
+              "label_declaration",
+              "contract_spec"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "sources_allowed": {
+            "description": "Measurement sources accepted at entry for this parameter (FR42, FR44).",
+            "items": {
+              "$ref": "#/components/schemas/ReadingSource"
+            },
+            "minItems": 1,
+            "title": "Sources Allowed",
+            "type": "array"
+          },
+          "status": {
+            "default": "active",
+            "description": "`load_from_standard`: limits still to be copied from the standard; graded as missing.",
+            "enum": [
+              "active",
+              "load_from_standard"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "unit": {
+            "description": "Unit every reading must carry, e.g. `%`.",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "unit"
+        ],
+        "title": "Parameter",
+        "type": "object"
+      },
+      "Parameter-Output": {
+        "additionalProperties": false,
+        "description": "One quality parameter of a profile: unit, method, where it is captured and its limit per grade.",
+        "properties": {
+          "capture_stages": {
+            "description": "Stages where this parameter is captured (FR43 moisture: drying end, intake, grading).",
+            "items": {
+              "$ref": "#/components/schemas/ReadingStage"
+            },
+            "minItems": 1,
+            "title": "Capture Stages",
+            "type": "array"
+          },
+          "code": {
+            "description": "Stable snake_case code readings use, e.g. `moisture`.",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "title": "Code",
+            "type": "string"
+          },
+          "declare_for_grades": {
+            "description": "Grades whose label must declare this value (role label_declaration).",
+            "items": {
+              "type": "string"
+            },
+            "title": "Declare For Grades",
+            "type": "array"
+          },
+          "exception_flags": {
+            "description": "Batch attributes (e.g. `monsooned` coffee) under which a value outside the limits is a warning, not a fail: the parameter then does not lower the grade.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Exception Flags",
+            "type": "array"
+          },
+          "grading_stage": {
+            "$ref": "#/components/schemas/ReadingStage",
+            "default": "grading",
+            "description": "Stage whose latest reading is used to compute the grade."
+          },
+          "limits": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/Range-Output"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Interval the value must lie in to reach each grade, keyed by grade name. A grade absent from the map cannot be reached through this parameter; `{}` as a range means no constraint. Null: not graded on this parameter (see `status`).",
+            "title": "Limits"
+          },
+          "max_grade_for_source": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Best grade a reading from that source can earn, e.g. visual \u2192 Standard (FR44).",
+            "propertyNames": {
+              "$ref": "#/components/schemas/ReadingSource"
+            },
+            "title": "Max Grade For Source",
+            "type": "object"
+          },
+          "method_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Test method the standard prescribes (FR42).",
+            "title": "Method Ref"
+          },
+          "name_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "English label for forms and the public page.",
+            "title": "Name En"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Label in the local script (Tamil for the pilot).",
+            "title": "Name Local"
+          },
+          "plausible": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Range-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Physically sensible range; readings outside it are rejected at entry (FR50)."
+          },
+          "required": {
+            "default": false,
+            "description": "A grading reading is needed for a complete grade (only when `limits` is set).",
+            "title": "Required",
+            "type": "boolean"
+          },
+          "role": {
+            "default": "grading",
+            "description": "`grading` takes part in the grade; `label_declaration` is printed on the label for `declare_for_grades`; `contract_spec` is a buyer specification, recorded but never graded.",
+            "enum": [
+              "grading",
+              "label_declaration",
+              "contract_spec"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "sources_allowed": {
+            "description": "Measurement sources accepted at entry for this parameter (FR42, FR44).",
+            "items": {
+              "$ref": "#/components/schemas/ReadingSource"
+            },
+            "minItems": 1,
+            "title": "Sources Allowed",
+            "type": "array"
+          },
+          "status": {
+            "default": "active",
+            "description": "`load_from_standard`: limits still to be copied from the standard; graded as missing.",
+            "enum": [
+              "active",
+              "load_from_standard"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "unit": {
+            "description": "Unit every reading must carry, e.g. `%`.",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "unit"
+        ],
+        "title": "Parameter",
+        "type": "object"
+      },
+      "ParameterResult": {
+        "description": "How one parameter contributed to the grade (`grade_computations.per_parameter`).",
+        "properties": {
+          "capped_by_source": {
+            "default": false,
+            "description": "True when `max_grade_for_source` lowered the grade.",
+            "title": "Capped By Source",
+            "type": "boolean"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Grade reached by this parameter (graded only).",
+            "title": "Grade"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Range-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Limit of the grade reached; null for the fail grade."
+          },
+          "outcome": {
+            "description": "graded: limits applied; missing: no reading at the grading stage; profile_incomplete: limits still load_from_standard; not_graded: label or contract value; exception: limits waived by a batch exception flag (warning).",
+            "enum": [
+              "graded",
+              "missing",
+              "profile_incomplete",
+              "not_graded",
+              "exception"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          },
+          "parameter": {
+            "description": "Parameter code.",
+            "title": "Parameter",
+            "type": "string"
+          },
+          "reading_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reading used.",
+            "title": "Reading Id"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReadingSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Source of the reading used."
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unit of the value.",
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Value used.",
+            "title": "Value"
+          }
+        },
+        "required": [
+          "parameter",
+          "outcome"
+        ],
+        "title": "ParameterResult",
+        "type": "object"
+      },
+      "ProfileVersionIn": {
+        "description": "A new version of a profile's rules, created by the compliance team (super-admin, FR47).",
+        "properties": {
+          "allow_incomplete": {
+            "default": false,
+            "description": "Required to publish while a grading parameter is still `load_from_standard`; the grade is then computed from the other parameters and a `public_note` is stamped if none is given.",
+            "title": "Allow Incomplete",
+            "type": "boolean"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/StandardsProfileRules-Input",
+            "description": "The rules JSON (backend-design.md \u00a74)."
+          },
+          "status": {
+            "default": "published",
+            "description": "`published` makes it the version used for new readings and retires the previous one.",
+            "enum": [
+              "draft",
+              "published"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rules"
+        ],
+        "title": "ProfileVersionIn",
+        "type": "object"
+      },
+      "ProfileVersionOut": {
+        "description": "One version of a profile with its rules (FR47).",
+        "properties": {
+          "clause_ref": {
+            "description": "Clause cited.",
+            "title": "Clause Ref",
+            "type": "string"
+          },
+          "edition": {
+            "description": "Edition of the standard cited.",
+            "title": "Edition",
+            "type": "string"
+          },
+          "id": {
+            "description": "Version id; readings and grade computations reference it.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "description": "Profile.",
+            "format": "uuid",
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When it was published.",
+            "title": "Published At"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/StandardsProfileRules-Output",
+            "description": "The rules JSON."
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProfileVersionStatus",
+            "description": "draft, published or retired."
+          },
+          "version_no": {
+            "description": "Version number, 1 upwards.",
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "profile_id",
+          "version_no",
+          "edition",
+          "clause_ref",
+          "status",
+          "published_at",
+          "rules"
+        ],
+        "title": "ProfileVersionOut",
+        "type": "object"
+      },
+      "ProfileVersionStatus": {
+        "description": "Publication state of a standards profile version (FR47).",
+        "enum": [
+          "draft",
+          "published",
+          "retired"
+        ],
+        "title": "ProfileVersionStatus",
+        "type": "string"
+      },
+      "QualityReadingIn": {
+        "description": "One measured parameter of a lot or batch at a stage (FR42\u2013FR46). Also the sync `quality_reading` data.\n\nExactly one of `lot_id` and `batch_id` is set.",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch measured (grading, storage).",
+            "title": "Batch Id"
+          },
+          "certificate_photo_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Evidence photo of the lab certificate.",
+            "title": "Certificate Photo Id"
+          },
+          "client_id": {
+            "description": "UUIDv7 from the device; primary and idempotency key (D-005).",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "device_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Phone clock at capture.",
+            "title": "Device Time"
+          },
+          "evidence_photo_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Photo of the meter display or colour card.",
+            "title": "Evidence Photo Id"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where it was measured (FR42)."
+          },
+          "gps_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GPS fix time at capture.",
+            "title": "Gps Time"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Instrument used; required when source=instrument.",
+            "title": "Instrument Id"
+          },
+          "lab_nabl_no": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "NABL number; needed for Lab-certified.",
+            "title": "Lab Nabl No"
+          },
+          "lab_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Laboratory name, for lab results.",
+            "title": "Lab Name"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot measured (drying end, intake).",
+            "title": "Lot Id"
+          },
+          "measured_at": {
+            "description": "When it was measured, ISO 8601 with offset.",
+            "format": "date-time",
+            "title": "Measured At",
+            "type": "string"
+          },
+          "measurement": {
+            "$ref": "#/components/schemas/SignedQuantity-Input",
+            "description": "Value with its unit, e.g. {value: 9.8, unit: %}. Negative values pass the schema so the plausibility check can answer `implausible_value`."
+          },
+          "method_ref": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Test method reference (FR42).",
+            "title": "Method Ref"
+          },
+          "parameter_code": {
+            "description": "Profile parameter code.",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Parameter Code",
+            "type": "string"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reason accepted for a trail-rule override, e.g. `rain_exposure`.",
+            "title": "Reason Code"
+          },
+          "sample_id": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sample identifier (FR42).",
+            "title": "Sample Id"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReadingSource",
+            "description": "lab, instrument or visual (FR42, FR44)."
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ReadingStage",
+            "description": "drying_end, intake, grading or storage (FR43, FR45)."
+          }
+        },
+        "required": [
+          "client_id",
+          "stage",
+          "parameter_code",
+          "measurement",
+          "source",
+          "measured_at"
+        ],
+        "title": "QualityReadingIn",
+        "type": "object"
+      },
+      "QualityReadingOut": {
+        "description": "A stored quality reading.",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch measured.",
+            "title": "Batch Id"
+          },
+          "calibration_due_on_at_time": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Instrument's calibration due date when read.",
+            "title": "Calibration Due On At Time"
+          },
+          "fpo_id": {
+            "description": "Owning FPO.",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "id": {
+            "description": "Reading id (= client_id).",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Instrument used.",
+            "title": "Instrument Id"
+          },
+          "lab_nabl_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "NABL number.",
+            "title": "Lab Nabl No"
+          },
+          "lab_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Laboratory name.",
+            "title": "Lab Name"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot measured.",
+            "title": "Lot Id"
+          },
+          "measured_at": {
+            "description": "When it was measured.",
+            "format": "date-time",
+            "title": "Measured At",
+            "type": "string"
+          },
+          "measured_by_user_id": {
+            "description": "Who measured.",
+            "format": "uuid",
+            "title": "Measured By User Id",
+            "type": "string"
+          },
+          "measurement": {
+            "$ref": "#/components/schemas/SignedQuantity-Output",
+            "description": "Value with its unit."
+          },
+          "method_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Test method reference.",
+            "title": "Method Ref"
+          },
+          "parameter_code": {
+            "description": "Parameter code.",
+            "title": "Parameter Code",
+            "type": "string"
+          },
+          "profile_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Profile version it was checked against.",
+            "title": "Profile Version Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Trail-override reason, if any.",
+            "title": "Reason Code"
+          },
+          "sample_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sample identifier.",
+            "title": "Sample Id"
+          },
+          "server_received_at": {
+            "description": "When the server received it.",
+            "format": "date-time",
+            "title": "Server Received At",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReadingSource",
+            "description": "lab, instrument or visual."
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ReadingStage",
+            "description": "Stage."
+          }
+        },
+        "required": [
+          "id",
+          "fpo_id",
+          "lot_id",
+          "batch_id",
+          "stage",
+          "parameter_code",
+          "measurement",
+          "method_ref",
+          "source",
+          "instrument_id",
+          "calibration_due_on_at_time",
+          "lab_name",
+          "lab_nabl_no",
+          "sample_id",
+          "measured_by_user_id",
+          "measured_at",
+          "server_received_at",
+          "reason_code",
+          "profile_version_id"
+        ],
+        "title": "QualityReadingOut",
+        "type": "object"
+      },
+      "Range-Input": {
+        "additionalProperties": false,
+        "description": "An inclusive numeric interval; a missing bound is open (no limit on that side).",
+        "properties": {
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Highest allowed value, inclusive; null means no upper bound.",
+            "title": "Max"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lowest allowed value, inclusive; null means no lower bound.",
+            "title": "Min"
+          }
+        },
+        "title": "Range",
+        "type": "object"
+      },
+      "Range-Output": {
+        "additionalProperties": false,
+        "description": "An inclusive numeric interval; a missing bound is open (no limit on that side).",
+        "properties": {
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Highest allowed value, inclusive; null means no upper bound.",
+            "title": "Max"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lowest allowed value, inclusive; null means no lower bound.",
+            "title": "Min"
+          }
+        },
+        "title": "Range",
+        "type": "object"
+      },
+      "ReadingSource": {
+        "description": "How a quality value was measured (FR42, FR44).",
+        "enum": [
+          "lab",
+          "instrument",
+          "visual"
+        ],
+        "title": "ReadingSource",
+        "type": "string"
+      },
+      "ReadingStage": {
+        "description": "Where in the chain a quality reading was taken (FR43, FR45).",
+        "enum": [
+          "drying_end",
+          "intake",
+          "grading",
+          "storage"
+        ],
+        "title": "ReadingStage",
+        "type": "string"
+      },
+      "SignedQuantity-Input": {
+        "description": "A quantity that may be negative, used only for adjustments and differences.",
+        "properties": {
+          "unit": {
+            "description": "Unit code, e.g. `kg`, `acre`, `l`, `count`.",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Amount; negative allowed (adjustment or difference).",
+            "title": "Value"
+          }
+        },
+        "required": [
+          "value",
+          "unit"
+        ],
+        "title": "SignedQuantity",
+        "type": "object"
+      },
+      "SignedQuantity-Output": {
+        "description": "A quantity that may be negative, used only for adjustments and differences.",
+        "properties": {
+          "unit": {
+            "description": "Unit code, e.g. `kg`, `acre`, `l`, `count`.",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "description": "Amount; negative allowed (adjustment or difference).",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "unit"
+        ],
+        "title": "SignedQuantity",
+        "type": "object"
+      },
+      "StandardRef": {
+        "additionalProperties": false,
+        "description": "The published standard a profile version cites (FR47, FR51: shown on the public page with edition).",
+        "properties": {
+          "clause_ref": {
+            "description": "Clause cited; `LOAD_FROM_STANDARD` until copied from the standard text.",
+            "minLength": 1,
+            "title": "Clause Ref",
+            "type": "string"
+          },
+          "edition": {
+            "description": "Edition or year cited; `LOAD_FROM_STANDARD` until copied from the text.",
+            "minLength": 1,
+            "title": "Edition",
+            "type": "string"
+          },
+          "name": {
+            "description": "Full name of the standard, e.g. AGMARK Dry Chillies rules.",
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "schedule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Schedule or part of the standard, e.g. `IV`.",
+            "title": "Schedule"
+          }
+        },
+        "required": [
+          "name",
+          "edition",
+          "clause_ref"
+        ],
+        "title": "StandardRef",
+        "type": "object"
+      },
+      "StandardsProfileOut": {
+        "description": "A Standards Profile with the number of its current published version (FR47).",
+        "properties": {
+          "crop_id": {
+            "description": "Crop the profile grades.",
+            "format": "uuid",
+            "title": "Crop Id",
+            "type": "string"
+          },
+          "id": {
+            "description": "Profile id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "description": "Profile name.",
+            "title": "Name",
+            "type": "string"
+          },
+          "published_version_no": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Version number currently published; null when none is published.",
+            "title": "Published Version No"
+          },
+          "scheme": {
+            "$ref": "#/components/schemas/StandardsScheme",
+            "description": "agmark, iso, fssai or custom."
+          },
+          "standard_ref": {
+            "description": "Standard document reference.",
+            "title": "Standard Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "crop_id",
+          "scheme",
+          "name",
+          "standard_ref",
+          "published_version_no"
+        ],
+        "title": "StandardsProfileOut",
+        "type": "object"
+      },
+      "StandardsProfileRules-Input": {
+        "additionalProperties": false,
+        "description": "The rules JSON of one Standards Profile version, interpreted by `grade_engine` (\u00a74, D-015, FR47).\n\nGrades are listed best first; `fail_grade` is what a batch gets when a parameter meets no grade.",
+        "properties": {
+          "fail_grade": {
+            "description": "Grade given when a limit is not met, e.g. Below grade.",
+            "minLength": 1,
+            "title": "Fail Grade",
+            "type": "string"
+          },
+          "grades": {
+            "description": "Grade names, best first, e.g. [Special, Standard].",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Grades",
+            "type": "array"
+          },
+          "lab_certified_requires": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LabCertifiedRequires"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Condition for the Lab-certified badge (FR51); null: never lab-certified."
+          },
+          "lot_gates": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LotGate-Input"
+            },
+            "description": "Named lot gates, e.g. `ready_for_sale` (Dataflow Stage 5).",
+            "title": "Lot Gates",
+            "type": "object"
+          },
+          "parameters": {
+            "description": "Every parameter of the standard (FR46).",
+            "items": {
+              "$ref": "#/components/schemas/Parameter-Input"
+            },
+            "minItems": 1,
+            "title": "Parameters",
+            "type": "array"
+          },
+          "public_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Shown on the public page next to the grade (FR51); stamped when a version is published with parameters still `load_from_standard`.",
+            "title": "Public Note"
+          },
+          "schema_version": {
+            "const": 1,
+            "description": "Version of this JSON layout; only 1 exists.",
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "standard": {
+            "$ref": "#/components/schemas/StandardRef",
+            "description": "Standard, edition and clause the limits come from (FR47)."
+          },
+          "trail_rules": {
+            "description": "Stage-to-stage rules (FR50).",
+            "items": {
+              "$ref": "#/components/schemas/TrailRule-Input"
+            },
+            "title": "Trail Rules",
+            "type": "array"
+          },
+          "yield": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/YieldRule-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Yield-ceiling parameters (FR68); null: no yield check for the crop."
+          }
+        },
+        "required": [
+          "schema_version",
+          "standard",
+          "grades",
+          "fail_grade",
+          "parameters"
+        ],
+        "title": "StandardsProfileRules",
+        "type": "object"
+      },
+      "StandardsProfileRules-Output": {
+        "additionalProperties": false,
+        "description": "The rules JSON of one Standards Profile version, interpreted by `grade_engine` (\u00a74, D-015, FR47).\n\nGrades are listed best first; `fail_grade` is what a batch gets when a parameter meets no grade.",
+        "properties": {
+          "fail_grade": {
+            "description": "Grade given when a limit is not met, e.g. Below grade.",
+            "minLength": 1,
+            "title": "Fail Grade",
+            "type": "string"
+          },
+          "grades": {
+            "description": "Grade names, best first, e.g. [Special, Standard].",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Grades",
+            "type": "array"
+          },
+          "lab_certified_requires": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LabCertifiedRequires"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Condition for the Lab-certified badge (FR51); null: never lab-certified."
+          },
+          "lot_gates": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LotGate-Output"
+            },
+            "description": "Named lot gates, e.g. `ready_for_sale` (Dataflow Stage 5).",
+            "title": "Lot Gates",
+            "type": "object"
+          },
+          "parameters": {
+            "description": "Every parameter of the standard (FR46).",
+            "items": {
+              "$ref": "#/components/schemas/Parameter-Output"
+            },
+            "minItems": 1,
+            "title": "Parameters",
+            "type": "array"
+          },
+          "public_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Shown on the public page next to the grade (FR51); stamped when a version is published with parameters still `load_from_standard`.",
+            "title": "Public Note"
+          },
+          "schema_version": {
+            "const": 1,
+            "description": "Version of this JSON layout; only 1 exists.",
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "standard": {
+            "$ref": "#/components/schemas/StandardRef",
+            "description": "Standard, edition and clause the limits come from (FR47)."
+          },
+          "trail_rules": {
+            "description": "Stage-to-stage rules (FR50).",
+            "items": {
+              "$ref": "#/components/schemas/TrailRule-Output"
+            },
+            "title": "Trail Rules",
+            "type": "array"
+          },
+          "yield": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/YieldRule-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Yield-ceiling parameters (FR68); null: no yield check for the crop."
+          }
+        },
+        "required": [
+          "schema_version",
+          "standard",
+          "grades",
+          "fail_grade",
+          "parameters"
+        ],
+        "title": "StandardsProfileRules",
+        "type": "object"
+      },
+      "StandardsScheme": {
+        "description": "Grading scheme of a standards profile (FR47).",
+        "enum": [
+          "agmark",
+          "iso",
+          "fssai",
+          "custom"
+        ],
+        "title": "StandardsScheme",
+        "type": "string"
+      },
+      "TrailRule-Input": {
+        "additionalProperties": false,
+        "description": "How a parameter may change from one capture stage to the next (FR50: moisture must not rise).",
+        "properties": {
+          "override_with_reason": {
+            "default": false,
+            "description": "A violating reading is accepted when it carries a `reason_code` (then flagged).",
+            "title": "Override With Reason",
+            "type": "boolean"
+          },
+          "parameter": {
+            "description": "Parameter code the rule follows.",
+            "title": "Parameter",
+            "type": "string"
+          },
+          "rule": {
+            "const": "non_increasing",
+            "description": "`non_increasing`: a later stage may not be higher.",
+            "title": "Rule",
+            "type": "string"
+          },
+          "stages": {
+            "description": "Stages in chain order, earliest first.",
+            "items": {
+              "$ref": "#/components/schemas/ReadingStage"
+            },
+            "minItems": 2,
+            "title": "Stages",
+            "type": "array"
+          },
+          "tolerance": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "default": "0",
+            "description": "Rise tolerated before it counts as a violation (meter noise).",
+            "title": "Tolerance"
+          }
+        },
+        "required": [
+          "parameter",
+          "stages",
+          "rule"
+        ],
+        "title": "TrailRule",
+        "type": "object"
+      },
+      "TrailRule-Output": {
+        "additionalProperties": false,
+        "description": "How a parameter may change from one capture stage to the next (FR50: moisture must not rise).",
+        "properties": {
+          "override_with_reason": {
+            "default": false,
+            "description": "A violating reading is accepted when it carries a `reason_code` (then flagged).",
+            "title": "Override With Reason",
+            "type": "boolean"
+          },
+          "parameter": {
+            "description": "Parameter code the rule follows.",
+            "title": "Parameter",
+            "type": "string"
+          },
+          "rule": {
+            "const": "non_increasing",
+            "description": "`non_increasing`: a later stage may not be higher.",
+            "title": "Rule",
+            "type": "string"
+          },
+          "stages": {
+            "description": "Stages in chain order, earliest first.",
+            "items": {
+              "$ref": "#/components/schemas/ReadingStage"
+            },
+            "minItems": 2,
+            "title": "Stages",
+            "type": "array"
+          },
+          "tolerance": {
+            "default": 0.0,
+            "description": "Rise tolerated before it counts as a violation (meter noise).",
+            "title": "Tolerance",
+            "type": "number"
+          }
+        },
+        "required": [
+          "parameter",
+          "stages",
+          "rule"
+        ],
+        "title": "TrailRule",
+        "type": "object"
+      },
+      "YieldRule-Input": {
+        "additionalProperties": false,
+        "description": "Plausible yield per acre with the warn and hold margins of the yield-ceiling check (FR68, Stage 7).",
+        "properties": {
+          "ceiling_kg_per_acre": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Plausible maximum harvest per acre, in kg/acre.",
+            "title": "Ceiling Kg Per Acre"
+          },
+          "hold_margin_pct": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Excess above which the lot is held out of GI, %.",
+            "title": "Hold Margin Pct"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the ceiling came from; calibrate after season 1.",
+            "title": "Note"
+          },
+          "warn_margin_pct": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Excess over the ceiling still passing silently, %.",
+            "title": "Warn Margin Pct"
+          }
+        },
+        "required": [
+          "ceiling_kg_per_acre",
+          "warn_margin_pct",
+          "hold_margin_pct"
+        ],
+        "title": "YieldRule",
+        "type": "object"
+      },
+      "YieldRule-Output": {
+        "additionalProperties": false,
+        "description": "Plausible yield per acre with the warn and hold margins of the yield-ceiling check (FR68, Stage 7).",
+        "properties": {
+          "ceiling_kg_per_acre": {
+            "description": "Plausible maximum harvest per acre, in kg/acre.",
+            "title": "Ceiling Kg Per Acre",
+            "type": "number"
+          },
+          "hold_margin_pct": {
+            "description": "Excess above which the lot is held out of GI, %.",
+            "title": "Hold Margin Pct",
+            "type": "number"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the ceiling came from; calibrate after season 1.",
+            "title": "Note"
+          },
+          "warn_margin_pct": {
+            "description": "Excess over the ceiling still passing silently, %.",
+            "title": "Warn Margin Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "ceiling_kg_per_acre",
+          "warn_margin_pct",
+          "hold_margin_pct"
+        ],
+        "title": "YieldRule",
+        "type": "object"
       }
     }
   },
@@ -76,6 +2246,257 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/v1/batches/{batch_id}/grade": {
+      "get": {
+        "description": "The batch's most recent grade computation with its per-parameter breakdown (FR48\u2013FR51).",
+        "operationId": "get_batch_grade_v1_batches__batch_id__grade_get",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GradeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: farmers."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: batch not visible or never graded."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get a batch's latest grade",
+        "tags": [
+          "quality"
+        ]
+      }
+    },
+    "/v1/batches/{batch_id}/grading": {
+      "post": {
+        "description": "Records any inline readings, then computes the grade from the batch's readings against the crop's profile (FR48) and compares it with the declared grade (FR49). Status `incomplete` (a required reading is missing) or `declared_above_computed` blocks the admin's approval (B09). A declared grade the profile does not know is rejected with `unknown_grade_for_profile`.",
+        "operationId": "grade_batch_v1_batches__batch_id__grading_post",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GradingIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GradeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: role not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: batch, or a reading id not on this batch."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unknown_grade_for_profile`, `no_published_profile`, `validation_error`, or any reading error of `POST /quality-readings` for an inline reading."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Grade a batch",
+        "tags": [
+          "quality"
+        ]
+      }
+    },
+    "/v1/batches/{batch_id}/readings": {
+      "get": {
+        "description": "Grading and storage readings recorded on a batch (Dataflow Stage 8).",
+        "operationId": "list_batch_readings_v1_batches__batch_id__readings_get",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_QualityReadingOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: farmers."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: batch not in the caller's FPO."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List a batch's quality readings",
+        "tags": [
+          "quality"
+        ]
+      }
+    },
     "/v1/healthz": {
       "get": {
         "description": "Check Postgres, Redis and object storage independently and concurrently.\n\nArgs:\n    response: the outgoing response, whose status is set to 503 when any check fails.\n\nReturns:\n    One status string per dependency.\n\nSide effects:\n    Opens one DB connection, one Redis connection and one S3 request.",
@@ -143,6 +2564,572 @@
         "summary": "Reachable",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/v1/instruments": {
+      "get": {
+        "description": "Moisture meters, colorimeters, hygrometers and scales with their calibration dates (FR42).",
+        "operationId": "list_instruments_v1_instruments_get",
+        "parameters": [
+          {
+            "description": "Only active (true) or inactive (false) ones.",
+            "in": "query",
+            "name": "active",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only active (true) or inactive (false) ones.",
+              "title": "Active"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_InstrumentOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List the FPO's instruments",
+        "tags": [
+          "quality"
+        ]
+      },
+      "post": {
+        "description": "Adds an instrument with its calibration dates to the caller's FPO. Readings measured after `calibration_due_on` are rejected (FR50). QC officer or FPO admin.",
+        "operationId": "create_instrument_v1_instruments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstrumentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstrumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: role not allowed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Register an instrument",
+        "tags": [
+          "quality"
+        ]
+      }
+    },
+    "/v1/lots/{lot_id}/readings": {
+      "get": {
+        "description": "Drying-end and intake readings of a lot (its moisture trail, Dataflow Stages 5 and 7).",
+        "operationId": "list_lot_readings_v1_lots__lot_id__readings_get",
+        "parameters": [
+          {
+            "description": "Lot id.",
+            "in": "path",
+            "name": "lot_id",
+            "required": true,
+            "schema": {
+              "description": "Lot id.",
+              "format": "uuid",
+              "title": "Lot Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_QualityReadingOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: lot not visible to the caller."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List a lot's quality readings",
+        "tags": [
+          "quality"
+        ]
+      }
+    },
+    "/v1/quality-readings": {
+      "post": {
+        "description": "Stores one measured parameter of a lot or batch (FR42). Checked at entry against the crop's published profile (FR50): `unknown_parameter`, `unit_mismatch`, `implausible_value`, `source_not_allowed`, `instrument_calibration_expired`, `moisture_trail_violation` (accepted and flagged when `reason_code` is given). `client_id` is the idempotency key: resending it returns the stored reading with 200.",
+        "operationId": "create_quality_reading_v1_quality_readings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualityReadingIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityReadingOut"
+                }
+              }
+            },
+            "description": "Already stored with this `client_id` (duplicate)."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityReadingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: role not allowed (viewers; farmers on batches)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: lot, batch or instrument not in the caller's FPO."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`client_id_conflict`: the id belongs to another user's reading."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`, `no_published_profile`, `unknown_parameter`, `unit_mismatch`, `implausible_value`, `source_not_allowed`, `instrument_calibration_expired`, `moisture_trail_violation`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Record a quality reading",
+        "tags": [
+          "quality"
+        ]
+      }
+    },
+    "/v1/standards-profiles": {
+      "get": {
+        "description": "Profiles per crop with the number of the version currently published (FR47).",
+        "operationId": "list_standards_profiles_v1_standards_profiles_get",
+        "parameters": [
+          {
+            "description": "Only this crop's profiles.",
+            "in": "query",
+            "name": "crop_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this crop's profiles.",
+              "title": "Crop Id"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_StandardsProfileOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List Standards Profiles",
+        "tags": [
+          "quality"
+        ]
+      }
+    },
+    "/v1/standards-profiles/{profile_id}/versions": {
+      "post": {
+        "description": "Validates the rules JSON (grades, limits, stages, gates, trail rules) and stores the next version. Publishing retires the previous published version. Publishing while a grading parameter is still `load_from_standard` needs `allow_incomplete: true` and stamps a `public_note`. Super-admin only.",
+        "operationId": "create_standards_profile_version_v1_standards_profiles__profile_id__versions_post",
+        "parameters": [
+          {
+            "description": "Profile id.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "description": "Profile id.",
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileVersionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: the caller is not a super-admin."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: no such profile."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error` (invalid rules JSON) or `profile_incomplete_not_allowed`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create a Standards Profile version (super-admin)",
+        "tags": [
+          "quality"
+        ]
+      }
+    },
+    "/v1/standards-profiles/{profile_id}/versions/{version_no}": {
+      "get": {
+        "description": "The rules JSON of one version (backend-design.md \u00a74) with its edition and status.",
+        "operationId": "get_standards_profile_version_v1_standards_profiles__profile_id__versions__version_no__get",
+        "parameters": [
+          {
+            "description": "Profile id.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "description": "Profile id.",
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Version number.",
+            "in": "path",
+            "name": "version_no",
+            "required": true,
+            "schema": {
+              "description": "Version number.",
+              "minimum": 1,
+              "title": "Version No",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: no such version."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get one Standards Profile version",
+        "tags": [
+          "quality"
         ]
       }
     }
