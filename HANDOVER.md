@@ -32,7 +32,7 @@ Written for: whoever resumes the multi-agent build tomorrow (human or the Orches
 
 | WP | Branch / commit | State at close | Next step |
 |---|---|---|---|
-| B02 identity + auth | `worktree-agent-a00c8dc116a1aec8e` | round 2 in progress (review r1 FAIL: pin_hash in audit log P1 + 6 P2) | wait for r2 commit → re-review (SEC) → merge (carries migration `0002_identity_pin`; merge AFTER checking `alembic heads` is single) |
+| B02 identity + auth | `worktree-agent-a00c8dc116a1aec8e` @ 8a28ba9 | **round 2 done** (R1–R8 fixed: pin_hash redaction, cookie-only refresh, signed_in_at, previous-hash reuse detection, device_in_use, OTP daily cap, current-PIN check, super-admin PIN; 166 unit tests) | spawn SEC re-review of the r1→r2 diff (`git diff eba796c..8a28ba9`) → merge (migration `0002_identity_pin` extended: 3 users + 2 devices columns; `alembic heads` single) → regenerate spec/error table/portal client → P01 adapts the portal to the final contract in `docs/api/conventions.md` → mobile needs a sign-out action (shared phones) |
 | W02 public-page gates | `worktree-agent-a38124ac8d38806f2` @ 7b9c6e8 | review r1 in progress | if PASS → verify (no Docker needed) → merge; fix the `D-007`→`D-025` citation in lighthouserc at merge |
 | M01 Drift offline store | `worktree-agent-abd04c405cb9f3ca4` @ cba87cf | review r1 in progress | if PASS → verify → merge |
 | M05 farmer widget kit | `worktree-agent-afab3dd3b4350ce54` @ 8d5bd91 | **unreviewed** (finished 00:14) | spawn MOB reviewer (use `/ponytail-review`) → verify → merge; conflicts expected with M01 in `docs/LIBRARIES.md`, `CHANGELOG.md`, `pubspec.yaml`, `ios/` files |
