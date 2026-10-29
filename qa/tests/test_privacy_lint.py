@@ -1,7 +1,7 @@
 """Tests for infra/scripts/privacy-lint.py: the fixtures in qa/fixtures/privacy/ and one case per leak format.
 
-Serves: BM-09 (privacy lint), plan §7.5 Q00, Q00 review r1 P1-1/P1-2/P2-2/P2-3. Callers: CI docs job and
-`pytest qa/tests -q`.
+Serves: BM-09 (privacy lint), plan §7.5 Q00 and §7.4 W02, Q00 review r1 P1-1/P1-2/P2-2/P2-3, Q00-1.
+Callers: CI docs job and `pytest qa/tests -q`.
 """
 
 import json
@@ -85,6 +85,19 @@ LEAKS = [
     ("feed.jsonl", '{"lat": 9.5598061}\n', "coordinate_precision"),
     ("farmer.vcf", "BEGIN:VCARD\nTEL:+919876543210\nEND:VCARD\n", "phone"),
     ("app.js.map", '{"sourcesContent": ["const c = \\"98765 43210\\";"]}', "phone"),
+    # W02 (Q00-1, Q00-r2 P2-3, W01-r1 P3-3): OSM/MapLibre links, degree, DMS and space-separated forms.
+    ("index.html", '<a href="https://www.openstreetmap.org/?mlat=9.559806&mlon=78.133521">m</a>', "coordinate_precision"),
+    ("index.html", '<a href="https://www.openstreetmap.org/#map=17/9.559806/78.133521">m</a>', "coordinate_precision"),
+    ("index.html", '<a href="https://maps.example.org/#16.5/9.559/78.133521/30">m</a>', "coordinate_precision"),
+    ("index.html", '<a href="https://example.org/?pin_lat=9.559806">m</a>', "coordinate_precision"),
+    ("index.html", "<p>lat 9.536271 lon 78.201934</p>", "coordinate_precision"),
+    ("index.html", "<p>Location 9.5598061° N, 78.1335214° E</p>", "coordinate_precision"),
+    ("index.html", "<p>9.5598061&deg; N</p>", "coordinate_precision"),
+    ("index.html", "<p>9°33'35.3\"N 78°08'00.7\"E</p>", "coordinate_precision"),
+    ("index.html", "<p>9°33&#39;35&#34;N</p>", "coordinate_precision"),
+    ("index.html", "<p>9° 33.59' N</p>", "coordinate_precision"),
+    ("index.html", "<p>GPS 9.5598061 78.1335214</p>", "coordinate_precision"),
+    ("index.html", '<a href="https://maps.example.org/?q=9.5598061+78.1335214">m</a>', "coordinate_precision"),
 ]
 
 
@@ -149,13 +162,20 @@ def test_each_leak_format_is_caught(tmp_path: pathlib.Path, name: str, content: 
             '<img src="https://cdn.example.org/evidence/9876543210/'
             '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08.webp">'
         ),
+        # W02 coordinate look-alikes: 3-dp OSM links, temperatures, degree-minute only, plain decimals.
+        '<a href="https://www.openstreetmap.org/?mlat=9.560&mlon=78.134#map=15/9.560/78.134">m</a>',
+        "<p>Approx. 9.560 78.134</p>",
+        "<p>Drying at 45.5 °C for 3 days</p>",
+        "<p>9°33' N 78°08' E (about 2 km)</p>",
+        '<data class="q" value="33.3333">33.33 %</data> <data class="q" value="0.5">0.5 acre</data>',
+        "<p>Calculated yield 1.2 t, page version 1.2.3, ratio 1/2.5</p>",
     ],
 )
 def test_label_words_outside_label_context_pass(tmp_path: pathlib.Path, content: str) -> None:
     """Look-alikes pass the linter.
 
     Covers label words in CSS/JS or prose (W01-1), a label followed by a year or date (review r2
-    P2-1), and digits inside a hashed evidence URL path.
+    P2-1), digits inside a hashed evidence URL path, and coordinate look-alikes (W02).
 
     Args:
         tmp_path: pytest's per-test folder.
