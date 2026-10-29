@@ -39,7 +39,7 @@ _(empty)_
 - [ ] Q00: the Go AVD profile copies the hardware budget (2 GB, 2 cores) but does not enable Android Go low-RAM mode (`ro.config.low_ram`); BM-01 text says 4 cores, profile uses 2 (Q00 title wins).
 - [ ] Q00: privacy-lint is line-based regex, biased to false positives; minified JSON hits report as line 1.
 - [ ] D-018 wording: libraries-check rejects LGPL as copyleft (psycopg replaced by pg8000 in qa). Orchestrator to decide whether DECISIONS.md should name LGPL explicitly.
-- [ ] B00: healthz returns raw error text to anonymous callers (may reveal internal hostnames); SEC review to decide whether to trim.
+- [x] B00: healthz error text trimmed to exception class names (round 3).
 - [ ] B00/B01: Celery tasks run `asyncio.run` per task; the first DB task must dispose the engine or use NullPool (see DECISION D-009 comment in worker).
 - [ ] W01: opted-out farmer names are a consent decision the schema cannot see; B10 must set `farmer_name` from consent and never change it afterwards.
 - [ ] W01: 3-decimal pin rounding and "Farmer N" numbering currently cite D-017; write a small ADR (D-021 privacy rendering rules) when the product sign-off on rounding arrives.
@@ -52,6 +52,12 @@ _(empty)_
 - [ ] B00: Celery `acks_late` and the per-process engine disposal are owned by B04 (first module with real tasks).
 - [ ] Orchestration deviation record: Q00 received a third review round (two-round rule) because the round-2 reviewer supplied exact regex fixes for two regressions; B00 received a third worker round before verification to clear six security-relevant P2s. Both noted in docs/agents/gates/G0.md when signed.
 - [ ] G1 readiness: W01 merged with 6 Robot placeholder tests (public/page.robot ×5, BM-16); W02/Q03 must write them before G1 is signed (gate-readiness.py G1 enforces).
+- [ ] B00 (before first prod deploy): pass S3 keys only when set so an IAM role can be used (review B00-r1 P3-5); enforce a router tag per module (P3-6); let `AppError` carry headers so 429 can send `Retry-After`.
+- [ ] B06: request size cap for `/v1/sync/push` (256 KB) and 413 `payload_too_large` mapping.
+- [ ] B10: use a real key prefix for `storage.put_public` (`public-pages/batches/<code>/…`).
+- [ ] Ledger note: `certifi` and `pathspec` are MPL-2.0 transitive dependencies (file-level copyleft, unmodified use; accepted, record in LIBRARIES.md when they appear as direct deps).
+- [ ] B02: treat `OTP_DEV_CODE` None/empty as "off"; never add a code default (B00 r2 P3-1).
+- [ ] Q00 (W02 owner): `.jsonl/.yaml/.vcf/.map` scanning, `R.S. No.`/`T.S. No.` labels, `&ndash;`/U+2212 separators, `t.me/+91…` links masked, two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is 359 lines and should be split when W02 touches it.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
