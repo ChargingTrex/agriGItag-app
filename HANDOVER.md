@@ -34,7 +34,7 @@ Written for: whoever resumes the multi-agent build tomorrow (human or the Orches
 
 | WP | Branch / commit | State at close | Next step |
 |---|---|---|---|
-| M01 Drift offline store | `worktree-agent-abd04c405cb9f3ca4` @ cba87cf (+ round 2 possibly committed after close) | review r1 PASS with 2 P2 (`PRAGMA recursive_triggers = ON`; reset rows stuck in `sent`); round 2 requested 00:24 | read `docs/agents/reports/M01.md` Round 2 → confirm the P2 fixes (quick Orchestrator check or reviewer) → verify (`flutter test test/db`) → merge; write ADR **D-026** (dates stored as ISO text with ms in Drift) which the worker cites |
+| M01 Drift offline store | `worktree-agent-abd04c405cb9f3ca4` @ **642abed** | review r1 PASS; **round 2 done 00:28** (recursive_triggers, stuck-`sent` reset, entries-only nextBatch, perf test tagged, D-026 cited; 40 tests green) | **first merge tomorrow**: quick confirm of the r2 diff → verify (`flutter test test/db`) → merge (D-026 ADR already written) |
 | M05 farmer widget kit | `worktree-agent-afab3dd3b4350ce54` @ 8d5bd91 | **unreviewed** (finished 00:14) | spawn MOB reviewer (use `/ponytail-review`) → verify → merge; conflicts expected with M01 in `docs/LIBRARIES.md`, `CHANGELOG.md`, `pubspec.yaml`, `ios/` files |
 
 ## 2. Blockers only a human can clear (do these first tomorrow)
@@ -59,7 +59,6 @@ Written for: whoever resumes the multi-agent build tomorrow (human or the Orches
 - Process deviations (logged in G0.md): Q00 had 4 worker rounds, B00 4, B02 will have 2; several packages merged on PASS-PENDING-STACK because Docker was down.
 
 ## 4a. Small chores left at close
-- Write `docs/adr/D-026.md` (Drift stores dates as ISO-8601 text with millisecond precision; ADV ms precision for the save→ack metric, COMPROMISE julianday() comparisons) and add the DECISIONS.md row.
 - M01 P3s (review M01-r1): Linux CI may need `libsqlite3-dev`; add a CI check that Drift generated code and the schema dump are current; M02 must map camelCase enum names to the server's snake_case; perf test must be measured file-backed on the Go AVD by Q01.
 - Delete the BM-16 placeholder test in `qa/robot/mobile/network_profiles.robot` (the real one is in `qa/robot/public/page.robot`), so `gate-readiness.py G1` passes.
 - Spawn the formal W02 Verifier (no Docker needed).
