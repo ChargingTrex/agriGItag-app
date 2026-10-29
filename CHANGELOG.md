@@ -9,3 +9,4 @@ One line per merged work package: `WP-id — title — reviewer PASS rN, verifie
 - Project scaffold: CLAUDE.md, README, tracking files, ADRs D-001 to D-020, agent role docs, acceptance files for 42 work packages (Orchestrator, 2026-10-29).
 - WP-W01 — public page renderer `agritrace_page` (schema with privacy validator, Jinja2 template, CLI, 48 tests) — reviewer FAIL r1 / PASS r2, verifier PASS (2026-10-29).
 - WP-B00 — Scaffold + infra + test harness (FastAPI app, core kernel, compose stack, Makefile, error registry, conventions) — reviewer pending, verifier pending.
+- WP-P00 — Portal skeleton (Vite + React 18 + TS strict, MUI shell with 8 placeholder screens, OTP + PIN auth guard on MSW, generated openapi-fetch client + error-message table, cursor-list hook, lint/test/e2e config, 177.9 KB gz initial bundle) — reviewer pending, verifier pending.
