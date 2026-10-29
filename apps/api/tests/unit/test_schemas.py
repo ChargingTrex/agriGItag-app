@@ -1,6 +1,7 @@
 """Unit tests for the shared schemas, the clock-skew helper and the prod settings guard.
 
-Serves: FR58 (units), Arch §Offline-first (three clocks), CLAUDE.md §6 (no dev secrets in prod).
+Serves: FR58 (units), Arch §Offline-first (three clocks), CLAUDE.md §6 (no dev secrets in prod), FR53,
+FR56, FR60, FR68 (shapes of the JSONB columns).
 Callers: pytest (`make test-unit`).
 """
 
@@ -11,7 +12,18 @@ import pytest
 from pydantic import ValidationError
 
 from agritrace.core.config import Settings
-from agritrace.core.schemas import GeoPoint, Page, Quantity, SignedQuantity, ThreeClocks
+from agritrace.core.enums import PracticeTag
+from agritrace.core.schemas import (
+    Address,
+    GeoPoint,
+    Page,
+    PracticeTags,
+    Quantity,
+    Reconciliation,
+    SignedQuantity,
+    ThreeClocks,
+    YieldCheck,
+)
 from agritrace.core.time import clock_skew
 
 
@@ -104,3 +116,21 @@ def test_empty_otp_is_off_and_secrets_stay_hidden() -> None:
     with pytest.raises(ValidationError) as err:
         Settings(_env_file=None, env="prod", jwt_secret="topsecret-but-short")
     assert "topsecret-but-short" not in str(err.value)
+
+
+def test_jsonb_shapes_round_trip_and_validate() -> None:
+    """Address, PracticeTags, Reconciliation and YieldCheck validate and round-trip through JSON."""
+    address = Address(village="P Thottiyangulam", taluk="Tiruchuli", district="Virudhunagar", pin="626129")
+    assert Address.model_validate_json(address.model_dump_json()) == address
+    with pytest.raises(ValidationError):
+        Address(pin="06261")  # five digits, leading zero
+    tags = PracticeTags.model_validate({"declared": ["inorganic", "ipm"], "derived": ["organic"]})
+    assert tags.declared == [PracticeTag.INORGANIC, PracticeTag.IPM] and tags.contradiction is False
+    with pytest.raises(ValidationError):
+        PracticeTags.model_validate({"declared": ["natural"]})
+    kg = Quantity(value=Decimal("100"), unit="kg")
+    assert Reconciliation(harvested=kg, packed=kg, in_order=True).used is None
+    check = YieldCheck(harvested=kg, outcome="unavailable")
+    assert YieldCheck.model_validate_json(check.model_dump_json()) == check
+    with pytest.raises(ValidationError):
+        YieldCheck.model_validate({"outcome": "maybe"})

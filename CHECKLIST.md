@@ -22,7 +22,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G1 Contract
 
-- [ ] B01 — Domain contracts (schema-first) — wave 1 — worker: — reviewer: — verifier:
+- [ ] B01 — Domain contracts (schema-first) — wave 1 — worker: Opus (2 rounds) — reviewer: Architect-Gate APPROVED-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
 - [ ] M00 — Skeleton: flavors, M3 theme + tokens, go_router role redirect, l10n en/ta, generated Dart  — wave 1 — worker: — reviewer: — verifier:
 - [x] P00 — Skeleton, auth guard, generated client, MSW from spec, lint/test/e2e config — wave 1 — worker: Opus — reviewer: WEB PASS r1 — verifier: PASS (docs/agents/qa/P00.md)
 - [x] W01 — `render(public_batch) -> (html, json)`, Jinja2 `batch.html.j2`, inline CSS < 12 KB, JS < 4 — wave 1 — worker: Opus (2 rounds) — reviewer: WEB r1 FAIL, r2 PASS — verifier: PASS (docs/agents/qa/W01.md)

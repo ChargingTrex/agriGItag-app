@@ -1,15 +1,20 @@
 """Shared Pydantic building blocks reused by every module's request and response schemas.
 
 Serves: FR58 (quantities always carry units), Arch §Offline-first (three clocks, client UUIDs, D-005),
-plan §7.1 ground rules (error envelope), docs/api/conventions.md (cursor pages).
-Callers: `modules/*/schemas.py` (B01+), `core.time`, `core.errors` envelope docs, `agritrace.main`.
+plan §7.1 ground rules (error envelope), docs/api/conventions.md (cursor pages), FR53 (structured address),
+FR56 (practice tags), FR60 (per-lot reconciliation), FR68 (yield check) — the last four are the shapes of
+JSONB columns (`*.address`, `lots.practice_tags`, `lot_intakes.reconciliation`, `lot_intakes.yield_check`).
+Callers: `modules/*/schemas.py` (B01+), registry / lots_batches / rules_flags services (B03, B08, B09),
+`core.time`, `core.audit`, `core.errors` envelope docs, `agritrace.main`.
 """
 
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, Field
+
+from agritrace.core.enums import PracticeTag
 
 
 class Quantity(BaseModel):
@@ -69,3 +74,59 @@ class ErrorEnvelope(BaseModel):
     """Shape of every error response: `{"error": {"code", "message", "details"}}`."""
 
     error: ErrorBody = Field(description="The error.")
+
+
+class Address(BaseModel):
+    """Structured address of a farmer, plot, FPO or processor (FR53); also a second GI check by taluk.
+
+    Every part is optional here: which parts are required is field configuration (D-017, B13).
+    """
+
+    village: str | None = Field(None, max_length=120, description="Village or hamlet name.")
+    block: str | None = Field(None, max_length=120, description="Development block.")
+    taluk: str | None = Field(
+        None,
+        max_length=120,
+        description="Taluk (sub-district); second GI check against registered taluks (FR53).",
+    )
+    district: str | None = Field(None, max_length=120, description="District, e.g. `Virudhunagar`.")
+    state: str | None = Field(None, max_length=120, description="State, e.g. `Tamil Nadu`.")
+    pin: str | None = Field(None, pattern=r"^[1-9][0-9]{5}$", description="Six-digit Indian PIN code.")
+
+
+class PracticeTags(BaseModel):
+    """Farming practice tags of a lot: what the farmer declared versus what the inputs used imply (FR56)."""
+
+    declared: list[PracticeTag] = Field(default_factory=list, description="Tags the farmer declared.")
+    derived: list[PracticeTag] = Field(
+        default_factory=list, description="Tags derived from the categories of inputs actually applied."
+    )
+    contradiction: bool = Field(
+        False, description="True when a declared tag conflicts with the derived ones (raises a flag)."
+    )
+
+
+class Reconciliation(BaseModel):
+    """Per-lot quantity chain: harvested ≥ packed ≥ received by the processor ≥ used in batches (FR60)."""
+
+    harvested: Quantity | None = Field(None, description="Sum of harvest event quantities; null if none.")
+    packed: Quantity | None = Field(None, description="On-farm packed quantity; null if not recorded.")
+    received: Quantity | None = Field(None, description="Quantity the processor received at intake.")
+    used: Quantity | None = Field(None, description="Quantity of this lot used in batches.")
+    in_order: bool = Field(description="True when every recorded step is ≤ the one before it.")
+
+
+class YieldCheck(BaseModel):
+    """Harvest versus declared area × the profile's yield ceiling, with the 20 %/30 % margins (FR68)."""
+
+    declared_area: Quantity | None = Field(None, description="Declared plot area (unit `acre`).")
+    harvested: Quantity | None = Field(None, description="Harvested quantity of the lot (unit `kg`).")
+    ceiling: Quantity | None = Field(
+        None, description="Plausible maximum yield per acre from the standards profile (unit `kg/acre`)."
+    )
+    excess_pct: Decimal | None = Field(
+        None, description="Percent above declared area × ceiling; negative when below; null if unavailable."
+    )
+    outcome: Literal["ok", "warn", "hold", "unavailable"] = Field(
+        description="ok within the warn margin, warn up to the hold margin, hold above; unavailable: no data."
+    )
