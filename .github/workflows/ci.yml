@@ -92,8 +92,26 @@ jobs:
       - run: echo "added by M00"
 
   portal:
-    # TODO(P00): npm ci, lint (eslint-plugin-jsdoc), vitest, build budget, Playwright. Skipped until P00 lands.
-    if: false
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/portal
     steps:
-      - run: echo "added by P00"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/portal/package-lock.json
+      - run: npm ci
+      # D-003: regenerate the client from packages/openapi/openapi.json and the error table from
+      # docs/api/error-codes.md; fails when the committed files differ.
+      - run: npm run gen:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Initial bundle size (fails above 400 KB gzipped)
+        shell: bash # explicit bash adds -o pipefail, so the budget failure survives the tee
+        run: node scripts/bundle-size.ts | tee -a "$GITHUB_STEP_SUMMARY"
