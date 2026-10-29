@@ -16,23 +16,32 @@ missing directory, or no scannable text file under it.
 
 import argparse
 import bisect
+import codecs
 import json
 import pathlib
 import re
 import sys
 
-TEXT_SUFFIXES = {".html", ".htm", ".json", ".geojson", ".js", ".css", ".svg", ".txt", ".xml", ".webmanifest"}
+TEXT_SUFFIXES = {
+    ".html", ".htm", ".json", ".geojson", ".js", ".css", ".svg", ".txt", ".xml", ".webmanifest",
+    ".csv", ".tsv", ".ndjson", ".md",
+}
 JSON_SUFFIXES = {".json", ".geojson", ".webmanifest"}
 
 # Digits are matched on a "shadow" copy of the text with separators removed, so 98765 43210,
-# (987) 654-3210, 98765.43210 and zero-width-split numbers all become ten plain digits.
-SEPARATORS = set(" \t\u00a0-.()\u200b\u200c\u200d\u2060\ufeff")
+# (987) 654-3210, 98765.43210, 98765–43210 (en dash) and zero-width-split numbers all become ten
+# plain digits. Dashes U+2010-U+2015, NBSP, narrow NBSP, thin and figure spaces count, and so do the
+# HTML entities for a no-break space.
+SEPARATORS = set(" \t\u00a0\u2007\u2009\u202f-.()\u2010\u2011\u2012\u2013\u2014\u2015"
+                 "\u200b\u200c\u200d\u2060\ufeff")
+SEPARATOR_ENTITIES = re.compile(r"&nbsp;|&#160;|&#x0*a0;", re.IGNORECASE)
 PHONE = re.compile(r"(?<!\d)(?:\+?91|0091|0)?[6-9]\d{9}(?!\d)")
 AADHAAR = re.compile(r"(?<!\d)[2-9]\d{11}(?!\d)")
 # Spans whose digits are not personal data: http(s) URL paths (hashed evidence names; query strings
-# are still scanned), UUIDs and long hex hashes.
+# are still scanned), UUIDs and long hex hashes. WhatsApp click-to-chat paths (wa.me/<number>,
+# whatsapp.com/...) carry a phone number and are never masked; tel: links are not http(s), so never masked.
 NEUTRAL = re.compile(
-    r"https?://[^\s\"'<>?#]+"
+    r"https?://(?!(?:www\.)?wa\.me/|(?:api\.|web\.|www\.)?whatsapp\.com/)[^\s\"'<>?#]+"
     r"|\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b"
     r"|\b(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{16,}\b",
     re.IGNORECASE,
@@ -42,19 +51,35 @@ NUM = r"-?\d{1,3}\.\d+"
 PRECISE = r"-?\d{1,3}\.\d{4,}"
 SEP = r"\s*(?:,|%2C)\s*"
 # A label word is only a leak signal in context (W01-1: "Mobile-first" in a CSS comment is not data):
-# as a JSON key, inside <th>/<dt>/<label>, followed within 40 characters by 4+ digits, or, for the
-# survey-number abbreviations that literally mean "number", followed by any digit.
+# as a JSON key, inside <th>/<dt>/<label>, or followed by the number it labels. Land-record labels
+# (survey/patta/chitta, S.F./Sy. No.) take a number right after them, because survey numbers are
+# short (`123/4A`, `452`). Phone-type labels take a 4+ digit run within 40 characters. Neither counts
+# a year or a date as that number (`Pest survey 2026`, `phone OTP on 2026-10-12`).
 WORD = (
     r"(?P<w>\b(?:survey|patta|chitta|aadhaa?r|phone|mobile|S\.?\s?F\.?\s?No|Sy\.?\s?No)"
     r"|தொலைபேசி|அலைபேசி|கைபேசி|பட்டா|சிட்டா|சர்வே|ஆதார்|புல எண்)"
+)
+# A year (19xx/20xx, which also starts an ISO date) or a day-first date is not a labelled number.
+NOT_A_NUMBER = (
+    r"(?:19|20)\d\d(?!\d)|\d{1,2}[./-]\d{1,2}[./-]\d{2,4}"
+    r"|\d{1,2}\s*(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b"
 )
 LABEL_RULES = [
     # In a JSON key the word needs no boundary: snake_case keys such as "farmer_phone" count.
     re.compile(rf"\"[^\"\n]{{0,40}}?{WORD.replace(r'\b', '')}[^\"\n]{{0,40}}\"\s*:", re.IGNORECASE),
     re.compile(rf"<(?:th|dt|label)\b[^>]*>[^<]{{0,80}}?{WORD}", re.IGNORECASE),
     # Trailing context is a lookahead so neighbouring labels do not swallow each other's digits.
-    re.compile(rf"{WORD}(?=[\s\S]{{0,40}}?\d{{4}})", re.IGNORECASE),
-    re.compile(r"(?P<w>\b(?:S\.?\s?F\.?|Sy\.?|Survey)\s*No\b\.?|(?:சர்வே|புல)\s*எண்)(?=\s*:?\s*\d)", re.IGNORECASE),
+    re.compile(
+        r"(?P<w>\b(?:survey|patta|chitta|S\.?\s?F\.?|Sy\.?)(?:\s*(?:no\b\.?|number|num\b\.?))?"
+        r"|(?:சர்வே|பட்டா|சிட்டா|புல)(?:\s*எண்)?)"
+        rf"(?=\s*[:#.\-]?\s*(?!{NOT_A_NUMBER})\d+(?:/[0-9A-Za-z]+)?)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"(?P<w>\b(?:phone|mobile|aadhaa?r)|தொலைபேசி|அலைபேசி|கைபேசி|ஆதார்)"
+        rf"(?=[\s\S]{{0,40}}?(?<!\d)(?!{NOT_A_NUMBER})\d{{4}})",
+        re.IGNORECASE,
+    ),
 ]
 # Bodies the label rule never reads: <style>/<script> elements, CSS/JS block comments, JS line comments
 # (`//` not preceded by ':' so URLs survive).
@@ -127,9 +152,12 @@ def digit_hits(text: str) -> list[tuple[int, str, str]]:
     masked = [False] * len(text)
     for m in NEUTRAL.finditer(text):
         masked[m.start() : m.end()] = [True] * (m.end() - m.start())
+    dropped = [False] * len(text)
+    for m in SEPARATOR_ENTITIES.finditer(text):
+        dropped[m.start() : m.end()] = [True] * (m.end() - m.start())
     chars, index = [], []
     for i, ch in enumerate(text):
-        if ch not in SEPARATORS:
+        if ch not in SEPARATORS and not dropped[i]:
             chars.append("#" if masked[i] else ch)
             index.append(i)
     shadow = "".join(chars)
@@ -243,6 +271,27 @@ def scan_text(text: str, canaries: list[str], as_json: bool) -> list[tuple[int, 
     return hits + (json_hits(text) if as_json else [])
 
 
+def looks_like_text(path: pathlib.Path) -> bool:
+    """Tell whether a file without a suffix is text: its first 512 bytes hold no NUL and decode as UTF-8.
+
+    Args:
+        path: the file to sniff.
+
+    Returns:
+        True for text. A multi-byte character cut at byte 512 does not count against it.
+
+    Raises:
+        OSError: the file cannot be read.
+    """
+    with path.open("rb") as handle:
+        head = handle.read(512)
+    try:
+        codecs.getincrementaldecoder("utf-8")().decode(head, final=False)
+    except UnicodeDecodeError:
+        return False
+    return b"\0" not in head
+
+
 def scan_dir(root: pathlib.Path, canaries: list[str]) -> tuple[int, int, list[str]]:
     """Scan every text file under a directory.
 
@@ -259,7 +308,7 @@ def scan_dir(root: pathlib.Path, canaries: list[str]) -> tuple[int, int, list[st
         OSError: a file cannot be read.
     """
     files = sorted(p for p in root.rglob("*") if p.is_file())
-    texts = [p for p in files if p.suffix.lower() in TEXT_SUFFIXES]
+    texts = [p for p in files if p.suffix.lower() in TEXT_SUFFIXES or (not p.suffix and looks_like_text(p))]
     report = []
     for path in texts:
         text = path.read_text(encoding="utf-8", errors="replace")

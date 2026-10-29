@@ -49,6 +49,25 @@ LEAKS = [
     ("app.js", 'const c = "98765 43210";', "phone"),
     ("area.geojson", '{"type": "Polygon", "coordinates": []}', "polygon"),
     ("sitemap.xml", "<loc>/tmp/page</loc>", "temp_path"),
+    # Round 3 (review r2): plain-text land-record numbers, WhatsApp links, more separators, more file types.
+    ("index.html", "<p>Survey Number 123/4A</p>", "sensitive_label"),
+    ("index.html", "<p>Patta No. 452</p>", "sensitive_label"),
+    ("index.html", "<p>பட்டா எண் 45</p>", "sensitive_label"),
+    ("index.html", "<p>Survey No.: 45/2</p>", "sensitive_label"),
+    ("index.html", '<a href="https://wa.me/919876543210">chat</a>', "phone"),
+    ("index.html", '<a href="https://api.whatsapp.com/send/919876543210">chat</a>', "phone"),
+    ("index.html", '<a href="tel:+91 98765 43210">call</a>', "phone"),
+    ("index.html", "<p>98765\u201343210</p>", "phone"),
+    ("index.html", "<p>98765\u201443210</p>", "phone"),
+    ("index.html", "<p>98765&nbsp;43210</p>", "phone"),
+    ("index.html", "<p>98765\u202f43210</p>", "phone"),
+    ("index.html", "<p>98765\u200943210</p>", "phone"),
+    ("index.html", "<p>98765\u00a043210</p>", "phone"),
+    ("export.csv", "name,contact\nRamu,9876543210\n", "phone"),
+    ("rows.tsv", "name\tcontact\nRamu\t9876543210\n", "phone"),
+    ("feed.ndjson", '{"lot": 1, "lat": 9.5598061}\n', "coordinate_precision"),
+    ("notes.md", "Call 98765 43210", "phone"),
+    ("README", "Call 98765 43210", "phone"),
 ]
 
 
@@ -103,10 +122,22 @@ def test_each_leak_format_is_caught(tmp_path: pathlib.Path, name: str, content: 
         "<style>/* Mobile-first; system fonts only */ body{margin:0}</style>",
         "<script>// phone numbers never shown here\nconst a = 1;</script>",
         "<p>Works on any mobile phone, even offline.</p>",
+        "<li>Pest survey · 14 Feb 2026</li>",
+        "<p>Scan with the mobile app. Batch packed 2026-10-29.</p>",
+        "<p>Farmer verified by phone OTP on 2026-10-12</p>",
+        "<p>Survey 2026 results</p>",
+        "<p>Sy. No. of plots: 3</p>",
+        (
+            '<img src="https://cdn.example.org/evidence/9876543210/'
+            '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08.webp">'
+        ),
     ],
 )
 def test_label_words_outside_label_context_pass(tmp_path: pathlib.Path, content: str) -> None:
-    """Regression for W01-1: label words in CSS/JS or plain prose are not personal data.
+    """Look-alikes pass the linter.
+
+    Covers label words in CSS/JS or prose (W01-1), a label followed by a year or date (review r2
+    P2-1), and digits inside a hashed evidence URL path.
 
     Args:
         tmp_path: pytest's per-test folder.

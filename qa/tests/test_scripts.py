@@ -12,6 +12,8 @@ import json
 import os
 import pathlib
 
+import pytest
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 FLUTTER = ROOT / "qa" / "fixtures" / "flutter"
 
@@ -145,6 +147,7 @@ def test_flutter_parser_empty_log_and_exit_code(tmp_path: pathlib.Path) -> None:
 
 def test_gate_readiness_reads_checklist_and_flags_placeholders() -> None:
     """Review r1 P2-5: gates resolve cumulatively from CHECKLIST.md; a WP with placeholders fails."""
+    pytest.importorskip("robot.api", reason="gate-readiness needs robotframework (qa/robot/requirements.txt)")
     gate = load("qa/scripts/gate-readiness.py")
     gates = gate.checklist_gates()
     assert gate.resolve(["G0"], gates) == {"B00", "Q00"}
