@@ -11,7 +11,8 @@ import importlib.metadata
 import importlib.util
 import logging
 import pkgutil
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI, Response
@@ -141,6 +142,26 @@ async def reachable() -> Response:
     return Response(status_code=200)
 
 
+@asynccontextmanager
+async def _validate_config_at_boot(_: FastAPI) -> AsyncIterator[None]:
+    """Build the settings before serving, so a bad config stops the process instead of serving errors.
+
+    Without this, a missing `JWT_SECRET` (or a prod OTP code) would only fail on first use, and the HEAD
+    reachability probe would still answer 200 to every phone.
+
+    Args:
+        _: the application (unused).
+
+    Returns:
+        An async iterator that yields once while the app serves.
+
+    Raises:
+        pydantic.ValidationError: missing `JWT_SECRET` or an invalid setting; uvicorn then exits.
+    """
+    get_settings()
+    yield
+
+
 def create_app() -> FastAPI:
     """Build the FastAPI application.
 
@@ -149,12 +170,16 @@ def create_app() -> FastAPI:
 
     Raises:
         ImportError: a module's `router.py` fails to import.
+
+    Settings are validated when the app starts serving (lifespan), not here, so `export_openapi` and
+    in-process tests need no secrets.
     """
     app = FastAPI(
         title="AgriTrace API",
         version=importlib.metadata.version("agritrace"),
         description=DESCRIPTION,
         openapi_tags=TAGS,
+        lifespan=_validate_config_at_boot,
     )
     app.add_middleware(BrotliMiddleware, gzip_fallback=True)
     install_handlers(app)

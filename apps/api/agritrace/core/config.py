@@ -8,7 +8,7 @@ Every variable is documented in `apps/api/.env.example`.
 from functools import lru_cache
 from typing import Literal, Self
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,7 +19,8 @@ class Settings(BaseSettings):
     and the dev OTP bypass is off unless `OTP_DEV_CODE` is set. `.env.example` and compose set dev values.
     """
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # hide_input_in_errors: validation errors (and the logs that carry them) never echo secrets or the DSN.
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
 
     env: Literal["dev", "test", "prod"] = Field("dev", description="Deployment environment name.")
     database_url: str = Field(
@@ -46,6 +47,19 @@ class Settings(BaseSettings):
     otp_dev_code: str | None = Field(
         None, description="Fixed OTP for testers outside prod (no SMS); off when unset; refused in prod."
     )
+
+    @field_validator("otp_dev_code")
+    @classmethod
+    def _empty_otp_is_off(cls, value: str | None) -> str | None:
+        """Give "off" a single representation: an empty `OTP_DEV_CODE` becomes None.
+
+        Args:
+            value: the raw setting.
+
+        Returns:
+            The code, or None when unset or empty (so an empty submitted OTP can never match).
+        """
+        return value or None
 
     @model_validator(mode="after")
     def _refuse_dev_secrets_in_prod(self) -> Self:

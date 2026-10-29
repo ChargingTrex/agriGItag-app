@@ -95,3 +95,12 @@ def test_prod_guard(monkeypatch: pytest.MonkeyPatch) -> None:
     # Outside prod a short secret and the OTP bypass are allowed (local stack, tests).
     dev = Settings(_env_file=None, env="dev", jwt_secret="short", otp_dev_code="123456")
     assert dev.otp_dev_code == "123456"
+
+
+def test_empty_otp_is_off_and_secrets_stay_hidden() -> None:
+    """`OTP_DEV_CODE=""` becomes None (one meaning of "off"), and validation errors never echo inputs."""
+    assert Settings(_env_file=None, jwt_secret="x", otp_dev_code="").otp_dev_code is None
+    assert Settings(_env_file=None, env="prod", jwt_secret="x" * 32, otp_dev_code="").env == "prod"
+    with pytest.raises(ValidationError) as err:
+        Settings(_env_file=None, env="prod", jwt_secret="topsecret-but-short")
+    assert "topsecret-but-short" not in str(err.value)

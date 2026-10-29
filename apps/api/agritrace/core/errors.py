@@ -19,6 +19,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 log = logging.getLogger(__name__)
 
 REGISTRY: dict[str, type["AppError"]] = {}
+HTTP_METHODS = {"get", "put", "post", "delete", "options", "head", "patch", "trace"}
 
 
 class AppError(Exception):
@@ -208,20 +209,29 @@ async def _validation_error(_: Request, exc: Exception) -> JSONResponse:
     return _envelope(422, ValidationFailedError.code, ValidationFailedError.message, details)
 
 
-async def _http_error(_: Request, exc: Exception) -> JSONResponse:
+async def _http_error(request: Request, exc: Exception) -> JSONResponse:
     """Render Starlette HTTP errors (unknown path, wrong method) with a registered code.
 
     Args:
-        _: the request (unused).
+        request: the request, used to list every method served on its path for a 405.
         exc: the `StarletteHTTPException`.
 
     Returns:
         Envelope using the first registered code with the same status, else `internal_error`; the
-        exception's headers (e.g. `Allow` on 405, RFC 9110) are kept.
+        exception's headers are kept. On 405, `Allow` lists every method documented for the path
+        (Starlette only names the first matching route's, e.g. GET but not HEAD on /v1/healthz; RFC 9110
+        wants all).
     """
     assert isinstance(exc, StarletteHTTPException)
     cls = next((c for c in REGISTRY.values() if c.status == exc.status_code), InternalError)
-    return _envelope(exc.status_code, cls.code, cls.message, None, exc.headers)
+    headers = dict(exc.headers or {})
+    route = request.scope.get("route")  # the partially matched route, set by the router on a 405
+    if exc.status_code == 405 and route is not None:
+        # The OpenAPI path item is the public, already-flattened view of all routes on this path.
+        item = request.app.openapi()["paths"].get(getattr(route, "path_format", ""), {})
+        methods = set(getattr(route, "methods", None) or ()) | {k.upper() for k in item if k in HTTP_METHODS}
+        headers["Allow"] = ", ".join(sorted(methods))
+    return _envelope(exc.status_code, cls.code, cls.message, None, headers)
 
 
 async def _unhandled(_: Request, exc: Exception) -> JSONResponse:
