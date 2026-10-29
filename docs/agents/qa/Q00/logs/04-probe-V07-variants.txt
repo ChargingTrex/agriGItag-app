@@ -1,0 +1,17 @@
+--- V07a: <a href="https://www.openstreetmap.org/?mlat=9.559806&mlon=78.133521">map</a>
+privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=0
+--- V07b: <a href="https://www.openstreetmap.org/?lat=9.559806&lon=78.133521">map</a>
+b/index.html:1:68: coordinate_precision: lat=9.559806
+privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=1
+--- V07c: <a href="https://www.openstreetmap.org/#map=17/9.559806/78.133521">map</a>
+privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=0
+--- V07d: <a href="https://www.openstreetmap.org/?mlat=9.560&mlon=78.134">map</a>
+privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=0
+--- V07e: <a href="geo:9.5598061,78.1335214">map</a>
+e/index.html:1:41: coordinate_precision: 9.5598061,78.1335214
+privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=1
