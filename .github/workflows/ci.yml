@@ -3,7 +3,8 @@
 #         §4 item 6 (doc coverage, BM-10), §9.1 (Robot suites in CI), D-008 (LocalStack S3), D-010, D-018,
 #         D-021 (Valkey).
 # Owners: Q00 wrote this file; B00 owns the Makefile targets and infra/docker-compose.yml it calls;
-#         M00 and P00 replace the mobile/portal stubs at the bottom.
+#         M00 and P00 replace the mobile/portal stubs at the bottom; W02 owns the public-page job
+#         (BM-03, BM-09, BM-16).
 name: ci
 
 on:
@@ -151,3 +152,47 @@ jobs:
       - name: Initial bundle size (fails above 400 KB gzipped)
         shell: bash # explicit bash adds -o pipefail, so the budget failure survives the tee
         run: node scripts/bundle-size.ts | tee -a "$GITHUB_STEP_SUMMARY"
+
+  public-page:
+    # W02: build the fixture page and gate the built files (FR-16, FR-19; BM-03, BM-09, BM-16).
+    # DECISION D-007: the page is one static file, so every check runs on the build output; Lighthouse CI
+    #   serves out/site itself with gzip, as the CDN would.
+    #   ADV: no backend or stack needed; the job checks exactly what B10 will upload.
+    #   COMPROMISE: the fixture stands in for real batches; B10's publish path is checked by Q03.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/public-page
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/public-page/package-lock.json
+      - run: uv sync
+      - run: uv run ruff check .
+      - name: Renderer and canary tests (includes "injected canary fails the privacy lint")
+        run: uv run pytest -q
+      - run: npm ci
+      - name: Build the fixture page
+        run: uv run python -m agritrace_page build fixtures/batch_sample.json out/site
+      - name: Privacy lint with canaries (BM-09)
+        run: tools/check_output.sh out/site
+      - name: HTML validation, 0 errors
+        run: npm run validate
+      - name: Size budgets, CSS < 12 KB, JS < 4 KB, HTML+CSS+JS < 100 KB (plan §13 E1, BM-16)
+        run: uv run python -m agritrace_page check out/site
+      - name: Lighthouse CI 3G (BM-03), runner's Chrome
+        run: npm run lhci:3g
+      - name: Lighthouse CI normal 4G (BM-16), runner's Chrome
+        run: npm run lhci:4g
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse
+          path: apps/public-page/out/lhci

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- Privacy-lint fixture: a public batch page that must pass (BM-09). Used by qa/tests/test_privacy_lint.py
-     and qa/robot/public/page.robot. Contains look-alikes that must NOT be flagged: 3-dp map link,
+     and qa/robot/public/page.robot. Contains look-alikes that must NOT be flagged: 3-dp map links (Google, OSM),
      14-digit FSSAI number, hex hash, ISO timestamps. -->
 <html lang="en">
 <head>
@@ -16,7 +16,9 @@
 <li>Farmer 2 · 200.000 kg · share 62.500 %</li>
 <li>Farmer 3 · 20.000 kg · share 6.250 %</li>
 </ul>
-<p>Location method: Live GPS pin. <a href="https://www.google.com/maps?q=9.560,78.134">Open map</a></p>
+<p>Location method: Live GPS pin. <a href="https://www.google.com/maps?q=9.560,78.134">Open map</a>
+<a href="https://www.openstreetmap.org/?mlat=9.560&amp;mlon=78.134#map=15/9.560/78.134">OSM</a></p>
+<p>Drying at 45.5 °C · approx. 9° 33&#39; N</p>
 <p>Processor FSSAI licence 12423999000123 · GI authorised user AU/883/0042</p>
 <img src="https://cdn.example.org/evidence/9a8b7c6d5e4f3021-thumb.webp" alt="Harvest photo" loading="lazy">
 <ul>

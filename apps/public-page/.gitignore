@@ -1,1 +1,3 @@
 out/
+# Lighthouse CI scratch folder (W02); reports go to out/lhci/.
+.lighthouseci/

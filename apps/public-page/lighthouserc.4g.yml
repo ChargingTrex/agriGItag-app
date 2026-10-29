@@ -1,0 +1,26 @@
+# Lighthouse CI, normal 4G profile: the public batch page on the 4G brief's normal link.
+# Requirement: BM-16 (initial HTML+CSS+JS < 100 KB, LCP < 2.5 s), plan §13 E1/E4, FR-19, plan §7.4 W02.
+# Callers: `npm run lhci:4g` in the public-page CI job, qa/robot/public/page.robot (tag needs-chrome).
+# The raw < 100 KB budget is also asserted, uncompressed, by `python -m agritrace_page check`.
+# Network values copy qa/robot/profiles.yaml `normal_4g` (10000 kbit/s down, 60 ms RTT); simulate mode
+#   models one throughput, so the 5000 kbit/s uplink is not used (a page load barely uploads).
+ci:
+  collect:
+    staticDistDir: ./out/site
+    numberOfRuns: 3
+    settings:
+      onlyCategories: [performance]
+      throttlingMethod: simulate
+      throttling:
+        rttMs: 60
+        throughputKbps: 10000
+        cpuSlowdownMultiplier: 4
+      chromeFlags: "--headless=new --no-sandbox"
+  assert:
+    assertions:
+      # First view is HTML with inline CSS and JS; photos sit in closed <details> and load lazily.
+      total-byte-weight: [error, {maxNumericValue: 102400, aggregationMethod: median}]
+      largest-contentful-paint: [error, {maxNumericValue: 2500, aggregationMethod: median}]
+  upload:
+    target: filesystem
+    outputDir: ./out/lhci/4g

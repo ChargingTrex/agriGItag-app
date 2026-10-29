@@ -38,7 +38,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] M04 — Capture kit: camera (no gallery), compress to long edge 1600 px at JPEG q≈80 stepping down — wave 2 — worker: — reviewer: — verifier:
 - [ ] M05 — Farmer widget kit: FarmerButton, PictureCardGrid, BigStepper, NumberPad, StatusBadge, Voic — wave 2 — worker: — reviewer: — verifier:
 - [ ] M06 — Auth & session: OTP auto-read, device binding, PIN for officer/QC, role routing, restore o — wave 2 — worker: — reviewer: — verifier:
-- [ ] W02 — `privacy_lint.py` (canary strings + regexes for phone/Aadhaar/survey/polygon/coordinate pr — wave 2 — worker: — reviewer: — verifier:
+- [ ] W02 — `privacy_lint.py` (canary strings + regexes for phone/Aadhaar/survey/polygon/coordinate pr — wave 2 — worker: Opus — reviewer: WEB PASS r1 (executed acceptance) — verifier: PENDING (merged conditionally)
 - [ ] B06 — Events + sync push + evidence — wave 3 — worker: — reviewer: — verifier:
 - [ ] B13 — Config-driven fields/features + masters + bulk import (from the gap analysis) — wave 3 — worker: — reviewer: — verifier:
 - [ ] M02 — Sync engine (outbox, triggers incl. reachability probe, timeouts 10 s/30 s, retry only on  — wave 3 — worker: — reviewer: — verifier:

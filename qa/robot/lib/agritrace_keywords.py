@@ -1,10 +1,12 @@
-"""AgriTrace Robot Framework keyword library for the mobile and network suites.
+"""AgriTrace Robot Framework keyword library for the mobile, network and public-page suites.
 
-Purpose: load the emulator network profiles, switch the emulator network, and read
-Flutter integration-test results so Robot suites can assert on them.
+Purpose: load the emulator network profiles, switch the emulator network, read
+Flutter integration-test results, and pull checkable facts out of a built public page so
+Robot suites can assert on them.
 Serves: plan §9.1 (Robot suites drive Flutter integration tests and adb), §13 (BM-11..BM-16),
-§7.5 Q01 (offline/online matrix).
-Callers: qa/robot/resources/common.resource (imported as a library), qa/robot/mobile/*.robot.
+§7.5 Q01 (offline/online matrix), §7.4 W01/W02 (public page FR-58, FR-61, FR-63).
+Callers: qa/robot/resources/common.resource (imported as a library), qa/robot/mobile/*.robot,
+qa/robot/public/page.robot.
 Each public function is a keyword: `load_network_profiles` is `Load Network Profiles` in Robot.
 """
 
@@ -12,6 +14,7 @@ import json
 import os
 import pathlib
 import subprocess
+from html.parser import HTMLParser
 
 import yaml
 
@@ -126,3 +129,86 @@ def parse_flutter_results(path: str, exit_code: int | str | None = None) -> dict
     summary["failures"] += reasons
     summary["success"] = bool(done and done.get("success")) and not reasons and summary["failed"] == 0
     return summary
+
+
+class _PageFacts(HTMLParser):
+    """Collect event dates per timeline, quantity texts and photo URLs from a built public page."""
+
+    def __init__(self) -> None:
+        """Start with empty lists; see read_public_page for their meaning."""
+        super().__init__()
+        self.timelines, self.quantities, self.photo_urls = [], [], []
+        self._want_date = False
+        self._quantity = None
+
+    def handle_starttag(self, tag: str, attrs: list) -> None:
+        """Record what an opening tag tells us.
+
+        Args:
+            tag: lower-case tag name.
+            attrs: (name, value) pairs.
+
+        Side effects:
+            Appends to timelines, quantities and photo_urls; tracks parser state.
+        """
+        a = dict(attrs)
+        classes = (a.get("class") or "").split()
+        if tag == "ol" and "tl" in classes:
+            self.timelines.append([])
+        elif tag == "li" and "ev" in classes:
+            self._want_date = True  # the first <time> in an event is its start date
+        elif tag == "time" and self._want_date and self.timelines:
+            self.timelines[-1].append(a.get("datetime", ""))
+            self._want_date = False
+        elif tag == "data" and "q" in classes:
+            self._quantity = ""
+        if tag == "img" and a.get("src"):
+            self.photo_urls.append(a["src"])
+        elif tag == "source" and a.get("srcset"):
+            self.photo_urls.append(a["srcset"])
+        elif tag == "a" and "ph" in classes and a.get("href"):
+            self.photo_urls.append(a["href"])
+
+    def handle_endtag(self, tag: str) -> None:
+        """Close a quantity when its <data> element ends.
+
+        Args:
+            tag: lower-case tag name.
+
+        Side effects:
+            Appends the collected quantity text to quantities.
+        """
+        if tag == "data" and self._quantity is not None:
+            self.quantities.append(" ".join(self._quantity.split()))
+            self._quantity = None
+
+    def handle_data(self, data: str) -> None:
+        """Collect the text inside an open quantity <data> element.
+
+        Args:
+            data: text between tags.
+
+        Side effects:
+            Extends the open quantity text.
+        """
+        if self._quantity is not None:
+            self._quantity += data
+
+
+def read_public_page(path: str) -> dict:
+    """Read a built public page (W01 `index.html`) into the facts the public suite asserts on.
+
+    Args:
+        path: the built ``index.html``.
+
+    Returns:
+        dict with ``timelines`` (one list of ISO start dates per ``<ol class="tl">``, in page order),
+        ``quantities`` (the text of every ``<data class="q">``, e.g. ``"1,20,000 kg"``) and
+        ``photo_urls`` (every ``img src``, ``source srcset`` and photo link ``href``).
+
+    Raises:
+        FileNotFoundError: the page does not exist.
+    """
+    parser = _PageFacts()
+    parser.feed(pathlib.Path(path).read_text(encoding="utf-8"))
+    return {"timelines": parser.timelines, "quantities": parser.quantities, "photo_urls": parser.photo_urls}
