@@ -161,6 +161,71 @@ class NotImplementedPilotError(AppError):
     fix = "No client action; the feature is planned after the pilot."
 
 
+# Identity (B02, FR1, D-024). Wrong codes and PINs get their own codes, never a bare 401 (P00 contract).
+class OtpInvalidError(AppError):
+    """The one-time code is wrong, or the phone cannot sign in (indistinguishable on purpose)."""
+
+    code, status, message_key = "otp_invalid", 422, "error.otp_invalid"
+    message = "The code is not correct."
+    fix = "Re-enter the 6-digit code from the SMS; after 5 wrong tries request a new code."
+
+
+class OtpExpiredError(AppError):
+    """The one-time code is older than its 5-minute lifetime."""
+
+    code, status, message_key = "otp_expired", 422, "error.otp_expired"
+    message = "The code has expired."
+    fix = "Request a new code (`POST /v1/auth/otp/request`) and enter it within 5 minutes."
+
+
+class OtpLockedError(AppError):
+    """Five wrong codes were entered for the current challenge."""
+
+    code, status, message_key = "otp_locked", 409, "error.otp_locked"
+    message = "Too many wrong codes."
+    fix = "Request a new code after 60 seconds; the locked code can no longer be used."
+
+
+class PinInvalidError(AppError):
+    """The office PIN is wrong."""
+
+    code, status, message_key = "pin_invalid", 422, "error.pin_invalid"
+    message = "The PIN is not correct."
+    fix = "Re-enter your 4-digit PIN; 5 wrong tries lock it for 5 minutes."
+
+
+class PinLockedError(AppError):
+    """Five wrong PINs were entered; the PIN is locked for 5 minutes."""
+
+    code, status, message_key = "pin_locked", 409, "error.pin_locked"
+    message = "Too many wrong PINs; try again in 5 minutes."
+    fix = "Wait until `details.locked_until`, then sign in again with a new OTP."
+
+
+class RefreshReusedError(AppError):
+    """A refresh token that was already rotated was presented again; the device is signed out."""
+
+    code, status, message_key = "refresh_reused", 401, "error.refresh_reused"
+    message = "This sign-in was used elsewhere and has been closed."
+    fix = "Sign in again with an OTP; make sure the app sends only one refresh at a time."
+
+
+class AssistSessionInvalidError(AppError):
+    """`X-Assist-Session` names a session that is not the caller's or is already closed."""
+
+    code, status, message_key = "assist_session_invalid", 403, "error.assist_session_invalid"
+    message = "The assist session is not open for you."
+    fix = "Start a new assist session (`POST /v1/assist/start`) and send its id in `X-Assist-Session`."
+
+
+class ConsentConflictError(AppError):
+    """A consent `client_id` already exists with different content or for another farmer (D-005)."""
+
+    code, status, message_key = "consent_conflict", 409, "error.consent_conflict"
+    message = "A different consent was already saved with this id."
+    fix = "Generate a new client_id for a new consent; resend the same body only to retry."
+
+
 def _envelope(
     status: int, code: str, message: str, details: Any = None, headers: Mapping[str, str] | None = None
 ) -> JSONResponse:

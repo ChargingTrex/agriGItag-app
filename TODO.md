@@ -31,6 +31,13 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 _(empty)_
 
 ## 4. Reviewer and worker follow-ups
+- [ ] B02: integration tests `apps/api/tests/integration/test_identity.py` and migration 0002 under `alembic check` not yet run on PostGIS (Docker down); run before merge to main is final.
+- [ ] B02: `notifications.send` kwargs contract for B11: `user_id`, `template_key="otp"`, `channel="sms"`, `lang`, `payload={"code"}`; the task must resolve the phone from `user_id` and never log `payload.code`.
+- [ ] B02: multi-FPO users sign in to their oldest membership; add an FPO switch when needed (D-024 Revisit).
+- [ ] B02: refresh tokens have no idle expiry and office roles get no PIN prompt on app open; SEC review to decide (D-024 Revisit).
+- [ ] B02/B03: farmers and their users/memberships are created by registry (B03); identity only signs existing users in.
+- [ ] B02/P01: portal adapts to the auth contract differences listed in docs/api/conventions.md "Authentication".
+- [ ] B02: revisit `tests/conftest.py` JWT_SECRET (23 bytes triggers PyJWT InsecureKeyLengthWarning).
 - [ ] W01: a native Tamil speaker should review `apps/public-page/agritrace_page/i18n/ta.json`.
 - [ ] W03: the print stylesheet must open or expand the `<details>` timelines so printed pages are complete.
 - [ ] W02: the schema's number checks skip http(s) URLs to avoid false hits on hashed evidence URLs; the built-output privacy lint is the second line of defence and must stay in CI.
@@ -56,15 +63,15 @@ _(empty)_
 - [ ] B06: request size cap for `/v1/sync/push` (256 KB) and 413 `payload_too_large` mapping.
 - [ ] B10: use a real key prefix for `storage.put_public` (`public-pages/batches/<code>/…`).
 - [ ] Ledger note: `certifi` and `pathspec` are MPL-2.0 transitive dependencies (file-level copyleft, unmodified use; accepted, record in LIBRARIES.md when they appear as direct deps).
-- [ ] B02: treat `OTP_DEV_CODE` None/empty as "off"; never add a code default (B00 r2 P3-1).
+- [x] B02: treat `OTP_DEV_CODE` None/empty as "off"; never add a code default (B00 r2 P3-1). Done in B02 (no default; dev code only when set).
 - [ ] Q00 (W02 owner): `t.me/+91…` links stay masked; a phone number in a non-WhatsApp URL path stays masked (X17, by decision); two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is ~400 lines and should be split when W02 touches it. (Done in r4: `.jsonl/.yaml/.vcf/.map`, `R.S./T.S. No.`, `&ndash;`/U+2212.)
 - [ ] P00: `apps/portal/ci-job.yml` must be pasted under `jobs:` in `.github/workflows/ci.yml` (Orchestrator, at merge).
 - [ ] B12: `make clients` must call `npm run gen:api` (writes `apps/portal/src/api/generated/schema.d.ts`) and the Dart generator.
-- [ ] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); upgrade path is an httpOnly refresh cookie once B02 decides.
+- [ ] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); B02 decided: httpOnly refresh cookie with `X-Client: web` (D-022, D-024); P01 removes sessionStorage.
 - [ ] Infra: no `portal` service in docker-compose yet; production must serve the portal and `/v1` from one origin (CORS/cookie decision with B02).
 - [ ] Ledger: `lightningcss` (Vite build dependency) is MPL-2.0, build-time only, not shipped; accepted under D-018 as file-level copyleft in unmodified use (same reasoning as certifi/pathspec).
 - [ ] B09: enforce Σ `batch_shares.share_pct` = 100 ± 0.01 in the service (spans rows; not a CHECK).
-- [ ] B02: replace `core/auth.get_current_user` placeholder body and call `set_audit_context` per request.
+- [x] B02: replace `core/auth.get_current_user` placeholder body and call `set_audit_context` per request. Done in B02.
 - [ ] B06/B07: map SQLSTATE 23001 (`append_only_violation` trigger) to the registered AppError.
 - [ ] B01 risk: first live `alembic check` may show drift on geography reflection, VARCHAR enums or NULLS NOT DISTINCT; fix model or migration, never env.py. `alembic check` ignores CHECK constraints (enum values pinned by unit test instead).
 - [ ] Tests on append-only tables cannot DELETE; use fresh rows or TRUNCATE.

@@ -1,6 +1,331 @@
 {
   "components": {
     "schemas": {
+      "AssistEndIn": {
+        "description": "Close an assist session.",
+        "properties": {
+          "assist_session_id": {
+            "description": "The session to end (its client id).",
+            "format": "uuid",
+            "title": "Assist Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assist_session_id"
+        ],
+        "title": "AssistEndIn",
+        "type": "object"
+      },
+      "AssistSessionOut": {
+        "description": "An assist session; send its `id` as `X-Assist-Session` on every request made for the farmer.",
+        "properties": {
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When it ended; null while open.",
+            "title": "Ended At"
+          },
+          "farmer_id": {
+            "description": "Farmer being assisted.",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "id": {
+            "description": "Assist session id (the client id it was started with).",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "officer_user_id": {
+            "description": "Field officer doing the entries.",
+            "format": "uuid",
+            "title": "Officer User Id",
+            "type": "string"
+          },
+          "started_at": {
+            "description": "When the session started.",
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "officer_user_id",
+          "farmer_id",
+          "started_at",
+          "ended_at"
+        ],
+        "title": "AssistSessionOut",
+        "type": "object"
+      },
+      "AssistStartIn": {
+        "description": "Start entering data on a farmer's behalf; `client_id` becomes the assist session id (D-005).",
+        "properties": {
+          "client_id": {
+            "description": "UUIDv7 generated on the device; resending it is a no-op.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "farmer_id": {
+            "description": "Farmer being assisted; must be in the officer's FPO.",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device time the session started (offline start); defaults to server time.",
+            "title": "Started At"
+          },
+          "started_gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the session started, if a fix was taken."
+          }
+        },
+        "required": [
+          "client_id",
+          "farmer_id"
+        ],
+        "title": "AssistStartIn",
+        "type": "object"
+      },
+      "ConsentIn": {
+        "description": "Record a farmer's consent; resending the same `client_id` returns the stored record (D-005).",
+        "properties": {
+          "client_id": {
+            "description": "UUIDv7 generated on the device; resending it is a no-op.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "consent_type": {
+            "$ref": "#/components/schemas/ConsentType",
+            "description": "What is consented to."
+          },
+          "consent_version": {
+            "description": "Version of the consent text played, e.g. `v1-ta`.",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Consent Version",
+            "type": "string"
+          },
+          "farmer_id": {
+            "description": "Farmer who consents (the caller, or the assisted farmer).",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "given_at": {
+            "description": "When the farmer agreed (device clock), ISO 8601.",
+            "format": "date-time",
+            "title": "Given At",
+            "type": "string"
+          },
+          "recording_ref": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Object key of the consent recording played or captured, if any.",
+            "title": "Recording Ref"
+          }
+        },
+        "required": [
+          "client_id",
+          "farmer_id",
+          "consent_type",
+          "consent_version",
+          "given_at"
+        ],
+        "title": "ConsentIn",
+        "type": "object"
+      },
+      "ConsentOut": {
+        "description": "A stored consent record.",
+        "properties": {
+          "consent_type": {
+            "$ref": "#/components/schemas/ConsentType",
+            "description": "What was consented to."
+          },
+          "consent_version": {
+            "description": "Version of the consent text.",
+            "title": "Consent Version",
+            "type": "string"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device that captured it.",
+            "title": "Device Id"
+          },
+          "farmer_id": {
+            "description": "Farmer who consented.",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "given_at": {
+            "description": "When consent was given.",
+            "format": "date-time",
+            "title": "Given At",
+            "type": "string"
+          },
+          "id": {
+            "description": "Consent id (the client id it was recorded with).",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "recording_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Object key of the recording, if any.",
+            "title": "Recording Ref"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When it was withdrawn; null while in force.",
+            "title": "Revoked At"
+          },
+          "witnessed_by_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Officer who witnessed it (assist mode).",
+            "title": "Witnessed By User Id"
+          }
+        },
+        "required": [
+          "id",
+          "farmer_id",
+          "consent_type",
+          "consent_version",
+          "recording_ref",
+          "witnessed_by_user_id",
+          "given_at",
+          "device_id",
+          "revoked_at"
+        ],
+        "title": "ConsentOut",
+        "type": "object"
+      },
+      "ConsentType": {
+        "description": "What a farmer consented to (FR41, CLAUDE.md \u00a76).",
+        "enum": [
+          "data_collection",
+          "public_name",
+          "partner_share"
+        ],
+        "title": "ConsentType",
+        "type": "string"
+      },
+      "DeviceOut": {
+        "description": "The device this session is tied to.",
+        "properties": {
+          "app_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "App version last reported.",
+            "title": "App Version"
+          },
+          "id": {
+            "description": "Device id generated by the app.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_seen_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Last sign-in or token refresh from it.",
+            "title": "Last Seen At"
+          },
+          "platform": {
+            "description": "`android`, `ios` or `web`.",
+            "title": "Platform",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "app_version",
+          "last_seen_at"
+        ],
+        "title": "DeviceOut",
+        "type": "object"
+      },
       "ErrorBody": {
         "description": "Inner object of the error envelope.",
         "properties": {
@@ -40,6 +365,44 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "GeoPoint": {
+        "description": "A WGS84 point with the device's reported accuracy.",
+        "properties": {
+          "accuracy_m": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Horizontal accuracy radius in metres.",
+            "title": "Accuracy M"
+          },
+          "lat": {
+            "description": "Latitude in decimal degrees (WGS84).",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat",
+            "type": "number"
+          },
+          "lon": {
+            "description": "Longitude in decimal degrees (WGS84).",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lon",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "title": "GeoPoint",
+        "type": "object"
+      },
       "Health": {
         "description": "Status of each dependency: `ok` or `error: <ExceptionClass>` (details go to the server log only).",
         "properties": {
@@ -66,6 +429,371 @@
         ],
         "title": "Health",
         "type": "object"
+      },
+      "MeOut": {
+        "description": "Who is signed in, where, and on which device.",
+        "properties": {
+          "device": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeviceOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The device of this session; null if it was deleted."
+          },
+          "memberships": {
+            "description": "Every FPO role of the user, oldest first.",
+            "items": {
+              "$ref": "#/components/schemas/MembershipOut"
+            },
+            "title": "Memberships",
+            "type": "array"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserOut",
+            "description": "The user."
+          }
+        },
+        "required": [
+          "user",
+          "memberships",
+          "device"
+        ],
+        "title": "MeOut",
+        "type": "object"
+      },
+      "MembershipOut": {
+        "description": "One role in one FPO.",
+        "properties": {
+          "fpo_id": {
+            "description": "The FPO.",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role",
+            "description": "Role inside that FPO."
+          }
+        },
+        "required": [
+          "fpo_id",
+          "role"
+        ],
+        "title": "MembershipOut",
+        "type": "object"
+      },
+      "OtpRequestIn": {
+        "description": "Ask for a one-time code by SMS.",
+        "properties": {
+          "phone": {
+            "description": "Mobile number in E.164 form, e.g. `+919876543210`.",
+            "pattern": "^\\+[1-9][0-9]{7,14}$",
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "title": "OtpRequestIn",
+        "type": "object"
+      },
+      "OtpVerifyIn": {
+        "description": "Trade the SMS code for a session (farmers) or a `pin_token` (office roles).",
+        "properties": {
+          "app_version": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "App version, e.g. `1.0.3`.",
+            "title": "App Version"
+          },
+          "code": {
+            "description": "The 6-digit code from the SMS.",
+            "pattern": "^[0-9]{6}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "device_id": {
+            "description": "UUID the app generated once per installation; the session is tied to it (D-005).",
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "phone": {
+            "description": "The number the code was sent to, E.164.",
+            "pattern": "^\\+[1-9][0-9]{7,14}$",
+            "title": "Phone",
+            "type": "string"
+          },
+          "platform": {
+            "description": "Client platform of this device.",
+            "enum": [
+              "android",
+              "ios",
+              "web"
+            ],
+            "title": "Platform",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone",
+          "code",
+          "device_id",
+          "platform"
+        ],
+        "title": "OtpVerifyIn",
+        "type": "object"
+      },
+      "Page_ConsentOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/ConsentOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[ConsentOut]",
+        "type": "object"
+      },
+      "PinIn": {
+        "description": "A 4-digit office PIN.",
+        "properties": {
+          "pin": {
+            "description": "Exactly 4 digits.",
+            "pattern": "^[0-9]{4}$",
+            "title": "Pin",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pin"
+        ],
+        "title": "PinIn",
+        "type": "object"
+      },
+      "PinRequiredOut": {
+        "description": "The OTP passed for an office role; the PIN step must follow before any session is released.",
+        "properties": {
+          "expires_in": {
+            "description": "Pin token lifetime in seconds (300).",
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "pin_required",
+            "description": "Discriminator: PIN step next.",
+            "title": "Kind",
+            "type": "string"
+          },
+          "pin_set": {
+            "description": "False on first sign-in: the PIN sent to `/v1/auth/pin/verify` becomes the user's PIN.",
+            "title": "Pin Set",
+            "type": "boolean"
+          },
+          "pin_token": {
+            "description": "Single-purpose token for `POST /v1/auth/pin/verify` only; carries no role or FPO.",
+            "title": "Pin Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "pin_token",
+          "expires_in",
+          "pin_set"
+        ],
+        "title": "PinRequiredOut",
+        "type": "object"
+      },
+      "RefreshIn": {
+        "description": "Rotate the refresh token. Web clients omit the body field and send the httpOnly cookie.",
+        "properties": {
+          "refresh_token": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The current refresh token; omit when the cookie carries it (web).",
+            "title": "Refresh Token"
+          }
+        },
+        "title": "RefreshIn",
+        "type": "object"
+      },
+      "Role": {
+        "description": "A user's role inside one FPO (FR14, Dataflow \u00a73 role matrix).",
+        "enum": [
+          "farmer",
+          "field_officer",
+          "qc_officer",
+          "fpo_admin",
+          "viewer"
+        ],
+        "title": "Role",
+        "type": "string"
+      },
+      "SessionOut": {
+        "description": "A signed-in session: short-lived access token plus the device's refresh token.",
+        "properties": {
+          "access_token": {
+            "description": "JWT for `Authorization: Bearer`; expires after `expires_in` s.",
+            "title": "Access Token",
+            "type": "string"
+          },
+          "expires_in": {
+            "description": "Access token lifetime in seconds (900).",
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "fpo_id": {
+            "description": "FPO the session is scoped to (the user's first membership).",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "session",
+            "description": "Discriminator: a full session.",
+            "title": "Kind",
+            "type": "string"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque token for `POST /v1/auth/refresh`, rotated on every use. Null for web clients (`X-Client: web`), which receive it as an httpOnly cookie instead (D-022).",
+            "title": "Refresh Token"
+          },
+          "roles": {
+            "description": "Roles in force: the membership role (`farmer`, `field_officer`, `qc_officer`, `fpo_admin`, `viewer`), plus `super_admin` when the user holds that flag.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Roles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "access_token",
+          "refresh_token",
+          "expires_in",
+          "roles",
+          "fpo_id"
+        ],
+        "title": "SessionOut",
+        "type": "object"
+      },
+      "UserOut": {
+        "description": "The signed-in user's own profile.",
+        "properties": {
+          "id": {
+            "description": "User id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_super_admin": {
+            "description": "Platform compliance team flag.",
+            "title": "Is Super Admin",
+            "type": "boolean"
+          },
+          "lang": {
+            "description": "Preferred UI language: `ta` or `en`.",
+            "title": "Lang",
+            "type": "string"
+          },
+          "name": {
+            "description": "Display name in English script.",
+            "title": "Name",
+            "type": "string"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Display name in the local script (Tamil).",
+            "title": "Name Local"
+          },
+          "phone": {
+            "description": "The user's own mobile number, E.164.",
+            "title": "Phone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "name",
+          "name_local",
+          "lang",
+          "is_super_admin"
+        ],
+        "title": "UserOut",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "AccessToken": {
+        "description": "Access token from `/v1/auth/otp/verify`, `/v1/auth/pin/verify` or `/v1/auth/refresh`.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "PinToken": {
+        "description": "The `pin_token` from `POST /v1/auth/otp/verify`.",
+        "scheme": "bearer",
+        "type": "http"
       }
     }
   },
@@ -76,6 +804,794 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/v1/assist/end": {
+      "post": {
+        "description": "End an assist session (idempotent).\n\nArgs:\n    body: the session id.\n    session: database session.\n    user: the field officer.\n\nReturns:\n    The ended session.\n\nRaises:\n    ForbiddenError: not a field officer.\n    NotFoundError: not this officer's session.",
+        "operationId": "assist_end_v1_assist_end_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistEndIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistSessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Assist End",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/assist/start": {
+      "post": {
+        "description": "Start entering data for a farmer; send the returned `id` as `X-Assist-Session` afterwards.\n\nIdempotent by `client_id`: a retry returns the stored session.\n\nArgs:\n    body: client id, farmer, optional start time and position.\n    session: database session.\n    user: the field officer.\n\nReturns:\n    The assist session.\n\nRaises:\n    ForbiddenError: not a field officer.\n    NotFoundError: the farmer is not in the officer's FPO.\n    ConflictError: the client id belongs to another officer's or farmer's session.",
+        "operationId": "assist_start_v1_assist_start_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistStartIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistSessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Assist Start",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "description": "Sign this device out: its refresh token and access tokens stop working.\n\nArgs:\n    user: the signed-in caller.\n    response: the outgoing response (the web refresh cookie is cleared).\n    session: database session.\n\nRaises:\n    UnauthorizedError: not signed in.\n\nSide effects:\n    Revokes the device; deletes the refresh cookie.",
+        "operationId": "logout_v1_auth_logout_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Logout",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/auth/otp/request": {
+      "post": {
+        "description": "Send a 6-digit sign-in code by SMS (valid 5 minutes; one request per phone per 60 s).\n\nThe answer is the same for registered and unknown numbers.\n\nArgs:\n    body: the phone number.\n    session: database session.\n\nRaises:\n    RateLimitedError: a code was requested for this phone less than 60 s ago.\n\nSide effects:\n    Stores a hashed challenge; enqueues the SMS (not with `OTP_DEV_CODE` set, dev only).",
+        "operationId": "otp_request_v1_auth_otp_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "429": {
+            "description": "`rate_limited`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Otp Request",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/auth/otp/verify": {
+      "post": {
+        "description": "Trade the SMS code for a session (farmers) or a `pin_token` (office roles, D-024).\n\nArgs:\n    body: phone, code and device details.\n    request: the incoming request (`X-Client: web` selects the cookie transport).\n    response: the outgoing response (refresh cookie for web).\n    session: database session.\n\nReturns:\n    `{kind: \"session\", ...}` or `{kind: \"pin_required\", pin_token, expires_in, pin_set}`.\n\nRaises:\n    OtpInvalidError: wrong code, or a phone that cannot sign in.\n    OtpExpiredError: the code is older than 5 minutes.\n    OtpLockedError: 5 wrong codes.",
+        "operationId": "otp_verify_v1_auth_otp_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "`session` for farmers, `pin_required` for office roles.",
+                  "discriminator": {
+                    "mapping": {
+                      "pin_required": "#/components/schemas/PinRequiredOut",
+                      "session": "#/components/schemas/SessionOut"
+                    },
+                    "propertyName": "kind"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/SessionOut"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PinRequiredOut"
+                    }
+                  ],
+                  "title": "Response Otp Verify V1 Auth Otp Verify Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "description": "`otp_locked` after 5 wrong codes."
+          },
+          "422": {
+            "description": "`otp_invalid`, `otp_expired` or `validation_error`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Otp Verify",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/auth/pin": {
+      "post": {
+        "description": "Set or change the caller's 4-digit PIN (office roles).\n\nArgs:\n    body: the new PIN.\n    session: database session.\n    user: the signed-in office user.\n\nRaises:\n    UnauthorizedError: not signed in.\n    ForbiddenError: farmers have no PIN.\n\nSide effects:\n    Stores the Argon2id hash and clears any PIN lock.",
+        "operationId": "pin_set_v1_auth_pin_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Pin Set",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/auth/pin/verify": {
+      "post": {
+        "description": "Trade the `pin_token` (as Bearer) and the 4-digit PIN for a full session.\n\nOn an office user's first sign-in (`pin_set: false`) the PIN sent here becomes their PIN.\n\nArgs:\n    body: the PIN.\n    request: the incoming request (`X-Client: web` selects the cookie transport).\n    response: the outgoing response (refresh cookie for web).\n    session: database session.\n    credentials: `Authorization: Bearer <pin_token>`.\n\nReturns:\n    The session.\n\nRaises:\n    UnauthorizedError: no pin token, or an access/expired/forged token in its place.\n    PinInvalidError: wrong PIN.\n    PinLockedError: 5 wrong PINs.",
+        "operationId": "pin_verify_v1_auth_pin_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Missing, expired or wrong-type pin token."
+          },
+          "409": {
+            "description": "`pin_locked` for 5 minutes after 5 wrong PINs."
+          },
+          "422": {
+            "description": "`pin_invalid`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "PinToken": []
+          }
+        ],
+        "summary": "Pin Verify",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "description": "Rotate the refresh token and get a new 15-minute access token.\n\nMobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie.\nPresenting an already-rotated token signs the device out (`refresh_reused`).\n\nArgs:\n    body: the refresh token (mobile) or nothing (web).\n    request: the incoming request (cookie and `X-Client`).\n    response: the outgoing response (new cookie for web).\n    session: database session.\n\nReturns:\n    A new session; the old refresh token is now invalid.\n\nRaises:\n    UnauthorizedError: no or unknown token, signed-out device.\n    RefreshReusedError: reuse of a rotated token.",
+        "operationId": "refresh_v1_auth_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "`unauthorized` (signed out) or `refresh_reused` (device revoked)."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Refresh",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/consents": {
+      "post": {
+        "description": "Record a farmer's consent (the farmer, or an officer in assist mode); idempotent by `client_id`.\n\nArgs:\n    body: the consent.\n    user: the caller.\n    session: database session.\n\nReturns:\n    The stored consent.\n\nRaises:\n    ForbiddenError: an officer outside assist mode for this farmer.\n    NotFoundError: the farmer is outside the caller's scope.\n    ConsentConflictError: the client id holds a different consent.",
+        "operationId": "consent_create_v1_consents_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Consent Create",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/consents/{consent_id}/revoke": {
+      "post": {
+        "description": "Withdraw a consent (sets `revoked_at` only; the record itself is kept).\n\nArgs:\n    consent_id: the consent.\n    user: the farmer, or an officer in assist mode for that farmer.\n    session: database session.\n\nReturns:\n    The consent with `revoked_at` set.\n\nRaises:\n    NotFoundError: unknown consent or outside the caller's scope.\n    ForbiddenError: an officer outside assist mode for this farmer.",
+        "operationId": "consent_revoke_v1_consents__consent_id__revoke_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "consent_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Consent Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Consent Revoke",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}/consents": {
+      "get": {
+        "description": "List a farmer's consents (revoked included), oldest first.\n\nArgs:\n    farmer_id: the farmer.\n    user: the farmer themself or any role in the same FPO.\n    session: database session.\n\nReturns:\n    One page holding every consent of the farmer.\n\nRaises:\n    NotFoundError: the farmer is outside the caller's scope.",
+        "operationId": "consent_list_v1_farmers__farmer_id__consents_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ConsentOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Consent List",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
     "/v1/healthz": {
       "get": {
         "description": "Check Postgres, Redis and object storage independently and concurrently.\n\nArgs:\n    response: the outgoing response, whose status is set to 503 when any check fails.\n\nReturns:\n    One status string per dependency.\n\nSide effects:\n    Opens one DB connection, one Redis connection and one S3 request.",
@@ -143,6 +1659,83 @@
         "summary": "Reachable",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "description": "Return the signed-in user, their FPO memberships and this session's device.\n\nArgs:\n    user: the signed-in caller.\n    session: database session.\n\nReturns:\n    Profile, memberships and device.\n\nRaises:\n    UnauthorizedError: not signed in.",
+        "operationId": "me_v1_me_get",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Me",
+        "tags": [
+          "identity"
         ]
       }
     }

@@ -23,6 +23,8 @@ dependencies = [
     "brotli-asgi>=1.4",
     "uuid6>=2024.7.10",
     "httpx>=0.28",
+    "pyjwt>=2.10",
+    "argon2-cffi>=23.1",
 ]
 
 [dependency-groups]
