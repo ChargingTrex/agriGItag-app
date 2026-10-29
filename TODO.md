@@ -84,6 +84,13 @@ _(empty)_
 - [ ] Compliance (B05): moisture profile allows only instrument/lab sources, so a visual moisture reading is rejected at entry (correct: moisture is not visual); the `max_grade_for_source: visual → Standard` cap is for colour/visual parameters. Confirm with the compliance owner when the full AGMARK schedule is loaded.
 - [ ] B08: sweep readings carrying a `reason_code` (trail overrides) in case the broker was down when the override was accepted (B05 `shortcut:`), and turn `per_parameter` entries with `outcome == "profile_incomplete"` into the info flag.
 - [ ] B06: reuse the registered `client_id_conflict` error code (registering it twice raises).
+- [ ] B13 migration 0003: add `plots.gi_tag_id` (B03 shortcut: when a request omits it, the only GI tag with a region is used; breaks with a second GI crop).
+- [ ] B03 shortcut: farmer codes are random 6-hex per FPO; a collision surfaces as 500 — add a retry or sequence before scale.
+- [ ] B02/B03 reconcile: B03 reads `users.is_super_admin` per call because `CurrentUser` has no super-admin flag; B02's `require_role` honours "super_admin" — one mechanism should win (prefer a claim in the access token, D-024).
+- [ ] B08: GPS accuracy threshold flag, taluk check against GI registration (FR53), raising the walked-vs-declared gap flag (B03 computes, B08 flags).
+- [ ] B06: dict-accepting plot entry for sync push (`registry.service.create_plot_from_sync`).
+- [ ] Product: must a plot's location be confirmed before a farmer is activated (FR67 says yes for GI eligibility; activation itself is admin approval) — confirm with product.
+- [ ] Public page / W03: show the ODbL attribution for the GI boundary (D-019 amendment).
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
