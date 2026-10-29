@@ -1,18 +1,27 @@
 """Alembic environment: runs migrations through the app's async engine against `Base.metadata`.
 
 Serves: D-012 (schema-first migrations), D-001 (SQLAlchemy 2 async).
-Callers: the `alembic` CLI (configured by apps/api/alembic.ini). B01 imports every `modules/*/models.py`
-here (or in `agritrace.core.db`) so autogenerate sees all tables.
+Callers: the `alembic` CLI (configured by apps/api/alembic.ini). Every `modules/*/models.py` is imported
+below so autogenerate and `alembic check` see all tables.
 """
 
 import asyncio
+import importlib
+import importlib.util
+import pkgutil
 
 from alembic import context
 from geoalchemy2 import alembic_helpers
 from sqlalchemy.engine import Connection
 
+import agritrace.modules
 from agritrace.core.config import get_settings
 from agritrace.core.db import Base, get_engine
+
+# core may not import modules (D-004), so the migration environment loads every module's tables itself.
+for _module in pkgutil.iter_modules(agritrace.modules.__path__):
+    if importlib.util.find_spec(f"agritrace.modules.{_module.name}.models"):
+        importlib.import_module(f"agritrace.modules.{_module.name}.models")
 
 target_metadata = Base.metadata
 # GeoAlchemy2's hooks skip PostGIS internal tables (spatial_ref_sys) and render geometry columns and

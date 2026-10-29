@@ -7,8 +7,8 @@ Clients map `code` to their own English/Tamil text via the message key.
 
 | Code | HTTP | Meaning | How to fix | Message key | Raised by |
 |---|---|---|---|---|---|
-| `unauthorized` | 401 | Sign-in is required. | Sign in again (OTP) and retry with the new access token. | `error.unauthorized` | — |
-| `forbidden` | 403 | Your role does not allow this action. | Ask an FPO admin to do it or to grant the needed role. | `error.forbidden` | — |
+| `unauthorized` | 401 | Sign-in is required. | Sign in again (OTP) and retry with the new access token. | `error.unauthorized` | `apps/api/agritrace/core/auth.py:47` |
+| `forbidden` | 403 | Your role does not allow this action. | Ask an FPO admin to do it or to grant the needed role. | `error.forbidden` | `apps/api/agritrace/core/auth.py:76` |
 | `not_found` | 404 | Not found. | Check the id or code; it may belong to another FPO. | `error.not_found` | — |
 | `method_not_allowed` | 405 | This method is not allowed on this path. | Use a method listed in the OpenAPI document for this path. | `error.method_not_allowed` | — |
 | `append_only_violation` | 409 | Records of this kind cannot be changed or deleted. | Submit a correction as a new version instead of editing the old one. | `error.append_only_violation` | — |
