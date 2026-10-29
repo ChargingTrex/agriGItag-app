@@ -1,0 +1,128 @@
+{#- Public batch page (W01). Purpose: the static page a buyer sees after scanning the pack QR.
+    Requirements: FR15-FR19, FR30 (GI indicator), FR51 (grade), FR58 (units), FR62 (compliance ids),
+    FR63 (date order, counts), FR72 (location method); User Flows §Design rules, §Who uses what.
+    Caller: agritrace_page.render.render, with r (PublicBatchRecord), t (label), pair, local, lang_order.
+    Every quantity goes through qty() so it always carries its unit. -#}
+{% macro qty(q) %}<data class="q" value="{{ q.value }}">{{ q.value|num }} {{ q.unit }}</data>{% endmacro %}
+{% macro timeline(events) %}
+<ol class="tl">
+{% for e in events %}
+<li class="ev">
+<p><strong>{{ t("stage." ~ e.stage) }}</strong> <span class="meta">#{{ e.instance_no }}</span></p>
+<p class="meta"><time datetime="{{ e.date }}">{{ e.date|day }}</time>{% if e.end_date %} – <time datetime="{{ e.end_date }}">{{ e.end_date|day }}</time>{% endif %} ·
+{% if e.status == "complete" %}<span class="st ok"><i aria-hidden="true">✓</i> {{ t("status.complete") }}</span>{% else %}<span class="st warn"><i aria-hidden="true">○</i> {{ t("status.in_progress") }}</span>{% endif %}
+{% if e.system_generated %} · {{ t("system_entry") }}{% endif %}</p>
+{% if e.quantity %}<p>{{ t("quantity") }}: {{ qty(e.quantity) }}</p>
+{% endif %}
+{% if e.seed_variety %}<p>{{ t("seed_variety") }}: {{ e.seed_variety }}</p>
+{% endif %}
+{% if e.input %}<p>{{ t("input") }}: {{ pair({local: e.input.name_local, "en": e.input.name_en}) }}{% if e.input.manufacturer %} ({{ e.input.manufacturer }}){% endif %}</p>
+{% endif %}
+{% if e.moisture %}<p>{{ t("moisture") }}: {{ qty(e.moisture) }} ({{ t("source." ~ e.moisture.source) }})</p>
+{% endif %}
+{% if e.comment %}<p class="meta">{{ e.comment }}</p>
+{% endif %}
+{% for p in e.photos %}<a class="ph" href="{{ p.medium_url }}"><picture><source type="image/webp" srcset="{{ p.thumb_url }}"><img src="{{ p.jpeg_url }}" width="{{ p.width }}" height="{{ p.height }}" alt="{{ p.alt }}" loading="lazy" decoding="async"></picture></a>{% endfor %}
+</li>
+{% endfor %}
+</ol>
+{% endmacro %}
+<!doctype html>
+<html lang="{{ lang_order[0] }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ r.product_name_en }} · {{ r.batch_code }}</title>
+{# W03 adds the print stylesheet and OG tags (no personal data) here. #}
+<style>{% include "page.css" %}</style>
+</head>
+<body>
+<header>
+<p class="meta">{{ t("batch") }} <strong>{{ r.batch_code }}</strong></p>
+<h1>{{ pair({local: r.product_name_local, "en": r.product_name_en}) }}</h1>
+<div class="badges">
+{% if r.gi_verified %}
+<p class="badge ok" id="gi"><i aria-hidden="true">✓</i> {{ t("gi_verified") }}</p>
+{% else %}
+<p class="badge warn" id="gi"><i aria-hidden="true">▲</i> {{ t("gi_not_verified") }}</p>
+{% endif %}
+{% if r.grade.lab_certified %}
+<p class="badge lab" id="lab"><i aria-hidden="true">★</i> {{ t("lab_certified") }}</p>
+{% endif %}
+</div>
+</header>
+<main>
+<section aria-labelledby="h-batch">
+<h2 id="h-batch">{{ t("batch") }}</h2>
+<dl>
+<dt>{{ t("batch_code") }}</dt><dd>{{ r.batch_code }}</dd>
+<dt>{{ t("super_lot") }}</dt><dd>{{ r.super_lot_code }}</dd>
+<dt>{{ t("total_quantity") }}</dt><dd>{{ qty(r.total_quantity) }}</dd>
+<dt>{{ t("lots") }}</dt><dd id="n-lots">{{ r.lot_count }}</dd>
+<dt>{{ t("gi_tag") }}</dt><dd>{{ r.gi_tag_name }} · GI {{ r.gi_tag_number }}
+{% if r.gi_verification_note %}<br><span class="meta">{{ r.gi_verification_note }}</span>{% endif %}
+{% if r.boundary_map_url %}<br><a href="{{ r.boundary_map_url }}">{{ t("boundary_map") }}</a>{% endif %}</dd>
+<dt>{{ t("events") }}</dt><dd>{{ t("farming_events") }}: <span id="n-farm">{{ r.farming_event_count }}</span> · {{ t("processing_events") }}: <span id="n-proc">{{ r.processing_event_count }}</span></dd>
+<dt>{{ t("pack_date") }}</dt><dd><time datetime="{{ r.pack_date }}">{{ r.pack_date|day }}</time></dd>
+<dt>{{ t("best_before") }}</dt><dd><time datetime="{{ r.best_before_date }}">{{ r.best_before_date|day }}</time></dd>
+</dl>
+</section>
+<section aria-labelledby="h-grade">
+<h2 id="h-grade">{{ t("grade") }}: {{ r.grade.grade }}</h2>
+<dl>
+<dt>{{ t("standard") }}</dt><dd>{{ r.grade.standard_name }}, {{ r.grade.clause }} ({{ r.grade.edition }})</dd>
+{% if r.grade.lab_name %}<dt>{{ t("source.lab") }}</dt><dd>{{ r.grade.lab_name }}</dd>{% endif %}
+<dt>{{ t("readings") }}</dt><dd><ul>
+{% for x in r.grade.readings %}<li>{{ x.parameter }}: {{ qty(x) }} ({{ t("source." ~ x.source) }})</li>
+{% endfor %}</ul></dd>
+</dl>
+</section>
+<section aria-labelledby="h-proc">
+<h2 id="h-proc">{{ t("processor") }}</h2>
+<dl>
+<dt>{{ t("processor") }}</dt><dd>{{ r.processor.name }} ({{ r.processor.type }})</dd>
+<dt>{{ t("location") }}</dt><dd>{{ r.processor.place|place }}</dd>
+<dt>{{ t("fssai") }}</dt><dd>{{ r.processor.fssai_licence_no }}</dd>
+<dt>{{ t("gi_user") }}</dt><dd>{{ r.processor.gi_authorised_user_no }}</dd>
+</dl>
+</section>
+<section aria-labelledby="h-lots">
+<h2 id="h-lots">{{ t("lots") }} ({{ r.lot_count }})</h2>
+{% for lot in r.lots %}
+<article class="lot" id="lot-{{ loop.index }}">
+<h3>{{ lot.farmer_name or t("farmer_n", n=loop.index) }} <span class="meta">{{ lot.lot_code }}</span></h3>
+<dl>
+<dt>{{ t("location") }}</dt><dd>{{ lot.place|place }}<br><a href="{{ lot.map_link }}" rel="noopener">{{ t("map") }}</a></dd>
+<dt>{{ t("quantity") }}</dt><dd>{{ qty(lot.quantity) }}</dd>
+<dt>{{ t("share") }}</dt><dd>{{ qty({"value": lot.share_pct, "unit": "%"}) }}</dd>
+<dt>{{ t("farm_area") }}</dt><dd>{{ qty(lot.farm_area) }}</dd>
+<dt>{{ t("farming_type") }}</dt><dd>{{ t("farming_type." ~ lot.farming_type) }}</dd>
+{% if lot.irrigation_source %}<dt>{{ t("irrigation_source") }}</dt><dd>{{ t("irrigation." ~ lot.irrigation_source) }}</dd>
+{% endif %}
+{% if lot.practice_tags %}<dt>{{ t("practices") }}</dt><dd><ul class="tags">{% for p in lot.practice_tags %}<li>{{ t("practice." ~ p) }}</li>{% endfor %}</ul></dd>
+{% endif %}
+<dt>{{ t("location_method") }}</dt><dd>{{ t("location_method." ~ lot.location_method) }}{% if lot.review_note %}<br><span class="meta">{{ t("review") }}: {{ lot.review_note }}</span>{% endif %}</dd>
+{% if lot.gi_authorised_user_no %}<dt>{{ t("gi_user") }}</dt><dd>{{ lot.gi_authorised_user_no }}</dd>
+{% endif %}
+</dl>
+<details>
+<summary>{{ t("farming_events") }} · <span class="n">{{ lot.event_count }}</span></summary>
+{{ timeline(lot.events) }}
+</details>
+</article>
+{% endfor %}
+</section>
+{% if r.processing_events %}
+<section aria-labelledby="h-pev">
+<h2 id="h-pev">{{ t("processing_events") }} · <span class="n">{{ r.processing_event_count }}</span></h2>
+{{ timeline(r.processing_events) }}
+</section>
+{% endif %}
+</main>
+<footer>
+<p>{{ t("last_updated") }}: <time datetime="{{ r.footer.last_updated.isoformat() }}">{{ r.footer.last_updated|utc }}</time></p>
+<p>{{ t("generation") }}: <span id="gen">{{ r.footer.generation }}</span> · {{ t("page_version") }}: {{ r.footer.page_version }}</p>
+</footer>
+<script>{% include "page.js" %}</script>
+</body>
+</html>

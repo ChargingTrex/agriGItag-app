@@ -7,3 +7,4 @@ One line per merged work package: `WP-id — title — reviewer PASS rN, verifie
 
 ### Added
 - Project scaffold: CLAUDE.md, README, tracking files, ADRs D-001 to D-020, agent role docs, acceptance files for 42 work packages (Orchestrator, 2026-10-29).
+- W01 — public QR page renderer `agritrace_page` (privacy-checked `PublicBatchRecord`, `render()` to index.html + data.json, CLI build/check, reference-batch fixture) — awaiting review.

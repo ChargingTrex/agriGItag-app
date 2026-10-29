@@ -1,0 +1,42 @@
+# agritrace_page packaging and tool configuration.
+# Purpose: static public QR page renderer (W01; PRD FR15-FR19, FR51, FR62, FR63, FR72; D-007).
+# Callers: the apps/api publishing job (B10) imports agritrace_page.render; developers run the CLI.
+[project]
+name = "agritrace-page"
+version = "0.1.0"
+description = "Renders the AgriTrace public batch page (static HTML + data.json) from a privacy-checked record."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "jinja2>=3.1,<4",
+    "pydantic>=2.7,<3",
+]
+
+[dependency-groups]
+dev = [
+    "html5lib>=1.1",
+    "interrogate>=1.7",
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["agritrace_page"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.interrogate]
+fail-under = 100
+ignore-init-module = false
