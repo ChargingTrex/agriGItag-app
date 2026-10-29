@@ -64,6 +64,158 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/crops": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List crops
+         * @description List active crops.
+         */
+        get: operations["list_crops_v1_crops_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the FPO's farmers
+         * @description List farmers of the caller's FPO (a farmer sees only themself).
+         */
+        get: operations["list_farmers_v1_farmers_get"];
+        put?: never;
+        /**
+         * Onboard a farmer
+         * @description Onboard a farmer, pending approval (field officer or FPO admin).
+         */
+        post: operations["create_farmer_v1_farmers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a farmer
+         * @description Read one farmer of the caller's FPO.
+         */
+        get: operations["get_farmer_v1_farmers__farmer_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change a farmer's profile
+         * @description Change a farmer's profile (field officer or FPO admin).
+         */
+        patch: operations["update_farmer_v1_farmers__farmer_id__patch"];
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a pending farmer
+         * @description Approve a pending farmer as a genuine member (FPO admin).
+         */
+        post: operations["approve_farmer_v1_farmers__farmer_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/fpos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List FPOs (super-admin: all; others: own)
+         * @description List FPOs visible to the caller.
+         */
+        get: operations["list_fpos_v1_fpos_get"];
+        put?: never;
+        /**
+         * Create an FPO
+         * @description Create an FPO (super-admin only).
+         */
+        post: operations["create_fpo_v1_fpos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gi-tags/{gi_tag_id}/region": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current GI region (simplified)
+         * @description Return the GI tag's region in effect today, simplified.
+         */
+        get: operations["get_region_v1_gi_tags__gi_tag_id__region_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gi-tags/{gi_tag_id}/region-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a GI region version (super-admin)
+         * @description Store a new region outline version (super-admin only; FPO admins get 403, FR31).
+         */
+        post: operations["create_region_version_v1_gi_tags__gi_tag_id__region_versions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/healthz": {
         parameters: {
             query?: never;
@@ -101,6 +253,30 @@ export interface paths {
          *         An empty 200 response.
          */
         head: operations["reachable_v1_healthz_head"];
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the input master list
+         * @description List active inputs: global plus the caller's FPO's own.
+         */
+        get: operations["list_inputs_v1_inputs_get"];
+        put?: never;
+        /**
+         * Add an input
+         * @description Add an input to the FPO's list (FPO admin) or the global list (super-admin).
+         */
+        post: operations["create_input_v1_inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
@@ -142,6 +318,90 @@ export interface paths {
         get: operations["list_lot_readings_v1_lots__lot_id__readings_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/plots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register a plot (idempotent on client_id)
+         * @description Register a plot and run the GI region check; a resend returns 200 with the stored plot.
+         */
+        post: operations["create_plot_v1_plots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/plots/{plot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a plot
+         * @description Read one plot of the caller's FPO.
+         */
+        get: operations["get_plot_v1_plots__plot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/plots/{plot_id}/correct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Correct a plot with a reason
+         * @description Correct an onboarded plot (FPO admin), keeping the old state as a revision.
+         */
+        post: operations["correct_plot_v1_plots__plot_id__correct_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/processors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List processors
+         * @description List the FPO's processors and shared ones.
+         */
+        get: operations["list_processors_v1_processors_get"];
+        put?: never;
+        /**
+         * Register a processor
+         * @description Register a processor for the caller's FPO (FPO admin).
+         */
+        post: operations["create_processor_v1_processors_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -228,10 +488,117 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/villages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search the village directory
+         * @description Search villages for the onboarding picker (FR53).
+         */
+        get: operations["list_villages_v1_villages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * Address
+         * @description Structured address of a farmer, plot, FPO or processor (FR53); also a second GI check by taluk.
+         *
+         *     Every part is optional here: which parts are required is field configuration (D-017, B13).
+         */
+        Address: {
+            /**
+             * Block
+             * @description Development block.
+             */
+            block?: string | null;
+            /**
+             * District
+             * @description District, e.g. `Virudhunagar`.
+             */
+            district?: string | null;
+            /**
+             * Pin
+             * @description Six-digit Indian PIN code.
+             */
+            pin?: string | null;
+            /**
+             * State
+             * @description State, e.g. `Tamil Nadu`.
+             */
+            state?: string | null;
+            /**
+             * Taluk
+             * @description Taluk (sub-district); second GI check against registered taluks (FR53).
+             */
+            taluk?: string | null;
+            /**
+             * Village
+             * @description Village or hamlet name.
+             */
+            village?: string | null;
+        };
+        /**
+         * CropOut
+         * @description A crop farmers can grow, with its GI tag and event schema (FR22, FR55).
+         */
+        CropOut: {
+            /**
+             * Active
+             * @description False hides the crop from new lots.
+             */
+            active: boolean;
+            /**
+             * Code
+             * @description Stable crop code.
+             */
+            code: string;
+            /**
+             * Event Schema
+             * @description Mandatory event types and date-order rules (FR55).
+             */
+            event_schema: {
+                [key: string]: unknown;
+            };
+            /**
+             * Gi Tag Id
+             * @description GI tag the crop is sold under, if any.
+             */
+            gi_tag_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Crop id.
+             */
+            id: string;
+            /**
+             * Lang
+             * @description Language code of name_local.
+             */
+            lang: string;
+            /**
+             * Name En
+             * @description Crop name in English.
+             */
+            name_en: string;
+            /**
+             * Name Local
+             * @description Crop name in the local script.
+             */
+            name_local: string | null;
+        };
         /**
          * ErrorBody
          * @description Inner object of the error envelope.
@@ -262,6 +629,269 @@ export interface components {
             error: components["schemas"]["ErrorBody"];
         };
         /**
+         * FarmerIn
+         * @description A farmer onboarded by a field officer or admin (Stage 0, UserFlows §Onboarding a farmer).
+         */
+        FarmerIn: {
+            /** @description Structured address (FR53); parts left empty are filled from `village_id`. */
+            address?: components["schemas"]["Address"] | null;
+            /**
+             * Gi Authorised User No
+             * @description Farmer's GI authorised-user registration number (FR62).
+             */
+            gi_authorised_user_no?: string | null;
+            /**
+             * Lang
+             * @description Preferred language for app, SMS and voice.
+             * @default ta
+             * @enum {string}
+             */
+            lang: "ta" | "en";
+            /**
+             * Name
+             * @description Name in English script.
+             */
+            name: string;
+            /**
+             * Name Local
+             * @description Name in the local script (FR5).
+             */
+            name_local?: string | null;
+            /**
+             * No Smartphone
+             * @description True when the officer always enters data for this farmer (assist mode).
+             * @default false
+             */
+            no_smartphone: boolean;
+            /**
+             * Phone
+             * @description Mobile number in E.164, e.g. +919876543210; creates or links the farmer's sign-in account (also for feature-phone farmers, who get SMS).
+             */
+            phone?: string | null;
+            /**
+             * Photo Key
+             * @description Object key of the profile photo.
+             */
+            photo_key?: string | null;
+            /**
+             * Village Id
+             * @description Village picked from GET /v1/villages.
+             */
+            village_id?: string | null;
+        };
+        /**
+         * FarmerOut
+         * @description A farmer as returned by the API (no phone number: it lives on the sign-in account).
+         */
+        FarmerOut: {
+            /** @description Structured address. */
+            address: components["schemas"]["Address"] | null;
+            /**
+             * Address Line
+             * @description Address on one line, without repeated parts.
+             */
+            readonly address_line: string;
+            /**
+             * Approved At
+             * @description When the farmer was approved.
+             */
+            approved_at: string | null;
+            /**
+             * Approved By
+             * @description Admin who approved the farmer.
+             */
+            approved_by: string | null;
+            /**
+             * Code
+             * @description Farmer code, unique inside the FPO.
+             */
+            code: string;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number.
+             */
+            gi_authorised_user_no: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Farmer id.
+             */
+            id: string;
+            /**
+             * Name
+             * @description Name in English script.
+             */
+            name: string;
+            /**
+             * Name Local
+             * @description Name in the local script.
+             */
+            name_local: string | null;
+            /**
+             * No Smartphone
+             * @description True when the officer always enters data.
+             */
+            no_smartphone: boolean;
+            /**
+             * Photo Key
+             * @description Object key of the profile photo.
+             */
+            photo_key: string | null;
+            /** @description pending until an FPO admin approves; then active. */
+            status: components["schemas"]["FarmerStatus"];
+            /**
+             * User Id
+             * @description Sign-in account; null when no phone was given.
+             */
+            user_id: string | null;
+            /**
+             * Village Id
+             * @description Village from the directory.
+             */
+            village_id: string | null;
+        };
+        /**
+         * FarmerPatch
+         * @description Changes to a farmer's profile; only the fields sent are changed.
+         */
+        FarmerPatch: {
+            /** @description Structured address (replaces the stored one). */
+            address?: components["schemas"]["Address"] | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user number.
+             */
+            gi_authorised_user_no?: string | null;
+            /**
+             * Name
+             * @description Name in English script.
+             */
+            name?: string | null;
+            /**
+             * Name Local
+             * @description Name in the local script.
+             */
+            name_local?: string | null;
+            /**
+             * No Smartphone
+             * @description True when the officer always enters data.
+             */
+            no_smartphone?: boolean | null;
+            /**
+             * Photo Key
+             * @description Object key of the profile photo.
+             */
+            photo_key?: string | null;
+            /**
+             * Village Id
+             * @description Village picked from GET /v1/villages.
+             */
+            village_id?: string | null;
+        };
+        /**
+         * FarmerStatus
+         * @description Farmer onboarding state (Stage 0; FR67 activates on a confirmed location).
+         * @enum {string}
+         */
+        FarmerStatus: "pending" | "active" | "suspended";
+        /**
+         * FarmingType
+         * @description Irrigated or rainfed farming (FR54).
+         * @enum {string}
+         */
+        FarmingType: "irrigated" | "rainfed";
+        /**
+         * FpoIn
+         * @description A new FPO (tenant); created by a super-admin.
+         */
+        FpoIn: {
+            /** @description Registered address (FR53). */
+            address?: components["schemas"]["Address"] | null;
+            /**
+             * Code
+             * @description Stable upper-case code.
+             */
+            code: string;
+            /**
+             * Fssai No
+             * @description FSSAI licence number (FR62).
+             */
+            fssai_no?: string | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number (FR62).
+             */
+            gi_authorised_user_no?: string | null;
+            /**
+             * @description Legal form: fpo, company or coop.
+             * @default fpo
+             */
+            kind: components["schemas"]["OrgKind"];
+            /**
+             * Name
+             * @description Registered name.
+             */
+            name: string;
+            /**
+             * Public Show Farmer Names
+             * @description Whether public pages may show farmer names (still subject to each consent).
+             * @default false
+             */
+            public_show_farmer_names: boolean;
+        };
+        /**
+         * FpoOut
+         * @description An FPO as returned by the API.
+         */
+        FpoOut: {
+            /** @description Registered address. */
+            address: components["schemas"]["Address"] | null;
+            /**
+             * Address Line
+             * @description Address on one line, without repeated parts.
+             */
+            readonly address_line: string;
+            /**
+             * Code
+             * @description Stable upper-case code.
+             */
+            code: string;
+            /**
+             * Fssai No
+             * @description FSSAI licence number.
+             */
+            fssai_no: string | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number.
+             */
+            gi_authorised_user_no: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description FPO id.
+             */
+            id: string;
+            /** @description Legal form. */
+            kind: components["schemas"]["OrgKind"];
+            /**
+             * Name
+             * @description Registered name.
+             */
+            name: string;
+            /**
+             * Public Show Farmer Names
+             * @description Whether public pages may show farmer names.
+             */
+            public_show_farmer_names: boolean;
+        };
+        /**
          * GeoPoint
          * @description A WGS84 point with the device's reported accuracy.
          */
@@ -281,6 +911,129 @@ export interface components {
              * @description Longitude in decimal degrees (WGS84).
              */
             lon: number;
+        };
+        /**
+         * GiRegionOut
+         * @description The current region of a GI tag: version metadata plus a simplified outline (≤ 50 KB).
+         */
+        GiRegionOut: {
+            /**
+             * Geometry
+             * @description Simplified GeoJSON outline (MultiPolygon or Polygon), [lon, lat], 6 decimal places.
+             */
+            geometry: {
+                [key: string]: unknown;
+            };
+            /**
+             * Simplified Tolerance M
+             * @description Simplification tolerance used, in metres.
+             */
+            simplified_tolerance_m: number;
+            /** @description The region version in effect today. */
+            version: components["schemas"]["GiRegionVersionOut"];
+        };
+        /**
+         * GiRegionVersionIn
+         * @description A new version of a GI tag's production-area outline with its provenance (FR27, FR31, FR32, D-019).
+         */
+        GiRegionVersionIn: {
+            /**
+             * Attribution
+             * @description Attribution line the source licence requires, e.g. `Boundary data © geoBoundaries contributors, ODbL-1.0; ...`; stored inside `source_ref` (no column for it).
+             */
+            attribution: string;
+            /**
+             * Confidence
+             * @description How the outline was derived: official (registry or surveyed file), district_derived (admin boundaries, D-019) or fixture (test data, never for real checks).
+             * @enum {string}
+             */
+            confidence: "official" | "district_derived" | "fixture";
+            /**
+             * Effective From
+             * @description First day checks use it; default today.
+             */
+            effective_from?: string | null;
+            /** @description Outline in WGS84 [lon, lat]. */
+            geometry: components["schemas"]["MultiPolygonGeoJSON"];
+            /**
+             * Licence
+             * @description Licence of the source data, e.g. ODbL-1.0.
+             */
+            licence: string;
+            /**
+             * Share Alike
+             * @description True when the derived outline must be shared under the same licence (ODbL); stored inside `source_ref`.
+             */
+            share_alike: boolean;
+            /**
+             * Source Ref
+             * @description Source dataset, file and build script reference (D-019).
+             */
+            source_ref: string;
+            /**
+             * Taluks
+             * @description Taluks named in the GI registration that this outline unions (D-019).
+             */
+            taluks: string[];
+            /**
+             * Tolerance Buffer M
+             * @description GPS-drift buffer around the outline in metres (FR32), e.g. 150.
+             */
+            tolerance_buffer_m: number | string;
+        };
+        /**
+         * GiRegionVersionOut
+         * @description Metadata of one region version (the outline itself is served by GET /v1/gi-tags/{id}/region).
+         */
+        GiRegionVersionOut: {
+            /**
+             * Confidence
+             * @description How the outline was derived.
+             */
+            confidence: string;
+            /**
+             * Effective From
+             * Format: date
+             * @description First day checks use it.
+             */
+            effective_from: string;
+            /**
+             * Gi Tag Id
+             * Format: uuid
+             * @description GI tag.
+             */
+            gi_tag_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Region version id.
+             */
+            id: string;
+            /**
+             * Licence
+             * @description Licence of the source data.
+             */
+            licence: string;
+            /**
+             * Source Ref
+             * @description Source dataset and build script reference, then `; attribution: …; share_alike: …`.
+             */
+            source_ref: string;
+            /**
+             * Taluks
+             * @description Taluks this outline unions.
+             */
+            taluks: string[] | null;
+            /**
+             * Tolerance Buffer M
+             * @description GPS-drift buffer in metres.
+             */
+            tolerance_buffer_m: string;
+            /**
+             * Version No
+             * @description Version number, 0 upwards.
+             */
+            version_no: number;
         };
         /**
          * GradeOut
@@ -385,6 +1138,110 @@ export interface components {
             s3: string;
         };
         /**
+         * InputCategory
+         * @description Category of a farm input; practice tags are derived from it (FR56).
+         * @enum {string}
+         */
+        InputCategory: "chemical_fertilizer" | "organic_fertilizer" | "bio_fertilizer" | "chemical_pesticide" | "bio_pesticide" | "other";
+        /**
+         * InputIn
+         * @description A fertiliser or pesticide added to the master list (FR56).
+         */
+        InputIn: {
+            /** @description Category from which practice tags are derived (FR56). */
+            category: components["schemas"]["InputCategory"];
+            /**
+             * Global Entry
+             * @description True adds it to the list every FPO sees (super-admin only); else FPO-only.
+             * @default false
+             */
+            global_entry: boolean;
+            /**
+             * Manufacturer
+             * @description Manufacturer or brand.
+             */
+            manufacturer?: string | null;
+            /**
+             * Name En
+             * @description Product name in English.
+             */
+            name_en: string;
+            /**
+             * Name Local
+             * @description Product name in the local script.
+             */
+            name_local?: string | null;
+            /**
+             * Pack Size
+             * @description Typical pack size, in `unit`.
+             */
+            pack_size?: number | string | null;
+            /**
+             * Photo Key
+             * @description Object key of a product photo.
+             */
+            photo_key?: string | null;
+            /**
+             * Unit
+             * @description Unit quantities are entered in, e.g. kg, l.
+             */
+            unit: string;
+        };
+        /**
+         * InputOut
+         * @description An entry of the input master list.
+         */
+        InputOut: {
+            /**
+             * Active
+             * @description False hides it from new entries.
+             */
+            active: boolean;
+            /** @description Input category (FR56). */
+            category: components["schemas"]["InputCategory"];
+            /**
+             * Fpo Id
+             * @description FPO-specific entry; null for the global list.
+             */
+            fpo_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Input id.
+             */
+            id: string;
+            /**
+             * Manufacturer
+             * @description Manufacturer or brand.
+             */
+            manufacturer: string | null;
+            /**
+             * Name En
+             * @description Product name in English.
+             */
+            name_en: string;
+            /**
+             * Name Local
+             * @description Product name in the local script.
+             */
+            name_local: string | null;
+            /**
+             * Pack Size
+             * @description Typical pack size, in `unit`.
+             */
+            pack_size: string | null;
+            /**
+             * Photo Key
+             * @description Object key of a product photo.
+             */
+            photo_key: string | null;
+            /**
+             * Unit
+             * @description Unit quantities are entered in.
+             */
+            unit: string;
+        };
+        /**
          * InstrumentIn
          * @description A moisture meter, colorimeter, hygrometer or scale registered by the FPO (FR42, FR50).
          */
@@ -481,6 +1338,12 @@ export interface components {
             serial_no: string;
         };
         /**
+         * IrrigationSource
+         * @description Water source of an irrigated plot (FR54).
+         * @enum {string}
+         */
+        IrrigationSource: "well" | "borewell" | "canal" | "tank" | "rain";
+        /**
          * LabCertifiedRequires
          * @description What makes a grade "Lab-certified" on the public page (FR51).
          */
@@ -497,6 +1360,12 @@ export interface components {
              */
             nabl_no_present: boolean;
         };
+        /**
+         * LocationStatus
+         * @description Result of the GI region check on a plot (FR28, FR67, FR70).
+         * @enum {string}
+         */
+        LocationStatus: "confirmed" | "needs_review" | "outside" | "near_edge";
         /**
          * LotGate
          * @description A reading condition a lot must meet before a lifecycle step, e.g. ready for sale (Dataflow Stage 5).
@@ -542,6 +1411,47 @@ export interface components {
             parameter: string;
             /** @description Stage whose latest reading is checked. */
             stage: components["schemas"]["ReadingStage"];
+        };
+        /**
+         * MultiPolygonGeoJSON
+         * @description A GeoJSON MultiPolygon in WGS84, e.g. a GI production-area outline (FR27).
+         */
+        MultiPolygonGeoJSON: {
+            /**
+             * Coordinates
+             * @description Polygons, each a list of closed rings of [lon, lat] positions.
+             */
+            coordinates: number[][][][];
+            /**
+             * Type
+             * @description Always `MultiPolygon`.
+             * @constant
+             */
+            type: "MultiPolygon";
+        };
+        /**
+         * OrgKind
+         * @description Legal form of an FPO or processor (PRD §5 Processor / FPO entity).
+         * @enum {string}
+         */
+        OrgKind: "fpo" | "company" | "coop";
+        /** Page[FarmerOut] */
+        Page_FarmerOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["FarmerOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
         };
         /** Page[InstrumentOut] */
         Page_InstrumentOut_: {
@@ -591,6 +1501,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["StandardsProfileOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[VillageOut] */
+        Page_VillageOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["VillageOut"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -833,6 +1761,322 @@ export interface components {
              * @description Value used.
              */
             value?: string | null;
+        };
+        /**
+         * PinMethod
+         * @description How a plot pin was placed (FR64).
+         * @enum {string}
+         */
+        PinMethod: "live_gps" | "map_pin";
+        /**
+         * PlotCorrection
+         * @description An FPO admin's correction of an onboarded plot; only the fields sent change (FR70, FR71).
+         */
+        PlotCorrection: {
+            /** @description Corrected declared size (`acre` or `cent`). */
+            declared_area?: components["schemas"]["Quantity-Input"] | null;
+            /** @description Corrected farming type. */
+            farming_type?: components["schemas"]["FarmingType"] | null;
+            /**
+             * Gi Tag Id
+             * @description GI tag to re-check against (see PlotIn).
+             */
+            gi_tag_id?: string | null;
+            /** @description Corrected irrigation source. */
+            irrigation_source?: components["schemas"]["IrrigationSource"] | null;
+            /**
+             * Land Record Ref
+             * @description Corrected land-record reference.
+             */
+            land_record_ref?: string | null;
+            /** @description Corrected pin. */
+            pin?: components["schemas"]["GeoPoint"] | null;
+            /** @description How the corrected pin was placed. */
+            pin_method?: components["schemas"]["PinMethod"] | null;
+            /**
+             * Reason Code
+             * @description Coded reason, e.g. `gps_drift`, `wrong_plot`, `land_record_checked`; required (422 `reason_required` when missing).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text explanation.
+             */
+            reason_text?: string | null;
+            /**
+             * Review Method
+             * @description How a flagged location was reviewed (FR70); send with `review_outcome`.
+             */
+            review_method?: ("land_record" | "satellite" | "field_visit") | null;
+            /**
+             * Review Outcome
+             * @description Review result (FR70): `accepted` lets the region check decide the status (also for a map pin); `rejected` keeps the plot `needs_review`. Put the reviewer's note in `reason_text`.
+             */
+            review_outcome?: ("accepted" | "rejected") | null;
+            /**
+             * Soil Type
+             * @description Corrected soil type.
+             */
+            soil_type?: string | null;
+            /** @description Corrected walked boundary. */
+            walked_boundary?: components["schemas"]["PolygonGeoJSON"] | null;
+        };
+        /**
+         * PlotIn
+         * @description A plot captured at onboarding: live-GPS pin, declared size, optional walked boundary (FR64–FR66).
+         */
+        PlotIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 generated on the device; primary key and idempotency key.
+             */
+            client_id: string;
+            /**
+             * Code
+             * @description Plot code shown to people; default `P-<n>` per farmer.
+             */
+            code?: string | null;
+            /** @description Land size declared by the farmer; unit `acre` or `cent` (100 cents = 1 acre), FR65. */
+            declared_area: components["schemas"]["Quantity-Input"];
+            /**
+             * Device Time
+             * Format: date-time
+             * @description Phone clock when the pin was taken.
+             */
+            device_time: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer who owns the plot (same FPO as the caller).
+             */
+            farmer_id: string;
+            /** @description irrigated or rainfed (FR54). */
+            farming_type?: components["schemas"]["FarmingType"] | null;
+            /**
+             * Gi Tag Id
+             * @description GI tag of the crop picked at onboarding; null uses the only GI tag with a region, if exactly one exists (pilot), else the plot needs review.
+             */
+            gi_tag_id?: string | null;
+            /**
+             * Gps Time
+             * @description GPS fix time of the pin, if any.
+             */
+            gps_time?: string | null;
+            /** @description Water source (FR54). */
+            irrigation_source?: components["schemas"]["IrrigationSource"] | null;
+            /**
+             * Land Record Ref
+             * @description Survey number / patta / chitta reference; never public (FR65).
+             */
+            land_record_ref?: string | null;
+            /** @description Pin from live GPS while standing on the plot, with its accuracy (FR64). */
+            pin: components["schemas"]["GeoPoint"];
+            /**
+             * @description live_gps, or map_pin (assisted fallback; always needs review).
+             * @default live_gps
+             */
+            pin_method: components["schemas"]["PinMethod"];
+            /**
+             * Soil Type
+             * @description Soil type (field configuration, D-017).
+             */
+            soil_type?: string | null;
+            /** @description Boundary walked with GPS (FR66); never public. */
+            walked_boundary?: components["schemas"]["PolygonGeoJSON"] | null;
+        };
+        /**
+         * PlotOut
+         * @description A plot as returned by the API. The walked outline itself is not returned (internal only).
+         */
+        PlotOut: {
+            /**
+             * Area Gap Exceeds
+             * @description True when |area_gap_pct| > 20 %: walked area far from declared size (FR66, FR70).
+             */
+            area_gap_exceeds: boolean;
+            /**
+             * Area Gap Pct
+             * @description Walked minus declared, as % of declared; null when no boundary was walked.
+             */
+            area_gap_pct: string | null;
+            /**
+             * Code
+             * @description Plot code shown to people.
+             */
+            code: string;
+            /** @description Declared size (unit `acre`). */
+            declared_area: components["schemas"]["Quantity-Output"];
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Owner.
+             */
+            farmer_id: string;
+            /** @description irrigated or rainfed. */
+            farming_type: components["schemas"]["FarmingType"] | null;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Plot id (client-generated, D-005).
+             */
+            id: string;
+            /** @description Water source. */
+            irrigation_source: components["schemas"]["IrrigationSource"] | null;
+            /**
+             * Land Record Ref
+             * @description Land-record reference (internal only).
+             */
+            land_record_ref: string | null;
+            /**
+             * Location Method Label
+             * @description How the location was set, for the public page: `Live GPS pin`, `Boundary walked` or `Map pin` (FR72).
+             */
+            location_method_label: string | null;
+            /** @description confirmed, near_edge, outside, or needs_review (map pin or no region to check). */
+            location_status: components["schemas"]["LocationStatus"];
+            /** @description Plot pin (WGS84) with its GPS accuracy. */
+            pin: components["schemas"]["GeoPoint"];
+            /**
+             * Pin Device Time
+             * Format: date-time
+             * @description Phone clock when the pin was taken.
+             */
+            pin_device_time: string;
+            /**
+             * Pin Gps Time
+             * @description GPS fix time of the pin.
+             */
+            pin_gps_time: string | null;
+            /** @description live_gps or map_pin. */
+            pin_method: components["schemas"]["PinMethod"];
+            /**
+             * Pin Server Received At
+             * Format: date-time
+             * @description When the server received the pin.
+             */
+            pin_server_received_at: string;
+            /** @description Region check run by this request (create or correct); null on reads. */
+            region_check?: components["schemas"]["RegionCheckOut"] | null;
+            /**
+             * Review Method
+             * @description land_record, satellite or field_visit.
+             */
+            review_method: string | null;
+            /**
+             * Review Outcome
+             * @description accepted or rejected (FR70); null when not reviewed.
+             */
+            review_outcome: string | null;
+            /**
+             * Reviewed At
+             * @description When a flagged location was reviewed (FR70).
+             */
+            reviewed_at: string | null;
+            /**
+             * Revision No
+             * @description Current revision; bumps on every admin correction.
+             */
+            revision_no: number;
+            /**
+             * Soil Type
+             * @description Soil type.
+             */
+            soil_type: string | null;
+            /** @description Area of the walked boundary (unit `acre`), if walked. */
+            walked_area: components["schemas"]["Quantity-Output"] | null;
+        };
+        /**
+         * PolygonGeoJSON
+         * @description A GeoJSON Polygon in WGS84, e.g. a walked plot boundary (FR66). First ring is the outer edge.
+         */
+        PolygonGeoJSON: {
+            /**
+             * Coordinates
+             * @description Rings of [lon, lat] positions; each ring closed (first = last), at least 4 positions.
+             */
+            coordinates: number[][][];
+            /**
+             * Type
+             * @description Always `Polygon`.
+             * @constant
+             */
+            type: "Polygon";
+        };
+        /**
+         * ProcessorIn
+         * @description A processor an FPO sells to (Stage 7); registered by the FPO admin.
+         */
+        ProcessorIn: {
+            /** @description Address (FR53). */
+            address?: components["schemas"]["Address"] | null;
+            /**
+             * Fssai No
+             * @description FSSAI licence number (FR62).
+             */
+            fssai_no?: string | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number (FR62).
+             */
+            gi_authorised_user_no?: string | null;
+            /**
+             * @description Legal form: fpo, company or coop.
+             * @default company
+             */
+            kind: components["schemas"]["OrgKind"];
+            /**
+             * Name
+             * @description Registered name.
+             */
+            name: string;
+        };
+        /**
+         * ProcessorOut
+         * @description A processor as returned by the API.
+         */
+        ProcessorOut: {
+            /** @description Address. */
+            address: components["schemas"]["Address"] | null;
+            /**
+             * Address Line
+             * @description Address on one line, without repeated parts.
+             */
+            readonly address_line: string;
+            /**
+             * Fpo Id
+             * @description FPO that registered it; null for a shared processor.
+             */
+            fpo_id: string | null;
+            /**
+             * Fssai No
+             * @description FSSAI licence number.
+             */
+            fssai_no: string | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number.
+             */
+            gi_authorised_user_no: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Processor id.
+             */
+            id: string;
+            /** @description Legal form. */
+            kind: components["schemas"]["OrgKind"];
+            /**
+             * Name
+             * @description Registered name.
+             */
+            name: string;
         };
         /**
          * ProfileVersionIn
@@ -1094,6 +2338,38 @@ export interface components {
             stage: components["schemas"]["ReadingStage"];
         };
         /**
+         * Quantity
+         * @description A non-negative amount with its unit (FR58): never a bare number.
+         */
+        "Quantity-Input": {
+            /**
+             * Unit
+             * @description Unit code, e.g. `kg`, `acre`, `l`, `count`.
+             */
+            unit: string;
+            /**
+             * Value
+             * @description Amount; decimal string or number, never negative.
+             */
+            value: number | string;
+        };
+        /**
+         * Quantity
+         * @description A non-negative amount with its unit (FR58): never a bare number.
+         */
+        "Quantity-Output": {
+            /**
+             * Unit
+             * @description Unit code, e.g. `kg`, `acre`, `l`, `count`.
+             */
+            unit: string;
+            /**
+             * Value
+             * @description Amount; decimal string or number, never negative.
+             */
+            value: string;
+        };
+        /**
          * Range
          * @description An inclusive numeric interval; a missing bound is open (no limit on that side).
          */
@@ -1137,6 +2413,34 @@ export interface components {
          * @enum {string}
          */
         ReadingStage: "drying_end" | "intake" | "grading" | "storage";
+        /**
+         * RegionCheckOut
+         * @description Result of the automatic GI region check run on create or correct (FR67).
+         */
+        RegionCheckOut: {
+            /**
+             * Buffer M
+             * @description Tolerance buffer of that version, in metres (FR32).
+             */
+            buffer_m: string;
+            /**
+             * Distance M
+             * @description Metres from the outline; 0 inside.
+             */
+            distance_m: number;
+            /**
+             * Region Version Id
+             * Format: uuid
+             * @description Region version checked against.
+             */
+            region_version_id: string;
+            /**
+             * Status
+             * @description Where the pin lies.
+             * @enum {string}
+             */
+            status: "inside" | "near_edge" | "outside";
+        };
         /**
          * SignedQuantity
          * @description A quantity that may be negative, used only for adjustments and differences.
@@ -1409,6 +2713,58 @@ export interface components {
             tolerance: number;
         };
         /**
+         * VillageOut
+         * @description A village from the LGD directory, as offered in the onboarding picker (FR53).
+         */
+        VillageOut: {
+            /**
+             * Block
+             * @description Development block.
+             */
+            block: string | null;
+            /**
+             * District
+             * @description District.
+             */
+            district: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Village id.
+             */
+            id: string;
+            /**
+             * Lgd Code
+             * @description Local Government Directory village code.
+             */
+            lgd_code: string | null;
+            /**
+             * Name En
+             * @description Village name in English.
+             */
+            name_en: string;
+            /**
+             * Name Local
+             * @description Village name in the local script.
+             */
+            name_local: string | null;
+            /**
+             * Pincode
+             * @description Six-digit PIN code.
+             */
+            pincode: string | null;
+            /**
+             * State
+             * @description State.
+             */
+            state: string;
+            /**
+             * Taluk
+             * @description Taluk (sub-district).
+             */
+            taluk: string | null;
+        };
+        /**
          * YieldRule
          * @description Plausible yield per acre with the warn and hold margins of the yield-ceiling check (FR68, Stage 7).
          */
@@ -1637,6 +2993,334 @@ export interface operations {
             };
         };
     };
+    list_crops_v1_crops_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CropOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_farmers_v1_farmers_get: {
+        parameters: {
+            query?: {
+                /** @description Cursor from the previous page's `next_cursor`. */
+                cursor?: string | null;
+                /** @description Page size (1–200). */
+                limit?: number;
+                /** @description Status filter. */
+                status?: components["schemas"]["FarmerStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_FarmerOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_farmer_v1_farmers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FarmerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_farmer_v1_farmers__farmer_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_farmer_v1_farmers__farmer_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FarmerPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    approve_farmer_v1_farmers__farmer_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_fpos_v1_fpos_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FpoOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_fpo_v1_fpos_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FpoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FpoOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_region_v1_gi_tags__gi_tag_id__region_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description GI tag id. */
+                gi_tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GiRegionOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_region_version_v1_gi_tags__gi_tag_id__region_versions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description GI tag id. */
+                gi_tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GiRegionVersionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GiRegionVersionOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     healthz_v1_healthz_get: {
         parameters: {
             query?: never;
@@ -1691,6 +3375,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_inputs_v1_inputs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InputOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_input_v1_inputs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InputIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InputOut"];
                 };
             };
             /** @description Error */
@@ -1824,6 +3570,178 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_plot_v1_plots_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlotIn"];
+            };
+        };
+        responses: {
+            /** @description The plot already existed with this client_id. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_plot_v1_plots__plot_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Plot id (client-generated, D-005). */
+                plot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    correct_plot_v1_plots__plot_id__correct_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Plot id (client-generated, D-005). */
+                plot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlotCorrection"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_processors_v1_processors_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessorOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_processor_v1_processors_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProcessorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessorOut"];
                 };
             };
             /** @description Error */
@@ -2044,6 +3962,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_villages_v1_villages_get: {
+        parameters: {
+            query?: {
+                /** @description Cursor from the previous page's `next_cursor`. */
+                cursor?: string | null;
+                /** @description Page size (1–200). */
+                limit?: number;
+                /** @description District name (exact). */
+                district?: string | null;
+                /** @description Block name (exact). */
+                block?: string | null;
+                /** @description Part of the village name. */
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_VillageOut_"];
                 };
             };
             /** @description Error */

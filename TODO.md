@@ -28,7 +28,8 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Replace illustrative numbers before go-live: yield ceiling 1,000 kg/acre, 5 % reconciliation threshold, AGMARK parameters marked `load_from_standard`, the 4G test profiles in `qa/robot/profiles.yaml`.
 
 ## 3. Debt ledger (from `shortcut:` comments; refreshed by /ponytail-debt)
-_(empty)_
+- [ ] B03 `registry/service.py` `create_farmer`: farmer code is `F` + 6 random hex per FPO (a collision is a 500 on UNIQUE(fpo_id, code)); switch to a per-FPO sequence before an FPO passes ~1,000 farmers.
+- [ ] B03 `registry/service.py` `_check_region`: plots do not store their GI tag; a request without `gi_tag_id` uses the only GI tag that has a region. Add `plots.gi_tag_id` (B13 migration) before a second GI crop is onboarded.
 
 ## 4. Reviewer and worker follow-ups
 - [ ] W01: a native Tamil speaker should review `apps/public-page/agritrace_page/i18n/ta.json`.
@@ -103,7 +104,16 @@ _(empty)_
 - [ ] M06: access and refresh tokens sit in plain SQLite (mobile-design §2); decide on the platform keystore (flutter_secure_storage) before release.
 - [ ] M01 risk: the 500-save timing test has ~0.4 s headroom under load; tag it or relax it on CI if it flakes. build_runner needs the Flutter SDK's `dart` and `--force-jit` on this machine (documented in apps/mobile/README).
 - [ ] M02: `OutboxDao.nextBatch` returns media rows regardless of entry confirmation; use `MediaDao.pendingUploads` (which waits for confirmation) for photo uploads.
+- [x] B03 (F7, Architect-Gate ruling): create a `users` row for every farmer who has a phone, including feature-phone farmers, so the phone has exactly one home.
+- [x] B01 r2 / B03 (F8): the shared `Address` schema needs a `taluk` field for FR53's taluk check.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
+- [ ] B03 → Architect-Gate (D-019 wording): the Datameet maps repo has no sub-district layer (only Census 2011 districts) and Datameet village boundaries skip Tamil Nadu; open Census-2011 taluk files found are CC BY-NC-SA (rejected) or restricted. `infra/scripts/gi_boundary/README.md` therefore recommends geoBoundaries gbOpen IND ADM3 + ADM2 (ODbL-1.0, LGD-derived, commit 9469f09); measured v0 40.7 KB / v1 33.1 KB, reference point inside both. Amend D-019's source sentence, and decide the ODbL attribution line on the public page (B10).
+- [ ] B03 → B06: the sync push `plot` entry kind should reuse `registry.service.create_plot` + `enqueue_plot_check` (after the per-entry commit); `create_plot` takes the registry `PlotIn` schema, which other modules may not import (D-004), so B06 needs a service entry that accepts the entry's dict (add it to `service.__all__` then).
+- [ ] B03 → B08: `rules.check_plot` owns the checks the plot API does not do: GPS accuracy threshold (FR67 "acceptable accuracy"), farmer/plot taluk vs `gi_region_versions.taluks` (FR53 second GI check), the walked-vs-declared gap flag (the API only reports `area_gap_exceeds`).
+- [ ] B03 product question: FR67 says a confirmed location activates the farmer; the pilot activates only on `POST /v1/farmers/{id}/approve` (Stage 0 "admin approval plus confirmed location"). Decide whether approval should also require a confirmed plot.
+- [ ] B03 → B02: `CurrentUser` carries no super-admin flag, so the registry reads `users.is_super_admin` per super-admin call; if B02 adds it to the token, switch `registry.service._is_super_admin` to it.
+- [ ] B03: the plot API does not return the walked outline (internal only) and a correction cannot remove a walked boundary; concurrent first inserts of one plot `client_id` surface as 500 (IntegrityError) instead of a duplicate (rare; sync retries are sequential per device).
+- [ ] B03: integration tests `apps/api/tests/integration/test_registry.py` were written but not run (Docker daemon down); the Verifier runs them with `make test`.
 
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).

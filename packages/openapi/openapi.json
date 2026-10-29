@@ -1,6 +1,165 @@
 {
   "components": {
     "schemas": {
+      "Address": {
+        "description": "Structured address of a farmer, plot, FPO or processor (FR53); also a second GI check by taluk.\n\nEvery part is optional here: which parts are required is field configuration (D-017, B13).",
+        "properties": {
+          "block": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Development block.",
+            "title": "Block"
+          },
+          "district": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "District, e.g. `Virudhunagar`.",
+            "title": "District"
+          },
+          "pin": {
+            "anyOf": [
+              {
+                "pattern": "^[1-9][0-9]{5}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Six-digit Indian PIN code.",
+            "title": "Pin"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "State, e.g. `Tamil Nadu`.",
+            "title": "State"
+          },
+          "taluk": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Taluk (sub-district); second GI check against registered taluks (FR53).",
+            "title": "Taluk"
+          },
+          "village": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village or hamlet name.",
+            "title": "Village"
+          }
+        },
+        "title": "Address",
+        "type": "object"
+      },
+      "CropOut": {
+        "description": "A crop farmers can grow, with its GI tag and event schema (FR22, FR55).",
+        "properties": {
+          "active": {
+            "description": "False hides the crop from new lots.",
+            "title": "Active",
+            "type": "boolean"
+          },
+          "code": {
+            "description": "Stable crop code.",
+            "title": "Code",
+            "type": "string"
+          },
+          "event_schema": {
+            "additionalProperties": true,
+            "description": "Mandatory event types and date-order rules (FR55).",
+            "title": "Event Schema",
+            "type": "object"
+          },
+          "gi_tag_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI tag the crop is sold under, if any.",
+            "title": "Gi Tag Id"
+          },
+          "id": {
+            "description": "Crop id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "lang": {
+            "description": "Language code of name_local.",
+            "title": "Lang",
+            "type": "string"
+          },
+          "name_en": {
+            "description": "Crop name in English.",
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Crop name in the local script.",
+            "title": "Name Local"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name_en",
+          "name_local",
+          "lang",
+          "gi_tag_id",
+          "event_schema",
+          "active"
+        ],
+        "title": "CropOut",
+        "type": "object"
+      },
       "ErrorBody": {
         "description": "Inner object of the error envelope.",
         "properties": {
@@ -40,6 +199,548 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "FarmerIn": {
+        "description": "A farmer onboarded by a field officer or admin (Stage 0, UserFlows \u00a7Onboarding a farmer).",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Structured address (FR53); parts left empty are filled from `village_id`."
+          },
+          "gi_authorised_user_no": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Farmer's GI authorised-user registration number (FR62).",
+            "title": "Gi Authorised User No"
+          },
+          "lang": {
+            "default": "ta",
+            "description": "Preferred language for app, SMS and voice.",
+            "enum": [
+              "ta",
+              "en"
+            ],
+            "title": "Lang",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name in English script.",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Name in the local script (FR5).",
+            "title": "Name Local"
+          },
+          "no_smartphone": {
+            "default": false,
+            "description": "True when the officer always enters data for this farmer (assist mode).",
+            "title": "No Smartphone",
+            "type": "boolean"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "pattern": "^\\+[1-9][0-9]{7,14}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Mobile number in E.164, e.g. +919876543210; creates or links the farmer's sign-in account (also for feature-phone farmers, who get SMS).",
+            "title": "Phone"
+          },
+          "photo_key": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Object key of the profile photo.",
+            "title": "Photo Key"
+          },
+          "village_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village picked from GET /v1/villages.",
+            "title": "Village Id"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "FarmerIn",
+        "type": "object"
+      },
+      "FarmerOut": {
+        "description": "A farmer as returned by the API (no phone number: it lives on the sign-in account).",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Structured address."
+          },
+          "address_line": {
+            "description": "Address on one line, without repeated parts.",
+            "readOnly": true,
+            "title": "Address Line",
+            "type": "string"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the farmer was approved.",
+            "title": "Approved At"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Admin who approved the farmer.",
+            "title": "Approved By"
+          },
+          "code": {
+            "description": "Farmer code, unique inside the FPO.",
+            "title": "Code",
+            "type": "string"
+          },
+          "fpo_id": {
+            "description": "Owning FPO.",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "gi_authorised_user_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI authorised-user registration number.",
+            "title": "Gi Authorised User No"
+          },
+          "id": {
+            "description": "Farmer id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name in English script.",
+            "title": "Name",
+            "type": "string"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Name in the local script.",
+            "title": "Name Local"
+          },
+          "no_smartphone": {
+            "description": "True when the officer always enters data.",
+            "title": "No Smartphone",
+            "type": "boolean"
+          },
+          "photo_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Object key of the profile photo.",
+            "title": "Photo Key"
+          },
+          "status": {
+            "$ref": "#/components/schemas/FarmerStatus",
+            "description": "pending until an FPO admin approves; then active."
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sign-in account; null when no phone was given.",
+            "title": "User Id"
+          },
+          "village_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village from the directory.",
+            "title": "Village Id"
+          }
+        },
+        "required": [
+          "id",
+          "fpo_id",
+          "user_id",
+          "code",
+          "name",
+          "name_local",
+          "photo_key",
+          "address",
+          "village_id",
+          "gi_authorised_user_no",
+          "status",
+          "approved_by",
+          "approved_at",
+          "no_smartphone",
+          "address_line"
+        ],
+        "title": "FarmerOut",
+        "type": "object"
+      },
+      "FarmerPatch": {
+        "description": "Changes to a farmer's profile; only the fields sent are changed.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Structured address (replaces the stored one)."
+          },
+          "gi_authorised_user_no": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI authorised-user number.",
+            "title": "Gi Authorised User No"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Name in English script.",
+            "title": "Name"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Name in the local script.",
+            "title": "Name Local"
+          },
+          "no_smartphone": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "True when the officer always enters data.",
+            "title": "No Smartphone"
+          },
+          "photo_key": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Object key of the profile photo.",
+            "title": "Photo Key"
+          },
+          "village_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village picked from GET /v1/villages.",
+            "title": "Village Id"
+          }
+        },
+        "title": "FarmerPatch",
+        "type": "object"
+      },
+      "FarmerStatus": {
+        "description": "Farmer onboarding state (Stage 0; FR67 activates on a confirmed location).",
+        "enum": [
+          "pending",
+          "active",
+          "suspended"
+        ],
+        "title": "FarmerStatus",
+        "type": "string"
+      },
+      "FarmingType": {
+        "description": "Irrigated or rainfed farming (FR54).",
+        "enum": [
+          "irrigated",
+          "rainfed"
+        ],
+        "title": "FarmingType",
+        "type": "string"
+      },
+      "FpoIn": {
+        "description": "A new FPO (tenant); created by a super-admin.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Registered address (FR53)."
+          },
+          "code": {
+            "description": "Stable upper-case code.",
+            "maxLength": 64,
+            "minLength": 2,
+            "pattern": "^[A-Z0-9_]+$",
+            "title": "Code",
+            "type": "string"
+          },
+          "fssai_no": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "FSSAI licence number (FR62).",
+            "title": "Fssai No"
+          },
+          "gi_authorised_user_no": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI authorised-user registration number (FR62).",
+            "title": "Gi Authorised User No"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/OrgKind",
+            "default": "fpo",
+            "description": "Legal form: fpo, company or coop."
+          },
+          "name": {
+            "description": "Registered name.",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "public_show_farmer_names": {
+            "default": false,
+            "description": "Whether public pages may show farmer names (still subject to each consent).",
+            "title": "Public Show Farmer Names",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "FpoIn",
+        "type": "object"
+      },
+      "FpoOut": {
+        "description": "An FPO as returned by the API.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Registered address."
+          },
+          "address_line": {
+            "description": "Address on one line, without repeated parts.",
+            "readOnly": true,
+            "title": "Address Line",
+            "type": "string"
+          },
+          "code": {
+            "description": "Stable upper-case code.",
+            "title": "Code",
+            "type": "string"
+          },
+          "fssai_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "FSSAI licence number.",
+            "title": "Fssai No"
+          },
+          "gi_authorised_user_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI authorised-user registration number.",
+            "title": "Gi Authorised User No"
+          },
+          "id": {
+            "description": "FPO id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/OrgKind",
+            "description": "Legal form."
+          },
+          "name": {
+            "description": "Registered name.",
+            "title": "Name",
+            "type": "string"
+          },
+          "public_show_farmer_names": {
+            "description": "Whether public pages may show farmer names.",
+            "title": "Public Show Farmer Names",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "kind",
+          "address",
+          "fssai_no",
+          "gi_authorised_user_no",
+          "public_show_farmer_names",
+          "address_line"
+        ],
+        "title": "FpoOut",
+        "type": "object"
+      },
       "GeoPoint": {
         "description": "A WGS84 point with the device's reported accuracy.",
         "properties": {
@@ -76,6 +777,202 @@
           "lon"
         ],
         "title": "GeoPoint",
+        "type": "object"
+      },
+      "GiRegionOut": {
+        "description": "The current region of a GI tag: version metadata plus a simplified outline (\u2264 50 KB).",
+        "properties": {
+          "geometry": {
+            "additionalProperties": true,
+            "description": "Simplified GeoJSON outline (MultiPolygon or Polygon), [lon, lat], 6 decimal places.",
+            "title": "Geometry",
+            "type": "object"
+          },
+          "simplified_tolerance_m": {
+            "description": "Simplification tolerance used, in metres.",
+            "title": "Simplified Tolerance M",
+            "type": "number"
+          },
+          "version": {
+            "$ref": "#/components/schemas/GiRegionVersionOut",
+            "description": "The region version in effect today."
+          }
+        },
+        "required": [
+          "version",
+          "geometry",
+          "simplified_tolerance_m"
+        ],
+        "title": "GiRegionOut",
+        "type": "object"
+      },
+      "GiRegionVersionIn": {
+        "description": "A new version of a GI tag's production-area outline with its provenance (FR27, FR31, FR32, D-019).",
+        "properties": {
+          "attribution": {
+            "description": "Attribution line the source licence requires, e.g. `Boundary data \u00a9 geoBoundaries contributors, ODbL-1.0; ...`; stored inside `source_ref` (no column for it).",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Attribution",
+            "type": "string"
+          },
+          "confidence": {
+            "description": "How the outline was derived: official (registry or surveyed file), district_derived (admin boundaries, D-019) or fixture (test data, never for real checks).",
+            "enum": [
+              "official",
+              "district_derived",
+              "fixture"
+            ],
+            "title": "Confidence",
+            "type": "string"
+          },
+          "effective_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "First day checks use it; default today.",
+            "title": "Effective From"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/MultiPolygonGeoJSON",
+            "description": "Outline in WGS84 [lon, lat]."
+          },
+          "licence": {
+            "description": "Licence of the source data, e.g. ODbL-1.0.",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Licence",
+            "type": "string"
+          },
+          "share_alike": {
+            "description": "True when the derived outline must be shared under the same licence (ODbL); stored inside `source_ref`.",
+            "title": "Share Alike",
+            "type": "boolean"
+          },
+          "source_ref": {
+            "description": "Source dataset, file and build script reference (D-019).",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Source Ref",
+            "type": "string"
+          },
+          "taluks": {
+            "description": "Taluks named in the GI registration that this outline unions (D-019).",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Taluks",
+            "type": "array"
+          },
+          "tolerance_buffer_m": {
+            "anyOf": [
+              {
+                "maximum": 5000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "GPS-drift buffer around the outline in metres (FR32), e.g. 150.",
+            "title": "Tolerance Buffer M"
+          }
+        },
+        "required": [
+          "geometry",
+          "tolerance_buffer_m",
+          "taluks",
+          "source_ref",
+          "licence",
+          "confidence",
+          "attribution",
+          "share_alike"
+        ],
+        "title": "GiRegionVersionIn",
+        "type": "object"
+      },
+      "GiRegionVersionOut": {
+        "description": "Metadata of one region version (the outline itself is served by GET /v1/gi-tags/{id}/region).",
+        "properties": {
+          "confidence": {
+            "description": "How the outline was derived.",
+            "title": "Confidence",
+            "type": "string"
+          },
+          "effective_from": {
+            "description": "First day checks use it.",
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "gi_tag_id": {
+            "description": "GI tag.",
+            "format": "uuid",
+            "title": "Gi Tag Id",
+            "type": "string"
+          },
+          "id": {
+            "description": "Region version id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "licence": {
+            "description": "Licence of the source data.",
+            "title": "Licence",
+            "type": "string"
+          },
+          "source_ref": {
+            "description": "Source dataset and build script reference, then `; attribution: \u2026; share_alike: \u2026`.",
+            "title": "Source Ref",
+            "type": "string"
+          },
+          "taluks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Taluks this outline unions.",
+            "title": "Taluks"
+          },
+          "tolerance_buffer_m": {
+            "description": "GPS-drift buffer in metres.",
+            "title": "Tolerance Buffer M",
+            "type": "string"
+          },
+          "version_no": {
+            "description": "Version number, 0 upwards.",
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "gi_tag_id",
+          "version_no",
+          "tolerance_buffer_m",
+          "taluks",
+          "source_ref",
+          "licence",
+          "confidence",
+          "effective_from"
+        ],
+        "title": "GiRegionVersionOut",
         "type": "object"
       },
       "GradeOut": {
@@ -238,6 +1135,215 @@
           "s3"
         ],
         "title": "Health",
+        "type": "object"
+      },
+      "InputCategory": {
+        "description": "Category of a farm input; practice tags are derived from it (FR56).",
+        "enum": [
+          "chemical_fertilizer",
+          "organic_fertilizer",
+          "bio_fertilizer",
+          "chemical_pesticide",
+          "bio_pesticide",
+          "other"
+        ],
+        "title": "InputCategory",
+        "type": "string"
+      },
+      "InputIn": {
+        "description": "A fertiliser or pesticide added to the master list (FR56).",
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/InputCategory",
+            "description": "Category from which practice tags are derived (FR56)."
+          },
+          "global_entry": {
+            "default": false,
+            "description": "True adds it to the list every FPO sees (super-admin only); else FPO-only.",
+            "title": "Global Entry",
+            "type": "boolean"
+          },
+          "manufacturer": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Manufacturer or brand.",
+            "title": "Manufacturer"
+          },
+          "name_en": {
+            "description": "Product name in English.",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Product name in the local script.",
+            "title": "Name Local"
+          },
+          "pack_size": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Typical pack size, in `unit`.",
+            "title": "Pack Size"
+          },
+          "photo_key": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Object key of a product photo.",
+            "title": "Photo Key"
+          },
+          "unit": {
+            "description": "Unit quantities are entered in, e.g. kg, l.",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name_en",
+          "category",
+          "unit"
+        ],
+        "title": "InputIn",
+        "type": "object"
+      },
+      "InputOut": {
+        "description": "An entry of the input master list.",
+        "properties": {
+          "active": {
+            "description": "False hides it from new entries.",
+            "title": "Active",
+            "type": "boolean"
+          },
+          "category": {
+            "$ref": "#/components/schemas/InputCategory",
+            "description": "Input category (FR56)."
+          },
+          "fpo_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "FPO-specific entry; null for the global list.",
+            "title": "Fpo Id"
+          },
+          "id": {
+            "description": "Input id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "manufacturer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Manufacturer or brand.",
+            "title": "Manufacturer"
+          },
+          "name_en": {
+            "description": "Product name in English.",
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Product name in the local script.",
+            "title": "Name Local"
+          },
+          "pack_size": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Typical pack size, in `unit`.",
+            "title": "Pack Size"
+          },
+          "photo_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Object key of a product photo.",
+            "title": "Photo Key"
+          },
+          "unit": {
+            "description": "Unit quantities are entered in.",
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fpo_id",
+          "name_en",
+          "name_local",
+          "manufacturer",
+          "category",
+          "unit",
+          "pack_size",
+          "photo_key",
+          "active"
+        ],
+        "title": "InputOut",
         "type": "object"
       },
       "InstrumentIn": {
@@ -415,6 +1521,18 @@
         "title": "InstrumentOut",
         "type": "object"
       },
+      "IrrigationSource": {
+        "description": "Water source of an irrigated plot (FR54).",
+        "enum": [
+          "well",
+          "borewell",
+          "canal",
+          "tank",
+          "rain"
+        ],
+        "title": "IrrigationSource",
+        "type": "string"
+      },
       "LabCertifiedRequires": {
         "additionalProperties": false,
         "description": "What makes a grade \"Lab-certified\" on the public page (FR51).",
@@ -433,6 +1551,17 @@
         },
         "title": "LabCertifiedRequires",
         "type": "object"
+      },
+      "LocationStatus": {
+        "description": "Result of the GI region check on a plot (FR28, FR67, FR70).",
+        "enum": [
+          "confirmed",
+          "needs_review",
+          "outside",
+          "near_edge"
+        ],
+        "title": "LocationStatus",
+        "type": "string"
       },
       "LotGate-Input": {
         "additionalProperties": false,
@@ -528,6 +1657,86 @@
           "stage"
         ],
         "title": "LotGate",
+        "type": "object"
+      },
+      "MultiPolygonGeoJSON": {
+        "description": "A GeoJSON MultiPolygon in WGS84, e.g. a GI production-area outline (FR27).",
+        "properties": {
+          "coordinates": {
+            "description": "Polygons, each a list of closed rings of [lon, lat] positions.",
+            "items": {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "minItems": 1,
+            "title": "Coordinates",
+            "type": "array"
+          },
+          "type": {
+            "const": "MultiPolygon",
+            "description": "Always `MultiPolygon`.",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "MultiPolygonGeoJSON",
+        "type": "object"
+      },
+      "OrgKind": {
+        "description": "Legal form of an FPO or processor (PRD \u00a75 Processor / FPO entity).",
+        "enum": [
+          "fpo",
+          "company",
+          "coop"
+        ],
+        "title": "OrgKind",
+        "type": "string"
+      },
+      "Page_FarmerOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/FarmerOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[FarmerOut]",
         "type": "object"
       },
       "Page_InstrumentOut_": {
@@ -633,6 +1842,41 @@
           "has_more"
         ],
         "title": "Page[StandardsProfileOut]",
+        "type": "object"
+      },
+      "Page_VillageOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/VillageOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[VillageOut]",
         "type": "object"
       },
       "Parameter-Input": {
@@ -1072,6 +2316,741 @@
           "outcome"
         ],
         "title": "ParameterResult",
+        "type": "object"
+      },
+      "PinMethod": {
+        "description": "How a plot pin was placed (FR64).",
+        "enum": [
+          "live_gps",
+          "map_pin"
+        ],
+        "title": "PinMethod",
+        "type": "string"
+      },
+      "PlotCorrection": {
+        "description": "An FPO admin's correction of an onboarded plot; only the fields sent change (FR70, FR71).",
+        "properties": {
+          "declared_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrected declared size (`acre` or `cent`)."
+          },
+          "farming_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FarmingType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrected farming type."
+          },
+          "gi_tag_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI tag to re-check against (see PlotIn).",
+            "title": "Gi Tag Id"
+          },
+          "irrigation_source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IrrigationSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrected irrigation source."
+          },
+          "land_record_ref": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrected land-record reference.",
+            "title": "Land Record Ref"
+          },
+          "pin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrected pin."
+          },
+          "pin_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PinMethod"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How the corrected pin was placed."
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason, e.g. `gps_drift`, `wrong_plot`, `land_record_checked`; required (422 `reason_required` when missing).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text explanation.",
+            "title": "Reason Text"
+          },
+          "review_method": {
+            "anyOf": [
+              {
+                "enum": [
+                  "land_record",
+                  "satellite",
+                  "field_visit"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How a flagged location was reviewed (FR70); send with `review_outcome`.",
+            "title": "Review Method"
+          },
+          "review_outcome": {
+            "anyOf": [
+              {
+                "enum": [
+                  "accepted",
+                  "rejected"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Review result (FR70): `accepted` lets the region check decide the status (also for a map pin); `rejected` keeps the plot `needs_review`. Put the reviewer's note in `reason_text`.",
+            "title": "Review Outcome"
+          },
+          "soil_type": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrected soil type.",
+            "title": "Soil Type"
+          },
+          "walked_boundary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolygonGeoJSON"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Corrected walked boundary."
+          }
+        },
+        "title": "PlotCorrection",
+        "type": "object"
+      },
+      "PlotIn": {
+        "description": "A plot captured at onboarding: live-GPS pin, declared size, optional walked boundary (FR64\u2013FR66).",
+        "properties": {
+          "client_id": {
+            "description": "UUIDv7 generated on the device; primary key and idempotency key.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot code shown to people; default `P-<n>` per farmer.",
+            "title": "Code"
+          },
+          "declared_area": {
+            "$ref": "#/components/schemas/Quantity-Input",
+            "description": "Land size declared by the farmer; unit `acre` or `cent` (100 cents = 1 acre), FR65."
+          },
+          "device_time": {
+            "description": "Phone clock when the pin was taken.",
+            "format": "date-time",
+            "title": "Device Time",
+            "type": "string"
+          },
+          "farmer_id": {
+            "description": "Farmer who owns the plot (same FPO as the caller).",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "farming_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FarmingType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "irrigated or rainfed (FR54)."
+          },
+          "gi_tag_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI tag of the crop picked at onboarding; null uses the only GI tag with a region, if exactly one exists (pilot), else the plot needs review.",
+            "title": "Gi Tag Id"
+          },
+          "gps_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GPS fix time of the pin, if any.",
+            "title": "Gps Time"
+          },
+          "irrigation_source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IrrigationSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Water source (FR54)."
+          },
+          "land_record_ref": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Survey number / patta / chitta reference; never public (FR65).",
+            "title": "Land Record Ref"
+          },
+          "pin": {
+            "$ref": "#/components/schemas/GeoPoint",
+            "description": "Pin from live GPS while standing on the plot, with its accuracy (FR64)."
+          },
+          "pin_method": {
+            "$ref": "#/components/schemas/PinMethod",
+            "default": "live_gps",
+            "description": "live_gps, or map_pin (assisted fallback; always needs review)."
+          },
+          "soil_type": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Soil type (field configuration, D-017).",
+            "title": "Soil Type"
+          },
+          "walked_boundary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolygonGeoJSON"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Boundary walked with GPS (FR66); never public."
+          }
+        },
+        "required": [
+          "client_id",
+          "farmer_id",
+          "pin",
+          "device_time",
+          "declared_area"
+        ],
+        "title": "PlotIn",
+        "type": "object"
+      },
+      "PlotOut": {
+        "description": "A plot as returned by the API. The walked outline itself is not returned (internal only).",
+        "properties": {
+          "area_gap_exceeds": {
+            "description": "True when |area_gap_pct| > 20 %: walked area far from declared size (FR66, FR70).",
+            "title": "Area Gap Exceeds",
+            "type": "boolean"
+          },
+          "area_gap_pct": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Walked minus declared, as % of declared; null when no boundary was walked.",
+            "title": "Area Gap Pct"
+          },
+          "code": {
+            "description": "Plot code shown to people.",
+            "title": "Code",
+            "type": "string"
+          },
+          "declared_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Declared size (unit `acre`)."
+          },
+          "farmer_id": {
+            "description": "Owner.",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "farming_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FarmingType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "irrigated or rainfed."
+          },
+          "fpo_id": {
+            "description": "Owning FPO.",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "id": {
+            "description": "Plot id (client-generated, D-005).",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "irrigation_source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IrrigationSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Water source."
+          },
+          "land_record_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Land-record reference (internal only).",
+            "title": "Land Record Ref"
+          },
+          "location_method_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How the location was set, for the public page: `Live GPS pin`, `Boundary walked` or `Map pin` (FR72).",
+            "title": "Location Method Label"
+          },
+          "location_status": {
+            "$ref": "#/components/schemas/LocationStatus",
+            "description": "confirmed, near_edge, outside, or needs_review (map pin or no region to check)."
+          },
+          "pin": {
+            "$ref": "#/components/schemas/GeoPoint",
+            "description": "Plot pin (WGS84) with its GPS accuracy."
+          },
+          "pin_device_time": {
+            "description": "Phone clock when the pin was taken.",
+            "format": "date-time",
+            "title": "Pin Device Time",
+            "type": "string"
+          },
+          "pin_gps_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GPS fix time of the pin.",
+            "title": "Pin Gps Time"
+          },
+          "pin_method": {
+            "$ref": "#/components/schemas/PinMethod",
+            "description": "live_gps or map_pin."
+          },
+          "pin_server_received_at": {
+            "description": "When the server received the pin.",
+            "format": "date-time",
+            "title": "Pin Server Received At",
+            "type": "string"
+          },
+          "region_check": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RegionCheckOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Region check run by this request (create or correct); null on reads."
+          },
+          "review_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "land_record, satellite or field_visit.",
+            "title": "Review Method"
+          },
+          "review_outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "accepted or rejected (FR70); null when not reviewed.",
+            "title": "Review Outcome"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When a flagged location was reviewed (FR70).",
+            "title": "Reviewed At"
+          },
+          "revision_no": {
+            "description": "Current revision; bumps on every admin correction.",
+            "title": "Revision No",
+            "type": "integer"
+          },
+          "soil_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Soil type.",
+            "title": "Soil Type"
+          },
+          "walked_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Area of the walked boundary (unit `acre`), if walked."
+          }
+        },
+        "required": [
+          "id",
+          "fpo_id",
+          "farmer_id",
+          "code",
+          "pin",
+          "pin_method",
+          "pin_device_time",
+          "pin_gps_time",
+          "pin_server_received_at",
+          "declared_area",
+          "land_record_ref",
+          "walked_area",
+          "area_gap_pct",
+          "area_gap_exceeds",
+          "farming_type",
+          "irrigation_source",
+          "soil_type",
+          "location_status",
+          "location_method_label",
+          "revision_no",
+          "reviewed_at",
+          "review_method",
+          "review_outcome"
+        ],
+        "title": "PlotOut",
+        "type": "object"
+      },
+      "PolygonGeoJSON": {
+        "description": "A GeoJSON Polygon in WGS84, e.g. a walked plot boundary (FR66). First ring is the outer edge.",
+        "properties": {
+          "coordinates": {
+            "description": "Rings of [lon, lat] positions; each ring closed (first = last), at least 4 positions.",
+            "items": {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "minItems": 1,
+            "title": "Coordinates",
+            "type": "array"
+          },
+          "type": {
+            "const": "Polygon",
+            "description": "Always `Polygon`.",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "PolygonGeoJSON",
+        "type": "object"
+      },
+      "ProcessorIn": {
+        "description": "A processor an FPO sells to (Stage 7); registered by the FPO admin.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Address (FR53)."
+          },
+          "fssai_no": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "FSSAI licence number (FR62).",
+            "title": "Fssai No"
+          },
+          "gi_authorised_user_no": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI authorised-user registration number (FR62).",
+            "title": "Gi Authorised User No"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/OrgKind",
+            "default": "company",
+            "description": "Legal form: fpo, company or coop."
+          },
+          "name": {
+            "description": "Registered name.",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProcessorIn",
+        "type": "object"
+      },
+      "ProcessorOut": {
+        "description": "A processor as returned by the API.",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Address."
+          },
+          "address_line": {
+            "description": "Address on one line, without repeated parts.",
+            "readOnly": true,
+            "title": "Address Line",
+            "type": "string"
+          },
+          "fpo_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "FPO that registered it; null for a shared processor.",
+            "title": "Fpo Id"
+          },
+          "fssai_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "FSSAI licence number.",
+            "title": "Fssai No"
+          },
+          "gi_authorised_user_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI authorised-user registration number.",
+            "title": "Gi Authorised User No"
+          },
+          "id": {
+            "description": "Processor id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/OrgKind",
+            "description": "Legal form."
+          },
+          "name": {
+            "description": "Registered name.",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fpo_id",
+          "name",
+          "kind",
+          "address",
+          "fssai_no",
+          "gi_authorised_user_no",
+          "address_line"
+        ],
+        "title": "ProcessorOut",
         "type": "object"
       },
       "ProfileVersionIn": {
@@ -1592,6 +3571,60 @@
         "title": "QualityReadingOut",
         "type": "object"
       },
+      "Quantity-Input": {
+        "description": "A non-negative amount with its unit (FR58): never a bare number.",
+        "properties": {
+          "unit": {
+            "description": "Unit code, e.g. `kg`, `acre`, `l`, `count`.",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Amount; decimal string or number, never negative.",
+            "title": "Value"
+          }
+        },
+        "required": [
+          "value",
+          "unit"
+        ],
+        "title": "Quantity",
+        "type": "object"
+      },
+      "Quantity-Output": {
+        "description": "A non-negative amount with its unit (FR58): never a bare number.",
+        "properties": {
+          "unit": {
+            "description": "Unit code, e.g. `kg`, `acre`, `l`, `count`.",
+            "maxLength": 16,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "description": "Amount; decimal string or number, never negative.",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "unit"
+        ],
+        "title": "Quantity",
+        "type": "object"
+      },
       "Range-Input": {
         "additionalProperties": false,
         "description": "An inclusive numeric interval; a missing bound is open (no limit on that side).",
@@ -1682,6 +3715,45 @@
         ],
         "title": "ReadingStage",
         "type": "string"
+      },
+      "RegionCheckOut": {
+        "description": "Result of the automatic GI region check run on create or correct (FR67).",
+        "properties": {
+          "buffer_m": {
+            "description": "Tolerance buffer of that version, in metres (FR32).",
+            "title": "Buffer M",
+            "type": "string"
+          },
+          "distance_m": {
+            "description": "Metres from the outline; 0 inside.",
+            "title": "Distance M",
+            "type": "number"
+          },
+          "region_version_id": {
+            "description": "Region version checked against.",
+            "format": "uuid",
+            "title": "Region Version Id",
+            "type": "string"
+          },
+          "status": {
+            "description": "Where the pin lies.",
+            "enum": [
+              "inside",
+              "near_edge",
+              "outside"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "distance_m",
+          "region_version_id",
+          "buffer_m"
+        ],
+        "title": "RegionCheckOut",
+        "type": "object"
       },
       "SignedQuantity-Input": {
         "description": "A quantity that may be negative, used only for adjustments and differences.",
@@ -2139,6 +4211,105 @@
         "title": "TrailRule",
         "type": "object"
       },
+      "VillageOut": {
+        "description": "A village from the LGD directory, as offered in the onboarding picker (FR53).",
+        "properties": {
+          "block": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Development block.",
+            "title": "Block"
+          },
+          "district": {
+            "description": "District.",
+            "title": "District",
+            "type": "string"
+          },
+          "id": {
+            "description": "Village id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "lgd_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Local Government Directory village code.",
+            "title": "Lgd Code"
+          },
+          "name_en": {
+            "description": "Village name in English.",
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village name in the local script.",
+            "title": "Name Local"
+          },
+          "pincode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Six-digit PIN code.",
+            "title": "Pincode"
+          },
+          "state": {
+            "description": "State.",
+            "title": "State",
+            "type": "string"
+          },
+          "taluk": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Taluk (sub-district).",
+            "title": "Taluk"
+          }
+        },
+        "required": [
+          "id",
+          "lgd_code",
+          "name_en",
+          "name_local",
+          "block",
+          "taluk",
+          "district",
+          "state",
+          "pincode"
+        ],
+        "title": "VillageOut",
+        "type": "object"
+      },
       "YieldRule-Input": {
         "additionalProperties": false,
         "description": "Plausible yield per acre with the warn and hold margins of the yield-ceiling check (FR68, Stage 7).",
@@ -2503,6 +4674,490 @@
         ]
       }
     },
+    "/v1/crops": {
+      "get": {
+        "description": "List active crops.",
+        "operationId": "list_crops_v1_crops_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CropOut"
+                  },
+                  "title": "Response List Crops V1 Crops Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List crops",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/farmers": {
+      "get": {
+        "description": "List farmers of the caller's FPO (a farmer sees only themself).",
+        "operationId": "list_farmers_v1_farmers_get",
+        "parameters": [
+          {
+            "description": "Cursor from the previous page's `next_cursor`.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cursor from the previous page's `next_cursor`.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size (1\u2013200).",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size (1\u2013200).",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Status filter.",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/FarmerStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Status filter.",
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_FarmerOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List the FPO's farmers",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "description": "Onboard a farmer, pending approval (field officer or FPO admin).",
+        "operationId": "create_farmer_v1_farmers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FarmerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Onboard a farmer",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}": {
+      "get": {
+        "description": "Read one farmer of the caller's FPO.",
+        "operationId": "get_farmer_v1_farmers__farmer_id__get",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Read a farmer",
+        "tags": [
+          "registry"
+        ]
+      },
+      "patch": {
+        "description": "Change a farmer's profile (field officer or FPO admin).",
+        "operationId": "update_farmer_v1_farmers__farmer_id__patch",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FarmerPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Change a farmer's profile",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}/approve": {
+      "post": {
+        "description": "Approve a pending farmer as a genuine member (FPO admin).",
+        "operationId": "approve_farmer_v1_farmers__farmer_id__approve_post",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Approve a pending farmer",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/fpos": {
+      "get": {
+        "description": "List FPOs visible to the caller.",
+        "operationId": "list_fpos_v1_fpos_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FpoOut"
+                  },
+                  "title": "Response List Fpos V1 Fpos Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List FPOs (super-admin: all; others: own)",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "description": "Create an FPO (super-admin only).",
+        "operationId": "create_fpo_v1_fpos_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FpoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FpoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create an FPO",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/gi-tags/{gi_tag_id}/region": {
+      "get": {
+        "description": "Return the GI tag's region in effect today, simplified.",
+        "operationId": "get_region_v1_gi_tags__gi_tag_id__region_get",
+        "parameters": [
+          {
+            "description": "GI tag id.",
+            "in": "path",
+            "name": "gi_tag_id",
+            "required": true,
+            "schema": {
+              "description": "GI tag id.",
+              "format": "uuid",
+              "title": "Gi Tag Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiRegionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Current GI region (simplified)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/gi-tags/{gi_tag_id}/region-versions": {
+      "post": {
+        "description": "Store a new region outline version (super-admin only; FPO admins get 403, FR31).",
+        "operationId": "create_region_version_v1_gi_tags__gi_tag_id__region_versions_post",
+        "parameters": [
+          {
+            "description": "GI tag id.",
+            "in": "path",
+            "name": "gi_tag_id",
+            "required": true,
+            "schema": {
+              "description": "GI tag id.",
+              "format": "uuid",
+              "title": "Gi Tag Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GiRegionVersionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiRegionVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Upload a GI region version (super-admin)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
     "/v1/healthz": {
       "get": {
         "description": "Check Postgres, Redis and object storage independently and concurrently.\n\nArgs:\n    response: the outgoing response, whose status is set to 503 when any check fails.\n\nReturns:\n    One status string per dependency.\n\nSide effects:\n    Opens one DB connection, one Redis connection and one S3 request.",
@@ -2570,6 +5225,82 @@
         "summary": "Reachable",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/v1/inputs": {
+      "get": {
+        "description": "List active inputs: global plus the caller's FPO's own.",
+        "operationId": "list_inputs_v1_inputs_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InputOut"
+                  },
+                  "title": "Response List Inputs V1 Inputs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List the input master list",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "description": "Add an input to the FPO's list (FPO admin) or the global list (super-admin).",
+        "operationId": "create_input_v1_inputs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InputIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InputOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Add an input",
+        "tags": [
+          "registry"
         ]
       }
     },
@@ -2804,6 +5535,236 @@
         "summary": "List a lot's quality readings",
         "tags": [
           "quality"
+        ]
+      }
+    },
+    "/v1/plots": {
+      "post": {
+        "description": "Register a plot and run the GI region check; a resend returns 200 with the stored plot.",
+        "operationId": "create_plot_v1_plots_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlotIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlotOut"
+                }
+              }
+            },
+            "description": "The plot already existed with this client_id."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Register a plot (idempotent on client_id)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/plots/{plot_id}": {
+      "get": {
+        "description": "Read one plot of the caller's FPO.",
+        "operationId": "get_plot_v1_plots__plot_id__get",
+        "parameters": [
+          {
+            "description": "Plot id (client-generated, D-005).",
+            "in": "path",
+            "name": "plot_id",
+            "required": true,
+            "schema": {
+              "description": "Plot id (client-generated, D-005).",
+              "format": "uuid",
+              "title": "Plot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Read a plot",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/plots/{plot_id}/correct": {
+      "post": {
+        "description": "Correct an onboarded plot (FPO admin), keeping the old state as a revision.",
+        "operationId": "correct_plot_v1_plots__plot_id__correct_post",
+        "parameters": [
+          {
+            "description": "Plot id (client-generated, D-005).",
+            "in": "path",
+            "name": "plot_id",
+            "required": true,
+            "schema": {
+              "description": "Plot id (client-generated, D-005).",
+              "format": "uuid",
+              "title": "Plot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlotCorrection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Correct a plot with a reason",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/processors": {
+      "get": {
+        "description": "List the FPO's processors and shared ones.",
+        "operationId": "list_processors_v1_processors_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProcessorOut"
+                  },
+                  "title": "Response List Processors V1 Processors Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List processors",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "description": "Register a processor for the caller's FPO (FPO admin).",
+        "operationId": "create_processor_v1_processors_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessorIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessorOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Register a processor",
+        "tags": [
+          "registry"
         ]
       }
     },
@@ -3136,6 +6097,129 @@
         "summary": "Get one Standards Profile version",
         "tags": [
           "quality"
+        ]
+      }
+    },
+    "/v1/villages": {
+      "get": {
+        "description": "Search villages for the onboarding picker (FR53).",
+        "operationId": "list_villages_v1_villages_get",
+        "parameters": [
+          {
+            "description": "Cursor from the previous page's `next_cursor`.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cursor from the previous page's `next_cursor`.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size (1\u2013200).",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size (1\u2013200).",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "District name (exact).",
+            "in": "query",
+            "name": "district",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "District name (exact).",
+              "title": "District"
+            }
+          },
+          {
+            "description": "Block name (exact).",
+            "in": "query",
+            "name": "block",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Block name (exact).",
+              "title": "Block"
+            }
+          },
+          {
+            "description": "Part of the village name.",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Part of the village name.",
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_VillageOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Search the village directory",
+        "tags": [
+          "registry"
         ]
       }
     }
