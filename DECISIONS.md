@@ -26,3 +26,4 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-019 | GI region derived from open administrative boundaries with recorded provenance | 2026-10-29 | Accepted | [D-019.md](docs/adr/D-019.md) |
 | D-020 | API versioning under /v1 with one-season backward compatibility | 2026-10-29 | Accepted | [D-020.md](docs/adr/D-020.md) |
 | D-021 | Valkey instead of Redis for broker and cache | 2026-10-29 | Accepted | [D-021.md](docs/adr/D-021.md) |
+| D-022 | Portal and API served from one origin | 2026-10-29 | Accepted | [D-022.md](docs/adr/D-022.md) |
