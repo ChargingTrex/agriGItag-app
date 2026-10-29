@@ -19,6 +19,7 @@ Mobile: `cd apps/mobile && flutter run`. Portal: `cd apps/portal && npm install 
 
 | Path | What |
 |---|---|
+| `PLAN.md` | The approved production plan (waves, work packages, gates, benchmarks) |
 | `docs/source/` | The four product documents this build follows |
 | `DECISIONS.md`, `docs/adr/` | Why things are the way they are (advantages and compromises) |
 | `CHECKLIST.md` | Completion status of every work package and gate |
