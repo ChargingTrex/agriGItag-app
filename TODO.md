@@ -58,6 +58,11 @@ _(empty)_
 - [ ] Ledger note: `certifi` and `pathspec` are MPL-2.0 transitive dependencies (file-level copyleft, unmodified use; accepted, record in LIBRARIES.md when they appear as direct deps).
 - [ ] B02: treat `OTP_DEV_CODE` None/empty as "off"; never add a code default (B00 r2 P3-1).
 - [ ] Q00 (W02 owner): `t.me/+91…` links stay masked; a phone number in a non-WhatsApp URL path stays masked (X17, by decision); two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is ~400 lines and should be split when W02 touches it. (Done in r4: `.jsonl/.yaml/.vcf/.map`, `R.S./T.S. No.`, `&ndash;`/U+2212.)
+- [ ] P00: `apps/portal/ci-job.yml` must be pasted under `jobs:` in `.github/workflows/ci.yml` (Orchestrator, at merge).
+- [ ] B12: `make clients` must call `npm run gen:api` (writes `apps/portal/src/api/generated/schema.d.ts`) and the Dart generator.
+- [ ] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); upgrade path is an httpOnly refresh cookie once B02 decides.
+- [ ] Infra: no `portal` service in docker-compose yet; production must serve the portal and `/v1` from one origin (CORS/cookie decision with B02).
+- [ ] Ledger: `lightningcss` (Vite build dependency) is MPL-2.0, build-time only, not shipped; accepted under D-018 as file-level copyleft in unmodified use (same reasoning as certifi/pathspec).
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
