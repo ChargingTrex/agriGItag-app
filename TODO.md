@@ -46,6 +46,12 @@ _(empty)_
 - [ ] B10: map `agritrace_page` `ValidationError` to a registered AppError (`public_record_invalid`, 409) so privacy rejections are visible, never silent.
 - [ ] B06: `events.make_variants` records width and height per variant and keeps the original JPEG URL (public page schema expects `thumb_url`, `medium_url`, `jpeg_url`, `width`, `height`).
 - [ ] W01 P3s for W03: rarer phone formats (`0091 98765 43210`, `(987) 654-3210`, `98765.43210`, zero-width space) rely on the shared privacy linter; polygon pattern lost its word boundary (rejects "Polygonum"); phone pattern also scans system ids; pin `boundary_map_url` host once B07/B13 fix the GI asset host.
+- [ ] Q00: privacy-lint does not yet catch coordinates written with degree signs, DMS, or as a bare space-separated pair outside WKT (review Q00-r2 P2-3); W02 extends when public-page templates settle.
+- [ ] Q00: gate-readiness is silent for a WP with no Robot tests at all; a survey number under a neutral JSON key (e.g. `land_record_ref`) passes the linter; `hw.keyboard=yes` on the Go AVD still open.
+- [ ] B00 (before B02 merges): fail-open dev defaults for OTP code and JWT secret are being removed in B00 round 3; B02 must not reintroduce them.
+- [ ] B00: Celery `acks_late` and the per-process engine disposal are owned by B04 (first module with real tasks).
+- [ ] Orchestration deviation record: Q00 received a third review round (two-round rule) because the round-2 reviewer supplied exact regex fixes for two regressions; B00 received a third worker round before verification to clear six security-relevant P2s. Both noted in docs/agents/gates/G0.md when signed.
+- [ ] G1 readiness: W01 merged with 6 Robot placeholder tests (public/page.robot ×5, BM-16); W02/Q03 must write them before G1 is signed (gate-readiness.py G1 enforces).
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
