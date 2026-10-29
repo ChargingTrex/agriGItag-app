@@ -1,0 +1,52 @@
+$ node <scratchpad>/shots.mjs  (Playwright chromium-1248 already cached; dev server: VITE_MSW=true vite --port 5199)
+import { createRequire } from 'node:module';
+const require = createRequire('/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-aeb46962b3a8a19ad/apps/portal/package.json');
+const { chromium } = require('@playwright/test');
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, locale: 'en-IN' });
+const msgs = [];
+page.on('console', (m) => msgs.push(m.type() + ': ' + m.text()));
+await page.goto('http://localhost:5199/batches');
+await page.getByRole('heading', { name: 'Sign in to AgriTrace' }).waitFor();
+console.log('URL after guard redirect:', page.url());
+await page.screenshot({ path: '/Users/fi-it/Documents/projects/agriGitag/docs/agents/qa/P00/shots/login-guard-redirect_en.png', fullPage: true });
+await page.getByLabel('Mobile number').fill('9876543210');
+await page.getByRole('button', { name: 'Send code' }).click();
+await page.getByLabel('SMS code').fill('123456');
+await page.getByRole('button', { name: 'Verify code' }).click();
+await page.getByLabel('PIN').fill('1234');
+await page.getByRole('button', { name: 'Sign in' }).click();
+await page.getByRole('heading', { name: 'Batches' }).waitFor();
+console.log('URL after sign-in:', page.url());
+await page.screenshot({ path: '/Users/fi-it/Documents/projects/agriGitag/docs/agents/qa/P00/shots/login-msw-signed-in-batches_en.png', fullPage: true });
+console.log(msgs.join('\n'));
+await browser.close();
+--- output
+URL after guard redirect: http://localhost:5199/login
+URL after sign-in: http://localhost:5199/batches
+debug: [vite] connecting...
+info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+debug: [vite] connected.
+startGroupCollapsed: %c[MSW] Mocking enabled. color:orangered;font-weight:bold;
+log: %cDocumentation: %chttps://mswjs.io/docs font-weight:bold font-weight:normal
+log: Found an issue? https://github.com/mswjs/msw/issues
+log: Worker script URL: http://localhost:5199/mockServiceWorker.js
+log: Worker scope: http://localhost:5199/
+log: Client ID: %s (%s) 3db32bdb-7bdd-46e3-8719-dc2f600b54c0 top-level
+endGroup: console.groupEnd
+startGroupCollapsed: [MSW] 23:19:38 POST /v1/auth/otp/request (%c200 OK%c) color:#69AB32 color:inherit
+log: Request {url: URL, method: POST, headers: Object, body: {"phone":"+919876543210"}}
+log: Handler: HttpHandler
+log: Response {status: 200, statusText: OK, headers: Object, body: {"expires_in_s":300}}
+endGroup: console.groupEnd
+startGroupCollapsed: [MSW] 23:19:38 POST /v1/auth/otp/verify (%c200 OK%c) color:#69AB32 color:inherit
+log: Request {url: URL, method: POST, headers: Object, body: {"phone":"+919876543210","code":"123456"}}
+log: Handler: HttpHandler
+log: Response {status: 200, statusText: OK, headers: Object, body: {"access_token":"mock-otp-token","refresh_token":"…o_admin","fpo_id":"mock-fpo","pin_required":true}}
+endGroup: console.groupEnd
+startGroupCollapsed: [MSW] 23:19:38 POST /v1/auth/pin/verify (%c200 OK%c) color:#69AB32 color:inherit
+log: Request {url: URL, method: POST, headers: Object, body: {"pin":"1234"}}
+log: Handler: HttpHandler
+log: Response {status: 200, statusText: OK, headers: Object, body: {"access_token":"mock-access-token","refresh_token…_admin","fpo_id":"mock-fpo","pin_required":false}}
+endGroup: console.groupEnd
+EXIT=0

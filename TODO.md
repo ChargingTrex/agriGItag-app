@@ -74,6 +74,11 @@ _(empty)_
 - [ ] M05: consider a bold Tamil weight in the subset font.
 - [ ] M00 risk: goldens recorded on macOS; if the first Linux CI run fails, regenerate goldens on Linux rather than raising tolerance. `gen_api.sh` needs network (npx + generator download) in CI.
 - [ ] Dev machine: Android cmdline-tools missing and SDK licences unaccepted; system Java is 1.8 (Android Studio JDK 21 via JAVA_HOME works). Not needed for CI.
+- [ ] B06/B07 (B01 review F1): `GET /v1/sync/reference?since=` must compare versions per part, because one global sequence number is not commit-ordered; a part can be missed until it changes again.
+- [ ] B06/B07 (F4): the sync write path uses Core `INSERT … ON CONFLICT`, which the ORM audit listener does not see; those writes must insert audit rows explicitly.
+- [ ] Compliance (F5, DPDP Act 2023): append-only tables need an erasure runbook for valid deletion requests; the API's database role must not own the tables (so it cannot disable triggers); consider redacting phone, plot pin and survey number from audit diffs. Owner: SEC review before G5.
+- [ ] B03 (F7, Architect-Gate ruling): create a `users` row for every farmer who has a phone, including feature-phone farmers, so the phone has exactly one home.
+- [ ] B01 r2 / B03 (F8): the shared `Address` schema needs a `taluk` field for FR53's taluk check.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user

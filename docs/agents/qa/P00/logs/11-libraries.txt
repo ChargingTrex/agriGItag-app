@@ -1,0 +1,46 @@
+# every dependency/devDependency in apps/portal/package.json vs worktree docs/LIBRARIES.md (row = line starting '| <name> | <version> |')
+OK    dependencies @emotion/react@11.14.0 (line 44)
+OK    dependencies @emotion/styled@11.14.1 (line 45)
+OK    dependencies @hookform/resolvers@6.0.2 (line 48)
+OK    dependencies @mui/material@9.5.0 (line 43)
+OK    dependencies @tanstack/react-query@5.105.0 (line 42)
+OK    dependencies openapi-fetch@0.17.0 (line 49)
+OK    dependencies react@18.3.1 (line 39)
+OK    dependencies react-dom@18.3.1 (line 40)
+OK    dependencies react-hook-form@7.91.0 (line 46)
+OK    dependencies react-router@7.18.5 (line 41)
+OK    dependencies zod@4.6.7 (line 47)
+OK    devDependencies @eslint/js@10.0.1 (line 63)
+OK    devDependencies @playwright/test@1.64.1 (line 61)
+OK    devDependencies @testing-library/dom@10.4.2 (line 57)
+OK    devDependencies @testing-library/jest-dom@7.0.1 (line 58)
+OK    devDependencies @testing-library/react@16.3.3 (line 56)
+OK    devDependencies @testing-library/user-event@14.6.8 (line 59)
+OK    devDependencies @types/node@24.19.2 (line 71)
+OK    devDependencies @types/react@18.3.31 (line 69)
+OK    devDependencies @types/react-dom@18.3.7 (line 70)
+OK    devDependencies @vitejs/plugin-react@6.1.2 (line 53)
+OK    devDependencies eslint@10.13.0 (line 62)
+OK    devDependencies eslint-config-prettier@10.1.8 (line 67)
+OK    devDependencies eslint-plugin-jsdoc@63.3.3 (line 65)
+OK    devDependencies eslint-plugin-react-hooks@7.1.1 (line 66)
+OK    devDependencies jsdom@30.1.3 (line 55)
+OK    devDependencies msw@3.0.3 (line 60)
+OK    devDependencies openapi-typescript@7.13.0 (line 50)
+OK    devDependencies prettier@3.9.10 (line 68)
+OK    devDependencies typescript@5.9.3 (line 51)
+OK    devDependencies typescript-eslint@8.72.1 (line 64)
+OK    devDependencies vite@8.3.5 (line 52)
+OK    devDependencies vitest@5.0.5 (line 54)
+
+# other ledger needs: lightningcss (known miss, Orchestrator adds at merge)
+lightningcss: no row in worktree LIBRARIES.md
+$ grep -rn lightningcss --exclude-dir=node_modules .
+$ npm ls lightningcss
+@agritrace/portal@0.1.0 /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-aeb46962b3a8a19ad/apps/portal
+`-- vite@8.3.5
+  `-- lightningcss@1.33.0
+
+
+$ python3 infra/scripts/libraries-check.py (if present)
+ls: /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-aeb46962b3a8a19ad/infra/scripts/libraries-check.py: No such file or directory

@@ -1,0 +1,19 @@
+# scratch: git archive of worktree 14df19f + main's infra/scripts/{libraries-check,doc-coverage}.py + main DECISIONS.md (worktree LIBRARIES.md kept)
+$ python3 infra/scripts/libraries-check.py
+check   apps/api/pyproject.toml: 21 dependencies, ok
+check   apps/public-page/pyproject.toml: 7 dependencies, ok
+skip    apps/mobile/pubspec.yaml (not on disk)
+check   apps/portal/package.json: 33 dependencies, ok
+skip    qa/robot/requirements.txt (not on disk)
+libraries-check: PASS (58 ledger rows)
+EXIT=0
+
+$ python3 infra/scripts/doc-coverage.py
+Check              Target            Result  Detail
+python docstrings  apps/api          PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+python docstrings  apps/public-page  PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+dart doc comments  apps/mobile       SKIP    app not on disk yet
+ts jsdoc           apps/portal       PASS    
+DECISION ids       DECISIONS.md      PASS    18 comment(s) in apps, packages, infra, qa; 0 unknown
+file headers       apps/             PASS    73 file(s); 0 without header
+EXIT=0

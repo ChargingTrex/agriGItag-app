@@ -2,13 +2,29 @@ $ grep -rn "DECISION D-" src | sort
 src/AppProviders.tsx:5: * DECISION D-018: server state lives in TanStack Query and UI state in React state/context; no other state
 src/api/client.ts:7: * DECISION D-003: the client is `openapi-fetch` typed by `openapi-typescript` output that is never edited.
 
-$ grep -rn "DECISION D-" (all non-node_modules portal files incl. config/scripts/e2e)
+$ grep -rn "DECISION D-" --exclude-dir=node_modules . | sort   (config/scripts/e2e too)
 eslint.config.js:5:// DECISION D-018: typescript-eslint strictTypeChecked + eslint-plugin-jsdoc instead of a hand-written doc checker.
 src/AppProviders.tsx:5: * DECISION D-018: server state lives in TanStack Query and UI state in React state/context; no other state
 src/api/client.ts:7: * DECISION D-003: the client is `openapi-fetch` typed by `openapi-typescript` output that is never edited.
 vite.config.ts:6: * DECISION D-020: the dev server proxies only `/v1`, so the portal calls the API with same-origin relative
 
-# check each cited ID in MAIN docs/DECISIONS.md
-D-003: MISSING in main DECISIONS.md
-D-018: MISSING in main DECISIONS.md
-D-020: MISSING in main DECISIONS.md
+# check each cited ID in MAIN /Users/fi-it/Documents/projects/agriGitag/DECISIONS.md (repo root; docs/DECISIONS.md does not exist)
+D-003: MISSING heading in main DECISIONS.md
+D-018: MISSING heading in main DECISIONS.md
+D-020: MISSING heading in main DECISIONS.md
+
+$ grep -nE '^#+ .*D-02[0-9]' main DECISIONS.md
+
+$ sed -n 1,12p vite.config.ts
+/**
+ * Vite build, dev server and Vitest configuration for the portal.
+ * Serves: plan §7.3 P00 (build < 60 s, initial bundle < 400 KB gz; Vitest + RTL).
+ * Called by: `npm run dev|build|preview|test` and the CI `portal` job.
+ *
+ * DECISION D-020: the dev server proxies only `/v1`, so the portal calls the API with same-origin relative
+ * URLs (`/v1/...`) exactly as it will behind the production load balancer.
+ *   ADV: no CORS configuration in the API and no base URL to keep in sync per environment.
+ *   COMPROMISE: production must serve the portal and `/v1` from one origin (or set a proxy rule there).
+ */
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';

@@ -27,3 +27,4 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-020 | API versioning under /v1 with one-season backward compatibility | 2026-10-29 | Accepted | [D-020.md](docs/adr/D-020.md) |
 | D-021 | Valkey instead of Redis for broker and cache | 2026-10-29 | Accepted | [D-021.md](docs/adr/D-021.md) |
 | D-022 | Portal and API served from one origin | 2026-10-29 | Accepted | [D-022.md](docs/adr/D-022.md) |
+| D-023 | Enum columns as VARCHAR(32) + CHECK, not PostgreSQL ENUM | 2026-10-29 | Accepted | [D-023.md](docs/adr/D-023.md) |
