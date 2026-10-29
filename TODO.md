@@ -63,6 +63,11 @@ _(empty)_
 - [ ] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); upgrade path is an httpOnly refresh cookie once B02 decides.
 - [ ] Infra: no `portal` service in docker-compose yet; production must serve the portal and `/v1` from one origin (CORS/cookie decision with B02).
 - [ ] Ledger: `lightningcss` (Vite build dependency) is MPL-2.0, build-time only, not shipped; accepted under D-018 as file-level copyleft in unmodified use (same reasoning as certifi/pathspec).
+- [ ] B09: enforce Σ `batch_shares.share_pct` = 100 ± 0.01 in the service (spans rows; not a CHECK).
+- [ ] B02: replace `core/auth.get_current_user` placeholder body and call `set_audit_context` per request.
+- [ ] B06/B07: map SQLSTATE 23001 (`append_only_violation` trigger) to the registered AppError.
+- [ ] B01 risk: first live `alembic check` may show drift on geography reflection, VARCHAR enums or NULLS NOT DISTINCT; fix model or migration, never env.py. `alembic check` ignores CHECK constraints (enum values pinned by unit test instead).
+- [ ] Tests on append-only tables cannot DELETE; use fresh rows or TRUNCATE.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
