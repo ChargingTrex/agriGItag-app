@@ -25,15 +25,15 @@ Written for: whoever resumes the multi-agent build tomorrow (human or the Orches
 | B01 domain schema (39 tables, migration 0001) | Architect-Gate APPROVED-PENDING-STACK | **deferred** | `alembic check` + 8 integration tests not run |
 | B05 quality + grade engine | PASS-PENDING-STACK (+r2) | **deferred** | 166 unit tests pass; 7 integration tests not run |
 | B03 registry + PostGIS geo | PASS-PENDING-STACK (+r2) | **deferred** | 107 unit tests pass; 6 PostGIS integration tests not run |
+| B02 identity + auth (OTP, PIN, JWT, refresh rotation, assist, consent; migration 0002) | SEC FAIL r1 → PASS-PENDING-STACK r2 | **deferred** (20 integration tests, `alembic check` after 0002, audit_log `$argon2` SQL check) | contract in `docs/api/conventions.md` → Authentication; P01 must adapt the portal; mobile needs a sign-out action |
 | W02 public-page validators + CI gates | PASS r1 | reviewer-executed acceptance; formal Verifier **deferred** | privacy linter coordinate rules, canary check, html-validate, Lighthouse 3G/4G (D-025), Robot public suite real |
 
-`main` at close: backend 192 unit tests green, import-linter 2 kept / 0 broken, interrogate 100 %, 28 registered error codes, OpenAPI spec and portal client regenerated.
+`main` at close: backend 277 unit tests green, import-linter 2 kept / 0 broken, interrogate 100 %, 37 registered error codes, migrations 0001 + 0002 (single head), OpenAPI spec and portal client regenerated.
 
 ### Done but not merged (branches in `.claude/worktrees/`)
 
 | WP | Branch / commit | State at close | Next step |
 |---|---|---|---|
-| B02 identity + auth | `worktree-agent-a00c8dc116a1aec8e` @ 8a28ba9 | **round 2 done** (R1–R8 fixed: pin_hash redaction, cookie-only refresh, signed_in_at, previous-hash reuse detection, device_in_use, OTP daily cap, current-PIN check, super-admin PIN; 166 unit tests) | spawn SEC re-review of the r1→r2 diff (`git diff eba796c..8a28ba9`) → merge (migration `0002_identity_pin` extended: 3 users + 2 devices columns; `alembic heads` single) → regenerate spec/error table/portal client → P01 adapts the portal to the final contract in `docs/api/conventions.md` → mobile needs a sign-out action (shared phones) |
 | M01 Drift offline store | `worktree-agent-abd04c405cb9f3ca4` @ cba87cf | review r1 in progress | if PASS → verify → merge |
 | M05 farmer widget kit | `worktree-agent-afab3dd3b4350ce54` @ 8d5bd91 | **unreviewed** (finished 00:14) | spawn MOB reviewer (use `/ponytail-review`) → verify → merge; conflicts expected with M01 in `docs/LIBRARIES.md`, `CHANGELOG.md`, `pubspec.yaml`, `ios/` files |
 
@@ -48,8 +48,8 @@ Written for: whoever resumes the multi-agent build tomorrow (human or the Orches
 
 1. `git status` clean on `main`; `git worktree list` shows the four branches above.
 2. Finish the in-flight reviews: read `docs/agents/reviews/B02-r2.md` / `W02-r1.md` / `M01-r1.md` if they exist (agents may have written them after this handover); otherwise spawn the reviewer per `docs/agents/checkpoint-protocol.md`.
-3. Merge order: M01 → M05 → B02 (W02 merged at 00:19). For each: `git merge --no-ff <branch>`; append-only conflicts in `CHANGELOG.md`, `TODO.md`, `docs/LIBRARIES.md` are resolved by keeping both sides; after any backend merge run `cd apps/api && uv run python -m agritrace.export_openapi && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py && cd ../portal && npm run gen:api`, then `cd apps/api && uv run pytest tests/unit -q && uv run lint-imports`; then `codegraph sync .`, tick `CHECKLIST.md`, `python3 infra/scripts/checklist-progress.py`, commit.
-4. Then start Wave 3 per `PLAN.md` §7.6: **B04 notifications**, **B06 events + sync push** (needs B02 + B03 merged), **B13 config-driven fields + masters**, **M04 capture kit**, **M06 auth** (needs B02 contract in `docs/api/conventions.md`), **M02 sync engine** (needs B06). Worker prompt pattern: role card + acceptance file + spec sections + "DOCUMENTATION RULES ARE NOT OPTIONAL" + Ponytail; keep ≤ 4 workers while disk is tight.
+3. Merge order: M01 → M05 (W02 merged 00:19, B02 merged 00:20). For each: `git merge --no-ff <branch>`; append-only conflicts in `CHANGELOG.md`, `TODO.md`, `docs/LIBRARIES.md` are resolved by keeping both sides; after any backend merge run `cd apps/api && uv run python -m agritrace.export_openapi && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py && cd ../portal && npm run gen:api`, then `cd apps/api && uv run pytest tests/unit -q && uv run lint-imports`; then `codegraph sync .`, tick `CHECKLIST.md`, `python3 infra/scripts/checklist-progress.py`, commit.
+4. Then start Wave 3 per `PLAN.md` §7.6: **B04 notifications**, **B06 events + sync push** (B02 and B03 are merged, so it can start immediately), **B13 config-driven fields + masters**, **M04 capture kit**, **M06 auth** (needs B02 contract in `docs/api/conventions.md`), **M02 sync engine** (needs B06). Worker prompt pattern: role card + acceptance file + spec sections + "DOCUMENTATION RULES ARE NOT OPTIONAL" + Ponytail; keep ≤ 4 workers while disk is tight.
 5. Reviewers now invoke the `ponytail:ponytail-review` skill (plugin loaded 2026-10-30); at the end of each wave run `ponytail:ponytail-audit` and file `docs/agents/audits/wave-<n>.md`.
 
 ## 4. Decisions taken today that future work must respect
