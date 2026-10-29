@@ -1,0 +1,16 @@
+# build_runner options for the Drift offline store (lib/core/db, WP-M01). mobile-design.md §2.
+# Callers: `dart run build_runner build --delete-conflicting-outputs` (writes lib/core/db/**/*.g.dart, committed)
+#   and tool/schema_dump.sh (drift_dev schema tool reads the same options).
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Store DateTime as ISO-8601 text with milliseconds instead of whole Unix seconds: sync latency metrics
+          # ("Sent" ≤ 5 s) and the three clocks need sub-second precision. Drift compares such values through
+          # julianday(), so time zones stored with each value do not break comparisons.
+          store_date_time_values_as_text: true
+          databases:
+            default: lib/core/db/database.dart
+          schema_dir: test/db/drift_schemas/
+          test_dir: test/db/

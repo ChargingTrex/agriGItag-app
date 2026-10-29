@@ -8,9 +8,11 @@ formatter:
 
 analyzer:
   exclude:
-    # Generated code: openapi-generator client (D-003) and flutter gen-l10n output.
+    # Generated code: openapi-generator client (D-003), flutter gen-l10n output and Drift schema helpers (M01).
     - packages/**
     - lib/core/l10n/gen/**
+    # drift_dev schema helpers (tool/schema_dump.sh); Drift's lib/**/*.g.dart parts carry their own lint ignores.
+    - test/db/generated/**
     - build/**
   language:
     strict-casts: true
