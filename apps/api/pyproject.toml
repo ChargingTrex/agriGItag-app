@@ -1,0 +1,120 @@
+# AgriTrace API package manifest and tool configuration.
+# Serves: Arch §Backend services, D-001 (Python stack), D-004 (module boundaries), D-018 (library ledger).
+# Callers: `uv sync`, Makefile targets (test, lint, openapi), apps/api/Dockerfile.
+# Every dependency below has a row in docs/LIBRARIES.md.
+
+[project]
+name = "agritrace"
+version = "0.1.0"
+description = "AgriTrace farm-to-consumer traceability API (FastAPI modular monolith)."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30",
+    "alembic>=1.14",
+    "geoalchemy2>=0.16",
+    "celery[redis]>=5.4",
+    "redis>=5.2",
+    "boto3>=1.35",
+    "brotli-asgi>=1.4",
+    "uuid6>=2024.7.10",
+    "httpx>=0.28",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "testcontainers[postgres,redis,localstack]>=4.9",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "import-linter>=2.1",
+    "interrogate>=1.7",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["agritrace"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+# D = pydocstyle (Documentation Standard, CLAUDE.md §5); D417 = every argument documented.
+select = ["E", "F", "W", "I", "B", "UP", "S", "D", "D417"]
+ignore = ["S101"] # assert is the pytest idiom
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+# apps/api/alembic/ is the migrations folder, not the alembic package.
+known-third-party = ["alembic"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106"] # hard-coded dev credentials in fixtures
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+# shortcut: these ship no type stubs; add boto3-stubs/celery-types if typing gaps bite (later WP).
+module = ["boto3.*", "botocore.*", "celery.*", "brotli_asgi.*"]
+ignore_missing_imports = true
+
+[tool.interrogate]
+# Documentation Standard: 100 % docstrings, private and magic functions included.
+fail-under = 100
+ignore-init-method = false
+ignore-init-module = false
+ignore-magic = false
+ignore-module = false
+ignore-nested-functions = false
+ignore-nested-classes = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-semiprivate = false
+exclude = [".venv", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+# One event loop for the whole session so the cached async engine never crosses loops.
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+markers = ["integration: needs Docker (testcontainers for PostGIS, Valkey, LocalStack S3)"]
+
+[tool.importlinter]
+root_package = "agritrace"
+
+# DECISION D-004: modules talk to each other only through `models` and `service`.
+#   ADV: a module can be split out later without touching its callers.
+#   COMPROMISE: enforced by lint in CI, not by process isolation; `service.__all__` is checked by review.
+[[tool.importlinter.contracts]]
+name = "D-004 modules import other modules only via models and service"
+type = "independence"
+# Wildcard: every package under agritrace.modules is covered, including modules added later.
+modules = ["agritrace.modules.*"]
+ignore_imports = [
+    "agritrace.modules.** -> agritrace.modules.*.models",
+    "agritrace.modules.** -> agritrace.modules.*.service",
+]
+# Empty packages in Wave 0 match nothing yet; do not fail on that.
+unmatched_ignore_imports_alerting = "none"
+
+[[tool.importlinter.contracts]]
+name = "D-004 core never imports modules"
+type = "forbidden"
+source_modules = ["agritrace.core"]
+forbidden_modules = ["agritrace.modules"]

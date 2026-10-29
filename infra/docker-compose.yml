@@ -1,0 +1,121 @@
+# Local AgriTrace stack: Postgres 16 + PostGIS, Valkey, LocalStack S3 (+ bucket init), Mosquitto stub,
+# api, worker.
+# Serves: Arch §Deployment (local stand-ins), D-004 (one image, two containers), D-008 (local S3 buckets),
+#   D-009 (Celery worker), D-021 (Valkey broker). Run and port notes: infra/README.md.
+# Callers: `make up` / `make down` / `make logs`, Verifiers (B00 acceptance), developers.
+# Host ports can be remapped without editing this file: API_PORT, DB_PORT, REDIS_PORT, S3_PORT,
+# MQTT_PORT (environment or infra/.env). db, valkey and mosquitto listen on 127.0.0.1 only (dev
+# credentials, no auth); api and s3 listen on all interfaces so phones on the LAN can reach them.
+
+name: agritrace
+
+x-app-env: &app-env
+  ENV: dev
+  DATABASE_URL: postgresql+asyncpg://agritrace:agritrace@db:5432/agritrace
+  REDIS_URL: redis://valkey:6379/0
+  S3_ENDPOINT: http://s3:4566
+  S3_PUBLIC_ENDPOINT: http://localhost:${S3_PORT:-4566}
+  S3_REGION: ap-south-1
+  S3_ACCESS_KEY: test
+  S3_SECRET_KEY: test
+  S3_BUCKET_EVIDENCE: evidence
+  S3_BUCKET_PUBLIC: public-pages
+  S3_BUCKET_IDDOCS: id-docs
+  PUBLIC_BASE_URL: http://localhost:${S3_PORT:-4566}/public-pages
+  JWT_SECRET: dev-only-change-me
+  OTP_DEV_CODE: "123456"
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: agritrace
+      POSTGRES_PASSWORD: agritrace
+      POSTGRES_DB: agritrace
+    ports: ["127.0.0.1:${DB_PORT:-5432}:5432"]
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agritrace -d agritrace"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  valkey:
+    # DECISION D-021: Valkey instead of Redis as broker and cache; same protocol, so REDIS_URL, redis-py
+    #   and Celery's redis transport are unchanged.
+    #   ADV: BSD-3 licence (Redis 7.4+ is RSAL/SSPL); ElastiCache for Valkey in production.
+    #   COMPROMISE: newer project; Redis-only modules are not available.
+    image: valkey/valkey:8-alpine
+    ports: ["127.0.0.1:${REDIS_PORT:-6379}:6379"]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  s3:
+    # DECISION D-008: LocalStack (S3 only) is the local S3 stand-in, with versioning, object lock and
+    #   presigned URLs.
+    #   ADV: official Apache-2.0 image, same boto3 calls as AWS S3.
+    #   COMPROMISE: an emulator, not AWS; the community image keeps no data across restarts, so
+    #   s3-init recreates the buckets on every `make up`.
+    image: localstack/localstack:4.14.0
+    environment:
+      SERVICES: s3
+      # Validate presigned-URL signatures like AWS, so a missing checksum header or another
+      # Content-Type is refused locally too (LocalStack skips this check by default).
+      S3_SKIP_SIGNATURE_VALIDATION: "0"
+      AWS_DEFAULT_REGION: ap-south-1
+    ports: ["${S3_PORT:-4566}:4566"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:4566/_localstack/health | grep -Eq '\"s3\": \"(available|running)\"'"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  s3-init:
+    image: amazon/aws-cli:2.39.1
+    depends_on:
+      s3: {condition: service_healthy}
+    entrypoint: ["/bin/sh", "/s3-init.sh"]
+    environment:
+      AWS_ENDPOINT_URL: http://s3:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: ap-south-1
+    volumes: ["./scripts/s3-init.sh:/s3-init.sh:ro"]
+    restart: "no"
+
+  mosquitto:
+    # Stub broker for future sensor feeds (storage_monitoring); anonymous access is dev-only.
+    image: eclipse-mosquitto:2
+    command: mosquitto -c /mosquitto-no-auth.conf
+    ports: ["127.0.0.1:${MQTT_PORT:-1883}:1883"]
+
+  api:
+    build: ../apps/api
+    image: agritrace-api:dev
+    environment: *app-env
+    ports: ["${API_PORT:-8000}:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+      valkey: {condition: service_healthy}
+      s3-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/healthz', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    build: ../apps/api
+    image: agritrace-api:dev
+    command: celery -A agritrace.worker worker --loglevel=INFO
+    environment: *app-env
+    depends_on:
+      db: {condition: service_healthy}
+      valkey: {condition: service_healthy}
+      s3-init: {condition: service_completed_successfully}
+
+volumes:
+  db-data:
