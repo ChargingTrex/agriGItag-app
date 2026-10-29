@@ -1,0 +1,6 @@
+# checklist-progress.py rewrites CHECKLIST.md, so it runs on the /tmp merged copy, not the worktree
+$ python3 infra/scripts/checklist-progress.py
+Completion: 12 % (7/59 items)
+exit=0
+x=7 open=52
+diff exit=0

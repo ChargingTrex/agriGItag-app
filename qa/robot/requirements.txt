@@ -1,0 +1,11 @@
+# Robot Framework toolchain for the AgriTrace QA suites (plan §9.1). Python 3.12.
+# Every line needs a row in docs/LIBRARIES.md (infra/scripts/libraries-check.py, D-018).
+# Install: uv venv qa/.venv --python 3.12 && uv pip install -r qa/robot/requirements.txt --python qa/.venv/bin/python
+robotframework==7.5
+robotframework-requests==0.9.7
+robotframework-browser==20.6.0
+robotframework-databaselibrary==2.5.0
+# DatabaseLibrary driver for Postgres; pg8000 (BSD-3) instead of psycopg (LGPL-3.0), see D-018.
+pg8000==1.31.6
+pyyaml==6.0.3
+pytest==9.2.0

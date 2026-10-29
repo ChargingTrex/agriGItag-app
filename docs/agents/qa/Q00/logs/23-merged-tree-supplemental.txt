@@ -1,0 +1,34 @@
+# SUPPLEMENTAL: simulated merge main(9d3dea5)+Q00(2225c57) = tree 81beeb5, extracted to /tmp/q00verify-merged; CHANGELOG/LIBRARIES conflicts resolved by keeping both sides
+$ python3 infra/scripts/libraries-check.py
+check   apps/api/pyproject.toml: 21 dependencies, ok
+check   apps/public-page/pyproject.toml: 7 dependencies, ok
+skip    apps/mobile/pubspec.yaml (not on disk)
+skip    apps/portal/package.json (not on disk)
+check   qa/robot/requirements.txt: 7 dependencies, ok
+libraries-check: PASS (32 ledger rows)
+exit=0
+$ python3 infra/scripts/doc-coverage.py
+Check              Target            Result  Detail
+python docstrings  apps/api          PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+python docstrings  apps/public-page  PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+dart doc comments  apps/mobile       SKIP    app not on disk yet
+ts jsdoc           apps/portal       SKIP    app not on disk yet
+DECISION ids       DECISIONS.md      PASS    16 comment(s) in apps, packages, infra, qa; 0 unknown
+file headers       apps/             PASS    40 file(s); 0 without header
+exit=0
+$ python3 infra/scripts/privacy-lint.py qa/fixtures/privacy/clean
+privacy-lint: 0 hit(s) in 7 file(s) scanned, 1 non-text skipped
+exit=0
+$ uv run --no-project --with pytest --with pyyaml --with robotframework==7.5 pytest qa/tests -q -p no:cacheprovider
+........................................................................ [ 85%]
+............                                                             [100%]
+84 passed in 10.68s
+exit=0
+$ /tmp/q00verify/bin/python qa/scripts/gate-readiness.py G0
+B00: 1 real Robot test(s)
+Q00: 3 real Robot test(s)
+gate-readiness G0: PASS
+exit=0
+$ uv run --no-project --with ruff ruff check --no-cache infra/scripts qa
+All checks passed!
+exit=0

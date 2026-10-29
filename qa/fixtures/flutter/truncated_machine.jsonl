@@ -1,0 +1,7 @@
+{"protocolVersion":"0.1.1","runnerVersion":"1.25.8","pid":4243,"type":"start","time":0}
+{"suite":{"id":0,"platform":"android","path":"integration_test/harvest_test.dart"},"type":"suite","time":1}
+{"test":{"id":1,"name":"loading integration_test/harvest_test.dart","suiteID":0,"groupIDs":[]},"type":"testStart","time":2}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":900}
+{"test":{"id":2,"name":"harvest saved offline shows grey cloud","suiteID":0,"groupIDs":[]},"type":"testStart","time":901}
+{"testID":2,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4200}
+{"test":{"id":3,"name":"harvest reaches server after network returns","suiteID":0,"groupIDs":[]},"type":"testStart","time":4201}

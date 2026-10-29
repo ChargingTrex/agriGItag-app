@@ -1,0 +1,18 @@
+# DECISION D-xxx comments in Q00 files (worktree @2225c57) checked against MAIN DECISIONS.md (/Users/fi-it/Documents/projects/agriGitag/DECISIONS.md)
+infra/scripts/libraries-check.py:30:DECISION D-018
+qa/robot/resources/common.resource:20:DECISION D-008
+qa/robot/resources/common.resource:79:DECISION D-018
+--- every D-xxx id mentioned anywhere in Q00 code/config files:
+   1 D-001
+   2 D-008
+   3 D-010
+  12 D-018
+   2 D-020
+   1 D-021
+--- lookup in main DECISIONS.md:
+D-001 FOUND  8:| D-001 | Python/FastAPI backend instead of NestJS | 2026-10-29 | Accepted | [D-001.md](docs/adr/D-001.md) |
+D-008 FOUND  15:| D-008 | LocalStack locally as the S3 stand-in (amended from MinIO) | 2026-10-29 | Accepted | [D-008.md](docs/adr/D-008.md) |
+D-010 FOUND  17:| D-010 | Ponytail ruleset plus the Documentation Standard | 2026-10-29 | Accepted | [D-010.md](docs/adr/D-010.md) |
+D-018 FOUND  25:| D-018 | Library-first implementation with a dependency ledger | 2026-10-29 | Accepted | [D-018.md](docs/adr/D-018.md) |
+D-020 FOUND  27:| D-020 | API versioning under /v1 with one-season backward compatibility | 2026-10-29 | Accepted | [D-020.md](docs/adr/D-020.md) |
+D-021 FOUND  28:| D-021 | Valkey instead of Redis for broker and cache | 2026-10-29 | Accepted | [D-021.md](docs/adr/D-021.md) |

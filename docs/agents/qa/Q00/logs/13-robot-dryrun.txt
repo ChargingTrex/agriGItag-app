@@ -1,0 +1,547 @@
+$ /tmp/q00verify/bin/robot --dryrun --outputdir /tmp/q00verify-out qa/robot
+==============================================================================
+Robot                                                                         
+==============================================================================
+Robot.Api                                                                     
+==============================================================================
+Robot.Api.Batches :: Lots, intake, batches and gates (plan §7.1 B09). Serve...
+==============================================================================
+Lot Ready At 11.5 Percent Returns 409 And At 10.9 Percent Becomes ... | PASS |
+------------------------------------------------------------------------------
+Intake 100 kg Versus Packed 69 kg Raises Quantity Mismatch            | PASS |
+------------------------------------------------------------------------------
+Lots 100 200 20 kg Give Shares 31.250 62.500 6.250                    | PASS |
+------------------------------------------------------------------------------
+Ineligible Lot With GI Requested Gives GI Verified False With Reasons | PASS |
+------------------------------------------------------------------------------
+Approve On Declared Above Computed Returns 409                        | PASS |
+------------------------------------------------------------------------------
+Packing 25 kg On 20 kg Graded Returns 409                             | PASS |
+------------------------------------------------------------------------------
+Publish Before Approval Returns 409 Listing Reasons                   | PASS |
+------------------------------------------------------------------------------
+Publish After Gates Returns 202 And A Page Build Row                  | PASS |
+------------------------------------------------------------------------------
+Robot.Api.Batches :: Lots, intake, batches and gates (plan §7.1 B0... | PASS |
+8 tests, 8 passed, 0 failed
+==============================================================================
+Robot.Api.Healthz :: Stack health: the B00 acceptance line "docker compose ...
+==============================================================================
+Healthz Reports Db Redis And S3 Ok :: GET /v1/healthz returns 200 ... | PASS |
+------------------------------------------------------------------------------
+Robot.Api.Healthz :: Stack health: the B00 acceptance line "docker... | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Robot.Api.Identity :: Identity: OTP login, roles, tenant scope, assist mode...
+==============================================================================
+OTP Request Twice In 60 s Returns 429                                 | PASS |
+------------------------------------------------------------------------------
+Five Wrong OTP Codes Lock The Challenge With 409                      | PASS |
+------------------------------------------------------------------------------
+Farmer Calling GET Flags Gets 403                                     | PASS |
+------------------------------------------------------------------------------
+Assist Header Sets On Behalf Of Farmer                                | PASS |
+------------------------------------------------------------------------------
+Consent Writes Audit Row With Officer As Actor                        | PASS |
+------------------------------------------------------------------------------
+Logout Revokes Refresh Token And Refresh Returns 401                  | PASS |
+------------------------------------------------------------------------------
+Robot.Api.Identity :: Identity: OTP login, roles, tenant scope, as... | PASS |
+6 tests, 6 passed, 0 failed
+==============================================================================
+Robot.Api.Publishing :: Publishing the static batch page (plan §7.1 B10) an...
+==============================================================================
+Published Objects Exist With Matching Generation                      | PASS |
+------------------------------------------------------------------------------
+Page HTML Has No Phone Survey Number Or Temp Uploads                  | PASS |
+------------------------------------------------------------------------------
+Revoked Name Consent Shows Farmer 2                                   | PASS |
+------------------------------------------------------------------------------
+Correction Creates A New Build And Keeps Old Versions                 | PASS |
+------------------------------------------------------------------------------
+QR Decodes To The Public Batch URL                                    | PASS |
+------------------------------------------------------------------------------
+Events Are Listed In Ascending Date Order                             | PASS |
+------------------------------------------------------------------------------
+Completeness Equals Lots With All Mandatory Events Over Lots          | PASS |
+------------------------------------------------------------------------------
+100 Scans Per Minute Returns 429                                      | PASS |
+------------------------------------------------------------------------------
+Audit CSV Has A Row Per Version With Entered By And Assist Session    | PASS |
+------------------------------------------------------------------------------
+Partner API Returns 501 Not Implemented Pilot                         | PASS |
+------------------------------------------------------------------------------
+Robot.Api.Publishing :: Publishing the static batch page (plan §7.... | PASS |
+10 tests, 10 passed, 0 failed
+==============================================================================
+Robot.Api.Quality :: Quality readings and the grade engine (plan §7.1 B05)....
+==============================================================================
+Moisture 9.8 Percent Grades Special                                   | PASS |
+------------------------------------------------------------------------------
+Moisture 10.5 Percent Grades Standard                                 | PASS |
+------------------------------------------------------------------------------
+Moisture 11.4 Percent Is Below Grade                                  | PASS |
+------------------------------------------------------------------------------
+Visual 9.8 Percent Is Capped At Standard                              | PASS |
+------------------------------------------------------------------------------
+Missing Required Reading Is Incomplete                                | PASS |
+------------------------------------------------------------------------------
+Moisture Minus 1 Returns 422                                          | PASS |
+------------------------------------------------------------------------------
+Expired Instrument Returns 422                                        | PASS |
+------------------------------------------------------------------------------
+Grading 12.0 After Intake 10.0 Needs A Reason And Raises A Flag       | PASS |
+------------------------------------------------------------------------------
+Declared Special Versus Computed Standard Raises Declared Above Co... | PASS |
+------------------------------------------------------------------------------
+Robot.Api.Quality :: Quality readings and the grade engine (plan §... | PASS |
+9 tests, 9 passed, 0 failed
+==============================================================================
+Robot.Api.Registry :: Registry and PostGIS geo (plan §7.1 B03) plus config-...
+==============================================================================
+Point 9.559806 78.133521 Is Inside The Fixture GI Region              | PASS |
+------------------------------------------------------------------------------
+Point 100 m Outside With 150 m Buffer Is Near Edge                    | PASS |
+------------------------------------------------------------------------------
+Madurai Point Is Outside                                              | PASS |
+------------------------------------------------------------------------------
+Map Pin Plot Needs Review                                             | PASS |
+------------------------------------------------------------------------------
+Plot Correction Without Reason Returns 422                            | PASS |
+------------------------------------------------------------------------------
+Cross FPO Plot Read Returns 404                                       | PASS |
+------------------------------------------------------------------------------
+FPO Admin Uploading GI Region Returns 403                             | PASS |
+------------------------------------------------------------------------------
+Disabling Soil Type In A Tenant File Hides The Field For That FPO ... | PASS |
+------------------------------------------------------------------------------
+ID Document Upload Endpoint Follows The Feature Flag                  | PASS |
+------------------------------------------------------------------------------
+Farmer CSV With 2 Bad Rows Accepts The Rest Without Partial Writes    | PASS |
+------------------------------------------------------------------------------
+Virudhunagar Region Build Covers The Reference Point With Provenance  | PASS |
+------------------------------------------------------------------------------
+Field YAML Failing Its Schema Stops The App With A Clear Message      | PASS |
+------------------------------------------------------------------------------
+Robot.Api.Registry :: Registry and PostGIS geo (plan §7.1 B03) plu... | PASS |
+12 tests, 12 passed, 0 failed
+==============================================================================
+Robot.Api.Rules :: Rules and flags (plan §7.1 B08) and notifications (B04)....
+==============================================================================
+Event 600 m Off Plot Raises Event Off Plot Once                       | PASS |
+------------------------------------------------------------------------------
+Inorganic Tag With Only Organic Inputs Raises Practice Tag Contrad... | PASS |
+------------------------------------------------------------------------------
+IPM Without A Pest Event Raises A Flag                                | PASS |
+------------------------------------------------------------------------------
+Nursery Before Ploughing Raises No Flag                               | PASS |
+------------------------------------------------------------------------------
+Sowing Before Nursery Raises A Flag                                   | PASS |
+------------------------------------------------------------------------------
+Yield 1150 1250 1350 kg On 1 Acre Gives None Warn Hold                | PASS |
+------------------------------------------------------------------------------
+Resolving A Flag Without Reason Returns 422                           | PASS |
+------------------------------------------------------------------------------
+Officer Resolving A Hold Returns 403                                  | PASS |
+------------------------------------------------------------------------------
+Eager Notification Send Writes A Sent Console Row                     | PASS |
+------------------------------------------------------------------------------
+Unknown Template Writes A Failed Row Without Raising                  | PASS |
+------------------------------------------------------------------------------
+Robot.Api.Rules :: Rules and flags (plan §7.1 B08) and notificatio... | PASS |
+10 tests, 10 passed, 0 failed
+==============================================================================
+Robot.Api.Sync :: Events, sync push, evidence (plan §7.1 B06) and reference...
+==============================================================================
+Same Client Id Pushed Twice Stores One Row                            | PASS |
+------------------------------------------------------------------------------
+Foreign Owned Client Id Returns Client Id Conflict                    | PASS |
+------------------------------------------------------------------------------
+Push Of 51 Entries Returns 422                                        | PASS |
+------------------------------------------------------------------------------
+Mixed Batch Accepts 1 And 3 And Rejects 2                             | PASS |
+------------------------------------------------------------------------------
+Wrong Photo Checksum Returns Checksum Mismatch And A Flag             | PASS |
+------------------------------------------------------------------------------
+Undo After 24 h Returns 409                                           | PASS |
+------------------------------------------------------------------------------
+Farmer Correction Returns 403                                         | PASS |
+------------------------------------------------------------------------------
+Device Clock 3 Days Ahead Is Stored With A Clock Skew Flag            | PASS |
+------------------------------------------------------------------------------
+Matching If-None-Match On The Bundle Returns 304                      | PASS |
+------------------------------------------------------------------------------
+Standards Bundle Part Holds Only Lot Gates Yield Plausible And Limits | PASS |
+------------------------------------------------------------------------------
+Pull After A New Flag Returns Exactly That Flag                       | PASS |
+------------------------------------------------------------------------------
+Robot.Api.Sync :: Events, sync push, evidence (plan §7.1 B06) and ... | PASS |
+11 tests, 11 passed, 0 failed
+==============================================================================
+Robot.Api                                                             | PASS |
+67 tests, 67 passed, 0 failed
+==============================================================================
+Robot.E2E                                                                     
+==============================================================================
+Robot.E2E.Reference Batch :: Seeded reference batch FGP8T4033HM7 end to end...
+==============================================================================
+Demo Seed Is Idempotent                                               | PASS |
+------------------------------------------------------------------------------
+Reference Batch Raises Exactly The Expected Flag Set                  | PASS |
+------------------------------------------------------------------------------
+Grade A Returns 422 Unknown Grade For Profile                         | PASS |
+------------------------------------------------------------------------------
+Approve And Publish Return 409 Before Fixes                           | PASS |
+------------------------------------------------------------------------------
+After Fixes Publish Succeeds With GI Verified And Shares 31.25 62.... | PASS |
+------------------------------------------------------------------------------
+Dart And TS Clients Compile                                           | PASS |
+------------------------------------------------------------------------------
+Robot.E2E.Reference Batch :: Seeded reference batch FGP8T4033HM7 e... | PASS |
+6 tests, 6 passed, 0 failed
+==============================================================================
+Robot.E2E                                                             | PASS |
+6 tests, 6 passed, 0 failed
+==============================================================================
+Robot.Mobile                                                                  
+==============================================================================
+Robot.Mobile.Network Profiles :: 4G brief acceptance under simulated networ...
+==============================================================================
+Profiles Match The 4G Brief And Drive The Emulator Console :: Real... | PASS |
+------------------------------------------------------------------------------
+BM-11 Normal 4G Entry Plus One Photo Shows Sent Within 5 s            | PASS |
+------------------------------------------------------------------------------
+BM-12 Weak 4G Entry Plus One Photo Shows Sent Within 20 s             | PASS |
+------------------------------------------------------------------------------
+BM-13 Airplane Mode Saves Instantly And Sends Automatically On Res... | PASS |
+------------------------------------------------------------------------------
+BM-14 Kill Mid Upload Then Relaunch Leaves One Entry And One Photo    | PASS |
+------------------------------------------------------------------------------
+BM-15 Same Push Replayed 5 Times Leaves One Record                    | PASS |
+------------------------------------------------------------------------------
+BM-16 Public Page On Normal 4G Is Under 100 KB With LCP Under 2.5 s   | PASS |
+------------------------------------------------------------------------------
+Robot.Mobile.Network Profiles :: 4G brief acceptance under simulat... | PASS |
+7 tests, 7 passed, 0 failed
+==============================================================================
+Robot.Mobile.Offline Matrix :: Offline/online matrix: 9 farmer actions x 5 ...
+==============================================================================
+Flutter Machine Output Is Parsed :: Real smoke test, no emulator n... | PASS |
+------------------------------------------------------------------------------
+Matrix On Offline                                                     | PASS |
+------------------------------------------------------------------------------
+Matrix On Edge                                                        | PASS |
+------------------------------------------------------------------------------
+Matrix On Weak 4G                                                     | PASS |
+------------------------------------------------------------------------------
+Matrix On Normal 4G                                                   | PASS |
+------------------------------------------------------------------------------
+Matrix On Reconnect After Offline                                     | PASS |
+------------------------------------------------------------------------------
+Robot.Mobile.Offline Matrix :: Offline/online matrix: 9 farmer act... | PASS |
+6 tests, 6 passed, 0 failed
+==============================================================================
+Robot.Mobile                                                          | PASS |
+13 tests, 13 passed, 0 failed
+==============================================================================
+Robot.Portal                                                                  
+==============================================================================
+Robot.Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) and ...
+==============================================================================
+Portal Loads In A Headless Browser                                    [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Approving A Member Makes It Active Without Reload                     [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Phone Is Masked Except An Audited Reveal                              [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Reviewing A Held Lot Makes It Tickable In Create Batch                [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Required Review Fields Block Submit                                   [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Lots 100 200 20 kg Show Shares 31.25 62.5 6.25                        [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Out Of GI Lot Is Greyed With A Tooltip                                [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Create Batch Returns An Id And A QR                                   [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Batch Over Threshold Needs A Second Sign Off                          [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Declared Special Computed Standard Disables Approve With Reason       [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Missing Reading Disables Approve                                      [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Happy Path Publishes And Shows The URL                                [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Labels PDF Is Named Labels Batch Id                                   [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+CSV Export Has A Unit On Every Quantity                               [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Stage Tiles Match Seed Counts                                         [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Village Filter Updates Tiles And Table                                [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Column Toggle Persists                                                [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Audit Search Shows The Seeded Correction With Actor And Reason        [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Name Opt Out Is Reflected In The Preview                              [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Upload With 2 Bad Rows Previews 2 Red Rows With Codes                 [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Confirm Creates Only The Valid Rows                                   [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Template Matches Config Fields                                        [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+Full Chain Login To Labels Is Green Under 10 Minutes Twice            [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+No Serious Axe Violations                                             [ ERROR ] Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+| PASS |
+------------------------------------------------------------------------------
+[ ERROR ] Calling method '_end_suite' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper
+Robot.Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-... | PASS |
+24 tests, 24 passed, 0 failed
+==============================================================================
+Robot.Portal                                                          | PASS |
+24 tests, 24 passed, 0 failed
+==============================================================================
+Robot.Public                                                                  
+==============================================================================
+Robot.Public.Page :: Public batch page: render, privacy lint, backend-down ...
+==============================================================================
+Privacy Lint Passes The Clean Fixture And Catches The Dirty One ::... | PASS |
+------------------------------------------------------------------------------
+Fixture Renders Valid HTML                                            | PASS |
+------------------------------------------------------------------------------
+Crop Name Is Bilingual                                                | PASS |
+------------------------------------------------------------------------------
+Every Quantity Carries A Unit                                         | PASS |
+------------------------------------------------------------------------------
+Events Are In Date Order                                              | PASS |
+------------------------------------------------------------------------------
+No Temp Uploads Or Non Evidence Paths                                 | PASS |
+------------------------------------------------------------------------------
+Injected Phone Number Fails Privacy Lint                              | PASS |
+------------------------------------------------------------------------------
+Lighthouse Slow 3G Performance Is At Least 90 With LCP At Most 2 s    | PASS |
+------------------------------------------------------------------------------
+First View Transfers Under 500 KB With Zero HTML Errors               | PASS |
+------------------------------------------------------------------------------
+OG Tags Pass The Privacy Lint                                         | PASS |
+------------------------------------------------------------------------------
+Tamil Renders With The System Font                                    | PASS |
+------------------------------------------------------------------------------
+Page Is Served From Object Storage With The Backend Down              | PASS |
+------------------------------------------------------------------------------
+Old Page Version Is Retrievable                                       | PASS |
+------------------------------------------------------------------------------
+Robot.Public.Page :: Public batch page: render, privacy lint, back... | PASS |
+13 tests, 13 passed, 0 failed
+==============================================================================
+Robot.Public                                                          | PASS |
+13 tests, 13 passed, 0 failed
+==============================================================================
+Robot                                                                 | PASS |
+123 tests, 123 passed, 0 failed
+==============================================================================
+Output:  /tmp/q00verify-out/output.xml
+Log:     /tmp/q00verify-out/log.html
+Report:  /tmp/q00verify-out/report.html
+exit=0

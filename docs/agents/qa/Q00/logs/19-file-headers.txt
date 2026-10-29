@@ -1,0 +1,36 @@
+# header check: every non-fixture code/config file changed by Q00 (merge-base 35498ef..2225c57)
+# columns: file | purpose line present | requirement ref (Serves/plan §/FR/BM) | callers (Callers/Read by/Used by/Run by)
+.github/workflows/ci.yml | CHECK | req=2 callers=0 | # AgriTrace CI: backend lint and tests, documentation gates, Robot smoke against the compo
+.pre-commit-config.yaml | CHECK | req=1 callers=0 | # Pre-commit hooks: lint Python, refresh CHECKLIST.md completion, keep the libraries ledge
+infra/scripts/benchmarks/collect.py | PASS | req=3 callers=1 | """Merge per-benchmark result files and judge them against the thresholds.
+infra/scripts/benchmarks/thresholds.yaml | PASS | req=7 callers=1 | # Pass/fail thresholds for benchmarks BM-01..BM-16.
+infra/scripts/doc-coverage.py | PASS | req=2 callers=1 | """Run the Documentation Standard gates for every app that exists on disk.
+infra/scripts/libraries-check.py | PASS | req=1 callers=1 | """Fail when a manifest dependency has no row in docs/LIBRARIES.md or a row has a rejected
+infra/scripts/privacy-lint.py | PASS | req=1 callers=1 | """Scan built public pages and partner payloads for personal data and exact locations.
+qa/avd/api34_profile.ini | PASS | req=1 callers=1 | # Standard (mid-range) AVD hardware profile (API 34, Android 14).
+qa/avd/create_go_avd.sh | PASS | req=2 callers=1 | # Create the AgriTrace test emulators: the Android Go-class AVD (API 27) and the standard 
+qa/avd/go_profile.ini | PASS | req=1 callers=1 | # Android Go-class AVD hardware profile (API 27, Android 8.1).
+qa/robot/api/batches.robot | CHECK | req=7 callers=0 | *** Settings ***
+qa/robot/api/healthz.robot | PASS | req=2 callers=1 | *** Settings ***
+qa/robot/api/identity.robot | PASS | req=7 callers=1 | *** Settings ***
+qa/robot/api/publishing.robot | CHECK | req=7 callers=0 | *** Settings ***
+qa/robot/api/quality.robot | CHECK | req=7 callers=0 | *** Settings ***
+qa/robot/api/registry.robot | CHECK | req=7 callers=0 | *** Settings ***
+qa/robot/api/rules.robot | CHECK | req=7 callers=0 | *** Settings ***
+qa/robot/api/sync.robot | CHECK | req=7 callers=0 | *** Settings ***
+qa/robot/e2e/reference_batch.robot | PASS | req=7 callers=1 | *** Settings ***
+qa/robot/lib/agritrace_keywords.py | PASS | req=2 callers=1 | """AgriTrace Robot Framework keyword library for the mobile and network suites.
+qa/robot/mobile/network_profiles.robot | PASS | req=4 callers=1 | *** Settings ***
+qa/robot/mobile/offline_matrix.robot | PASS | req=6 callers=1 | *** Settings ***
+qa/robot/portal/portal.robot | PASS | req=7 callers=1 | *** Settings ***
+qa/robot/profiles.yaml | PASS | req=2 callers=1 | # Emulator network profiles for the mobile suites and qa/scripts/network.sh.
+qa/robot/public/page.robot | PASS | req=6 callers=1 | *** Settings ***
+qa/robot/requirements.txt | CHECK | req=1 callers=0 | # Robot Framework toolchain for the AgriTrace QA suites (plan §9.1). Python 3.12.
+qa/robot/resources/common.resource | PASS | req=2 callers=1 | *** Settings ***
+qa/scripts/gate-readiness.py | PASS | req=1 callers=1 | """Fail when a gate or WP still has Robot placeholder tests (tagged `not-ready`).
+qa/scripts/network.sh | PASS | req=1 callers=2 | # Switch the running Android emulator between network conditions through its console.
+(eval):4: character not in range
+(eval):4: character not in range
+(eval):4: character not in range
+qa/tests/test_privacy_lint.py | PASS | req=1 callers=1 | """Tests for infra/scripts/privacy-lint.py: the fixtures in qa/fixtures/privacy/ and one c
+qa/tests/test_scripts.py | PASS | req=2 callers=1 | """Small tests for the parsing logic in the QA scripts.

@@ -1,0 +1,43 @@
+# README "no stack or emulator needed" line; --outputdir added so results stay out of the worktree
+$ /tmp/q00verify/bin/robot --outputdir /tmp/q00verify-smoke --include smoke qa/robot/mobile qa/robot/public
+==============================================================================
+Mobile & Public                                                               
+==============================================================================
+Mobile & Public.Mobile                                                        
+==============================================================================
+Mobile & Public.Mobile.Network Profiles :: 4G brief acceptance under simula...
+==============================================================================
+Profiles Match The 4G Brief And Drive The Emulator Console :: Real... | PASS |
+------------------------------------------------------------------------------
+Mobile & Public.Mobile.Network Profiles :: 4G brief acceptance und... | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Mobile & Public.Mobile.Offline Matrix :: Offline/online matrix: 9 farmer ac...
+==============================================================================
+Flutter Machine Output Is Parsed :: Real smoke test, no emulator n... | PASS |
+------------------------------------------------------------------------------
+Mobile & Public.Mobile.Offline Matrix :: Offline/online matrix: 9 ... | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Mobile & Public.Mobile                                                | PASS |
+2 tests, 2 passed, 0 failed
+==============================================================================
+Mobile & Public.Public                                                        
+==============================================================================
+Mobile & Public.Public.Page :: Public batch page: render, privacy lint, bac...
+==============================================================================
+Privacy Lint Passes The Clean Fixture And Catches The Dirty One ::... | PASS |
+------------------------------------------------------------------------------
+Mobile & Public.Public.Page :: Public batch page: render, privacy ... | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Mobile & Public.Public                                                | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Mobile & Public                                                       | PASS |
+3 tests, 3 passed, 0 failed
+==============================================================================
+Output:  /tmp/q00verify-smoke/output.xml
+Log:     /tmp/q00verify-smoke/log.html
+Report:  /tmp/q00verify-smoke/report.html
+exit=0

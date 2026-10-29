@@ -1,0 +1,2852 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5 (Python 3.12.13 on darwin)" generated="2026-10-29T22:41:21.183672" rpa="false" schemaversion="5">
+<suite id="s1" name="Robot" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot">
+<suite id="s1-s1" name="Api" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api">
+<suite id="s1-s1-s1" name="Batches" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api/batches.robot">
+<test id="s1-s1-s1-t1" name="Lot Ready At 11.5 Percent Returns 409 And At 10.9 Percent Becomes Ready" line="10">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.543078" elapsed="0.000331"/>
+</kw>
+<arg>B09</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.541733" elapsed="0.002170"/>
+</kw>
+<tag>api</tag>
+<tag>FR-43</tag>
+<tag>not-ready</tag>
+<tag>WP-B09</tag>
+<status status="PASS" start="2026-10-29T22:41:22.540442" elapsed="0.003646"/>
+</test>
+<test id="s1-s1-s1-t2" name="Intake 100 kg Versus Packed 69 kg Raises Quantity Mismatch" line="14">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.545596" elapsed="0.000314"/>
+</kw>
+<arg>B09</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.545283" elapsed="0.000722"/>
+</kw>
+<tag>api</tag>
+<tag>FR-11</tag>
+<tag>not-ready</tag>
+<tag>WP-B09</tag>
+<status status="PASS" start="2026-10-29T22:41:22.544436" elapsed="0.001729"/>
+</test>
+<test id="s1-s1-s1-t3" name="Lots 100 200 20 kg Give Shares 31.250 62.500 6.250" line="18">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.547565" elapsed="0.000265"/>
+</kw>
+<arg>B09</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.547268" elapsed="0.000631"/>
+</kw>
+<tag>api</tag>
+<tag>FR-37</tag>
+<tag>not-ready</tag>
+<tag>WP-B09</tag>
+<status status="PASS" start="2026-10-29T22:41:22.546488" elapsed="0.001546"/>
+</test>
+<test id="s1-s1-s1-t4" name="Ineligible Lot With GI Requested Gives GI Verified False With Reasons" line="22">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.549822" elapsed="0.000275"/>
+</kw>
+<arg>B09</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.549509" elapsed="0.000670"/>
+</kw>
+<tag>api</tag>
+<tag>FR-29</tag>
+<tag>not-ready</tag>
+<tag>WP-B09</tag>
+<status status="PASS" start="2026-10-29T22:41:22.548618" elapsed="0.001801"/>
+</test>
+<test id="s1-s1-s1-t5" name="Approve On Declared Above Computed Returns 409" line="26">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.552076" elapsed="0.000279"/>
+</kw>
+<arg>B09</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.551765" elapsed="0.000663"/>
+</kw>
+<tag>api</tag>
+<tag>FR-49</tag>
+<tag>not-ready</tag>
+<tag>WP-B09</tag>
+<status status="PASS" start="2026-10-29T22:41:22.550747" elapsed="0.001820"/>
+</test>
+<test id="s1-s1-s1-t6" name="Packing 25 kg On 20 kg Graded Returns 409" line="30">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.553888" elapsed="0.000329"/>
+</kw>
+<arg>B09</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.553586" elapsed="0.000709"/>
+</kw>
+<tag>api</tag>
+<tag>FR-60</tag>
+<tag>not-ready</tag>
+<tag>WP-B09</tag>
+<status status="PASS" start="2026-10-29T22:41:22.552852" elapsed="0.001585"/>
+</test>
+<test id="s1-s1-s1-t7" name="Publish Before Approval Returns 409 Listing Reasons" line="34">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.555841" elapsed="0.000281"/>
+</kw>
+<arg>B09</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.555469" elapsed="0.000726"/>
+</kw>
+<tag>api</tag>
+<tag>FR-15</tag>
+<tag>not-ready</tag>
+<tag>WP-B09</tag>
+<status status="PASS" start="2026-10-29T22:41:22.554725" elapsed="0.001614"/>
+</test>
+<test id="s1-s1-s1-t8" name="Publish After Gates Returns 202 And A Page Build Row" line="38">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.558003" elapsed="0.000270"/>
+</kw>
+<arg>B09</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.557482" elapsed="0.000861"/>
+</kw>
+<tag>api</tag>
+<tag>FR-17</tag>
+<tag>not-ready</tag>
+<tag>WP-B09</tag>
+<status status="PASS" start="2026-10-29T22:41:22.556642" elapsed="0.001847"/>
+</test>
+<doc>Lots, intake, batches and gates (plan §7.1 B09).
+Serves: FR-11, FR-15, FR-17, FR-29, FR-37, FR-43, FR-49, FR-60; gate G2.
+Placeholders are tagged not-ready and skip until B09 merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:21.282834" elapsed="1.276181"/>
+</suite>
+<suite id="s1-s1-s2" name="Healthz" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api/healthz.robot">
+<test id="s1-s1-s2-t1" name="Healthz Reports Db Redis And S3 Ok" line="9">
+<kw name="Stack Is Healthy" owner="common">
+<kw name="GET" owner="RequestsLibrary">
+<var>${resp}</var>
+<arg>${API_BASE}/healthz</arg>
+<arg>expected_status=200</arg>
+<arg>timeout=10</arg>
+<doc>Sends a GET request.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.566234" elapsed="0.000123"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<var>${body}</var>
+<arg>${resp.json()}</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.566559" elapsed="0.000281"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Should Be Equal As Strings" owner="BuiltIn">
+<arg>${body}[${dependency}]</arg>
+<arg>ok</arg>
+<arg>msg=healthz reports ${dependency}=${body}[${dependency}]</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.567214" elapsed="0.000340"/>
+</kw>
+<var name="${dependency}"/>
+<status status="PASS" start="2026-10-29T22:41:22.567067" elapsed="0.001044"/>
+</iter>
+<var>${dependency}</var>
+<value>db</value>
+<value>redis</value>
+<value>s3</value>
+<status status="PASS" start="2026-10-29T22:41:22.566938" elapsed="0.001245"/>
+</for>
+<return>
+<value>${body}</value>
+<status status="PASS" start="2026-10-29T22:41:22.568272" elapsed="0.000034"/>
+</return>
+<doc>GET http://localhost:8000/v1/healthz and assert db, redis and s3 each report "ok" (B00 acceptance).
+Returns: the decoded JSON body.
+Fails: API unreachable, status other than 200, or any dependency not "ok".</doc>
+<status status="PASS" start="2026-10-29T22:41:22.565796" elapsed="0.002571"/>
+</kw>
+<doc>GET /v1/healthz returns 200 with db, redis and s3 all "ok".</doc>
+<tag>api</tag>
+<tag>FR-33</tag>
+<tag>smoke</tag>
+<tag>WP-B00</tag>
+<status status="PASS" start="2026-10-29T22:41:22.565037" elapsed="0.003481"/>
+</test>
+<doc>Stack health: the B00 acceptance line "docker compose up -&gt; /healthz {db,redis,s3: ok}".
+Serves: plan §7.1 B00, gate G0. Run by: CI job robot-smoke, Verifiers.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.559912" elapsed="0.008993"/>
+</suite>
+<suite id="s1-s1-s3" name="Identity" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api/identity.robot">
+<test id="s1-s1-s3-t1" name="OTP Request Twice In 60 s Returns 429" line="10">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.578445" elapsed="0.000309"/>
+</kw>
+<arg>B02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.578107" elapsed="0.000733"/>
+</kw>
+<tag>api</tag>
+<tag>FR-1</tag>
+<tag>not-ready</tag>
+<tag>WP-B02</tag>
+<status status="PASS" start="2026-10-29T22:41:22.577158" elapsed="0.001831"/>
+</test>
+<test id="s1-s1-s3-t2" name="Five Wrong OTP Codes Lock The Challenge With 409" line="14">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.580386" elapsed="0.000473"/>
+</kw>
+<arg>B02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.580085" elapsed="0.000863"/>
+</kw>
+<tag>api</tag>
+<tag>FR-1</tag>
+<tag>not-ready</tag>
+<tag>WP-B02</tag>
+<status status="PASS" start="2026-10-29T22:41:22.579302" elapsed="0.001799"/>
+</test>
+<test id="s1-s1-s3-t3" name="Farmer Calling GET Flags Gets 403" line="18">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.582604" elapsed="0.000305"/>
+</kw>
+<arg>B02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.582244" elapsed="0.000755"/>
+</kw>
+<tag>api</tag>
+<tag>FR-14</tag>
+<tag>not-ready</tag>
+<tag>WP-B02</tag>
+<status status="PASS" start="2026-10-29T22:41:22.581431" elapsed="0.001722"/>
+</test>
+<test id="s1-s1-s3-t4" name="Assist Header Sets On Behalf Of Farmer" line="22">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.584767" elapsed="0.000293"/>
+</kw>
+<arg>B02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.584234" elapsed="0.000900"/>
+</kw>
+<tag>api</tag>
+<tag>FR-59</tag>
+<tag>not-ready</tag>
+<tag>WP-B02</tag>
+<status status="PASS" start="2026-10-29T22:41:22.583455" elapsed="0.001822"/>
+</test>
+<test id="s1-s1-s3-t5" name="Consent Writes Audit Row With Officer As Actor" line="26">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.586814" elapsed="0.000354"/>
+</kw>
+<arg>B02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.586386" elapsed="0.000880"/>
+</kw>
+<tag>api</tag>
+<tag>FR-25</tag>
+<tag>FR-41</tag>
+<tag>not-ready</tag>
+<tag>WP-B02</tag>
+<status status="PASS" start="2026-10-29T22:41:22.585566" elapsed="0.001910"/>
+</test>
+<test id="s1-s1-s3-t6" name="Logout Revokes Refresh Token And Refresh Returns 401" line="30">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.588908" elapsed="0.000265"/>
+</kw>
+<arg>B02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.588614" elapsed="0.000630"/>
+</kw>
+<tag>api</tag>
+<tag>FR-1</tag>
+<tag>not-ready</tag>
+<tag>WP-B02</tag>
+<status status="PASS" start="2026-10-29T22:41:22.587840" elapsed="0.001540"/>
+</test>
+<doc>Identity: OTP login, roles, tenant scope, assist mode, consent, logout (plan §7.1 B02).
+Serves: FR-1, FR-14, FR-25, FR-41, FR-59; gate G2. Run by: Verifiers, CI once B02 merges.
+Placeholders are tagged not-ready and skip until B02 merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.569708" elapsed="0.020038"/>
+</suite>
+<suite id="s1-s1-s4" name="Publishing" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api/publishing.robot">
+<test id="s1-s1-s4-t1" name="Published Objects Exist With Matching Generation" line="10">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.597477" elapsed="0.000291"/>
+</kw>
+<arg>B10</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.597027" elapsed="0.000821"/>
+</kw>
+<tag>api</tag>
+<tag>FR-17</tag>
+<tag>not-ready</tag>
+<tag>WP-B10</tag>
+<status status="PASS" start="2026-10-29T22:41:22.596169" elapsed="0.001822"/>
+</test>
+<test id="s1-s1-s4-t2" name="Page HTML Has No Phone Survey Number Or Temp Uploads" line="14">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.599369" elapsed="0.000264"/>
+</kw>
+<arg>B10</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.599073" elapsed="0.000634"/>
+</kw>
+<tag>api</tag>
+<tag>FR-16</tag>
+<tag>not-ready</tag>
+<tag>WP-B10</tag>
+<status status="PASS" start="2026-10-29T22:41:22.598302" elapsed="0.001544"/>
+</test>
+<test id="s1-s1-s4-t3" name="Revoked Name Consent Shows Farmer 2" line="18">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.601146" elapsed="0.000260"/>
+</kw>
+<arg>B10</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.600860" elapsed="0.000782"/>
+</kw>
+<tag>api</tag>
+<tag>FR-41</tag>
+<tag>not-ready</tag>
+<tag>WP-B10</tag>
+<status status="PASS" start="2026-10-29T22:41:22.600126" elapsed="0.001716"/>
+</test>
+<test id="s1-s1-s4-t4" name="Correction Creates A New Build And Keeps Old Versions" line="22">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.603280" elapsed="0.000277"/>
+</kw>
+<arg>B10</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.602923" elapsed="0.000706"/>
+</kw>
+<tag>api</tag>
+<tag>FR-17</tag>
+<tag>not-ready</tag>
+<tag>WP-B10</tag>
+<status status="PASS" start="2026-10-29T22:41:22.602153" elapsed="0.001640"/>
+</test>
+<test id="s1-s1-s4-t5" name="QR Decodes To The Public Batch URL" line="26">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.605112" elapsed="0.000269"/>
+</kw>
+<arg>B10</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.604826" elapsed="0.000627"/>
+</kw>
+<tag>api</tag>
+<tag>FR-12</tag>
+<tag>not-ready</tag>
+<tag>WP-B10</tag>
+<status status="PASS" start="2026-10-29T22:41:22.604087" elapsed="0.001502"/>
+</test>
+<test id="s1-s1-s4-t6" name="Events Are Listed In Ascending Date Order" line="30">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.606883" elapsed="0.000298"/>
+</kw>
+<arg>B10</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.606598" elapsed="0.000656"/>
+</kw>
+<tag>api</tag>
+<tag>FR-63</tag>
+<tag>not-ready</tag>
+<tag>WP-B10</tag>
+<status status="PASS" start="2026-10-29T22:41:22.605865" elapsed="0.001527"/>
+</test>
+<test id="s1-s1-s4-t7" name="Completeness Equals Lots With All Mandatory Events Over Lots" line="34">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.608788" elapsed="0.000271"/>
+</kw>
+<arg>B11</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.608423" elapsed="0.000707"/>
+</kw>
+<tag>api</tag>
+<tag>FR-20</tag>
+<tag>not-ready</tag>
+<tag>WP-B11</tag>
+<status status="PASS" start="2026-10-29T22:41:22.607672" elapsed="0.001597"/>
+</test>
+<test id="s1-s1-s4-t8" name="100 Scans Per Minute Returns 429" line="38">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.610563" elapsed="0.000258"/>
+</kw>
+<arg>B11</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.610277" elapsed="0.000612"/>
+</kw>
+<tag>api</tag>
+<tag>FR-15</tag>
+<tag>not-ready</tag>
+<tag>WP-B11</tag>
+<status status="PASS" start="2026-10-29T22:41:22.609556" elapsed="0.001467"/>
+</test>
+<test id="s1-s1-s4-t9" name="Audit CSV Has A Row Per Version With Entered By And Assist Session" line="42">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.612324" elapsed="0.000256"/>
+</kw>
+<arg>B11</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.612040" elapsed="0.000608"/>
+</kw>
+<tag>api</tag>
+<tag>FR-21</tag>
+<tag>not-ready</tag>
+<tag>WP-B11</tag>
+<status status="PASS" start="2026-10-29T22:41:22.611294" elapsed="0.001487"/>
+</test>
+<test id="s1-s1-s4-t10" name="Partner API Returns 501 Not Implemented Pilot" line="46">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.614212" elapsed="0.000532"/>
+</kw>
+<arg>B11</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.613800" elapsed="0.001024"/>
+</kw>
+<tag>api</tag>
+<tag>FR-33</tag>
+<tag>not-ready</tag>
+<tag>WP-B11</tag>
+<status status="PASS" start="2026-10-29T22:41:22.613053" elapsed="0.001914"/>
+</test>
+<doc>Publishing the static batch page (plan §7.1 B10) and reporting + stubs (B11).
+Serves: FR-12, FR-15, FR-16, FR-17, FR-20, FR-21, FR-33, FR-41, FR-63; gates G2/G4; BM-09.
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.590642" elapsed="0.024742"/>
+</suite>
+<suite id="s1-s1-s5" name="Quality" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api/quality.robot">
+<test id="s1-s1-s5-t1" name="Moisture 9.8 Percent Grades Special" line="10">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.622401" elapsed="0.000437"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.622096" elapsed="0.000831"/>
+</kw>
+<tag>api</tag>
+<tag>FR-48</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.621275" elapsed="0.001801"/>
+</test>
+<test id="s1-s1-s5-t2" name="Moisture 10.5 Percent Grades Standard" line="14">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.624708" elapsed="0.000283"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.624324" elapsed="0.000744"/>
+</kw>
+<tag>api</tag>
+<tag>FR-48</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.623388" elapsed="0.001821"/>
+</test>
+<test id="s1-s1-s5-t3" name="Moisture 11.4 Percent Is Below Grade" line="18">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.626582" elapsed="0.000267"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.626279" elapsed="0.000841"/>
+</kw>
+<tag>api</tag>
+<tag>FR-48</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.625516" elapsed="0.001806"/>
+</test>
+<test id="s1-s1-s5-t4" name="Visual 9.8 Percent Is Capped At Standard" line="22">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.628833" elapsed="0.000288"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.628435" elapsed="0.000762"/>
+</kw>
+<tag>api</tag>
+<tag>FR-48</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.627628" elapsed="0.001711"/>
+</test>
+<test id="s1-s1-s5-t5" name="Missing Required Reading Is Incomplete" line="26">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.631018" elapsed="0.000272"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.630709" elapsed="0.000654"/>
+</kw>
+<tag>api</tag>
+<tag>FR-46</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.629698" elapsed="0.001805"/>
+</test>
+<test id="s1-s1-s5-t6" name="Moisture Minus 1 Returns 422" line="30">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.633309" elapsed="0.000589"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.632625" elapsed="0.001369"/>
+</kw>
+<tag>api</tag>
+<tag>FR-50</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.631795" elapsed="0.002430"/>
+</test>
+<test id="s1-s1-s5-t7" name="Expired Instrument Returns 422" line="34">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.635665" elapsed="0.000276"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.635355" elapsed="0.000663"/>
+</kw>
+<tag>api</tag>
+<tag>FR-42</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.634568" elapsed="0.001589"/>
+</test>
+<test id="s1-s1-s5-t8" name="Grading 12.0 After Intake 10.0 Needs A Reason And Raises A Flag" line="38">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.637544" elapsed="0.000262"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.637250" elapsed="0.000624"/>
+</kw>
+<tag>api</tag>
+<tag>FR-50</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.636451" elapsed="0.001557"/>
+</test>
+<test id="s1-s1-s5-t9" name="Declared Special Versus Computed Standard Raises Declared Above Computed" line="42">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.639375" elapsed="0.000260"/>
+</kw>
+<arg>B05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.639093" elapsed="0.000610"/>
+</kw>
+<tag>api</tag>
+<tag>FR-49</tag>
+<tag>not-ready</tag>
+<tag>WP-B05</tag>
+<status status="PASS" start="2026-10-29T22:41:22.638295" elapsed="0.001542"/>
+</test>
+<doc>Quality readings and the grade engine (plan §7.1 B05).
+Serves: FR-42, FR-46, FR-48, FR-49, FR-50; gate G2; BM-08.
+Placeholders are tagged not-ready and skip until B05 merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.616304" elapsed="0.023893"/>
+</suite>
+<suite id="s1-s1-s6" name="Registry" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api/registry.robot">
+<test id="s1-s1-s6-t1" name="Point 9.559806 78.133521 Is Inside The Fixture GI Region" line="10">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.647006" elapsed="0.000260"/>
+</kw>
+<arg>B03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.646711" elapsed="0.000626"/>
+</kw>
+<tag>api</tag>
+<tag>FR-28</tag>
+<tag>not-ready</tag>
+<tag>WP-B03</tag>
+<status status="PASS" start="2026-10-29T22:41:22.645915" elapsed="0.001555"/>
+</test>
+<test id="s1-s1-s6-t2" name="Point 100 m Outside With 150 m Buffer Is Near Edge" line="14">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.648780" elapsed="0.000264"/>
+</kw>
+<arg>B03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.648465" elapsed="0.000647"/>
+</kw>
+<tag>api</tag>
+<tag>FR-32</tag>
+<tag>not-ready</tag>
+<tag>WP-B03</tag>
+<status status="PASS" start="2026-10-29T22:41:22.647738" elapsed="0.001510"/>
+</test>
+<test id="s1-s1-s6-t3" name="Madurai Point Is Outside" line="18">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.650498" elapsed="0.000520"/>
+</kw>
+<arg>B03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.650219" elapsed="0.000872"/>
+</kw>
+<tag>api</tag>
+<tag>FR-28</tag>
+<tag>not-ready</tag>
+<tag>WP-B03</tag>
+<status status="PASS" start="2026-10-29T22:41:22.649518" elapsed="0.001710"/>
+</test>
+<test id="s1-s1-s6-t4" name="Map Pin Plot Needs Review" line="22">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.652655" elapsed="0.000263"/>
+</kw>
+<arg>B03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.652363" elapsed="0.000828"/>
+</kw>
+<tag>api</tag>
+<tag>FR-70</tag>
+<tag>not-ready</tag>
+<tag>WP-B03</tag>
+<status status="PASS" start="2026-10-29T22:41:22.651548" elapsed="0.001842"/>
+</test>
+<test id="s1-s1-s6-t5" name="Plot Correction Without Reason Returns 422" line="26">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.654790" elapsed="0.000269"/>
+</kw>
+<arg>B03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.654492" elapsed="0.000638"/>
+</kw>
+<tag>api</tag>
+<tag>FR-25</tag>
+<tag>not-ready</tag>
+<tag>WP-B03</tag>
+<status status="PASS" start="2026-10-29T22:41:22.653738" elapsed="0.001530"/>
+</test>
+<test id="s1-s1-s6-t6" name="Cross FPO Plot Read Returns 404" line="30">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.656551" elapsed="0.000262"/>
+</kw>
+<arg>B03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.656270" elapsed="0.000613"/>
+</kw>
+<tag>api</tag>
+<tag>FR-24</tag>
+<tag>not-ready</tag>
+<tag>WP-B03</tag>
+<status status="PASS" start="2026-10-29T22:41:22.655548" elapsed="0.001472"/>
+</test>
+<test id="s1-s1-s6-t7" name="FPO Admin Uploading GI Region Returns 403" line="34">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.658307" elapsed="0.000260"/>
+</kw>
+<arg>B03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.658023" elapsed="0.000613"/>
+</kw>
+<tag>api</tag>
+<tag>FR-31</tag>
+<tag>not-ready</tag>
+<tag>WP-B03</tag>
+<status status="PASS" start="2026-10-29T22:41:22.657295" elapsed="0.001483"/>
+</test>
+<test id="s1-s1-s6-t8" name="Disabling Soil Type In A Tenant File Hides The Field For That FPO Only" line="38">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.660102" elapsed="0.000261"/>
+</kw>
+<arg>B13</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.659815" elapsed="0.000618"/>
+</kw>
+<tag>api</tag>
+<tag>FR-23</tag>
+<tag>not-ready</tag>
+<tag>WP-B13</tag>
+<status status="PASS" start="2026-10-29T22:41:22.659053" elapsed="0.001513"/>
+</test>
+<test id="s1-s1-s6-t9" name="ID Document Upload Endpoint Follows The Feature Flag" line="42">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.661856" elapsed="0.000260"/>
+</kw>
+<arg>B13</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.661571" elapsed="0.000612"/>
+</kw>
+<tag>api</tag>
+<tag>FR-23</tag>
+<tag>not-ready</tag>
+<tag>WP-B13</tag>
+<status status="PASS" start="2026-10-29T22:41:22.660840" elapsed="0.001475"/>
+</test>
+<test id="s1-s1-s6-t10" name="Farmer CSV With 2 Bad Rows Accepts The Rest Without Partial Writes" line="46">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.663617" elapsed="0.000265"/>
+</kw>
+<arg>B13</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.663338" elapsed="0.000611"/>
+</kw>
+<tag>api</tag>
+<tag>FR-8</tag>
+<tag>not-ready</tag>
+<tag>WP-B13</tag>
+<status status="PASS" start="2026-10-29T22:41:22.662593" elapsed="0.001493"/>
+</test>
+<test id="s1-s1-s6-t11" name="Virudhunagar Region Build Covers The Reference Point With Provenance" line="50">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.665396" elapsed="0.000259"/>
+</kw>
+<arg>B13</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.665102" elapsed="0.000621"/>
+</kw>
+<tag>api</tag>
+<tag>FR-27</tag>
+<tag>not-ready</tag>
+<tag>WP-B13</tag>
+<status status="PASS" start="2026-10-29T22:41:22.664360" elapsed="0.001498"/>
+</test>
+<test id="s1-s1-s6-t12" name="Field YAML Failing Its Schema Stops The App With A Clear Message" line="54">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.667151" elapsed="0.000259"/>
+</kw>
+<arg>B13</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.666867" elapsed="0.000614"/>
+</kw>
+<tag>api</tag>
+<tag>FR-23</tag>
+<tag>not-ready</tag>
+<tag>WP-B13</tag>
+<status status="PASS" start="2026-10-29T22:41:22.666133" elapsed="0.001483"/>
+</test>
+<doc>Registry and PostGIS geo (plan §7.1 B03) plus config-driven fields, masters and imports (B13).
+Serves: FR-8, FR-23, FR-24, FR-25, FR-27, FR-28, FR-31, FR-32, FR-70; gate G2.
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.641010" elapsed="0.026974"/>
+</suite>
+<suite id="s1-s1-s7" name="Rules" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api/rules.robot">
+<test id="s1-s1-s7-t1" name="Event 600 m Off Plot Raises Event Off Plot Once" line="10">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.675908" elapsed="0.000277"/>
+</kw>
+<arg>B08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.675589" elapsed="0.000676"/>
+</kw>
+<tag>api</tag>
+<tag>FR-69</tag>
+<tag>not-ready</tag>
+<tag>WP-B08</tag>
+<status status="PASS" start="2026-10-29T22:41:22.674754" elapsed="0.001656"/>
+</test>
+<test id="s1-s1-s7-t2" name="Inorganic Tag With Only Organic Inputs Raises Practice Tag Contradiction" line="14">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.678186" elapsed="0.000285"/>
+</kw>
+<arg>B08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.677584" elapsed="0.001118"/>
+</kw>
+<tag>api</tag>
+<tag>FR-56</tag>
+<tag>not-ready</tag>
+<tag>WP-B08</tag>
+<status status="PASS" start="2026-10-29T22:41:22.676712" elapsed="0.002190"/>
+</test>
+<test id="s1-s1-s7-t3" name="IPM Without A Pest Event Raises A Flag" line="18">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.680737" elapsed="0.000365"/>
+</kw>
+<arg>B08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.680280" elapsed="0.000912"/>
+</kw>
+<tag>api</tag>
+<tag>FR-56</tag>
+<tag>not-ready</tag>
+<tag>WP-B08</tag>
+<status status="PASS" start="2026-10-29T22:41:22.679253" elapsed="0.002122"/>
+</test>
+<test id="s1-s1-s7-t4" name="Nursery Before Ploughing Raises No Flag" line="22">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.683066" elapsed="0.000295"/>
+</kw>
+<arg>B08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.682746" elapsed="0.000691"/>
+</kw>
+<tag>api</tag>
+<tag>FR-55</tag>
+<tag>not-ready</tag>
+<tag>WP-B08</tag>
+<status status="PASS" start="2026-10-29T22:41:22.681917" elapsed="0.001662"/>
+</test>
+<test id="s1-s1-s7-t5" name="Sowing Before Nursery Raises A Flag" line="26">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.685261" elapsed="0.000284"/>
+</kw>
+<arg>B08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.684895" elapsed="0.000727"/>
+</kw>
+<tag>api</tag>
+<tag>FR-55</tag>
+<tag>not-ready</tag>
+<tag>WP-B08</tag>
+<status status="PASS" start="2026-10-29T22:41:22.683877" elapsed="0.001890"/>
+</test>
+<test id="s1-s1-s7-t6" name="Yield 1150 1250 1350 kg On 1 Acre Gives None Warn Hold" line="30">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.687282" elapsed="0.000272"/>
+</kw>
+<arg>B08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.686972" elapsed="0.000657"/>
+</kw>
+<tag>api</tag>
+<tag>FR-68</tag>
+<tag>not-ready</tag>
+<tag>WP-B08</tag>
+<status status="PASS" start="2026-10-29T22:41:22.686068" elapsed="0.001700"/>
+</test>
+<test id="s1-s1-s7-t7" name="Resolving A Flag Without Reason Returns 422" line="34">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.689085" elapsed="0.000261"/>
+</kw>
+<arg>B08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.688797" elapsed="0.000617"/>
+</kw>
+<tag>api</tag>
+<tag>FR-70</tag>
+<tag>not-ready</tag>
+<tag>WP-B08</tag>
+<status status="PASS" start="2026-10-29T22:41:22.688056" elapsed="0.001491"/>
+</test>
+<test id="s1-s1-s7-t8" name="Officer Resolving A Hold Returns 403" line="38">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.691824" elapsed="0.000275"/>
+</kw>
+<arg>B08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.690537" elapsed="0.001636"/>
+</kw>
+<tag>api</tag>
+<tag>FR-14</tag>
+<tag>not-ready</tag>
+<tag>WP-B08</tag>
+<status status="PASS" start="2026-10-29T22:41:22.689823" elapsed="0.002491"/>
+</test>
+<test id="s1-s1-s7-t9" name="Eager Notification Send Writes A Sent Console Row" line="42">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.693617" elapsed="0.000269"/>
+</kw>
+<arg>B04</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.693332" elapsed="0.000626"/>
+</kw>
+<tag>api</tag>
+<tag>FR-7</tag>
+<tag>not-ready</tag>
+<tag>WP-B04</tag>
+<status status="PASS" start="2026-10-29T22:41:22.692597" elapsed="0.001497"/>
+</test>
+<test id="s1-s1-s7-t10" name="Unknown Template Writes A Failed Row Without Raising" line="46">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.695387" elapsed="0.000260"/>
+</kw>
+<arg>B04</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.695100" elapsed="0.000618"/>
+</kw>
+<tag>api</tag>
+<tag>FR-7</tag>
+<tag>not-ready</tag>
+<tag>WP-B04</tag>
+<status status="PASS" start="2026-10-29T22:41:22.694373" elapsed="0.001480"/>
+</test>
+<doc>Rules and flags (plan §7.1 B08) and notifications (B04).
+Serves: FR-7, FR-14, FR-55, FR-56, FR-68, FR-69, FR-70; gate G2.
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.668912" elapsed="0.027307"/>
+</suite>
+<suite id="s1-s1-s8" name="Sync" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/api/sync.robot">
+<test id="s1-s1-s8-t1" name="Same Client Id Pushed Twice Stores One Row" line="10">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.703185" elapsed="0.000266"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.702886" elapsed="0.000642"/>
+</kw>
+<tag>api</tag>
+<tag>FR-4</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<status status="PASS" start="2026-10-29T22:41:22.702087" elapsed="0.001581"/>
+</test>
+<test id="s1-s1-s8-t2" name="Foreign Owned Client Id Returns Client Id Conflict" line="14">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.704996" elapsed="0.000261"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.704702" elapsed="0.000781"/>
+</kw>
+<tag>api</tag>
+<tag>FR-24</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<status status="PASS" start="2026-10-29T22:41:22.703955" elapsed="0.001679"/>
+</test>
+<test id="s1-s1-s8-t3" name="Push Of 51 Entries Returns 422" line="18">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.706920" elapsed="0.000265"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.706631" elapsed="0.000624"/>
+</kw>
+<tag>api</tag>
+<tag>FR-4</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<status status="PASS" start="2026-10-29T22:41:22.705908" elapsed="0.001483"/>
+</test>
+<test id="s1-s1-s8-t4" name="Mixed Batch Accepts 1 And 3 And Rejects 2" line="22">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.708724" elapsed="0.000515"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.708439" elapsed="0.000874"/>
+</kw>
+<tag>api</tag>
+<tag>FR-4</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<status status="PASS" start="2026-10-29T22:41:22.707712" elapsed="0.001788"/>
+</test>
+<test id="s1-s1-s8-t5" name="Wrong Photo Checksum Returns Checksum Mismatch And A Flag" line="26">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.710924" elapsed="0.000268"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.710626" elapsed="0.000638"/>
+</kw>
+<tag>api</tag>
+<tag>FR-61</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<status status="PASS" start="2026-10-29T22:41:22.709864" elapsed="0.001538"/>
+</test>
+<test id="s1-s1-s8-t6" name="Undo After 24 h Returns 409" line="30">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.712687" elapsed="0.000259"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.712398" elapsed="0.000617"/>
+</kw>
+<tag>api</tag>
+<tag>FR-6</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<status status="PASS" start="2026-10-29T22:41:22.711681" elapsed="0.001488"/>
+</test>
+<test id="s1-s1-s8-t7" name="Farmer Correction Returns 403" line="34">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.714494" elapsed="0.000264"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.714200" elapsed="0.000626"/>
+</kw>
+<tag>api</tag>
+<tag>FR-25</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<status status="PASS" start="2026-10-29T22:41:22.713479" elapsed="0.001482"/>
+</test>
+<test id="s1-s1-s8-t8" name="Device Clock 3 Days Ahead Is Stored With A Clock Skew Flag" line="38">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.716251" elapsed="0.000259"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.715966" elapsed="0.000613"/>
+</kw>
+<tag>api</tag>
+<tag>FR-26</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<status status="PASS" start="2026-10-29T22:41:22.715233" elapsed="0.001484"/>
+</test>
+<test id="s1-s1-s8-t9" name="Matching If-None-Match On The Bundle Returns 304" line="42">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.718016" elapsed="0.000262"/>
+</kw>
+<arg>B07</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.717729" elapsed="0.000621"/>
+</kw>
+<tag>api</tag>
+<tag>FR-4</tag>
+<tag>not-ready</tag>
+<tag>WP-B07</tag>
+<status status="PASS" start="2026-10-29T22:41:22.716993" elapsed="0.001494"/>
+</test>
+<test id="s1-s1-s8-t10" name="Standards Bundle Part Holds Only Lot Gates Yield Plausible And Limits" line="46">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.719797" elapsed="0.000262"/>
+</kw>
+<arg>B07</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.719503" elapsed="0.000628"/>
+</kw>
+<tag>api</tag>
+<tag>FR-47</tag>
+<tag>not-ready</tag>
+<tag>WP-B07</tag>
+<status status="PASS" start="2026-10-29T22:41:22.718759" elapsed="0.001508"/>
+</test>
+<test id="s1-s1-s8-t11" name="Pull After A New Flag Returns Exactly That Flag" line="50">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.721605" elapsed="0.000291"/>
+</kw>
+<arg>B07</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.721265" elapsed="0.000705"/>
+</kw>
+<tag>api</tag>
+<tag>FR-4</tag>
+<tag>not-ready</tag>
+<tag>WP-B07</tag>
+<status status="PASS" start="2026-10-29T22:41:22.720538" elapsed="0.001579"/>
+</test>
+<doc>Events, sync push, evidence (plan §7.1 B06) and reference bundle + sync pull (B07).
+Serves: FR-4, FR-6, FR-24, FR-25, FR-26, FR-47, FR-61; gate G2; BM-06, BM-15.
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.697060" elapsed="0.025668"/>
+</suite>
+<status status="PASS" start="2026-10-29T22:41:21.281251" elapsed="1.442638"/>
+</suite>
+<suite id="s1-s2" name="E2E" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/e2e">
+<suite id="s1-s2-s1" name="Reference Batch" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/e2e/reference_batch.robot">
+<test id="s1-s2-s1-t1" name="Demo Seed Is Idempotent" line="10">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.734029" elapsed="0.000297"/>
+</kw>
+<arg>B12</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.733705" elapsed="0.000860"/>
+</kw>
+<tag>e2e</tag>
+<tag>FR-13</tag>
+<tag>not-ready</tag>
+<tag>WP-B12</tag>
+<status status="PASS" start="2026-10-29T22:41:22.732664" elapsed="0.002053"/>
+</test>
+<test id="s1-s2-s1-t2" name="Reference Batch Raises Exactly The Expected Flag Set" line="14">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.736098" elapsed="0.000352"/>
+</kw>
+<arg>B12</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.735794" elapsed="0.000744"/>
+</kw>
+<tag>BM-05</tag>
+<tag>e2e</tag>
+<tag>FR-11</tag>
+<tag>not-ready</tag>
+<tag>WP-B12</tag>
+<status status="PASS" start="2026-10-29T22:41:22.735002" elapsed="0.001685"/>
+</test>
+<test id="s1-s2-s1-t3" name="Grade A Returns 422 Unknown Grade For Profile" line="18">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.738101" elapsed="0.000262"/>
+</kw>
+<arg>B12</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.737808" elapsed="0.000628"/>
+</kw>
+<tag>e2e</tag>
+<tag>FR-47</tag>
+<tag>not-ready</tag>
+<tag>WP-B12</tag>
+<status status="PASS" start="2026-10-29T22:41:22.736997" elapsed="0.001575"/>
+</test>
+<test id="s1-s2-s1-t4" name="Approve And Publish Return 409 Before Fixes" line="22">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.739868" elapsed="0.000260"/>
+</kw>
+<arg>B12</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.739582" elapsed="0.000616"/>
+</kw>
+<tag>e2e</tag>
+<tag>FR-15</tag>
+<tag>not-ready</tag>
+<tag>WP-B12</tag>
+<status status="PASS" start="2026-10-29T22:41:22.738852" elapsed="0.001483"/>
+</test>
+<test id="s1-s2-s1-t5" name="After Fixes Publish Succeeds With GI Verified And Shares 31.25 62.5 6.25" line="26">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.741659" elapsed="0.000262"/>
+</kw>
+<arg>B12</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.741371" elapsed="0.000618"/>
+</kw>
+<tag>e2e</tag>
+<tag>FR-30</tag>
+<tag>not-ready</tag>
+<tag>WP-B12</tag>
+<status status="PASS" start="2026-10-29T22:41:22.740610" elapsed="0.001515"/>
+</test>
+<test id="s1-s2-s1-t6" name="Dart And TS Clients Compile" line="30">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.743444" elapsed="0.000260"/>
+</kw>
+<arg>B12</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.743157" elapsed="0.000617"/>
+</kw>
+<tag>e2e</tag>
+<tag>FR-33</tag>
+<tag>not-ready</tag>
+<tag>WP-B12</tag>
+<status status="PASS" start="2026-10-29T22:41:22.742405" elapsed="0.001502"/>
+</test>
+<doc>Seeded reference batch FGP8T4033HM7 end to end (plan §7.1 B12, PRD §12.2).
+Serves: FR-11, FR-13, FR-15, FR-30, FR-33, FR-47; gate G5; BM-05. Run by: Q04/Q05 Verifiers.
+Placeholders are tagged not-ready and skip until B12 merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.726256" elapsed="0.018014"/>
+</suite>
+<status status="PASS" start="2026-10-29T22:41:22.724718" elapsed="0.020557"/>
+</suite>
+<suite id="s1-s3" name="Mobile" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/mobile">
+<suite id="s1-s3-s1" name="Network Profiles" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/mobile/network_profiles.robot">
+<test id="s1-s3-s1-t1" name="Profiles Match The 4G Brief And Drive The Emulator Console" line="11">
+<kw name="Load Network Profiles" owner="agritrace_keywords">
+<var>${profiles}</var>
+<doc>Return the network profiles keyed by name.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.753446" elapsed="0.000078"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${profiles}[normal_4g][down_kbps]</arg>
+<arg>10000</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.753704" elapsed="0.000312"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${profiles}[normal_4g][up_kbps]</arg>
+<arg>5000</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.754200" elapsed="0.000266"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${profiles}[normal_4g][delay_min_ms]</arg>
+<arg>60</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.754646" elapsed="0.000266"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${profiles}[weak_4g][down_kbps]</arg>
+<arg>1000</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.755219" elapsed="0.000292"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${profiles}[weak_4g][up_kbps]</arg>
+<arg>500</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.755702" elapsed="0.000399"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${profiles}[weak_4g][delay_min_ms]</arg>
+<arg>300</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.756302" elapsed="0.000279"/>
+</kw>
+<kw name="Should Not Be True" owner="BuiltIn">
+<arg>${profiles}[offline][data]</arg>
+<doc>Fails if the given condition is true.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.756738" elapsed="0.000243"/>
+</kw>
+<kw name="Set Environment Variable" owner="OperatingSystem">
+<arg>DRY_RUN</arg>
+<arg>1</arg>
+<doc>Sets an environment variable to a specified value.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.757128" elapsed="0.000122"/>
+</kw>
+<kw name="Set Emulator Network" owner="agritrace_keywords">
+<var>${out}</var>
+<arg>weak_4g</arg>
+<doc>Apply a named network profile to the running emulator via qa/scripts/network.sh.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.757415" elapsed="0.000079"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${out}</arg>
+<arg>adb emu network speed 500:1000</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.757666" elapsed="0.000268"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${out}</arg>
+<arg>adb emu network delay 300:300</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.758311" elapsed="0.000346"/>
+</kw>
+<kw name="Set Emulator Network" owner="agritrace_keywords">
+<var>${out}</var>
+<arg>offline</arg>
+<doc>Apply a named network profile to the running emulator via qa/scripts/network.sh.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.758837" elapsed="0.000083"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${out}</arg>
+<arg>adb emu gsm data off</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.759095" elapsed="0.000270"/>
+</kw>
+<kw name="Remove Environment Variable" owner="OperatingSystem" type="TEARDOWN">
+<arg>DRY_RUN</arg>
+<doc>Deletes the specified environment variable.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.759627" elapsed="0.000092"/>
+</kw>
+<doc>Real smoke test, no emulator needed: profile numbers match plan §13 and
+network.sh emits the expected console commands (DRY_RUN).</doc>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>network</tag>
+<tag>smoke</tag>
+<tag>WP-Q00</tag>
+<status status="PASS" start="2026-10-29T22:41:22.752658" elapsed="0.007127"/>
+</test>
+<test id="s1-s3-s1-t2" name="BM-11 Normal 4G Entry Plus One Photo Shows Sent Within 5 s" line="31">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.761204" elapsed="0.000260"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.760915" elapsed="0.000620"/>
+</kw>
+<tag>BM-11</tag>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>network</tag>
+<tag>not-ready</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.760121" elapsed="0.001552"/>
+</test>
+<test id="s1-s3-s1-t3" name="BM-12 Weak 4G Entry Plus One Photo Shows Sent Within 20 s" line="35">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.762984" elapsed="0.000254"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.762700" elapsed="0.000606"/>
+</kw>
+<tag>BM-12</tag>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>network</tag>
+<tag>not-ready</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.761959" elapsed="0.001480"/>
+</test>
+<test id="s1-s3-s1-t4" name="BM-13 Airplane Mode Saves Instantly And Sends Automatically On Restore" line="39">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.764824" elapsed="0.000267"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.764539" elapsed="0.000624"/>
+</kw>
+<tag>BM-13</tag>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>network</tag>
+<tag>not-ready</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.763769" elapsed="0.001529"/>
+</test>
+<test id="s1-s3-s1-t5" name="BM-14 Kill Mid Upload Then Relaunch Leaves One Entry And One Photo" line="43">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.766604" elapsed="0.000254"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.766322" elapsed="0.000604"/>
+</kw>
+<tag>BM-14</tag>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>network</tag>
+<tag>not-ready</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.765581" elapsed="0.001479"/>
+</test>
+<test id="s1-s3-s1-t6" name="BM-15 Same Push Replayed 5 Times Leaves One Record" line="47">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.768339" elapsed="0.000259"/>
+</kw>
+<arg>B06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.768058" elapsed="0.000609"/>
+</kw>
+<tag>BM-15</tag>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>network</tag>
+<tag>not-ready</tag>
+<tag>WP-B06</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.767339" elapsed="0.001460"/>
+</test>
+<test id="s1-s3-s1-t7" name="BM-16 Public Page On Normal 4G Is Under 100 KB With LCP Under 2.5 s" line="51">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.770090" elapsed="0.000252"/>
+</kw>
+<arg>W01</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.769812" elapsed="0.000597"/>
+</kw>
+<tag>BM-16</tag>
+<tag>FR-19</tag>
+<tag>mobile</tag>
+<tag>network</tag>
+<tag>not-ready</tag>
+<tag>WP-Q03</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.769078" elapsed="0.001475"/>
+</test>
+<doc>4G brief acceptance under simulated network profiles (plan §13, BM-11..BM-16).
+Drives the emulator console through qa/scripts/network.sh with profiles from qa/robot/profiles.yaml
+(simulator defaults, not field readings). Serves: FR-4, FR-19; gate G3. Run by: Q01 Verifier.
+Placeholders are tagged not-ready and skip until M02 / W01 merge.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.747131" elapsed="0.023790"/>
+</suite>
+<suite id="s1-s3-s2" name="Offline Matrix" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/mobile/offline_matrix.robot">
+<test id="s1-s3-s2-t1" name="Flutter Machine Output Is Parsed" line="12">
+<kw name="Parse Flutter Results" owner="agritrace_keywords">
+<var>${result}</var>
+<arg>${REPO_ROOT}/qa/fixtures/flutter/sample_machine.jsonl</arg>
+<doc>Summarise a Flutter test run written with ``flutter test --machine`` (JSON lines).</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.779642" elapsed="0.000108"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${result}[passed]</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.779944" elapsed="0.000310"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${result}[failed]</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.780435" elapsed="0.000272"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${result}[skipped]</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.780925" elapsed="0.000270"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${result}[failures]</arg>
+<arg>harvest reaches server after network returns</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.781948" elapsed="0.000297"/>
+</kw>
+<doc>Real smoke test, no emulator needed: the parser counts a recorded --machine log.</doc>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>offline-matrix</tag>
+<tag>smoke</tag>
+<tag>WP-Q00</tag>
+<status status="PASS" start="2026-10-29T22:41:22.778905" elapsed="0.003507"/>
+</test>
+<test id="s1-s3-s2-t2" name="Matrix On Offline" line="21">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.783875" elapsed="0.000268"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.783575" elapsed="0.000642"/>
+</kw>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>not-ready</tag>
+<tag>offline-matrix</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.782731" elapsed="0.001626"/>
+</test>
+<test id="s1-s3-s2-t3" name="Matrix On Edge" line="25">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.785735" elapsed="0.000277"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.785405" elapsed="0.000685"/>
+</kw>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>not-ready</tag>
+<tag>offline-matrix</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.784659" elapsed="0.001575"/>
+</test>
+<test id="s1-s3-s2-t4" name="Matrix On Weak 4G" line="29">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.788084" elapsed="0.000283"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.787756" elapsed="0.000689"/>
+</kw>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>not-ready</tag>
+<tag>offline-matrix</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.786551" elapsed="0.002033"/>
+</test>
+<test id="s1-s3-s2-t5" name="Matrix On Normal 4G" line="33">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.789907" elapsed="0.000259"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.789624" elapsed="0.000612"/>
+</kw>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>not-ready</tag>
+<tag>offline-matrix</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.788890" elapsed="0.001478"/>
+</test>
+<test id="s1-s3-s2-t6" name="Matrix On Reconnect After Offline" line="37">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:22.791631" elapsed="0.000256"/>
+</kw>
+<arg>M02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:22.791355" elapsed="0.000599"/>
+</kw>
+<tag>FR-4</tag>
+<tag>mobile</tag>
+<tag>not-ready</tag>
+<tag>offline-matrix</tag>
+<tag>WP-M02</tag>
+<tag>WP-Q01</tag>
+<status status="PASS" start="2026-10-29T22:41:22.790649" elapsed="0.001440"/>
+</test>
+<doc>Offline/online matrix: 9 farmer actions x 5 network states (plan §7.5 Q01, gate G3).
+Each cell sets the emulator network (qa/scripts/network.sh), shells to
+`flutter test integration_test --machine` and asserts on Parse Flutter Results.
+Serves: FR-4. Run by: Q01 Verifier on the Go AVD (qa/avd/go_profile.ini).
+The 9 actions are fixed by Q01; one placeholder per network state until M02/M07 merge.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.772195" elapsed="0.020256"/>
+</suite>
+<status status="PASS" start="2026-10-29T22:41:22.745777" elapsed="0.047950"/>
+</suite>
+<suite id="s1-s4" name="Portal" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/portal">
+<suite id="s1-s4-s1" name="Portal" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/portal/portal.robot">
+<test id="s1-s4-s1-t1" name="Portal Loads In A Headless Browser" line="12">
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:25.910819" elapsed="0.000668"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<arg>${PORTAL_BASE}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:25.911763" elapsed="0.000492"/>
+</kw>
+<kw name="Get Title" owner="Browser">
+<arg>!=</arg>
+<arg>${EMPTY}</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the title of the current page.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:25.912470" elapsed="0.000528"/>
+</kw>
+<kw name="Close Browser" owner="Browser" type="TEARDOWN">
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Closes the current browser.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:25.913385" elapsed="0.000459"/>
+</kw>
+<tag>FR-14</tag>
+<tag>portal</tag>
+<tag>smoke</tag>
+<tag>WP-P00</tag>
+<status status="PASS" start="2026-10-29T22:41:25.909780" elapsed="0.004162"/>
+</test>
+<test id="s1-s4-s1-t2" name="Approving A Member Makes It Active Without Reload" line="19">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.004162" elapsed="0.000528"/>
+</kw>
+<arg>P01</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.003481" elapsed="0.001336"/>
+</kw>
+<tag>FR-8</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P01</tag>
+<status status="PASS" start="2026-10-29T22:41:26.001758" elapsed="0.003248"/>
+</test>
+<test id="s1-s4-s1-t3" name="Phone Is Masked Except An Audited Reveal" line="23">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.073373" elapsed="0.000539"/>
+</kw>
+<arg>P01</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.072694" elapsed="0.001343"/>
+</kw>
+<tag>FR-25</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P01</tag>
+<status status="PASS" start="2026-10-29T22:41:26.070928" elapsed="0.003297"/>
+</test>
+<test id="s1-s4-s1-t4" name="Reviewing A Held Lot Makes It Tickable In Create Batch" line="27">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.141909" elapsed="0.000522"/>
+</kw>
+<arg>P02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.141283" elapsed="0.001271"/>
+</kw>
+<tag>FR-70</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P02</tag>
+<status status="PASS" start="2026-10-29T22:41:26.139454" elapsed="0.003282"/>
+</test>
+<test id="s1-s4-s1-t5" name="Required Review Fields Block Submit" line="31">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.210620" elapsed="0.000523"/>
+</kw>
+<arg>P02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.209985" elapsed="0.001280"/>
+</kw>
+<tag>FR-70</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P02</tag>
+<status status="PASS" start="2026-10-29T22:41:26.208424" elapsed="0.003033"/>
+</test>
+<test id="s1-s4-s1-t6" name="Lots 100 200 20 kg Show Shares 31.25 62.5 6.25" line="35">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.278995" elapsed="0.000970"/>
+</kw>
+<arg>P03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.278363" elapsed="0.001726"/>
+</kw>
+<tag>FR-37</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P03</tag>
+<status status="PASS" start="2026-10-29T22:41:26.276818" elapsed="0.003461"/>
+</test>
+<test id="s1-s4-s1-t7" name="Out Of GI Lot Is Greyed With A Tooltip" line="39">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.347746" elapsed="0.000519"/>
+</kw>
+<arg>P03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.347106" elapsed="0.001280"/>
+</kw>
+<tag>FR-29</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P03</tag>
+<status status="PASS" start="2026-10-29T22:41:26.345534" elapsed="0.003043"/>
+</test>
+<test id="s1-s4-s1-t8" name="Create Batch Returns An Id And A QR" line="43">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.416180" elapsed="0.000535"/>
+</kw>
+<arg>P03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.415542" elapsed="0.001294"/>
+</kw>
+<tag>FR-12</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P03</tag>
+<status status="PASS" start="2026-10-29T22:41:26.413994" elapsed="0.003027"/>
+</test>
+<test id="s1-s4-s1-t9" name="Batch Over Threshold Needs A Second Sign Off" line="47">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.485428" elapsed="0.000523"/>
+</kw>
+<arg>P03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.484796" elapsed="0.001275"/>
+</kw>
+<tag>FR-9</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P03</tag>
+<status status="PASS" start="2026-10-29T22:41:26.483267" elapsed="0.002986"/>
+</test>
+<test id="s1-s4-s1-t10" name="Declared Special Computed Standard Disables Approve With Reason" line="51">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.561204" elapsed="0.000514"/>
+</kw>
+<arg>P04</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.560578" elapsed="0.001269"/>
+</kw>
+<tag>FR-49</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P04</tag>
+<status status="PASS" start="2026-10-29T22:41:26.559004" elapsed="0.003022"/>
+</test>
+<test id="s1-s4-s1-t11" name="Missing Reading Disables Approve" line="55">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.629909" elapsed="0.000511"/>
+</kw>
+<arg>P04</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.629276" elapsed="0.001262"/>
+</kw>
+<tag>FR-46</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P04</tag>
+<status status="PASS" start="2026-10-29T22:41:26.627730" elapsed="0.002987"/>
+</test>
+<test id="s1-s4-s1-t12" name="Happy Path Publishes And Shows The URL" line="59">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.698621" elapsed="0.000526"/>
+</kw>
+<arg>P04</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.697985" elapsed="0.001282"/>
+</kw>
+<tag>FR-15</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P04</tag>
+<status status="PASS" start="2026-10-29T22:41:26.696413" elapsed="0.003037"/>
+</test>
+<test id="s1-s4-s1-t13" name="Labels PDF Is Named Labels Batch Id" line="63">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.767317" elapsed="0.000525"/>
+</kw>
+<arg>P05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.766687" elapsed="0.001284"/>
+</kw>
+<tag>FR-12</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P05</tag>
+<status status="PASS" start="2026-10-29T22:41:26.765145" elapsed="0.003013"/>
+</test>
+<test id="s1-s4-s1-t14" name="CSV Export Has A Unit On Every Quantity" line="67">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.838644" elapsed="0.000578"/>
+</kw>
+<arg>P05</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.837831" elapsed="0.001520"/>
+</kw>
+<tag>FR-58</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P05</tag>
+<status status="PASS" start="2026-10-29T22:41:26.836231" elapsed="0.003543"/>
+</test>
+<test id="s1-s4-s1-t15" name="Stage Tiles Match Seed Counts" line="71">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.909078" elapsed="0.000510"/>
+</kw>
+<arg>P06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.908479" elapsed="0.001228"/>
+</kw>
+<tag>FR-13</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P06</tag>
+<status status="PASS" start="2026-10-29T22:41:26.907073" elapsed="0.002814"/>
+</test>
+<test id="s1-s4-s1-t16" name="Village Filter Updates Tiles And Table" line="75">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:26.978746" elapsed="0.000530"/>
+</kw>
+<arg>P06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:26.978042" elapsed="0.001357"/>
+</kw>
+<tag>FR-13</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P06</tag>
+<status status="PASS" start="2026-10-29T22:41:26.976493" elapsed="0.003092"/>
+</test>
+<test id="s1-s4-s1-t17" name="Column Toggle Persists" line="79">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.047255" elapsed="0.000541"/>
+</kw>
+<arg>P06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.046617" elapsed="0.001297"/>
+</kw>
+<tag>FR-13</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P06</tag>
+<status status="PASS" start="2026-10-29T22:41:27.045025" elapsed="0.003070"/>
+</test>
+<test id="s1-s4-s1-t18" name="Audit Search Shows The Seeded Correction With Actor And Reason" line="83">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.120748" elapsed="0.000621"/>
+</kw>
+<arg>P06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.120136" elapsed="0.001387"/>
+</kw>
+<tag>FR-25</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P06</tag>
+<status status="PASS" start="2026-10-29T22:41:27.118566" elapsed="0.003157"/>
+</test>
+<test id="s1-s4-s1-t19" name="Name Opt Out Is Reflected In The Preview" line="87">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.190134" elapsed="0.000523"/>
+</kw>
+<arg>P06</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.189488" elapsed="0.001293"/>
+</kw>
+<tag>FR-41</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P06</tag>
+<status status="PASS" start="2026-10-29T22:41:27.187870" elapsed="0.003091"/>
+</test>
+<test id="s1-s4-s1-t20" name="Upload With 2 Bad Rows Previews 2 Red Rows With Codes" line="91">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.260282" elapsed="0.000549"/>
+</kw>
+<arg>P08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.259653" elapsed="0.001300"/>
+</kw>
+<tag>FR-8</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P08</tag>
+<status status="PASS" start="2026-10-29T22:41:27.258072" elapsed="0.003062"/>
+</test>
+<test id="s1-s4-s1-t21" name="Confirm Creates Only The Valid Rows" line="95">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.329214" elapsed="0.000521"/>
+</kw>
+<arg>P08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.328559" elapsed="0.001299"/>
+</kw>
+<tag>FR-8</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P08</tag>
+<status status="PASS" start="2026-10-29T22:41:27.326947" elapsed="0.003092"/>
+</test>
+<test id="s1-s4-s1-t22" name="Template Matches Config Fields" line="99">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.397730" elapsed="0.000525"/>
+</kw>
+<arg>P08</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.397098" elapsed="0.001281"/>
+</kw>
+<tag>FR-23</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P08</tag>
+<status status="PASS" start="2026-10-29T22:41:27.395500" elapsed="0.003062"/>
+</test>
+<test id="s1-s4-s1-t23" name="Full Chain Login To Labels Is Green Under 10 Minutes Twice" line="103">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.466797" elapsed="0.000530"/>
+</kw>
+<arg>P07</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.466078" elapsed="0.001368"/>
+</kw>
+<tag>FR-13</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P07</tag>
+<status status="PASS" start="2026-10-29T22:41:27.464080" elapsed="0.003549"/>
+</test>
+<test id="s1-s4-s1-t24" name="No Serious Axe Violations" line="107">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.544025" elapsed="0.000543"/>
+</kw>
+<arg>P07</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.543376" elapsed="0.001317"/>
+</kw>
+<tag>FR-13</tag>
+<tag>not-ready</tag>
+<tag>portal</tag>
+<tag>WP-P07</tag>
+<status status="PASS" start="2026-10-29T22:41:27.541659" elapsed="0.003216"/>
+</test>
+<doc>FPO admin portal acceptance (plan §7.3 P01-P08) and the P07 chain.
+Serves: FR-8, FR-9, FR-12, FR-13, FR-14, FR-15, FR-23, FR-25, FR-29, FR-37, FR-41, FR-46,
+FR-49, FR-58, FR-70; gate G4. Run by: Q02 Verifier. Needs `rfbrowser init` once.
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:22.795583" elapsed="4.820974"/>
+</suite>
+<status status="PASS" start="2026-10-29T22:41:22.794248" elapsed="4.891351"/>
+</suite>
+<suite id="s1-s5" name="Public" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/public">
+<suite id="s1-s5-s1" name="Page" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/robot/public/page.robot">
+<test id="s1-s5-s1-t1" name="Privacy Lint Passes The Clean Fixture And Catches The Dirty One" line="11">
+<kw name="Set Variable" owner="BuiltIn">
+<var>${lint}</var>
+<arg>${REPO_ROOT}/infra/scripts/privacy-lint.py</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.695098" elapsed="0.000361"/>
+</kw>
+<kw name="Run Process" owner="Process">
+<var>${clean}</var>
+<arg>${{sys.executable}}</arg>
+<arg>${lint}</arg>
+<arg>${REPO_ROOT}/qa/fixtures/privacy/clean</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.695720" elapsed="0.000241"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${clean.rc}</arg>
+<arg>0</arg>
+<arg>msg=${clean.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.696158" elapsed="0.000357"/>
+</kw>
+<kw name="Run Process" owner="Process">
+<var>${dirty}</var>
+<arg>${{sys.executable}}</arg>
+<arg>${lint}</arg>
+<arg>${REPO_ROOT}/qa/fixtures/privacy/dirty</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.696746" elapsed="0.000229"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${dirty.rc}</arg>
+<arg>1</arg>
+<arg>msg=${dirty.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.697165" elapsed="0.000314"/>
+</kw>
+<doc>Real smoke test, no stack needed: infra/scripts/privacy-lint.py on qa/fixtures/privacy.</doc>
+<tag>BM-09</tag>
+<tag>FR-16</tag>
+<tag>public</tag>
+<tag>smoke</tag>
+<tag>WP-Q00</tag>
+<status status="PASS" start="2026-10-29T22:41:27.694193" elapsed="0.003453"/>
+</test>
+<test id="s1-s5-s1-t2" name="Fixture Renders Valid HTML" line="20">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.699123" elapsed="0.000265"/>
+</kw>
+<arg>W01</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.698806" elapsed="0.000656"/>
+</kw>
+<tag>FR-16</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-29T22:41:27.697944" elapsed="0.001656"/>
+</test>
+<test id="s1-s5-s1-t3" name="Crop Name Is Bilingual" line="24">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.700871" elapsed="0.000257"/>
+</kw>
+<arg>W01</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.700580" elapsed="0.000616"/>
+</kw>
+<tag>FR-5</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-29T22:41:27.699876" elapsed="0.001455"/>
+</test>
+<test id="s1-s5-s1-t4" name="Every Quantity Carries A Unit" line="28">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.702677" elapsed="0.000573"/>
+</kw>
+<arg>W01</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.702390" elapsed="0.000931"/>
+</kw>
+<tag>FR-58</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-29T22:41:27.701664" elapsed="0.001796"/>
+</test>
+<test id="s1-s5-s1-t5" name="Events Are In Date Order" line="32">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.704737" elapsed="0.000258"/>
+</kw>
+<arg>W01</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.704446" elapsed="0.000618"/>
+</kw>
+<tag>FR-63</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-29T22:41:27.703738" elapsed="0.001461"/>
+</test>
+<test id="s1-s5-s1-t6" name="No Temp Uploads Or Non Evidence Paths" line="36">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.706469" elapsed="0.000256"/>
+</kw>
+<arg>W01</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.706187" elapsed="0.000612"/>
+</kw>
+<tag>FR-61</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-29T22:41:27.705474" elapsed="0.001461"/>
+</test>
+<test id="s1-s5-s1-t7" name="Injected Phone Number Fails Privacy Lint" line="40">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.708235" elapsed="0.000264"/>
+</kw>
+<arg>W02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.707947" elapsed="0.000621"/>
+</kw>
+<tag>BM-09</tag>
+<tag>FR-16</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-29T22:41:27.707215" elapsed="0.001490"/>
+</test>
+<test id="s1-s5-s1-t8" name="Lighthouse Slow 3G Performance Is At Least 90 With LCP At Most 2 s" line="44">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.710019" elapsed="0.000260"/>
+</kw>
+<arg>W02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.709736" elapsed="0.000613"/>
+</kw>
+<tag>BM-03</tag>
+<tag>FR-19</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-29T22:41:27.708985" elapsed="0.001499"/>
+</test>
+<test id="s1-s5-s1-t9" name="First View Transfers Under 500 KB With Zero HTML Errors" line="48">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.711801" elapsed="0.000268"/>
+</kw>
+<arg>W02</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.711504" elapsed="0.000644"/>
+</kw>
+<tag>BM-03</tag>
+<tag>FR-19</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-29T22:41:27.710759" elapsed="0.001676"/>
+</test>
+<test id="s1-s5-s1-t10" name="OG Tags Pass The Privacy Lint" line="52">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.713702" elapsed="0.000258"/>
+</kw>
+<arg>W03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.713419" elapsed="0.000612"/>
+</kw>
+<tag>FR-41</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W03</tag>
+<status status="PASS" start="2026-10-29T22:41:27.712715" elapsed="0.001449"/>
+</test>
+<test id="s1-s5-s1-t11" name="Tamil Renders With The System Font" line="56">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.715446" elapsed="0.000261"/>
+</kw>
+<arg>W03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.715162" elapsed="0.000617"/>
+</kw>
+<tag>FR-5</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W03</tag>
+<status status="PASS" start="2026-10-29T22:41:27.714438" elapsed="0.001474"/>
+</test>
+<test id="s1-s5-s1-t12" name="Page Is Served From Object Storage With The Backend Down" line="60">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.717214" elapsed="0.000278"/>
+</kw>
+<arg>Q03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.716926" elapsed="0.000638"/>
+</kw>
+<tag>FR-15</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-Q03</tag>
+<status status="PASS" start="2026-10-29T22:41:27.716187" elapsed="0.001513"/>
+</test>
+<test id="s1-s5-s1-t13" name="Old Page Version Is Retrievable" line="64">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="NOT RUN" start="2026-10-29T22:41:27.719005" elapsed="0.000256"/>
+</kw>
+<arg>Q03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="PASS" start="2026-10-29T22:41:27.718716" elapsed="0.000614"/>
+</kw>
+<tag>FR-17</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-Q03</tag>
+<status status="PASS" start="2026-10-29T22:41:27.717985" elapsed="0.001480"/>
+</test>
+<doc>Public batch page: render, privacy lint, backend-down serve, Lighthouse thresholds
+(plan §7.4 W01-W03, §7.5 Q03). Serves: FR-5, FR-15, FR-16, FR-17, FR-19, FR-41, FR-58,
+FR-61, FR-63; gate G4; BM-03, BM-09. Run by: Q03 Verifier.
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-10-29T22:41:27.688710" elapsed="0.031136"/>
+</suite>
+<status status="PASS" start="2026-10-29T22:41:27.686256" elapsed="0.034719"/>
+</suite>
+<status status="PASS" start="2026-10-29T22:41:21.185281" elapsed="6.536768"/>
+</suite>
+<statistics>
+<total>
+<stat pass="123" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="67" fail="0" skip="0">api</stat>
+<stat pass="2" fail="0" skip="0">BM-03</stat>
+<stat pass="1" fail="0" skip="0">BM-05</stat>
+<stat pass="2" fail="0" skip="0">BM-09</stat>
+<stat pass="1" fail="0" skip="0">BM-11</stat>
+<stat pass="1" fail="0" skip="0">BM-12</stat>
+<stat pass="1" fail="0" skip="0">BM-13</stat>
+<stat pass="1" fail="0" skip="0">BM-14</stat>
+<stat pass="1" fail="0" skip="0">BM-15</stat>
+<stat pass="1" fail="0" skip="0">BM-16</stat>
+<stat pass="6" fail="0" skip="0">e2e</stat>
+<stat pass="3" fail="0" skip="0">FR-1</stat>
+<stat pass="2" fail="0" skip="0">FR-11</stat>
+<stat pass="3" fail="0" skip="0">FR-12</stat>
+<stat pass="6" fail="0" skip="0">FR-13</stat>
+<stat pass="3" fail="0" skip="0">FR-14</stat>
+<stat pass="5" fail="0" skip="0">FR-15</stat>
+<stat pass="4" fail="0" skip="0">FR-16</stat>
+<stat pass="4" fail="0" skip="0">FR-17</stat>
+<stat pass="3" fail="0" skip="0">FR-19</stat>
+<stat pass="1" fail="0" skip="0">FR-20</stat>
+<stat pass="1" fail="0" skip="0">FR-21</stat>
+<stat pass="4" fail="0" skip="0">FR-23</stat>
+<stat pass="2" fail="0" skip="0">FR-24</stat>
+<stat pass="5" fail="0" skip="0">FR-25</stat>
+<stat pass="1" fail="0" skip="0">FR-26</stat>
+<stat pass="1" fail="0" skip="0">FR-27</stat>
+<stat pass="2" fail="0" skip="0">FR-28</stat>
+<stat pass="2" fail="0" skip="0">FR-29</stat>
+<stat pass="1" fail="0" skip="0">FR-30</stat>
+<stat pass="1" fail="0" skip="0">FR-31</stat>
+<stat pass="1" fail="0" skip="0">FR-32</stat>
+<stat pass="3" fail="0" skip="0">FR-33</stat>
+<stat pass="2" fail="0" skip="0">FR-37</stat>
+<stat pass="17" fail="0" skip="0">FR-4</stat>
+<stat pass="4" fail="0" skip="0">FR-41</stat>
+<stat pass="1" fail="0" skip="0">FR-42</stat>
+<stat pass="1" fail="0" skip="0">FR-43</stat>
+<stat pass="2" fail="0" skip="0">FR-46</stat>
+<stat pass="2" fail="0" skip="0">FR-47</stat>
+<stat pass="4" fail="0" skip="0">FR-48</stat>
+<stat pass="3" fail="0" skip="0">FR-49</stat>
+<stat pass="2" fail="0" skip="0">FR-5</stat>
+<stat pass="2" fail="0" skip="0">FR-50</stat>
+<stat pass="2" fail="0" skip="0">FR-55</stat>
+<stat pass="2" fail="0" skip="0">FR-56</stat>
+<stat pass="2" fail="0" skip="0">FR-58</stat>
+<stat pass="1" fail="0" skip="0">FR-59</stat>
+<stat pass="1" fail="0" skip="0">FR-6</stat>
+<stat pass="1" fail="0" skip="0">FR-60</stat>
+<stat pass="2" fail="0" skip="0">FR-61</stat>
+<stat pass="2" fail="0" skip="0">FR-63</stat>
+<stat pass="1" fail="0" skip="0">FR-68</stat>
+<stat pass="1" fail="0" skip="0">FR-69</stat>
+<stat pass="2" fail="0" skip="0">FR-7</stat>
+<stat pass="4" fail="0" skip="0">FR-70</stat>
+<stat pass="4" fail="0" skip="0">FR-8</stat>
+<stat pass="1" fail="0" skip="0">FR-9</stat>
+<stat pass="13" fail="0" skip="0">mobile</stat>
+<stat pass="7" fail="0" skip="0">network</stat>
+<stat pass="118" fail="0" skip="0">not-ready</stat>
+<stat pass="6" fail="0" skip="0">offline-matrix</stat>
+<stat pass="24" fail="0" skip="0">portal</stat>
+<stat pass="13" fail="0" skip="0">public</stat>
+<stat pass="5" fail="0" skip="0">smoke</stat>
+<stat pass="1" fail="0" skip="0">WP-B00</stat>
+<stat pass="6" fail="0" skip="0">WP-B02</stat>
+<stat pass="7" fail="0" skip="0">WP-B03</stat>
+<stat pass="2" fail="0" skip="0">WP-B04</stat>
+<stat pass="9" fail="0" skip="0">WP-B05</stat>
+<stat pass="9" fail="0" skip="0">WP-B06</stat>
+<stat pass="3" fail="0" skip="0">WP-B07</stat>
+<stat pass="8" fail="0" skip="0">WP-B08</stat>
+<stat pass="8" fail="0" skip="0">WP-B09</stat>
+<stat pass="6" fail="0" skip="0">WP-B10</stat>
+<stat pass="4" fail="0" skip="0">WP-B11</stat>
+<stat pass="6" fail="0" skip="0">WP-B12</stat>
+<stat pass="5" fail="0" skip="0">WP-B13</stat>
+<stat pass="9" fail="0" skip="0">WP-M02</stat>
+<stat pass="1" fail="0" skip="0">WP-P00</stat>
+<stat pass="2" fail="0" skip="0">WP-P01</stat>
+<stat pass="2" fail="0" skip="0">WP-P02</stat>
+<stat pass="4" fail="0" skip="0">WP-P03</stat>
+<stat pass="3" fail="0" skip="0">WP-P04</stat>
+<stat pass="2" fail="0" skip="0">WP-P05</stat>
+<stat pass="5" fail="0" skip="0">WP-P06</stat>
+<stat pass="2" fail="0" skip="0">WP-P07</stat>
+<stat pass="3" fail="0" skip="0">WP-P08</stat>
+<stat pass="3" fail="0" skip="0">WP-Q00</stat>
+<stat pass="10" fail="0" skip="0">WP-Q01</stat>
+<stat pass="3" fail="0" skip="0">WP-Q03</stat>
+<stat pass="6" fail="0" skip="0">WP-W01</stat>
+<stat pass="3" fail="0" skip="0">WP-W02</stat>
+<stat pass="2" fail="0" skip="0">WP-W03</stat>
+</tag>
+<suite>
+<stat name="Robot" id="s1" pass="123" fail="0" skip="0">Robot</stat>
+<stat name="Api" id="s1-s1" pass="67" fail="0" skip="0">Robot.Api</stat>
+<stat name="Batches" id="s1-s1-s1" pass="8" fail="0" skip="0">Robot.Api.Batches</stat>
+<stat name="Healthz" id="s1-s1-s2" pass="1" fail="0" skip="0">Robot.Api.Healthz</stat>
+<stat name="Identity" id="s1-s1-s3" pass="6" fail="0" skip="0">Robot.Api.Identity</stat>
+<stat name="Publishing" id="s1-s1-s4" pass="10" fail="0" skip="0">Robot.Api.Publishing</stat>
+<stat name="Quality" id="s1-s1-s5" pass="9" fail="0" skip="0">Robot.Api.Quality</stat>
+<stat name="Registry" id="s1-s1-s6" pass="12" fail="0" skip="0">Robot.Api.Registry</stat>
+<stat name="Rules" id="s1-s1-s7" pass="10" fail="0" skip="0">Robot.Api.Rules</stat>
+<stat name="Sync" id="s1-s1-s8" pass="11" fail="0" skip="0">Robot.Api.Sync</stat>
+<stat name="E2E" id="s1-s2" pass="6" fail="0" skip="0">Robot.E2E</stat>
+<stat name="Reference Batch" id="s1-s2-s1" pass="6" fail="0" skip="0">Robot.E2E.Reference Batch</stat>
+<stat name="Mobile" id="s1-s3" pass="13" fail="0" skip="0">Robot.Mobile</stat>
+<stat name="Network Profiles" id="s1-s3-s1" pass="7" fail="0" skip="0">Robot.Mobile.Network Profiles</stat>
+<stat name="Offline Matrix" id="s1-s3-s2" pass="6" fail="0" skip="0">Robot.Mobile.Offline Matrix</stat>
+<stat name="Portal" id="s1-s4" pass="24" fail="0" skip="0">Robot.Portal</stat>
+<stat name="Portal" id="s1-s4-s1" pass="24" fail="0" skip="0">Robot.Portal.Portal</stat>
+<stat name="Public" id="s1-s5" pass="13" fail="0" skip="0">Robot.Public</stat>
+<stat name="Page" id="s1-s5-s1" pass="13" fail="0" skip="0">Robot.Public.Page</stat>
+</suite>
+</statistics>
+<errors>
+<msg time="2026-10-29T22:41:26.000560" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.069694" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.138318" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.207282" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.275690" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.344325" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.412796" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.482141" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.557865" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.626537" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.695292" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.764001" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.834994" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.906017" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:26.975361" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.043827" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.117396" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.186575" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.256939" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.325822" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.394360" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.462917" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.540437" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.615052" level="ERROR">Calling method '_end_test' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+<msg time="2026-10-29T22:41:27.683286" level="ERROR">Calling method '_end_suite' of listener 'Browser' failed: 
+#############################################################
+#                                                           #
+#  RF-Browser dependencies not found in installation path!  #
+#           Run `rfbrowser init` to install.                #
+#                                                           #
+#############################################################
+Installation path: /tmp/q00verify/lib/python3.12/site-packages/Browser/wrapper</msg>
+</errors>
+</robot>

@@ -1,0 +1,19 @@
+# CHANGELOG (worktree @2225c57): [Unreleased] section
+1:## [Unreleased]
+2:
+3:### Added
+4:- Project scaffold: CLAUDE.md, README, tracking files, ADRs D-001 to D-020, agent role docs, acceptance files for 42 work packages (Orchestrator, 2026-10-29).
+5:- WP-W01 — public page renderer `agritrace_page` (schema with privacy validator, Jinja2 template, CLI, 48 tests) — reviewer FAIL r1 / PASS r2, verifier PASS (2026-10-29).
+6:- Q00 — QA harness: Robot suites (api/mobile/portal/public/e2e), Go + API 34 AVD profiles, emulator network script, privacy-lint, doc-coverage, libraries-check, benchmark collector, CI workflow, pre-commit — reviewer pending, verifier pending.
+
+# TODO.md on main: entries mentioning Q00 / privacy-lint follow-ups
+36:- [ ] W02: the schema's number checks skip http(s) URLs to avoid false hits on hashed evidence URLs; the built-output privacy lint is the second line of defence and must stay in CI.
+37:- [ ] Q00: Robot `common.resource` DB_* defaults and CI `DATABASE_URL/REDIS_URL/S3_*` are guesses marked `TODO(B00)`; align with apps/api/.env.example after B00 merges.
+38:- [ ] Q00: `doc-coverage.py` fails (not skips) when apps/mobile or apps/portal exist without Flutter/Node on PATH; M00 and P00 must add toolchain setup to the CI `docs` job.
+39:- [ ] Q00: the Go AVD profile copies the hardware budget (2 GB, 2 cores) but does not enable Android Go low-RAM mode (`ro.config.low_ram`); BM-01 text says 4 cores, profile uses 2 (Q00 title wins).
+40:- [ ] Q00: privacy-lint is line-based regex, biased to false positives; minified JSON hits report as line 1.
+48:- [ ] W01 P3s for W03: rarer phone formats (`0091 98765 43210`, `(987) 654-3210`, `98765.43210`, zero-width space) rely on the shared privacy linter; polygon pattern lost its word boundary (rejects "Polygonum"); phone pattern also scans system ids; pin `boundary_map_url` host once B07/B13 fix the GI asset host.
+49:- [ ] Q00: privacy-lint does not yet catch coordinates written with degree signs, DMS, or as a bare space-separated pair outside WKT (review Q00-r2 P2-3); W02 extends when public-page templates settle.
+50:- [ ] Q00: gate-readiness is silent for a WP with no Robot tests at all; a survey number under a neutral JSON key (e.g. `land_record_ref`) passes the linter; `hw.keyboard=yes` on the Go AVD still open.
+53:- [ ] Orchestration deviation record: Q00 received a third review round (two-round rule) because the round-2 reviewer supplied exact regex fixes for two regressions; B00 received a third worker round before verification to clear six security-relevant P2s. Both noted in docs/agents/gates/G0.md when signed.
+60:- [ ] Q00 (W02 owner): `.jsonl/.yaml/.vcf/.map` scanning, `R.S. No.`/`T.S. No.` labels, `&ndash;`/U+2212 separators, `t.me/+91…` links masked, two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is 359 lines and should be split when W02 touches it.

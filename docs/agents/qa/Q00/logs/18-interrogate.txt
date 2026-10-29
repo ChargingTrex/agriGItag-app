@@ -1,0 +1,70 @@
+$ uv run --no-project --with interrogate interrogate -vv --fail-under 100 infra/scripts qa/robot/lib qa/scripts
+= Coverage for /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/ =
+------------------------------ Detailed Coverage -------------------------------
+| Name                                                    |             Status |
+|---------------------------------------------------------|--------------------|
+| infra/scripts/checklist-progress.py (module)            |            COVERED |
+| main (L19)                                              |            COVERED |
+|---------------------------------------------------------|--------------------|
+| infra/scripts/doc-coverage.py (module)                  |            COVERED |
+| run (L30)                                               |            COVERED |
+| walk (L50)                                              |            COVERED |
+| language_gates (L66)                                    |            COVERED |
+| decision_refs (L106)                                    |            COVERED |
+| headers (L129)                                          |            COVERED |
+| main (L155)                                             |            COVERED |
+|---------------------------------------------------------|--------------------|
+| infra/scripts/libraries-check.py (module)               |            COVERED |
+| normalise (L43)                                         |            COVERED |
+| requirement_name (L55)                                  |            COVERED |
+| pyproject_deps (L71)                                    |            COVERED |
+| pubspec_deps (L98)                                      |            COVERED |
+| package_json_deps (L123)                                |            COVERED |
+| requirements_deps (L140)                                |            COVERED |
+| ledger_rows (L152)                                      |            COVERED |
+| main (L173)                                             |            COVERED |
+|---------------------------------------------------------|--------------------|
+| infra/scripts/privacy-lint.py (module)                  |            COVERED |
+| _Num (L126)                                             |            COVERED |
+| _parse_float (L132)                                     |            COVERED |
+| _precise (L146)                                         |            COVERED |
+| digit_hits (L158)                                       |            COVERED |
+| label_hits (L188)                                       |            COVERED |
+| json_hits (L203)                                        |            COVERED |
+| json_hits.locate (L220)                                 |            COVERED |
+| json_hits.walk (L234)                                   |            COVERED |
+| scan_text (L269)                                        |            COVERED |
+| looks_like_text (L290)                                  |            COVERED |
+| scan_dir (L311)                                         |            COVERED |
+| main (L343)                                             |            COVERED |
+|---------------------------------------------------------|--------------------|
+| infra/scripts/benchmarks/collect.py (module)            |            COVERED |
+| load_results (L31)                                      |            COVERED |
+| judge (L58)                                             |            COVERED |
+| main (L96)                                              |            COVERED |
+|---------------------------------------------------------|--------------------|
+| qa/robot/lib/agritrace_keywords.py (module)             |            COVERED |
+| load_network_profiles (L25)                             |            COVERED |
+| set_emulator_network (L44)                              |            COVERED |
+| parse_flutter_results (L72)                             |            COVERED |
+|---------------------------------------------------------|--------------------|
+| qa/scripts/gate-readiness.py (module)                   |            COVERED |
+| checklist_gates (L27)                                   |            COVERED |
+| resolve (L45)                                           |            COVERED |
+| main (L72)                                              |            COVERED |
+|---------------------------------------------------------|--------------------|
+
+----------------------------------- Summary ------------------------------------
+| Name                                     |  Total |  Miss |  Cover |  Cover% |
+|------------------------------------------|--------|-------|--------|---------|
+| infra/scripts/checklist-progress.py      |      2 |     0 |      2 |    100% |
+| infra/scripts/doc-coverage.py            |      7 |     0 |      7 |    100% |
+| infra/scripts/libraries-check.py         |      9 |     0 |      9 |    100% |
+| infra/scripts/privacy-lint.py            |     13 |     0 |     13 |    100% |
+| infra/scripts/benchmarks/collect.py      |      4 |     0 |      4 |    100% |
+| qa/robot/lib/agritrace_keywords.py       |      4 |     0 |      4 |    100% |
+| qa/scripts/gate-readiness.py             |      4 |     0 |      4 |    100% |
+|------------------------------------------|--------|-------|--------|---------|
+| TOTAL                                    |     43 |     0 |     43 |  100.0% |
+--------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+exit=0

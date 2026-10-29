@@ -1,0 +1,8 @@
+$ python3 infra/scripts/libraries-check.py
+skip    apps/api/pyproject.toml (not on disk)
+check   apps/public-page/pyproject.toml: 7 dependencies, ok
+skip    apps/mobile/pubspec.yaml (not on disk)
+skip    apps/portal/package.json (not on disk)
+check   qa/robot/requirements.txt: 7 dependencies, ok
+libraries-check: PASS (15 ledger rows)
+exit=0

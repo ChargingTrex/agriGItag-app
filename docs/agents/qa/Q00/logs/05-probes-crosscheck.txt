@@ -87,3 +87,6 @@ X20_map_6dp_url_path reviewer_rc=1 rebuild(X20)_rc=1 same
 p2a_land_record_ref reviewer_rc=0 rebuild(p2a)_rc=0 same
 p3-1_pest_survey_date reviewer_rc=0 rebuild(p3-1)_rc=0 same
 p3-2_mobile_app_iso reviewer_rc=0 rebuild(p3-2)_rc=0 same
+p3-3_phone_otp_iso reviewer_rc=0 rebuild(p3-3)_rc=0 same
+p3-4_sy_no_of_plots reviewer_rc=0 rebuild(p3-4)_rc=0 same
+probes=90 differences=0

@@ -1,0 +1,6 @@
+$ python3 qa/scripts/gate-readiness.py G1
+Traceback (most recent call last):
+  File "/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/qa/scripts/gate-readiness.py", line 20, in <module>
+    from robot.api import TestSuiteBuilder
+ModuleNotFoundError: No module named 'robot'
+exit=1

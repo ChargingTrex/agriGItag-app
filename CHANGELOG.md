@@ -8,4 +8,5 @@ One line per merged work package: `WP-id — title — reviewer PASS rN, verifie
 ### Added
 - Project scaffold: CLAUDE.md, README, tracking files, ADRs D-001 to D-020, agent role docs, acceptance files for 42 work packages (Orchestrator, 2026-10-29).
 - WP-W01 — public page renderer `agritrace_page` (schema with privacy validator, Jinja2 template, CLI, 48 tests) — reviewer FAIL r1 / PASS r2, verifier PASS (2026-10-29).
-- WP-B00 — Scaffold + infra + test harness (FastAPI app, core kernel, compose stack, Makefile, error registry, conventions) — reviewer pending, verifier pending.
+- WP-B00 — Scaffold + infra + test harness (FastAPI app, core kernel, compose stack, Makefile, error registry, conventions) — reviewer r1/r2 PASS-PENDING-STACK, merged conditionally; verifier deferred until Docker repair (2026-10-29).
+- WP-Q00 — QA harness: Robot suites (api/mobile/portal/public/e2e), Go + API 34 AVD profiles, emulator network script, privacy-lint, doc-coverage, libraries-check, benchmark collector, CI workflow, pre-commit — reviewer r1/r2/r3 FAIL closed by r4 patch (Orchestrator closure note), verifier CONDITIONAL (Docker lines deferred) (2026-10-29).

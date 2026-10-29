@@ -1,0 +1,7 @@
+# SUPPLEMENTAL: CI docs-job step 'make error-codes; git diff --exit-code docs/api/error-codes.md' on the merged copy (diff via cmp; venv outside the copy)
+$ uv sync --directory apps/api && make error-codes
+uv sync exit=0
+cd apps/api && uv run python ../../infra/scripts/gen-error-codes.py
+wrote docs/api/error-codes.md (12 codes)
+exit=0
+error-codes.md unchanged (diff clean)

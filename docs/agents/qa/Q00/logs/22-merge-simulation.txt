@@ -1,0 +1,10 @@
+$ git merge-tree --write-tree --name-only main 2225c57   (read-only merge simulation; nothing checked out)
+81beeb5a1818eb655317669db646aa4645e71597
+CHANGELOG.md
+docs/LIBRARIES.md
+
+Auto-merging CHANGELOG.md
+CONFLICT (content): Merge conflict in CHANGELOG.md
+Auto-merging docs/LIBRARIES.md
+CONFLICT (content): Merge conflict in docs/LIBRARIES.md
+exit=1

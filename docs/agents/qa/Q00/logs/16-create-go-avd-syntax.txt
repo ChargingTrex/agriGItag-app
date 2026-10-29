@@ -1,0 +1,2 @@
+$ bash -n qa/avd/create_go_avd.sh
+exit=0

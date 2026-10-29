@@ -1,0 +1,34 @@
+$ uv run --no-project --with pyyaml python -c "import yaml,sys; yaml.safe_load(open('.github/workflows/ci.yml'))"
+exit=0
+$ uv run --no-project --with pyyaml python -c "import yaml,sys; yaml.safe_load(open('.pre-commit-config.yaml'))"
+exit=0
+$ uv run --no-project --with pyyaml python -c "import yaml,sys; yaml.safe_load(open('qa/robot/profiles.yaml'))"
+exit=0
+$ uv run --no-project --with pyyaml python -c "import yaml,sys; yaml.safe_load(open('infra/scripts/benchmarks/thresholds.yaml'))"
+exit=0
+# structure summary
+ci triggers: {'push': {'branches': ['main']}, 'pull_request': None}
+job backend: runs-on=ubuntu-latest if=None needs=None services=[] steps=6
+    run: uv sync --directory apps/api
+    run: make lint
+    run: make test-unit
+    run: make test
+job docs: runs-on=ubuntu-latest if=None needs=None services=[] steps=8
+    run: uv run --no-project --with pytest --with pyyaml --with robotframework==7.5 pytest qa/tests -q
+    run: uvx ruff@0.17.3 check infra/scripts qa
+    run: uvx interrogate@1.7.0 -vv --fail-under 100 infra/scripts qa/robot/lib qa/scripts
+    run: uv run --no-project python infra/scripts/doc-coverage.py
+    run: uv run --no-project --with pyyaml python infra/scripts/libraries-check.py
+    run: make error-codes git diff --exit-code docs/api/error-codes.md
+job robot-smoke: runs-on=ubuntu-latest if=None needs=None services=[] steps=8
+    run: make up
+    run: uv venv qa/.venv --python 3.12 uv pip install --python qa/.venv/bin/python -r qa/robot/requirements.txt
+    run: qa/.venv/bin/robot --outputdir qa/robot/results/ci --exclude not-ready qa/robot/api/healthz.robot
+    run: docker compose -f infra/docker-compose.yml logs --no-color --tail 200
+    run: docker compose -f infra/docker-compose.yml down -v
+job mobile: runs-on=ubuntu-latest if=False needs=None services=[] steps=1
+    run: echo "added by M00"
+job portal: runs-on=ubuntu-latest if=False needs=None services=[] steps=1
+    run: echo "added by P00"
+pre-commit repo https://github.com/astral-sh/ruff-pre-commit v0.17.3 ['ruff-check']
+pre-commit repo local None ['checklist-progress entry=python infra/scripts/checklist-progress.py', 'libraries-check entry=python infra/scripts/libraries-check.py']

@@ -46,7 +46,7 @@ _(empty)_
 - [ ] B10: map `agritrace_page` `ValidationError` to a registered AppError (`public_record_invalid`, 409) so privacy rejections are visible, never silent.
 - [ ] B06: `events.make_variants` records width and height per variant and keeps the original JPEG URL (public page schema expects `thumb_url`, `medium_url`, `jpeg_url`, `width`, `height`).
 - [ ] W01 P3s for W03: rarer phone formats (`0091 98765 43210`, `(987) 654-3210`, `98765.43210`, zero-width space) rely on the shared privacy linter; polygon pattern lost its word boundary (rejects "Polygonum"); phone pattern also scans system ids; pin `boundary_map_url` host once B07/B13 fix the GI asset host.
-- [ ] Q00: privacy-lint does not yet catch coordinates written with degree signs, DMS, or as a bare space-separated pair outside WKT (review Q00-r2 P2-3); W02 extends when public-page templates settle.
+- [ ] Q00/W02 (P2, do first in W02): OSM map links with 6-dp coordinates slip the linter (`?mlat=…&mlon=…`, `#map=17/lat/lon`), issue docs/agents/qa/issues/Q00-1-privacy-lint-osm-map-coordinates.md (one-token fix: drop the `\b` before lat/lon and add the slash form). Also degree-sign, DMS and bare space-separated pairs outside WKT (Q00-r2 P2-3).
 - [ ] Q00: gate-readiness is silent for a WP with no Robot tests at all; a survey number under a neutral JSON key (e.g. `land_record_ref`) passes the linter; `hw.keyboard=yes` on the Go AVD still open.
 - [ ] B00 (before B02 merges): fail-open dev defaults for OTP code and JWT secret are being removed in B00 round 3; B02 must not reintroduce them.
 - [ ] B00: Celery `acks_late` and the per-process engine disposal are owned by B04 (first module with real tasks).
@@ -57,7 +57,7 @@ _(empty)_
 - [ ] B10: use a real key prefix for `storage.put_public` (`public-pages/batches/<code>/…`).
 - [ ] Ledger note: `certifi` and `pathspec` are MPL-2.0 transitive dependencies (file-level copyleft, unmodified use; accepted, record in LIBRARIES.md when they appear as direct deps).
 - [ ] B02: treat `OTP_DEV_CODE` None/empty as "off"; never add a code default (B00 r2 P3-1).
-- [ ] Q00 (W02 owner): `.jsonl/.yaml/.vcf/.map` scanning, `R.S. No.`/`T.S. No.` labels, `&ndash;`/U+2212 separators, `t.me/+91…` links masked, two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is 359 lines and should be split when W02 touches it.
+- [ ] Q00 (W02 owner): `t.me/+91…` links stay masked; a phone number in a non-WhatsApp URL path stays masked (X17, by decision); two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is ~400 lines and should be split when W02 touches it. (Done in r4: `.jsonl/.yaml/.vcf/.map`, `R.S./T.S. No.`, `&ndash;`/U+2212.)
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user

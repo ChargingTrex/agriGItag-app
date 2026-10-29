@@ -1,0 +1,6 @@
+# documented invocation (gate-readiness.py header, qa/README.md:42): Robot venv python; /tmp/q00verify stands in for qa/.venv
+$ /tmp/q00verify/bin/python qa/scripts/gate-readiness.py G0
+B00: 1 real Robot test(s)
+Q00: 3 real Robot test(s)
+gate-readiness G0: PASS
+exit=0

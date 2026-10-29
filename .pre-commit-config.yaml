@@ -1,0 +1,24 @@
+# Pre-commit hooks: lint Python, refresh CHECKLIST.md completion, keep the libraries ledger in sync.
+# Serves: CLAUDE.md §7 (tracking files), D-010 (Ponytail + Documentation Standard), D-018 (ledger).
+# Install once: uvx pre-commit install   Run all: uvx pre-commit run --all-files
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check
+
+  - repo: local
+    hooks:
+      - id: checklist-progress
+        name: checklist-progress
+        entry: python infra/scripts/checklist-progress.py
+        language: python
+        files: ^CHECKLIST\.md$
+        pass_filenames: false
+      - id: libraries-check
+        name: libraries-check
+        entry: python infra/scripts/libraries-check.py
+        language: python
+        additional_dependencies: [pyyaml==6.0.3]
+        files: ^(docs/LIBRARIES\.md|apps/(api|public-page)/pyproject\.toml|apps/mobile/pubspec\.yaml|apps/portal/package\.json|qa/robot/requirements\.txt)$
+        pass_filenames: false

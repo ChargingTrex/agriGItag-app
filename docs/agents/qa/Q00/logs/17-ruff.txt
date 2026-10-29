@@ -1,0 +1,4 @@
+$ uv run --no-project --with ruff ruff check infra/scripts qa
+ruff 0.17.3
+All checks passed!
+exit=0

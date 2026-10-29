@@ -1,0 +1,99 @@
+# AgriTrace CI: backend lint and tests, documentation gates, Robot smoke against the compose stack.
+# Serves: plan §3 (G0 "CI green on empty tests"; every gate: LIBRARIES.md in sync, error codes regenerated),
+#         §4 item 6 (doc coverage, BM-10), §9.1 (Robot suites in CI), D-008 (LocalStack S3), D-010, D-018,
+#         D-021 (Valkey).
+# Owners: Q00 wrote this file; B00 owns the Makefile targets and infra/docker-compose.yml it calls;
+#         M00 and P00 replace the mobile/portal stubs at the bottom.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    # No service containers: apps/api/tests/conftest.py (B00) starts PostGIS, the Redis-protocol broker and
+    # LocalStack S3 itself with testcontainers and points DATABASE_URL / REDIS_URL / S3_* at them.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --directory apps/api
+      - run: make lint
+      - run: make test-unit
+      - run: make test
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: QA script self-tests (privacy lint, benchmark collector, ledger and Flutter parsers)
+        run: uv run --no-project --with pytest --with pyyaml --with robotframework==7.5 pytest qa/tests -q
+      - name: Lint the QA layer's own Python
+        run: uvx ruff@0.17.3 check infra/scripts qa
+      - name: Docstring coverage of the QA layer
+        run: uvx interrogate@1.7.0 -vv --fail-under 100 infra/scripts qa/robot/lib qa/scripts
+      - name: Doc coverage of the apps (BM-10)
+        # TODO(M00/P00): add Flutter / Node setup here once apps/mobile / apps/portal exist; the script
+        # fails (not skips) when an app exists but its tool is missing.
+        run: uv run --no-project python infra/scripts/doc-coverage.py
+      - name: Libraries ledger (D-018)
+        run: uv run --no-project --with pyyaml python infra/scripts/libraries-check.py
+      - name: Error codes registry is regenerated and registered
+        run: |
+          make error-codes
+          git diff --exit-code docs/api/error-codes.md
+
+  robot-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Start stack (PostGIS, Valkey, LocalStack S3 + bucket init, api, worker)
+        run: make up
+      - name: Install Robot toolchain
+        run: |
+          uv venv qa/.venv --python 3.12
+          uv pip install --python qa/.venv/bin/python -r qa/robot/requirements.txt
+      - name: Robot smoke (api/healthz.robot)
+        run: qa/.venv/bin/robot --outputdir qa/robot/results/ci --exclude not-ready qa/robot/api/healthz.robot
+      - name: Stack logs
+        if: failure()
+        run: docker compose -f infra/docker-compose.yml logs --no-color --tail 200
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: robot-smoke
+          path: qa/robot/results/ci
+      - name: Stop stack
+        if: always()
+        run: docker compose -f infra/docker-compose.yml down -v
+
+  mobile:
+    # TODO(M00): flutter analyze --fatal-infos, flutter test, size check (BM-04). Skipped until M00 lands.
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "added by M00"
+
+  portal:
+    # TODO(P00): npm ci, lint (eslint-plugin-jsdoc), vitest, build budget, Playwright. Skipped until P00 lands.
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "added by P00"

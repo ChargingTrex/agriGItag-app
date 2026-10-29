@@ -1,0 +1,9 @@
+$ python3 infra/scripts/doc-coverage.py
+Check              Target            Result  Detail
+python docstrings  apps/api          SKIP    app not on disk yet
+python docstrings  apps/public-page  PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+dart doc comments  apps/mobile       SKIP    app not on disk yet
+ts jsdoc           apps/portal       SKIP    app not on disk yet
+DECISION ids       DECISIONS.md      PASS    8 comment(s) in apps, packages, infra, qa; 0 unknown
+file headers       apps/             PASS    6 file(s); 0 without header
+exit=0

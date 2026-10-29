@@ -17,7 +17,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 ## G0 Foundation
 
 - [ ] B00 — Scaffold + infra + test harness — wave 0 — worker: Opus (4 rounds) — reviewer: BE r1/r2 PASS-PENDING-STACK — verifier: PENDING (merged conditionally 2026-10-29; stack run blocked by Docker repair)
-- [ ] Q00 — Harness: compose stack, seed, Go AVD profile (API 27, 2 GB, 2 cores, 720×1280), network sc — wave 0 — worker: — reviewer: — verifier:
+- [ ] Q00 — Harness: compose stack, seed, Go AVD profile (API 27, 2 GB, 2 cores, 720×1280), network sc — wave 0 — worker: Opus (4 rounds) — reviewer: QA Lead r1/r2/r3 FAIL, r4 closure — verifier: CONDITIONAL (Docker lines deferred; docs/agents/qa/Q00.md)
 - [ ] **Gate G0 signed** (docs/agents/gates/G0.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G1 Contract

@@ -1,0 +1,30 @@
+$ DRY_RUN=1 bash qa/scripts/network.sh off
++ adb shell svc wifi disable
++ adb emu gsm data off
+network profile offline applied (up 0 kbps, down 0 kbps, delay 0-0 ms, data off)
+exit=0
+$ DRY_RUN=1 bash qa/scripts/network.sh profile edge
++ adb shell svc wifi disable
++ adb emu gsm data on
++ adb emu network speed 118:237
++ adb emu network delay 80:400
+network profile edge applied (up 118 kbps, down 237 kbps, delay 80-400 ms, data on)
+exit=0
+$ DRY_RUN=1 bash qa/scripts/network.sh profile normal_4g
++ adb shell svc wifi disable
++ adb emu gsm data on
++ adb emu network speed 5000:10000
++ adb emu network delay 60:60
+network profile normal_4g applied (up 5000 kbps, down 10000 kbps, delay 60-60 ms, data on)
+exit=0
+$ DRY_RUN=1 bash qa/scripts/network.sh profile offline
++ adb shell svc wifi disable
++ adb emu gsm data off
+network profile offline applied (up 0 kbps, down 0 kbps, delay 0-0 ms, data off)
+exit=0
+$ DRY_RUN=1 bash qa/scripts/network.sh profile bogus
+unknown profile 'bogus'; known: ['edge', 'normal_4g', 'offline', 'weak_4g']
+exit=1
+$ DRY_RUN=1 bash qa/scripts/network.sh
+usage: qa/scripts/network.sh off | profile <normal_4g|weak_4g|edge|offline>
+exit=2

@@ -1,0 +1,7 @@
+$ bash -n qa/scripts/network.sh && DRY_RUN=1 bash qa/scripts/network.sh profile weak_4g
++ adb shell svc wifi disable
++ adb emu gsm data on
++ adb emu network speed 500:1000
++ adb emu network delay 300:300
+network profile weak_4g applied (up 500 kbps, down 1000 kbps, delay 300-300 ms, data on)
+exit=0

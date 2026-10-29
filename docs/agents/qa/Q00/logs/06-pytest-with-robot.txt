@@ -1,0 +1,6 @@
+$ uv run --no-project --with pytest --with pyyaml --with robotframework==7.5 pytest qa/tests -q -p no:cacheprovider --junitxml=/Users/fi-it/Documents/projects/agriGitag/docs/agents/qa/Q00/junit.xml
+# note: -p no:cacheprovider added only so the read-only worktree gets no .pytest_cache; python = uv default 3.13.5
+........................................................................ [ 85%]
+............                                                             [100%]
+84 passed in 7.85s
+exit=0

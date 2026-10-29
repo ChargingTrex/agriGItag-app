@@ -1,0 +1,19 @@
+$ /tmp/q00verify/bin/python qa/scripts/gate-readiness.py G1
+B00: 1 real Robot test(s)
+B01: 0 real Robot test(s)
+M00: 0 real Robot test(s)
+P00: 1 real Robot test(s)
+Q00: 3 real Robot test(s)
+W01: 0 real Robot test(s)
+NOT READY: 6 placeholder test(s) still tagged not-ready:
+  W01  qa/robot/mobile/network_profiles.robot  BM-16 Public Page On Normal 4G Is Under 100 KB With LCP Under 2.5 s
+  W01  qa/robot/public/page.robot  Crop Name Is Bilingual
+  W01  qa/robot/public/page.robot  Events Are In Date Order
+  W01  qa/robot/public/page.robot  Every Quantity Carries A Unit
+  W01  qa/robot/public/page.robot  Fixture Renders Valid HTML
+  W01  qa/robot/public/page.robot  No Temp Uploads Or Non Evidence Paths
+gate-readiness G1: FAIL
+exit=1
+$ /tmp/q00verify/bin/python qa/scripts/gate-readiness.py XX99
+gate-readiness: unknown WP or gate 'XX99'
+exit=2
