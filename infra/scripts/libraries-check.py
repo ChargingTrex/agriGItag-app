@@ -27,11 +27,16 @@ MANIFESTS = (
     "apps/portal/package.json",
     "qa/robot/requirements.txt",
 )
-# DECISION D-018: LGPL is rejected along with GPL/AGPL; MPL-2.0 (file-level) is the only weak-copyleft
-#   licence the ledger allows.
+# DECISION D-018: GPL, AGPL and LGPL are rejected for linked libraries, together with the other copyleft
+#   (EUPL, CC-BY-SA), source-available (SSPL, BUSL/Business Source, RSAL) and non-commercial licences.
 #   ADV: one simple rule a reviewer can apply; no linking-exception debates per package.
 #   COMPROMISE: rules out psycopg (LGPL-3.0); pg8000 (BSD-3-Clause) is used instead in qa/robot.
-REJECTED = re.compile(r"\b[AL]?GPL|General Public License|CC-BY-NC|non-?commercial", re.IGNORECASE)
+#   BSL-1.0 (Boost) is permissive and deliberately not matched; only BUSL / "Business Source" is.
+REJECTED = re.compile(
+    r"\b[AL]?GPL|General Public License|\bSSPL|\bEUPL|\bBUSL|Business Source|\bRSAL"
+    r"|\bCC[\s-]BY[\s-](?:\w+[\s-])*?(?:NC|SA)\b|non-?commercial",
+    re.IGNORECASE,
+)
 NAME_RE = re.compile(r"\s*([A-Za-z0-9@][A-Za-z0-9._/@-]*)")
 
 

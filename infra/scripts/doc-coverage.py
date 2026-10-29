@@ -22,7 +22,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 PYTHON_APPS = {"apps/api": "agritrace", "apps/public-page": "agritrace_page"}
 DECISION_SCAN_DIRS = ("apps", "packages", "infra", "qa")
-SKIP_DIRS = {"node_modules", ".dart_tool", "build", "dist", ".venv", "__pycache__", "coverage", "results", ".git"}
+SKIP_DIRS = {"node_modules", ".dart_tool", "build", "dist", ".venv", "__pycache__", "coverage", "results", ".git", ".data"}
 HEADER_STARTS = {".py": ('"""', "'''", 'r"""', "#"), ".dart": ("//", "/*"), ".ts": ("//", "/*"), ".tsx": ("//", "/*")}
 DECISION_RE = re.compile(r"DECISION (D-\d{3})")
 
@@ -35,14 +35,15 @@ def run(cmd: list[str], cwd: pathlib.Path) -> tuple[bool, str]:
         cwd: working directory (the app folder).
 
     Returns:
-        (passed, detail) where passed is True on exit code 0 and detail is the last output lines,
+        (passed, detail) where passed is True on exit code 0 and detail is the last output line,
         or "tool not found: <name>" when the executable is missing.
     """
     try:
         done = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, check=False)
     except FileNotFoundError:
         return False, f"tool not found: {cmd[0]}"
-    tail = (done.stdout + done.stderr).strip().splitlines()[-3:]
+    # stderr first: uv build chatter goes there, so the tool's own verdict on stdout ends the detail.
+    tail = (done.stderr + done.stdout).strip().splitlines()[-1:]
     return done.returncode == 0, " | ".join(tail)
 
 
@@ -110,6 +111,7 @@ def decision_refs() -> tuple[tuple[str, str, str, str], list[str]]:
 
     Raises:
         FileNotFoundError: DECISIONS.md is missing.
+        OSError: a scanned file cannot be read (compose volumes under infra/.data/ are skipped).
     """
     known = set(re.findall(r"\bD-\d{3}\b", (ROOT / "DECISIONS.md").read_text()))
     bad, seen = [], 0
@@ -130,6 +132,9 @@ def headers() -> tuple[tuple[str, str, str, str], list[str]]:
     Returns:
         (table row, list of offending paths). A header is a comment or docstring opening
         within the first 5 lines; a shebang line does not count. Empty files are exempt.
+
+    Raises:
+        OSError: a file under apps/ cannot be read.
     """
     apps = ROOT / "apps"
     if not apps.is_dir():

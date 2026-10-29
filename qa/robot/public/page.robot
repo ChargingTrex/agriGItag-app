@@ -57,7 +57,7 @@ Tamil Renders With The System Font
     [Tags]    WP-W03    FR-5    not-ready
     Not Ready    W03
 
-Page Is Served From MinIO With The Backend Down
+Page Is Served From Object Storage With The Backend Down
     [Tags]    WP-Q03    FR-15    not-ready
     Not Ready    Q03
 

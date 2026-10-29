@@ -7,10 +7,6 @@ Test Tags           api
 
 
 *** Test Cases ***
-Stack Answers Before Publishing Tests
-    [Tags]    WP-B00    FR-33    smoke
-    Stack Is Healthy
-
 Published Objects Exist With Matching Generation
     [Tags]    WP-B10    FR-17    not-ready
     Not Ready    B10

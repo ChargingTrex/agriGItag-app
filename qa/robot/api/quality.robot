@@ -7,10 +7,6 @@ Test Tags           api
 
 
 *** Test Cases ***
-Stack Answers Before Quality Tests
-    [Tags]    WP-B00    FR-33    smoke
-    Stack Is Healthy
-
 Moisture 9.8 Percent Grades Special
     [Tags]    WP-B05    FR-48    not-ready
     Not Ready    B05

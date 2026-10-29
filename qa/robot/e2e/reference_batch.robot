@@ -7,10 +7,6 @@ Test Tags           e2e
 
 
 *** Test Cases ***
-Stack Answers Before The Reference Batch
-    [Tags]    WP-B00    FR-33    smoke
-    Stack Is Healthy
-
 Demo Seed Is Idempotent
     [Tags]    WP-B12    FR-13    not-ready
     Not Ready    B12

@@ -14,15 +14,24 @@ Library             ${CURDIR}/../lib/agritrace_keywords.py
 
 *** Variables ***
 # Every value can be overridden from the environment (CI, Verifier shell) without editing suites.
+# Names and defaults follow B00's infra/docker-compose.yml and apps/api/.env.example where they exist.
 ${API_BASE}         %{API_BASE=http://localhost:8000/v1}
 ${PORTAL_BASE}      %{PORTAL_BASE=http://localhost:5173}
-${PUBLIC_BASE}      %{PUBLIC_BASE=http://localhost:9000/public-pages}
+# DECISION D-008: object storage is LocalStack S3 on port 4566 locally (MinIO dropped).
+#   ADV: same boto3/S3 API as production; Apache-2.0 image.
+#   COMPROMISE: an emulator; production object-lock semantics still need the infra review.
+${S3_ENDPOINT}      %{S3_ENDPOINT=http://localhost:4566}
+${S3_REGION}        %{S3_REGION=ap-south-1}
+${S3_ACCESS_KEY}    %{S3_ACCESS_KEY=test}
+${S3_SECRET_KEY}    %{S3_SECRET_KEY=test}
+@{S3_BUCKETS}       evidence    public-pages    id-docs
+${PUBLIC_BASE}      %{PUBLIC_BASE_URL=http://localhost:4566/public-pages}
 ${DB_HOST}          %{DB_HOST=localhost}
 ${DB_PORT}          %{DB_PORT=5432}
 ${DB_NAME}          %{DB_NAME=agritrace}
 ${DB_USER}          %{DB_USER=agritrace}
 ${DB_PASSWORD}      %{DB_PASSWORD=agritrace}
-${DEV_OTP_CODE}     %{DEV_OTP_CODE=000000}
+${OTP_DEV_CODE}     %{OTP_DEV_CODE=123456}
 ${REPO_ROOT}        ${CURDIR}/../../..
 
 
@@ -33,17 +42,16 @@ Stack Is Healthy
     ...    Fails: API unreachable, status other than 200, or any dependency not "ok".
     ${resp}=    GET    ${API_BASE}/healthz    expected_status=200    timeout=10
     ${body}=    Set Variable    ${resp.json()}
-    # Accept either a flat body or one nested under "checks"; B00 fixes the exact shape.
-    ${checks}=    Evaluate    $body.get("checks", $body)
     FOR    ${dependency}    IN    db    redis    s3
-        Should Be Equal As Strings    ${checks}[${dependency}]    ok
-        ...    msg=healthz reports ${dependency}=${checks}[${dependency}]
+        Should Be Equal As Strings    ${body}[${dependency}]    ok
+        ...    msg=healthz reports ${dependency}=${body}[${dependency}]
     END
     RETURN    ${body}
 
 Login As
     [Documentation]    Placeholder until B02 merges: request an OTP for ${phone}, verify it with the dev
-    ...    bypass code ${DEV_OTP_CODE}, and return headers carrying the bearer token.
+    ...    bypass code ${OTP_DEV_CODE}, and return headers carrying the bearer token.
+    ...    TODO(B02): confirm the request/verify paths and field names.
     ...    Args: ${phone} the user's phone number as seeded.
     ...    Returns: a dictionary {"Authorization": "Bearer <access_token>"} for GET/POST headers=.
     ...    Fails: either call returns a non-2xx status or no access_token comes back.
@@ -51,7 +59,7 @@ Login As
     [Arguments]    ${phone}
     POST    ${API_BASE}/auth/otp/request    json=${{ {"phone": $phone} }}    expected_status=2xx
     ${resp}=    POST    ${API_BASE}/auth/otp/verify
-    ...    json=${{ {"phone": $phone, "code": $DEV_OTP_CODE} }}    expected_status=2xx
+    ...    json=${{ {"phone": $phone, "code": $OTP_DEV_CODE} }}    expected_status=2xx
     ${token}=    Set Variable    ${resp.json()}[access_token]
     RETURN    ${{ {"Authorization": "Bearer " + $token} }}
 

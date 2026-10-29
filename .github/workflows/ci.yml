@@ -1,6 +1,7 @@
 # AgriTrace CI: backend lint and tests, documentation gates, Robot smoke against the compose stack.
 # Serves: plan §3 (G0 "CI green on empty tests"; every gate: LIBRARIES.md in sync, error codes regenerated),
-#         §4 item 6 (doc coverage, BM-10), §9.1 (Robot suites in CI), D-010, D-018.
+#         §4 item 6 (doc coverage, BM-10), §9.1 (Robot suites in CI), D-008 (LocalStack S3), D-010, D-018,
+#         D-021 (Valkey).
 # Owners: Q00 wrote this file; B00 owns the Makefile targets and infra/docker-compose.yml it calls;
 #         M00 and P00 replace the mobile/portal stubs at the bottom.
 name: ci
@@ -10,35 +11,18 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   backend:
+    # No service containers: apps/api/tests/conftest.py (B00) starts PostGIS, the Redis-protocol broker and
+    # LocalStack S3 itself with testcontainers and points DATABASE_URL / REDIS_URL / S3_* at them.
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgis/postgis:16-3.4
-        env:
-          POSTGRES_USER: agritrace
-          POSTGRES_PASSWORD: agritrace
-          POSTGRES_DB: agritrace
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U agritrace" --health-interval 5s --health-timeout 5s --health-retries 20
-      redis:
-        image: redis:7
-        ports: ["6379:6379"]
-        options: >-
-          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 20
-    env:
-      # TODO(B00): align these names with apps/api/agritrace/core/config.py if they differ.
-      DATABASE_URL: postgresql+asyncpg://agritrace:agritrace@localhost:5432/agritrace
-      REDIS_URL: redis://localhost:6379/0
-      S3_ENDPOINT_URL: http://localhost:9000
-      S3_ACCESS_KEY: minioadmin
-      S3_SECRET_KEY: minioadmin
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v6
@@ -47,12 +31,6 @@ jobs:
       - run: uv sync --directory apps/api
       - run: make lint
       - run: make test-unit
-      - name: Start MinIO
-        # Service containers cannot pass the `server /data` argument MinIO needs, so it runs as a step.
-        run: |
-          docker run -d --name minio -p 9000:9000 \
-            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin minio/minio server /data
-          for _ in $(seq 30); do curl -sf http://localhost:9000/minio/health/live && break; sleep 2; done
       - run: make test
 
   docs:
@@ -62,16 +40,22 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - name: QA script self-tests (privacy lint, benchmark collector, ledger parser)
-        run: uv run --no-project --with pytest --with pyyaml pytest qa/tests -q
-      - name: Doc coverage (BM-10)
+      - name: QA script self-tests (privacy lint, benchmark collector, ledger and Flutter parsers)
+        run: uv run --no-project --with pytest --with pyyaml --with robotframework==7.5 pytest qa/tests -q
+      - name: Lint the QA layer's own Python
+        run: uvx ruff@0.17.3 check infra/scripts qa
+      - name: Docstring coverage of the QA layer
+        run: uvx interrogate@1.7.0 -vv --fail-under 100 infra/scripts qa/robot/lib qa/scripts
+      - name: Doc coverage of the apps (BM-10)
         # TODO(M00/P00): add Flutter / Node setup here once apps/mobile / apps/portal exist; the script
         # fails (not skips) when an app exists but its tool is missing.
         run: uv run --no-project python infra/scripts/doc-coverage.py
       - name: Libraries ledger (D-018)
         run: uv run --no-project --with pyyaml python infra/scripts/libraries-check.py
-      - name: Error codes registry
-        run: uv run --project apps/api python infra/scripts/gen-error-codes.py --check
+      - name: Error codes registry is regenerated and registered
+        run: |
+          make error-codes
+          git diff --exit-code docs/api/error-codes.md
 
   robot-smoke:
     runs-on: ubuntu-latest
@@ -80,8 +64,8 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - name: Start stack
-        run: docker compose -f infra/docker-compose.yml up -d --wait
+      - name: Start stack (PostGIS, Valkey, LocalStack S3 + bucket init, api, worker)
+        run: make up
       - name: Install Robot toolchain
         run: |
           uv venv qa/.venv --python 3.12

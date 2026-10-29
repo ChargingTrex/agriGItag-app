@@ -7,10 +7,6 @@ Test Tags           api
 
 
 *** Test Cases ***
-Stack Answers Before Batch Tests
-    [Tags]    WP-B00    FR-33    smoke
-    Stack Is Healthy
-
 Lot Ready At 11.5 Percent Returns 409 And At 10.9 Percent Becomes Ready
     [Tags]    WP-B09    FR-43    not-ready
     Not Ready    B09

@@ -6,7 +6,6 @@
 #
 # Usage:
 #   qa/scripts/network.sh off               # mobile data and Wi-Fi off (same as `profile offline`)
-#   qa/scripts/network.sh on                # mobile data back on, current speed/delay kept
 #   qa/scripts/network.sh profile <name>    # normal_4g | weak_4g | edge | offline (qa/robot/profiles.yaml)
 #
 # Environment:
@@ -62,9 +61,8 @@ apply_profile() {
 
 case "${1:-}" in
   off) apply_profile offline ;;
-  on) run emu gsm data on; echo "mobile data on" ;;
   profile)
     [[ -n "${2:-}" ]] || { echo "usage: $0 profile <name>" >&2; exit 2; }
     apply_profile "$2" ;;
-  *) echo "usage: $0 off | on | profile <normal_4g|weak_4g|edge|offline>" >&2; exit 2 ;;
+  *) echo "usage: $0 off | profile <normal_4g|weak_4g|edge|offline>" >&2; exit 2 ;;
 esac

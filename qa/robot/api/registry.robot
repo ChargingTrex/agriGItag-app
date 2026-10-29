@@ -7,10 +7,6 @@ Test Tags           api
 
 
 *** Test Cases ***
-Stack Answers Before Registry Tests
-    [Tags]    WP-B00    FR-33    smoke
-    Stack Is Healthy
-
 Point 9.559806 78.133521 Is Inside The Fixture GI Region
     [Tags]    WP-B03    FR-28    not-ready
     Not Ready    B03

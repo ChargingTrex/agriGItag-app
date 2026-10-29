@@ -7,10 +7,6 @@ Test Tags           api
 
 
 *** Test Cases ***
-Stack Answers Before Identity Tests
-    [Tags]    WP-B00    FR-33    smoke
-    Stack Is Healthy
-
 OTP Request Twice In 60 s Returns 429
     [Tags]    WP-B02    FR-1    not-ready
     Not Ready    B02

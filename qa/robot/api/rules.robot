@@ -7,10 +7,6 @@ Test Tags           api
 
 
 *** Test Cases ***
-Stack Answers Before Rules Tests
-    [Tags]    WP-B00    FR-33    smoke
-    Stack Is Healthy
-
 Event 600 m Off Plot Raises Event Off Plot Once
     [Tags]    WP-B08    FR-69    not-ready
     Not Ready    B08

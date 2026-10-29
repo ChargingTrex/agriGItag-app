@@ -69,34 +69,60 @@ def set_emulator_network(profile: str) -> str:
     return done.stdout
 
 
-def parse_flutter_results(path: str) -> dict:
+def parse_flutter_results(path: str, exit_code: int | str | None = None) -> dict:
     """Summarise a Flutter test run written with ``flutter test --machine`` (JSON lines).
+
+    A crashed or truncated run is a failure: tests that started but never finished count as failed,
+    and a missing final ``{"type": "done"}`` event or a non-zero exit code makes ``success`` False and
+    adds a failure, so a suite asserting ``failed == 0`` cannot pass on a run that died (emulator crash,
+    out of memory on the 2 GB Go AVD).
 
     Args:
         path: file holding the JSON-lines output of ``flutter test integration_test --machine``.
+        exit_code: the ``flutter test`` process exit code, when the caller has it (Robot passes ``${rc}``).
 
     Returns:
-        dict with ``passed``, ``failed``, ``skipped`` (int counts) and ``failures``
-        (list of failing test names). Hidden tests (Flutter's setUp/tearDown wrappers) are ignored.
+        dict with ``passed``, ``failed``, ``skipped`` (int counts), ``failures`` (list of failing or
+        unfinished test names, plus a run-level reason) and ``success`` (bool). Hidden tests (Flutter's
+        setUp/tearDown wrappers) are ignored once they finish.
 
     Raises:
         FileNotFoundError: the file does not exist.
         json.JSONDecodeError: a line starting with ``{`` is not valid JSON.
+        ValueError: ``exit_code`` is not an integer.
     """
     names: dict[int, str] = {}
-    summary = {"passed": 0, "failed": 0, "skipped": 0, "failures": []}
+    summary = {"passed": 0, "failed": 0, "skipped": 0, "failures": [], "success": False}
+    done = None
     with open(path, encoding="utf-8") as handle:
         # Flutter mixes plain build output into --machine logs; only JSON objects are events.
         events = [json.loads(line) for line in handle if line.lstrip().startswith("{")]
     for event in events:
         if event.get("type") == "testStart":
             names[event["test"]["id"]] = event["test"]["name"]
-        elif event.get("type") == "testDone" and not event.get("hidden"):
+        elif event.get("type") == "testDone":
+            name = names.pop(event["testID"], str(event["testID"]))
+            if event.get("hidden"):
+                continue
             if event.get("skipped"):
                 summary["skipped"] += 1
             elif event.get("result") == "success":
                 summary["passed"] += 1
             else:
                 summary["failed"] += 1
-                summary["failures"].append(names.get(event["testID"], str(event["testID"])))
+                summary["failures"].append(name)
+        elif event.get("type") == "done":
+            done = event
+    for name in names.values():
+        summary["failed"] += 1
+        summary["failures"].append(f"{name} (did not finish)")
+    reasons = []
+    if done is None:
+        reasons.append("run did not finish (no done event)")
+    if exit_code not in (None, "") and int(exit_code) != 0:
+        reasons.append(f"flutter test exited {exit_code}")
+    if reasons and summary["failed"] == 0:
+        summary["failed"] = 1
+    summary["failures"] += reasons
+    summary["success"] = bool(done and done.get("success")) and not reasons and summary["failed"] == 0
     return summary

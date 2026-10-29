@@ -8,7 +8,7 @@ Serves: plan §8 (BM-01..BM-10), §13 (BM-11..BM-16), §7.5 Q05 (benchmark sweep
 Callers: Verifiers after running a WP's benchmarks, Q05 for the G5 report.
 
 Result file format (written by each benchmark script or by hand from a tool's report):
-    {"id": "BM-07", "metrics": {"p95_ms": 212}, "commit": "<sha>", "env": "docker stack", "measured_at": "<ISO 8601>"}
+    {"id": "BM-07", "metrics": {"p95_ms": 212}, "commit": "<sha>", "env": "docker stack", "recorded_at": "<ISO 8601>"}
 
 Usage: python3 infra/scripts/benchmarks/collect.py [--require BM-07 ...] [--results-dir D] [--thresholds F] [--out F]
 Exit codes: 0 every reported benchmark passes; 1 any FAIL (a --require'd benchmark without results is a FAIL).
@@ -36,16 +36,22 @@ def load_results(results_dir: pathlib.Path) -> dict[str, dict]:
 
     Returns:
         Mapping of benchmark id to its result dict plus a ``source`` key with the file name.
-        When two files share an id, the one whose name sorts last wins.
+        When two files share an id, the newest run wins: by ``recorded_at`` (ISO 8601), else by the
+        file's modification time, so an older passing run never hides a newer failing one.
 
     Raises:
         json.JSONDecodeError: a file is not valid JSON.
         KeyError: a file has no ``id``.
+        ValueError: ``recorded_at`` is not ISO 8601.
     """
-    results = {}
+    results, stamps = {}, {}
     for path in sorted(results_dir.glob("*.json")) if results_dir.is_dir() else []:
         data = json.loads(path.read_text())
-        results[data["id"]] = {**data, "source": str(path.relative_to(ROOT) if path.is_relative_to(ROOT) else path)}
+        recorded = data.get("recorded_at")
+        stamp = datetime.datetime.fromisoformat(recorded).timestamp() if recorded else path.stat().st_mtime
+        if stamp >= stamps.get(data["id"], float("-inf")):
+            stamps[data["id"]] = stamp
+            results[data["id"]] = {**data, "source": str(path.relative_to(ROOT) if path.is_relative_to(ROOT) else path)}
     return results
 
 
@@ -63,6 +69,7 @@ def judge(thresholds: dict, results: dict[str, dict], required: set[str]) -> tup
 
     Raises:
         ValueError: a threshold uses an unknown operator.
+        TypeError: a metric value cannot be compared with its limit (e.g. a string against a number).
     """
     rows, merged = [], {}
     for bm_id, spec in thresholds.items():
@@ -97,6 +104,8 @@ def main(argv: list[str] | None = None) -> int:
 
     Raises:
         FileNotFoundError: the thresholds file is missing.
+        yaml.YAMLError: the thresholds file is not valid YAML.
+        ValueError: from load_results or judge (bad ``recorded_at``, unknown operator).
 
     Side effects:
         Overwrites the output JSON file (creating its folder) and prints to stdout.

@@ -19,13 +19,16 @@ DatabaseLibrary uses the `pg8000` driver (psycopg is LGPL-3.0, rejected by D-018
 R=qa/.venv/bin/robot
 $R --outputdir qa/robot/results/ci --exclude not-ready qa/robot/api/healthz.robot   # CI smoke
 $R --outputdir qa/robot/results/B02 --include WP-B02 qa/robot                      # one WP
+qa/.venv/bin/python qa/scripts/gate-readiness.py G2                                 # gate rule first
 $R --outputdir qa/robot/results/G2 --exclude not-ready qa/robot/api                # a gate
 $R --include smoke qa/robot/mobile qa/robot/public                                  # no stack or emulator needed
 $R --dryrun --outputdir /tmp/robot-dryrun qa/robot                                  # syntax check of every suite
 ```
 
-Environment (defaults in `resources/common.resource`): `API_BASE` (http://localhost:8000/v1), `PORTAL_BASE`
-(http://localhost:5173), `PUBLIC_BASE`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DEV_OTP_CODE`.
+Environment (defaults in `resources/common.resource`, names as in B00's compose file): `API_BASE`
+(http://localhost:8000/v1), `PORTAL_BASE` (http://localhost:5173), `S3_ENDPOINT` (LocalStack, http://localhost:4566),
+`S3_REGION` (ap-south-1), `S3_ACCESS_KEY` / `S3_SECRET_KEY` (test/test), `PUBLIC_BASE_URL`
+(http://localhost:4566/public-pages), `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `OTP_DEV_CODE` (123456).
 Mobile suites also use `ANDROID_SERIAL` and `DRY_RUN` (see `qa/scripts/network.sh`).
 
 ## Tagging rules
@@ -34,7 +37,10 @@ Mobile suites also use `ANDROID_SERIAL` and `DRY_RUN` (see `qa/scripts/network.s
   (PRD numbering, no zero padding: `FR-1`, `FR-29`). Benchmark tests also carry `BM-<nn>`.
 - `not-ready`: placeholder until its WP merges; body is `Not Ready  <WP>` (skips). The WP's worker or the QA Lead
   replaces the body and removes the tag. CI and gates run with `--exclude not-ready`.
-- `smoke`: runs in seconds; one per suite. `flaky`: reported as P2 (qa-rubric); at most two reruns.
+- `smoke`: runs in seconds; `api/healthz.robot` holds the stack smoke test, the mobile and public suites hold
+  ones that need no stack. `flaky`: reported as P2 (qa-rubric); at most two reruns.
+- Before a gate or WP verdict, `qa/scripts/gate-readiness.py <WP|G<n>>` must PASS (no placeholder left).
+- Evidence: copy `report.html` and `output.xml` from `qa/robot/results/<WP>/` to `docs/agents/qa/<WP>/robot/`.
 
 ## Suites
 
@@ -54,6 +60,6 @@ Mobile suites also use `ANDROID_SERIAL` and `DRY_RUN` (see `qa/scripts/network.s
 | `public/page.robot` | W01-W03, Q03; real smoke runs privacy-lint on the fixtures | G4 |
 | `e2e/reference_batch.robot` | B12 seeded batch `FGP8T4033HM7` | G5 |
 
-API suites start with `Stack Is Healthy` as their smoke test. Keywords: `resources/common.resource`
+Keywords: `resources/common.resource`
 (`Stack Is Healthy`, `Login As`, `Error Code Should Be`, `Connect To AgriTrace Database`, `Not Ready`) and
 `lib/agritrace_keywords.py` (`Load Network Profiles`, `Set Emulator Network`, `Parse Flutter Results`).

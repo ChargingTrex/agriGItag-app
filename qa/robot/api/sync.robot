@@ -7,10 +7,6 @@ Test Tags           api
 
 
 *** Test Cases ***
-Stack Answers Before Sync Tests
-    [Tags]    WP-B00    FR-33    smoke
-    Stack Is Healthy
-
 Same Client Id Pushed Twice Stores One Row
     [Tags]    WP-B06    FR-4    not-ready
     Not Ready    B06
