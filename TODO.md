@@ -81,6 +81,9 @@ _(empty)_
 - [ ] B01 r2 / B03 (F8): the shared `Address` schema needs a `taluk` field for FR53's taluk check.
 - [ ] M00 P3s (review M00-r1): CI mobile job needs `timeout-minutes`; the regen-and-diff check misses untracked files (`git status --porcelain` is stricter); unknown sub-paths show go_router's English "Page Not Found" (add a farmer-friendly error page in M07); first Verifier with disk should re-run `size_check.sh` with bundletool to measure the AAB download size.
 - [ ] Q01: re-record FarmerButton goldens on Linux (Flutter 3.38.4), then remove the macOS-only skip in test/widget/farmer_button_golden_test.dart.
+- [ ] Compliance (B05): moisture profile allows only instrument/lab sources, so a visual moisture reading is rejected at entry (correct: moisture is not visual); the `max_grade_for_source: visual → Standard` cap is for colour/visual parameters. Confirm with the compliance owner when the full AGMARK schedule is loaded.
+- [ ] B08: sweep readings carrying a `reason_code` (trail overrides) in case the broker was down when the override was accepted (B05 `shortcut:`), and turn `per_parameter` entries with `outcome == "profile_incomplete"` into the info flag.
+- [ ] B06: reuse the registered `client_id_conflict` error code (registering it twice raises).
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
