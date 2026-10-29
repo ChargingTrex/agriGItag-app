@@ -1,0 +1,35 @@
+# The `mobile` job for .github/workflows/ci.yml (WP-M00). Q00's ci.yml was not merged into this branch, so
+# this snippet replaces the skipped `mobile:` stub under `jobs:` when both land; delete this file then.
+# Serves: plan §7.2 M00 (CI: analyze, test, size_check), D-003 (generated client never hand-edited: the
+#   regenerate-and-diff step), D-002 and BM-04 (size budget), UserFlows §Design rules "Tap, never type" (lint).
+# Callers: GitHub Actions on push to main and on pull requests.
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.38.4
+          channel: stable
+          cache: true
+      # Java 17 for Gradle (size check) and openapi-generator (gen_api.sh); Node is preinstalled on the runner.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: flutter pub get
+      - name: Farmer screens have no free-text fields
+        run: tool/no_textfield_lint.sh
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - name: Analyze (incl. public_member_api_docs)
+        run: flutter analyze --fatal-infos
+      - name: Tests (unit, widget, goldens)
+        run: flutter test
+      - name: Generated API client and l10n match the spec and ARB files
+        run: tool/gen_api.sh && git diff --exit-code -- packages/agritrace_api lib/core/l10n/gen
+      - name: Size budget (arm64 APK; skipped when the runner has no Android SDK)
+        run: tool/size_check.sh
