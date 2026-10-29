@@ -25,14 +25,20 @@ class Settings(BaseSettings):
         description="SQLAlchemy async URL for Postgres 16 + PostGIS (asyncpg driver).",
     )
     redis_url: str = Field("redis://localhost:6379/0", description="Redis URL; Celery broker and cache.")
-    s3_endpoint: str = Field("http://localhost:9000", description="S3 API endpoint (MinIO or AWS).")
-    s3_access_key: str = Field("minioadmin", description="S3 access key id.")
-    s3_secret_key: str = Field("minioadmin", description="S3 secret access key.")
+    s3_endpoint: str = Field(
+        "http://localhost:4566", description="S3 API endpoint the API and worker call (LocalStack or AWS)."
+    )
+    s3_public_endpoint: str = Field(
+        "http://localhost:4566", description="S3 endpoint phones and browsers reach; presigned URLs use it."
+    )
+    s3_region: str = Field("ap-south-1", description="S3 region used for signing.")
+    s3_access_key: str = Field("test", description="S3 access key id.")
+    s3_secret_key: str = Field("test", description="S3 secret access key.")
     s3_bucket_evidence: str = Field("evidence", description="Write-once evidence photo bucket (object lock).")
     s3_bucket_public: str = Field("public-pages", description="Anonymous-read bucket for built public pages.")
     s3_bucket_iddocs: str = Field("id-docs", description="Private bucket for farmer identity documents.")
     public_base_url: str = Field(
-        "http://localhost:9000/public-pages", description="Base URL consumers open for a public batch page."
+        "http://localhost:4566/public-pages", description="Base URL consumers open for a public batch page."
     )
     jwt_secret: str = Field(DEV_JWT_SECRET, description="HMAC secret for access tokens; must be set in prod.")
     otp_dev_code: str | None = Field(

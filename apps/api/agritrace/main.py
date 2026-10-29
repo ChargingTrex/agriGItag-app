@@ -142,14 +142,16 @@ def create_app() -> FastAPI:
     #   ADV: apps from last season keep working; oasdiff can diff one prefix.
     #   COMPROMISE: deprecated fields linger for a season.
     v1 = APIRouter(prefix="/v1", responses={"default": {"model": ErrorEnvelope, "description": "Error"}})
-    v1.add_api_route(
-        "/healthz",
-        healthz,
-        methods=["GET"],
-        tags=["health"],
-        response_model=Health,
-        responses={503: {"model": Health, "description": "At least one dependency is failing."}},
-    )
+    # HEAD is the mobile reachability probe (plan §13 A1); one route per method keeps operation ids unique.
+    for method in ("GET", "HEAD"):
+        v1.add_api_route(
+            "/healthz",
+            healthz,
+            methods=[method],
+            tags=["health"],
+            response_model=Health,
+            responses={503: {"model": Health, "description": "At least one dependency is failing."}},
+        )
     # DECISION D-004: each module exposes `router` in `modules/<name>/router.py`; it is mounted here by
     # discovery so parallel work packages never edit this file.
     #   ADV: no merge conflicts in main.py; adding a module needs no wiring.

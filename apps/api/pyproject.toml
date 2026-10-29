@@ -17,13 +17,10 @@ dependencies = [
     "asyncpg>=0.30",
     "alembic>=1.14",
     "geoalchemy2>=0.16",
-    "shapely>=2.0",
     "celery[redis]>=5.4",
     "redis>=5.2",
     "boto3>=1.35",
-    "pyyaml>=6.0",
     "brotli-asgi>=1.4",
-    "python-multipart>=0.0.17",
     "uuid6>=2024.7.10",
     "httpx>=0.28",
 ]
@@ -32,12 +29,11 @@ dependencies = [
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.25",
-    "testcontainers[postgres,redis,minio]>=4.9",
+    "testcontainers[postgres,redis,localstack]>=4.9",
     "ruff>=0.8",
     "mypy>=1.13",
     "import-linter>=2.1",
     "interrogate>=1.7",
-    "respx>=0.22",
 ]
 
 [build-system]

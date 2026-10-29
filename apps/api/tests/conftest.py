@@ -1,6 +1,7 @@
-"""Shared pytest fixtures: throwaway PostGIS, Redis and MinIO containers plus an HTTP client over the app.
+"""Shared pytest fixtures: throwaway PostGIS, Valkey and LocalStack S3 containers plus an HTTP client.
 
-Serves: B00 test harness (plan §7.1), D-008 (buckets as in production), D-009 (eager Celery in tests).
+Serves: B00 test harness (plan §7.1), D-008 (buckets as in production), D-009 (eager Celery in tests),
+D-021 (Valkey as the Redis-protocol broker).
 Callers: pytest. Unit tests use none of these fixtures, so `pytest tests/unit` needs no Docker; tests
 marked `integration` request `client` (or `stack`) and start the containers once per session.
 """
@@ -8,20 +9,21 @@ marked `integration` request `client` (or `stack`) and start the containers once
 import os
 from collections.abc import AsyncIterator, Iterator
 
-import boto3
 import pytest
 from httpx import ASGITransport, AsyncClient
-from testcontainers.community.minio import MinioContainer
+from testcontainers.community.localstack import LocalStackContainer
 from testcontainers.community.postgres import PostgresContainer
 from testcontainers.community.redis import RedisContainer
 
 from agritrace.core import db, storage
 from agritrace.core.config import get_settings
 
+REGION = "ap-south-1"
+
 
 @pytest.fixture(scope="session")
 def stack() -> Iterator[None]:
-    """Start PostGIS, Redis and MinIO, point the settings at them and create the three buckets.
+    """Start PostGIS, Valkey and LocalStack S3, point the settings at them and create the three buckets.
 
     Returns:
         An iterator yielding once while the containers run.
@@ -31,36 +33,36 @@ def stack() -> Iterator[None]:
 
     Side effects:
         Sets DATABASE_URL, REDIS_URL, S3_* and ENV in `os.environ`; clears cached settings, engine and S3
-        client; stops the containers at session end.
+        clients; stops the containers at session end.
     """
     with (
         PostgresContainer("postgis/postgis:16-3.4", driver="asyncpg") as pg,
-        RedisContainer("redis:7-alpine") as rd,
-        # Same image as infra/docker-compose.yml; official minio/minio images are no longer published.
-        MinioContainer("pgsty/minio:RELEASE.2026-08-04T00-00-00Z") as mn,
+        # DECISION D-021: Valkey instead of Redis, same image as infra/docker-compose.yml; it speaks the
+        #   Redis protocol, so RedisContainer and redis-py work unchanged.
+        #   ADV: BSD-3 licence (Redis 7.4+ is RSAL/SSPL); ElastiCache for Valkey in production.
+        #   COMPROMISE: newer project; Redis-only modules are not available.
+        RedisContainer("valkey/valkey:8-alpine") as rd,
+        # LocalStack 4.14.0 is the last tag that starts without an auth token (D-008).
+        LocalStackContainer("localstack/localstack:4.14.0", region_name=REGION).with_services("s3") as ls,
     ):
-        cfg = mn.get_config()
         os.environ.update(
             ENV="test",
             DATABASE_URL=pg.get_connection_url(),
             REDIS_URL=f"redis://{rd.get_container_host_ip()}:{rd.get_exposed_port(6379)}/0",
-            S3_ENDPOINT=f"http://{cfg['endpoint']}",
-            S3_ACCESS_KEY=cfg["access_key"],
-            S3_SECRET_KEY=cfg["secret_key"],
+            S3_ENDPOINT=ls.get_url(),
+            S3_PUBLIC_ENDPOINT=ls.get_url(),
+            S3_REGION=REGION,
+            S3_ACCESS_KEY="test",
+            S3_SECRET_KEY="test",
         )
-        for cached in (get_settings, db.get_engine, db.get_sessionmaker, storage.client):
+        for cached in (get_settings, db.get_engine, db.get_sessionmaker, storage._client_for):
             cached.cache_clear()
-        s3 = boto3.client(
-            "s3",
-            endpoint_url=os.environ["S3_ENDPOINT"],
-            aws_access_key_id=cfg["access_key"],
-            aws_secret_access_key=cfg["secret_key"],
-            region_name="us-east-1",
-        )
-        # Same bucket semantics as infra/scripts/minio-init.sh (D-008).
-        s3.create_bucket(Bucket="evidence", ObjectLockEnabledForBucket=True)
-        s3.create_bucket(Bucket="public-pages")
-        s3.create_bucket(Bucket="id-docs")
+        s3 = storage.client()
+        where = {"CreateBucketConfiguration": {"LocationConstraint": REGION}}
+        # Same bucket semantics as infra/scripts/s3-init.sh (D-008); retention is not needed in tests.
+        s3.create_bucket(Bucket="evidence", ObjectLockEnabledForBucket=True, **where)
+        s3.create_bucket(Bucket="public-pages", **where)
+        s3.create_bucket(Bucket="id-docs", **where)
         yield
 
 

@@ -1,6 +1,6 @@
-"""S3 / MinIO access: presigned evidence uploads, evidence reads, public page writes.
+"""S3 access (LocalStack locally, AWS in prod): presigned evidence uploads, evidence reads, public pages.
 
-Serves: D-008 (MinIO as S3 stand-in; `evidence` write-once, `public-pages` anonymous read),
+Serves: D-008 (local S3 stand-in; `evidence` write-once, `public-pages` anonymous read),
 D-011 (single presigned PUT per photo with SHA-256), D-007 (static public pages in object storage).
 Callers: events service (presign, head, read photos; B06), publishing service (put_public; B10),
 `agritrace.main` health check (`client`), tests/integration/test_storage.py.
@@ -18,11 +18,15 @@ from agritrace.core.config import get_settings
 
 
 @lru_cache
-def client() -> Any:
-    """Create the process-wide S3 client.
+def _client_for(endpoint: str) -> Any:
+    """Create one cached S3 client per endpoint.
+
+    Args:
+        endpoint: S3 endpoint URL.
 
     Returns:
-        A boto3 S3 client for `S3_ENDPOINT` using SigV4 and path-style URLs (MinIO needs path style).
+        A boto3 S3 client using SigV4 and path-style URLs (LocalStack and the compose host names need
+        path style; bucket-subdomain DNS does not exist locally).
 
     Raises:
         botocore.exceptions.BotoCoreError: invalid endpoint or credentials configuration.
@@ -30,12 +34,21 @@ def client() -> Any:
     s = get_settings()
     return boto3.client(
         "s3",
-        endpoint_url=s.s3_endpoint,
+        endpoint_url=endpoint,
         aws_access_key_id=s.s3_access_key,
         aws_secret_access_key=s.s3_secret_key,
-        region_name="us-east-1",  # MinIO's default; AWS prod sets the real region via the endpoint
+        region_name=s.s3_region,
         config=Config(signature_version="s3v4", s3={"addressing_style": "path"}, connect_timeout=3),
     )
+
+
+def client() -> Any:
+    """Return the S3 client the API and worker use to talk to storage (`S3_ENDPOINT`).
+
+    Returns:
+        The cached boto3 S3 client.
+    """
+    return _client_for(get_settings().s3_endpoint)
 
 
 def presign_put(key: str, content_type: str, sha256: str, expires: int = 900) -> str:
@@ -51,13 +64,13 @@ def presign_put(key: str, content_type: str, sha256: str, expires: int = 900) ->
         expires: URL lifetime in seconds.
 
     Returns:
-        The presigned URL.
+        The presigned URL on `S3_PUBLIC_ENDPOINT`, the host the phone can reach (signing needs no network).
 
     Raises:
         ValueError: `sha256` is not valid hex.
     """
     checksum = base64.b64encode(bytes.fromhex(sha256)).decode()
-    url: str = client().generate_presigned_url(
+    url: str = _client_for(get_settings().s3_public_endpoint).generate_presigned_url(
         "put_object",
         Params={
             "Bucket": get_settings().s3_bucket_evidence,
