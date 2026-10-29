@@ -19,12 +19,12 @@ PATH = ROOT / "CHECKLIST.md"
 def main() -> None:
     """Count `- [x]` and `- [ ]` items and rewrite the completion line."""
     text = PATH.read_text()
-    done = len(re.findall(r"^- \[x\]", text, flags=re.M | re.I))
-    todo = len(re.findall(r"^- \[ \]", text, flags=re.M))
+    done = len(re.findall(r"^- \[x\]", text, flags=re.MULTILINE | re.IGNORECASE))
+    todo = len(re.findall(r"^- \[ \]", text, flags=re.MULTILINE))
     total = done + todo
     pct = round(100 * done / total) if total else 0
     line = f"Completion: {pct} % ({done}/{total} items)"
-    text = re.sub(r"^Completion: .*$", line, text, count=1, flags=re.M)
+    text = re.sub(r"^Completion: .*$", line, text, count=1, flags=re.MULTILINE)
     PATH.write_text(text)
     print(line)
 

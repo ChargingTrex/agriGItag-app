@@ -12,7 +12,7 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-005 | Append-only events with client-generated UUIDs as primary and idempotency keys | 2026-10-29 | Accepted | [D-005.md](docs/adr/D-005.md) |
 | D-006 | Rules run on the phone as a preview and on the server as the authority, sharing one JSON rule bundle | 2026-10-29 | Accepted | [D-006.md](docs/adr/D-006.md) |
 | D-007 | Static public page built by a worker job, served from object storage behind a CDN | 2026-10-29 | Accepted | [D-007.md](docs/adr/D-007.md) |
-| D-008 | MinIO locally as the S3 stand-in with versioning and object lock | 2026-10-29 | Accepted | [D-008.md](docs/adr/D-008.md) |
+| D-008 | LocalStack locally as the S3 stand-in (amended from MinIO) | 2026-10-29 | Accepted | [D-008.md](docs/adr/D-008.md) |
 | D-009 | Celery on Redis for background jobs | 2026-10-29 | Accepted | [D-009.md](docs/adr/D-009.md) |
 | D-010 | Ponytail ruleset plus the Documentation Standard | 2026-10-29 | Accepted | [D-010.md](docs/adr/D-010.md) |
 | D-011 | Single presigned PUT for photos, no resumable upload in the pilot | 2026-10-29 | Accepted | [D-011.md](docs/adr/D-011.md) |

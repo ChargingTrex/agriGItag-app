@@ -28,3 +28,6 @@ infra/.data/
 qa/robot/results/
 # CodeGraph index is local
 .codegraph/
+
+# Agent worktrees and local Claude state
+.claude/

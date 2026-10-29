@@ -10,7 +10,7 @@ plan is summarised in `docs/agents/plan-summary.md`. Read `DECISIONS.md` before 
 - Portal `apps/portal`: React 18 + TypeScript strict + Vite, TanStack Query, MUI, react-hook-form + zod.
 - Public page `apps/public-page`: Python package `agritrace_page` (Jinja2, inline CSS, no framework JS).
 - Contract: `packages/openapi/openapi.json` is generated from the API; Dart and TS clients are generated, never hand-edited.
-- Infra: `infra/docker-compose.yml` (Postgres 16 + PostGIS, Redis, MinIO, Mosquitto, api, worker, portal).
+- Infra: `infra/docker-compose.yml` (Postgres 16 + PostGIS, Redis, LocalStack S3, Mosquitto, api, worker, portal).
 - Configuration: field and feature flags in `apps/api/config/*.yaml` (D-017). Never hard-code a field as mandatory when the YAML can say it.
 
 ## 2. Agent hierarchy (see docs/agents/roles.md)

@@ -7,7 +7,7 @@ The Verifier works from a clean checkout and never edits code or tests.
 1. `docker compose -f infra/docker-compose.yml up -d --wait`; run migrations and `make seed`.
 2. Run each acceptance test command exactly as written; copy stdout/stderr to `docs/agents/qa/<WP>/logs/`.
 3. UI work packages: capture screenshots (Flutter integration `takeScreenshot`, Playwright `page.screenshot`) to `docs/agents/qa/<WP>/shots/`, one per acceptance line, named by test and locale.
-4. Run the WP's Robot suites (`robot --outputdir qa/robot/results/<WP> ...`) and benchmark scripts; record numbers in a table.
+4. Run the WP's Robot suites (`robot --outputdir qa/robot/results/<WP> ...`) and benchmark scripts; record numbers in a table. `qa/robot/results/` is git-ignored: copy `report.html` and `output.xml` into `docs/agents/qa/<WP>/robot/` so the evidence is committed.
 5. Fill the rubric below and write `docs/agents/qa/<WP>.md` with the evidence table: acceptance line → PASS/FAIL → evidence path. Note reruns and flakiness. State environment: AVD profile, commit, spec version.
 
 ## Rubric
