@@ -23,6 +23,8 @@ dependencies = [
     "brotli-asgi>=1.4",
     "uuid6>=2024.7.10",
     "httpx>=0.28",
+    "shapely>=2.0",
+    "pyproj>=3.6",
 ]
 
 [dependency-groups]
@@ -34,6 +36,7 @@ dev = [
     "mypy>=1.13",
     "import-linter>=2.1",
     "interrogate>=1.7",
+    "types-shapely>=2.1.0.20260728",
 ]
 
 [build-system]

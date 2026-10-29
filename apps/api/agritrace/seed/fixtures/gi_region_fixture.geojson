@@ -1,0 +1,36 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "NON-OFFICIAL TEST FIXTURE - not the GI 883 production area. Hand-drawn octagon around Tiruchuli / Aruppukottai for tests and the demo seed only (B03, B12). Real outlines come from infra/scripts/gi_boundary/build_virudhunagar.py (D-019).",
+        "official": false,
+        "source_ref": "hand-drawn test fixture, apps/api/agritrace/seed/fixtures/gi_region_fixture.geojson",
+        "licence": "CC0-1.0 (project test data)",
+        "confidence": "test_fixture",
+        "taluks": ["Tiruchuli", "Aruppukottai"],
+        "tolerance_buffer_m": 150,
+        "notes": "The east edge is the meridian 78.30 E between 9.50 N and 9.60 N, so (lat 9.55, lon 78.300911) lies about 100 m outside it."
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [78.10, 9.45],
+              [78.25, 9.45],
+              [78.30, 9.50],
+              [78.30, 9.60],
+              [78.25, 9.65],
+              [78.10, 9.65],
+              [78.05, 9.60],
+              [78.05, 9.50],
+              [78.10, 9.45]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

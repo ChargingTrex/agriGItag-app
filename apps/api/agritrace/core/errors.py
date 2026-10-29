@@ -129,6 +129,65 @@ class AppendOnlyViolationError(AppError):
     fix = "Submit a correction as a new version instead of editing the old one."
 
 
+# --- registry (B03): onboarding, plots, GI regions ------------------------------------------------------
+
+
+class ClientIdConflictError(AppError):
+    """A client-generated id (D-005) is already used by another user, FPO or a different record."""
+
+    code, status, message_key = "client_id_conflict", 409, "error.client_id_conflict"
+    message = "This id is already used by another record."
+    fix = "Generate a new UUID on the device for the new record and send it again."
+
+
+class PlotLockedError(AppError):
+    """A plot's location is set once at onboarding; only an FPO admin correction may change it (FR71)."""
+
+    code, status, message_key = "plot_locked", 409, "error.plot_locked"
+    message = "The plot location is locked after onboarding."
+    fix = "Ask the FPO admin to correct the plot with a reason (POST /v1/plots/{id}/correct)."
+
+
+class ReasonRequiredError(AppError):
+    """A correction was sent without the coded reason it must carry (FR71, FR25)."""
+
+    code, status, message_key = "reason_required", 422, "error.reason_required"
+    message = "A reason is required for this correction."
+    fix = "Pick a reason code (and add a note if useful), then send the correction again."
+
+
+class InvalidGeometryError(AppError):
+    """A GeoJSON geometry is malformed, self-intersecting, empty or outside WGS84 ranges."""
+
+    code, status, message_key = "invalid_geometry", 422, "error.invalid_geometry"
+    message = "The shape is not a valid outline."
+    fix = "Send a closed, non-self-intersecting outline in WGS84 [lon, lat]; `details` names the problem."
+
+
+class GiRegionMissingError(AppError):
+    """The GI tag has no effective region version yet, so locations cannot be checked against it (FR27)."""
+
+    code, status, message_key = "gi_region_missing", 404, "error.gi_region_missing"
+    message = "No GI region is loaded for this GI tag yet."
+    fix = "A super-admin uploads a region version (POST /v1/gi-tags/{id}/region-versions)."
+
+
+class FarmerNotPendingError(AppError):
+    """Only a pending farmer can be approved (Stage 0)."""
+
+    code, status, message_key = "farmer_not_pending", 409, "error.farmer_not_pending"
+    message = "This farmer is not waiting for approval."
+    fix = "Reload the farmer; it may already be active or suspended."
+
+
+class FarmerPhoneTakenError(AppError):
+    """Another farmer of the same FPO already uses this phone (Architect-Gate F7: one home per phone)."""
+
+    code, status, message_key = "farmer_phone_taken", 409, "error.farmer_phone_taken"
+    message = "Another farmer in this FPO already has this phone number."
+    fix = "Open the existing farmer instead, or check the number with the farmer."
+
+
 class RateLimitedError(AppError):
     """Too many requests from this caller."""
 
