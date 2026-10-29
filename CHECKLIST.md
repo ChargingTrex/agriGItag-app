@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 8 % (5/59 items)
+Completion: 10 % (6/59 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -25,7 +25,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B01 — Domain contracts (schema-first) — wave 1 — worker: — reviewer: — verifier:
 - [ ] M00 — Skeleton: flavors, M3 theme + tokens, go_router role redirect, l10n en/ta, generated Dart  — wave 1 — worker: — reviewer: — verifier:
 - [ ] P00 — Skeleton, auth guard, generated client, MSW from spec, lint/test/e2e config — wave 1 — worker: — reviewer: — verifier:
-- [ ] W01 — `render(public_batch) -> (html, json)`, Jinja2 `batch.html.j2`, inline CSS < 12 KB, JS < 4 — wave 1 — worker: — reviewer: — verifier:
+- [x] W01 — `render(public_batch) -> (html, json)`, Jinja2 `batch.html.j2`, inline CSS < 12 KB, JS < 4 — wave 1 — worker: Opus (2 rounds) — reviewer: WEB r1 FAIL, r2 PASS — verifier: PASS (docs/agents/qa/W01.md)
 - [ ] **Gate G1 signed** (docs/agents/gates/G1.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G2 Core backend

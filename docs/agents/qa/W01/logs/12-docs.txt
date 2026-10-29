@@ -1,0 +1,174 @@
+$ cat apps/public-page/pyproject.toml
+# agritrace_page packaging and tool configuration.
+# Purpose: static public QR page renderer (W01; PRD FR15-FR19, FR51, FR62, FR63, FR72; D-007).
+# Callers: the apps/api publishing job (B10) imports agritrace_page.render; developers run the CLI.
+[project]
+name = "agritrace-page"
+version = "0.1.0"
+description = "Renders the AgriTrace public batch page (static HTML + data.json) from a privacy-checked record."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "jinja2>=3.1,<4",
+    "markupsafe>=3",
+    "pydantic>=2.7,<3",
+]
+
+[dependency-groups]
+dev = [
+    "html5lib>=1.1",
+    "interrogate>=1.7",
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["agritrace_page"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.interrogate]
+fail-under = 100
+ignore-init-module = false
+
+$ ls docs/adr/D-007.md D-017.md D-018.md (main)
+/Users/fi-it/Documents/projects/agriGitag/docs/adr/D-007.md
+/Users/fi-it/Documents/projects/agriGitag/docs/adr/D-017.md
+/Users/fi-it/Documents/projects/agriGitag/docs/adr/D-018.md
+
+# LIBRARIES.md rows per dependency (worktree)
+# Libraries ledger
+
+Every dependency in `apps/api/pyproject.toml`, `apps/public-page/pyproject.toml`, `apps/mobile/pubspec.yaml`,
+`apps/portal/package.json` and `qa/robot/requirements.txt` must have a row here (`infra/scripts/libraries-check.py`
+fails CI otherwise). Licence must be permissive (MIT, BSD, Apache-2.0, ISC, MPL-2.0 file-level); copyleft or
+--- jinja2
+10:| jinja2 | 3.1.6 | BSD-3-Clause | apps/public-page/agritrace_page/render.py, templates/batch.html.j2 | Renders the static public batch page with autoescaping | De-facto Python HTML templating; autoescape and StrictUndefined built in; already the stack choice (CLAUDE.md §1) | Hand-built f-strings (no escaping, XSS risk); Mako (smaller community) |
+--- pydantic
+12:| pydantic | 2.14.1 | MIT | apps/public-page/agritrace_page/schema.py, render.py | `PublicBatchRecord` allow-list, privacy validator, `data.json` serialisation | Stack choice (CLAUDE.md §1); `extra="forbid"` and `hide_input_in_errors` give the privacy guarantees | dataclasses + jsonschema (two libraries, no validators) |
+--- markupsafe
+11:| markupsafe | 3.0.4 | BSD-3-Clause | apps/public-page/agritrace_page/render.py | `Markup` for escaped bilingual label spans (installed with jinja2) | Jinja2's own escaping type; no extra install | `html.escape` + manual safe-marking (easy to double-escape) |
+--- hatchling
+17:| hatchling | latest (build-only) | MIT | apps/public-page/pyproject.toml `[build-system]` | Builds the `agritrace_page` wheel so apps/api (B10) can depend on it by path | PyPA-maintained, zero config for a flat package, ships templates and JSON automatically | setuptools (needs package-data config) |
+--- html5lib
+13:| html5lib | 1.1 | MIT | apps/public-page/tests/test_render.py (dev) | Strict HTML5 parse of the rendered page (fails on any parse error) and element queries | Pure-Python WHATWG parser with a strict mode; no compiled deps | lxml (`recover=False` is not an HTML5 conformance check); html-validate is Node (W02 adds it) |
+--- pytest
+14:| pytest | 9.2.0 | MIT | apps/public-page/tests/ (dev) | Test runner | De-facto Python test runner; fixtures and parametrize keep tests short | unittest (more boilerplate) |
+--- ruff
+15:| ruff | 0.17.3 | MIT | apps/public-page/pyproject.toml (dev) | Lint incl. pydocstyle Google convention and D417 (CLAUDE.md §5) | One fast tool for lint and format | flake8 + pydocstyle + isort (three tools) |
+--- interrogate
+16:| interrogate | 1.7.0 | MIT | apps/public-page/pyproject.toml (dev) | Enforces 100 % docstring coverage (CLAUDE.md §5) | The docstring-coverage tool CLAUDE.md names | docstr-coverage (less used) |
+
+$ git diff 9392783 fb5dea7 -- CHANGELOG.md
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 8cde9f5..f45f743 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -7,3 +7,4 @@ One line per merged work package: `WP-id — title — reviewer PASS rN, verifie
+ 
+ ### Added
+ - Project scaffold: CLAUDE.md, README, tracking files, ADRs D-001 to D-020, agent role docs, acceptance files for 42 work packages (Orchestrator, 2026-10-29).
++- W01 — public QR page renderer `agritrace_page` (privacy-checked `PublicBatchRecord`, `render()` to index.html + data.json, CLI build/check, reference-batch fixture) — awaiting review.
+
+$ git diff --stat 9392783 fb5dea7
+ CHANGELOG.md                                       |   1 +
+ apps/public-page/.gitignore                        |   1 +
+ apps/public-page/.python-version                   |   1 +
+ apps/public-page/README.md                         |  91 +++
+ apps/public-page/agritrace_page/__init__.py        |  11 +
+ apps/public-page/agritrace_page/__main__.py        |   8 +
+ apps/public-page/agritrace_page/cli.py             |  88 ++
+ apps/public-page/agritrace_page/i18n/en.json       |  69 ++
+ apps/public-page/agritrace_page/i18n/ta.json       |  69 ++
+ apps/public-page/agritrace_page/render.py          | 190 +++++
+ apps/public-page/agritrace_page/schema.py          | 486 +++++++++++
+ .../agritrace_page/templates/batch.html.j2         | 129 +++
+ apps/public-page/agritrace_page/templates/page.css |  39 +
+ apps/public-page/agritrace_page/templates/page.js  |  11 +
+ apps/public-page/fixtures/batch_sample.json        | 884 +++++++++++++++++++++
+ apps/public-page/pyproject.toml                    |  43 +
+ apps/public-page/tests/test_render.py              | 384 +++++++++
+ apps/public-page/uv.lock                           | 315 ++++++++
+ docs/LIBRARIES.md                                  |   8 +
+ docs/agents/reports/W01.md                         | 190 +++++
+ 20 files changed, 3018 insertions(+)
+
+# file headers (first 6 lines of each source file)
+== apps/public-page/agritrace_page/__init__.py
+"""AgriTrace public QR page renderer (W01; PRD FR15-FR19; D-007).
+
+Purpose: turn a privacy-checked ``PublicBatchRecord`` into static ``index.html`` + ``data.json``.
+Callers: the backend publishing job (B10) and the portal preview via the API; ``python -m
+agritrace_page`` for local builds. No database or network access anywhere in this package.
+"""
+== apps/public-page/agritrace_page/__main__.py
+"""Entry point for ``python -m agritrace_page`` (W01; FR15 local build).
+
+Callers: developers and CI; the commands live in cli.py.
+"""
+
+from agritrace_page.cli import main
+== apps/public-page/agritrace_page/cli.py
+"""Command line: build a page from a record file, and check a built page against the byte budgets.
+
+Purpose: local and CI builds of the public page without the backend (W01 "CLI build from fixture").
+Requirements: plan §13 E1 budgets (CSS < 12 KB, JS < 4 KB, HTML+CSS+JS < 100 KB); D-007.
+Callers: ``python -m agritrace_page build|check``; W02 CI (privacy lint, Lighthouse) reads output.
+"""
+== apps/public-page/agritrace_page/render.py
+"""Render a public batch record to a static page (index.html) and its data file (data.json).
+
+Purpose: the single renderer behind every public QR page; pure function, no database or network.
+Requirements: PRD FR15-FR19, FR30, FR51, FR58, FR62, FR63, FR72; plan §13 E1 (HTML+CSS+JS
+< 100 KB, CSS < 12 KB, JS < 4 KB) and E2 (lazy WebP thumbnails, tap to enlarge);
+User Flows §Design rules (colour plus shape, "14 Feb" dates, Indian number grouping).
+== apps/public-page/agritrace_page/schema.py
+"""Public batch record: the complete allow-list of what a public QR page may show.
+
+Purpose: one Pydantic v2 model tree that describes, field by field, everything the static
+public page and its ``data.json`` may contain, and that refuses anything personal.
+Requirements: PRD FR15-FR19 (public page), FR30 (GI boundary indicator), FR51 (grade, standard,
+readings, lab badge), FR53 (structured address), FR54, FR56-FR63 (units, share %, compliance ids,
+== apps/public-page/agritrace_page/templates/batch.html.j2
+{#- Public batch page (W01). Purpose: the static page a buyer sees after scanning the pack QR.
+    Requirements: FR15-FR19, FR30 (GI indicator), FR51 (grade), FR58 (units), FR62 (compliance ids),
+    FR63 (date order, counts), FR72 (location method); User Flows §Design rules, §Who uses what.
+    Caller: agritrace_page.render.render, with r (PublicBatchRecord); globals t (label), pair.
+    Every quantity goes through qty() so it always carries its unit. -#}
+{% macro qty(q) %}<data class="q" value="{{ q.value }}">{{ q.value|num }} {{ q.unit }}</data>{% endmacro %}
+== apps/public-page/agritrace_page/templates/page.css
+/* Public batch page styles, inlined by batch.html.j2 (W01; plan §13 E1 budget: < 12 KB).
+   Mobile-first; system fonts only so Tamil renders without a webfont. Print CSS: W03. */
+:root{--fg:#1d2b1f;--mut:#56615b;--line:#d6ddd6;--ok:#1b5e20;--okb:#e5f3e6;--warn:#8a4500;--warnb:#fff0d9;--lab:#0d47a1;--labb:#e3edfb}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Tamil","Noto Sans",sans-serif;color:var(--fg);background:#f5f7f4}
+header,main,footer{max-width:46rem;margin:0 auto;padding:1rem}
+== apps/public-page/agritrace_page/templates/page.js
+// Tap-to-enlarge for evidence photos, inlined by batch.html.j2 (W01; plan §13 E2; budget < 4 KB).
+// Without JS the photo link opens the medium WebP; with JS the thumbnail swaps to it in place.
+// Section expand needs no JS: timelines are native <details>, whose lazy images load on open.
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("a.ph");
+  if (!a) return;
+== apps/public-page/tests/test_render.py
+"""Tests for the public page renderer, schema privacy rules and CLI.
+
+Purpose: W01 acceptance (valid HTML, bilingual crop, units everywhere, date order, no temporary or
+non-evidence paths) plus counts (FR63), budgets (plan §13 E1), consent names, lab badge (FR51).
+Requirements: FR15-FR19, FR51, FR58, FR61-FR63, FR72; CLAUDE.md §6.
+Callers: ``uv run pytest`` locally and in CI; the W01 Verifier.
+
+# error codes: grep AppError/error code registrations
+exit=1

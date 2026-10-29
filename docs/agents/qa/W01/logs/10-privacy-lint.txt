@@ -1,0 +1,4 @@
+$ python3 /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-a1e874f99a5c27fbd/infra/scripts/privacy-lint.py /tmp/w01v/out
+/tmp/w01v/out/index.html:8:4: sensitive_label: Mobile
+privacy-lint: 1 hit(s) in 2 file(s) scanned
+exit=1

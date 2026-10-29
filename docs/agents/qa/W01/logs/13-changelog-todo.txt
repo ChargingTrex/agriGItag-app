@@ -1,0 +1,24 @@
+$ sed -n 1,12p CHANGELOG.md (worktree)
+# Changelog
+
+All notable changes to AgriTrace are recorded here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+One line per merged work package: `WP-id — title — reviewer PASS rN, verifier PASS`.
+
+## [Unreleased]
+
+### Added
+- Project scaffold: CLAUDE.md, README, tracking files, ADRs D-001 to D-020, agent role docs, acceptance files for 42 work packages (Orchestrator, 2026-10-29).
+- W01 — public QR page renderer `agritrace_page` (privacy-checked `PublicBatchRecord`, `render()` to index.html + data.json, CLI build/check, reference-batch fixture) — awaiting review.
+
+$ grep -n "W01\|ta.json\|Tamil\|details\|ValidationError\|variant" TODO.md (main)
+10:- [ ] Multi-state localisation beyond Tamil + English: voice packs on demand (D-016).
+20:- [ ] Who records the Tamil voice prompts; how many languages at launch? Pilot ships placeholder clips.
+34:- [ ] W01: a native Tamil speaker should review `apps/public-page/agritrace_page/i18n/ta.json`.
+35:- [ ] W03: the print stylesheet must open or expand the `<details>` timelines so printed pages are complete.
+44:- [ ] W01: opted-out farmer names are a consent decision the schema cannot see; B10 must set `farmer_name` from consent and never change it afterwards.
+45:- [ ] W01: 3-decimal pin rounding and "Farmer N" numbering currently cite D-017; write a small ADR (D-021 privacy rendering rules) when the product sign-off on rounding arrives.
+46:- [ ] B10: map `agritrace_page` `ValidationError` to a registered AppError (`public_record_invalid`, 409) so privacy rejections are visible, never silent.
+47:- [ ] B06: `events.make_variants` records width and height per variant and keeps the original JPEG URL (public page schema expects `thumb_url`, `medium_url`, `jpeg_url`, `width`, `height`).
+48:- [ ] W01 P3s for W03: rarer phone formats (`0091 98765 43210`, `(987) 654-3210`, `98765.43210`, zero-width space) rely on the shared privacy linter; polygon pattern lost its word boundary (rejects "Polygonum"); phone pattern also scans system ids; pin `boundary_map_url` host once B07/B13 fix the GI asset host.
+55:- [ ] Record Tamil voice prompts (about 150 clips).
+exit=0

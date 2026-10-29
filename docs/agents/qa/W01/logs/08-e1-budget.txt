@@ -1,0 +1,5 @@
+$ wc -c /tmp/w01v/out/index.html; external resources; inline <style>/<script> sizes
+   48827 /tmp/w01v/out/index.html
+html_total=48827 B (includes inline css=2310 B, js=577 B); external css/js refs=0
+E1 HTML+CSS+JS < 102400 B: PASS; CSS<12288: True; JS<4096: True
+exit=0

@@ -1,0 +1,17 @@
+$ grep -rn "DECISION D-" agritrace_page
+agritrace_page/render.py:43:# DECISION D-018: Indian grouping and "14 Feb 2026" dates are hand-written, not Babel.
+agritrace_page/render.py:144:# DECISION D-007: the page is plain server-rendered HTML with inline CSS/JS, built once per publish.
+agritrace_page/schema.py:28:# DECISION D-017: this schema is the "visibility: public" allow-list; anything not declared here
+agritrace_page/schema.py:180:    # DECISION D-017: round the pin here instead of trusting the caller to do it.
+agritrace_page/schema.py:309:    # DECISION D-017: the builder sends null when the FPO or farmer opted out of name display, and
+exit=0
+
+# each cited ID vs main DECISIONS.md
+D-007: 14:| D-007 | Static public page built by a worker job, served from object storage behind a CDN | 2026-10-29 | Accepted | [D-007.md](docs/adr/D-007.md) |
+D-017: 24:| D-017 | YAML-driven field and feature configuration with per-tenant overrides | 2026-10-29 | Accepted | [D-017.md](docs/adr/D-017.md) |
+D-018: 25:| D-018 | Library-first implementation with a dependency ledger | 2026-10-29 | Accepted | [D-018.md](docs/adr/D-018.md) |
+
+$ grep -rn "D-0" agritrace_page --include=*.py --include=*.j2 --include=*.css --include=*.js | grep -v "DECISION D-" (other D- refs)
+agritrace_page/cli.py:4:Requirements: plan §13 E1 budgets (CSS < 12 KB, JS < 4 KB, HTML+CSS+JS < 100 KB); D-007.
+agritrace_page/__init__.py:1:"""AgriTrace public QR page renderer (W01; PRD FR15-FR19; D-007).
+exit=0

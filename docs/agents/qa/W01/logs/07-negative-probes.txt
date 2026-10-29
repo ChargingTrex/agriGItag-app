@@ -1,0 +1,37 @@
+== crop_no_tamil_name
+build exit=1
+product_name_local
+  Field required [type=missing]
+    For further information visit https://errors.pydantic.dev/2.14/v/missing
+== non_evidence_photo
+build exit=1
+lots.0.events.0.photos.0.thumb_url
+  String should match pattern '^https?://[^\s/]+/(?:[^\s]*/)?evidence/[^\s]+$' [type=string_pattern_mismatch]
+    For further information visit https://errors.pydantic.dev/2.14/v/string_pattern_mismatch
+== phone_in_comment
+build exit=1
+pydantic_core._pydantic_core.ValidationError: 1 validation error for PublicBatchRecord
+  Value error, privacy: phone number at record.lots[0].events[0].comment [type=value_error]
+    For further information visit https://errors.pydantic.dev/2.14/v/value_error
+== quantity_empty_unit
+build exit=1
+lots.0.quantity.unit
+  String should have at least 1 character [type=string_too_short]
+    For further information visit https://errors.pydantic.dev/2.14/v/string_too_short
+== quantity_no_unit
+build exit=1
+lots.0.quantity.unit
+  Field required [type=missing]
+    For further information visit https://errors.pydantic.dev/2.14/v/missing
+== reversed_dates
+build exit=0
+== temp_uploads_photo
+build exit=1
+pydantic_core._pydantic_core.ValidationError: 1 validation error for PublicBatchRecord
+  Value error, privacy: temporary storage path at record.lots[0].events[0].photos[0].jpeg_url [type=value_error]
+    For further information visit https://errors.pydantic.dev/2.14/v/value_error
+== tmp_path_photo
+build exit=1
+pydantic_core._pydantic_core.ValidationError: 1 validation error for PublicBatchRecord
+  Value error, privacy: temporary storage path at record.lots[0].events[0].photos[0].jpeg_url [type=value_error]
+    For further information visit https://errors.pydantic.dev/2.14/v/value_error

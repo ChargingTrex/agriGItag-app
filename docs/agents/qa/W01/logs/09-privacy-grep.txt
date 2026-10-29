@@ -1,0 +1,7 @@
+$ grep -rnE '[6-9][0-9]{9}' /tmp/w01v/out
+exit=1 (1 = no match)
+$ grep -rnoE '[6-9][0-9]{9}' /tmp/w01v/out | wc -l
+       0
+$ grep -rniE 'temp_uploads|/tmp/|aadhaar|survey|patta|chitta|polygon|phone|mobile' /tmp/w01v/out
+/tmp/w01v/out/index.html:8:   Mobile-first; system fonts only so Tamil renders without a webfont. Print CSS: W03. */
+exit=0

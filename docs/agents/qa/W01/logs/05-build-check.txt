@@ -1,0 +1,5 @@
+$ uv run python -m agritrace_page build fixtures/batch_sample.json /tmp/w01v/out && uv run python -m agritrace_page check /tmp/w01v/out
+css       2310 B <   12288 B  ok
+js         577 B <    4096 B  ok
+total    48827 B <  102400 B  ok
+exit=0

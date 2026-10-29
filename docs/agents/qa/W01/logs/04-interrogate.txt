@@ -1,0 +1,64 @@
+$ uv run interrogate -vv --fail-under 100 agritrace_page
+= Coverage for /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-aa4178c93bf08ffdf/apps/public-page/agritrace_page/ =
+------------------------------ Detailed Coverage -------------------------------
+| Name                                                      |           Status |
+|-----------------------------------------------------------|------------------|
+| __init__.py (module)                                      |          COVERED |
+|-----------------------------------------------------------|------------------|
+| __main__.py (module)                                      |          COVERED |
+|-----------------------------------------------------------|------------------|
+| cli.py (module)                                           |          COVERED |
+| build (L16)                                               |          COVERED |
+| check (L40)                                               |          COVERED |
+| main (L64)                                                |          COVERED |
+|-----------------------------------------------------------|------------------|
+| render.py (module)                                        |          COVERED |
+| RenderResult (L31)                                        |          COVERED |
+| indian_number (L46)                                       |          COVERED |
+| day (L66)                                                 |          COVERED |
+| utc (L81)                                                 |          COVERED |
+| place (L97)                                               |          COVERED |
+| _pair (L112)                                              |          COVERED |
+| _label (L128)                                             |          COVERED |
+| render (L158)                                             |          COVERED |
+| measure (L176)                                            |          COVERED |
+|-----------------------------------------------------------|------------------|
+| schema.py (module)                                        |          COVERED |
+| _privacy_violation (L77)                                  |          COVERED |
+| Quantity (L114)                                           |          COVERED |
+| Reading (L124)                                            |          COVERED |
+| Photo (L136)                                              |          COVERED |
+| Place (L163)                                              |          COVERED |
+| GeoPoint (L173)                                           |          COVERED |
+| GeoPoint._coarsen (L185)                                  |          COVERED |
+| InputUsed (L200)                                          |          COVERED |
+| Event (L209)                                              |          COVERED |
+| Event._range_order (L229)                                 |          COVERED |
+| _by_date (L243)                                           |          COVERED |
+| Grade (L261)                                              |          COVERED |
+| Grade._lab_claim_backed (L276)                            |          COVERED |
+| Processor (L293)                                          |          COVERED |
+| Lot (L304)                                                |          COVERED |
+| Lot.map_link (L339)                                       |          COVERED |
+| Lot.event_count (L352)                                    |          COVERED |
+| Footer (L364)                                             |          COVERED |
+| PublicBatchRecord (L377)                                  |          COVERED |
+| PublicBatchRecord._reject_personal_data (L411)            |          COVERED |
+| PublicBatchRecord._consistent (L429)                      |          COVERED |
+| PublicBatchRecord.lot_count (L451)                        |          COVERED |
+| PublicBatchRecord.farming_event_count (L464)              |          COVERED |
+| PublicBatchRecord.processing_event_count (L477)           |          COVERED |
+|-----------------------------------------------------------|------------------|
+
+----------------------------------- Summary ------------------------------------
+| Name                 |       Total |       Miss |       Cover |       Cover% |
+|----------------------|-------------|------------|-------------|--------------|
+| __init__.py          |           1 |          0 |           1 |         100% |
+| __main__.py          |           1 |          0 |           1 |         100% |
+| cli.py               |           4 |          0 |           4 |         100% |
+| render.py            |          10 |          0 |          10 |         100% |
+| schema.py            |          25 |          0 |          25 |         100% |
+|----------------------|-------------|------------|-------------|--------------|
+| TOTAL                |          41 |          0 |          41 |       100.0% |
+--------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+exit=0

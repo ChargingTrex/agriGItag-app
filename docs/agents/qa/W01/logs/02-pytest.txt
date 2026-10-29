@@ -1,0 +1,4 @@
+$ uv run pytest -q --junitxml=/tmp/w01v/junit.xml
+................................................                         [100%]
+48 passed in 1.27s
+exit=0

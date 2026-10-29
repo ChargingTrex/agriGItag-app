@@ -1,0 +1,3 @@
+$ uv run python --version; uv --version
+Python 3.12.13
+uv 0.12.1 (Homebrew 2026-07-31 x86_64-apple-darwin)

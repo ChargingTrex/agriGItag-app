@@ -1,0 +1,3 @@
+$ git -C <worktree> rev-parse HEAD; git status --porcelain
+fb5dea7311d99e2b260b051a4afbda9a1e686df5
+exit=0
