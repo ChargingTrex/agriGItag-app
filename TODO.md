@@ -99,6 +99,10 @@ _(empty)_
 - [ ] B02 P3s (review B02-r1, 13 items): see the review file; pick up in the SEC pass before G5.
 - [ ] B03 P3s (review B03-r1): `create_farmer` edge cases (phone already holding a staff role in the same FPO gets no farmer membership; two concurrent creates with the same new phone → 500); move cursor helpers to `core/` once a second module needs them; the ≤ 50 KB simplify test only runs on the 1 KB fixture.
 - [ ] Verifier watch-list for B03 on the live stack: geography `ST_Covers` on MULTIPOLYGON vs point; asyncpg parameter typing in raw SQL; the 100 m point classified `near_edge` not `outside`.
+- [ ] M02/M06: M01 skipped a Riverpod provider for `AppDatabase`, a Session DAO, write methods for pulled tables (Lots/Flags/Tasks upserts) and a `migrations/` folder; M02 adds the pull upserts, M06 the Session DAO and provider.
+- [ ] M06: access and refresh tokens sit in plain SQLite (mobile-design §2); decide on the platform keystore (flutter_secure_storage) before release.
+- [ ] M01 risk: the 500-save timing test has ~0.4 s headroom under load; tag it or relax it on CI if it flakes. build_runner needs the Flutter SDK's `dart` and `--force-jit` on this machine (documented in apps/mobile/README).
+- [ ] M02: `OutboxDao.nextBatch` returns media rows regardless of entry confirmation; use `MediaDao.pendingUploads` (which waits for confirmation) for photo uploads.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user
