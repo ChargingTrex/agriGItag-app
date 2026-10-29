@@ -43,6 +43,9 @@ _(empty)_
 - [ ] B00/B01: Celery tasks run `asyncio.run` per task; the first DB task must dispose the engine or use NullPool (see DECISION D-009 comment in worker).
 - [ ] W01: opted-out farmer names are a consent decision the schema cannot see; B10 must set `farmer_name` from consent and never change it afterwards.
 - [ ] W01: 3-decimal pin rounding and "Farmer N" numbering currently cite D-017; write a small ADR (D-021 privacy rendering rules) when the product sign-off on rounding arrives.
+- [ ] B10: map `agritrace_page` `ValidationError` to a registered AppError (`public_record_invalid`, 409) so privacy rejections are visible, never silent.
+- [ ] B06: `events.make_variants` records width and height per variant and keeps the original JPEG URL (public page schema expects `thumb_url`, `medium_url`, `jpeg_url`, `width`, `height`).
+- [ ] W01 P3s for W03: rarer phone formats (`0091 98765 43210`, `(987) 654-3210`, `98765.43210`, zero-width space) rely on the shared privacy linter; polygon pattern lost its word boundary (rejects "Polygonum"); phone pattern also scans system ids; pin `boundary_map_url` host once B07/B13 fix the GI asset host.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 
 ## 5. Manual steps for the user

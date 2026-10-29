@@ -25,3 +25,4 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-018 | Library-first implementation with a dependency ledger | 2026-10-29 | Accepted | [D-018.md](docs/adr/D-018.md) |
 | D-019 | GI region derived from open administrative boundaries with recorded provenance | 2026-10-29 | Accepted | [D-019.md](docs/adr/D-019.md) |
 | D-020 | API versioning under /v1 with one-season backward compatibility | 2026-10-29 | Accepted | [D-020.md](docs/adr/D-020.md) |
+| D-021 | Valkey instead of Redis for broker and cache | 2026-10-29 | Accepted | [D-021.md](docs/adr/D-021.md) |

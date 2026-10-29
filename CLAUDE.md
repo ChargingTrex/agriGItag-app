@@ -5,7 +5,7 @@ Samba Vathal dry chilli, GI 883). Source documents live in `docs/source/`. The a
 plan is summarised in `docs/agents/plan-summary.md`. Read `DECISIONS.md` before changing anything.
 
 ## 1. Stack (do not substitute)
-- Backend `apps/api`: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 async, Alembic, GeoAlchemy2 (PostGIS), Celery + Redis, boto3 (MinIO/S3).
+- Backend `apps/api`: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 async, Alembic, GeoAlchemy2 (PostGIS), Celery + Valkey (Redis protocol), boto3 (S3; LocalStack locally).
 - Mobile `apps/mobile`: Flutter, Material 3, Riverpod, go_router, Drift. Android 8+ and iOS 13+.
 - Portal `apps/portal`: React 18 + TypeScript strict + Vite, TanStack Query, MUI, react-hook-form + zod.
 - Public page `apps/public-page`: Python package `agritrace_page` (Jinja2, inline CSS, no framework JS).

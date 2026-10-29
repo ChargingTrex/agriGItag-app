@@ -150,7 +150,7 @@ Ponytail says "comment only the why the code cannot show, in one line". The user
 
 1. **Every module/file** opens with a header: purpose, which doc requirement it serves (`FR-29`, `Stage 7`, `UserFlows §Selling`), and who calls it.
 2. **Every function** (public and private, all three languages) is documented with a fixed template so a human can read inputs, outputs and failure paths without opening the body:
-   - Python: Google-style docstring with `Args:` (name, type, meaning, units), `Returns:`, `Raises:` (every `AppError` code and every library exception it lets through), and `Side effects:` (DB writes, queue messages, S3 objects) where any exist. Enforced by `interrogate` (100 % including private functions, `-vv --ignore-init-method=false`) and `ruff` docstring rules (D417 requires every argument documented).
+   - Python: Google-style docstring with `Args:` (name, type, meaning, units), `Returns:`, `Raises:` (every `AppError` code and every library exception it lets through), and `Side effects:` (DB writes, queue messages, S3 objects) where any exist. Enforced by `interrogate` (100 % including private functions, `-vv`) and `ruff` docstring rules (D417 requires every argument documented).
    - Dart: `///` doc comments with `[param]` descriptions, return value, and `Throws:` lines; enforced by `public_member_api_docs` plus a `dart doc` warnings-as-errors run.
    - TypeScript: JSDoc with `@param`, `@returns`, `@throws`; enforced by `eslint-plugin-jsdoc` (`require-jsdoc` for all functions, `require-param`, `require-returns`, `require-throws`).
    - Pydantic fields and SQLAlchemy columns carry `description=` / `comment=`; the OpenAPI document is generated from them, so API docs never drift from code.
