@@ -109,17 +109,36 @@ def test_refresh_token_names_its_device_and_is_stored_hashed() -> None:
 
 
 def test_refresh_rotation_and_reuse_detection() -> None:
-    """Current token ok; after rotation the old one is `reused`; a signed-out device answers `revoked`."""
+    """Current token ok; the one rotated out last is `reused`; others `invalid`; signed out `revoked`."""
     device = uuid.uuid4()
     first = service.new_refresh_token(device)
-    stored = service.hash_refresh(first)
-    assert service.refresh_outcome(stored, False, first) == "ok"
-    second = service.new_refresh_token(device)  # rotation: the device now stores the second hash
-    stored = service.hash_refresh(second)
-    assert service.refresh_outcome(stored, False, second) == "ok"
-    assert service.refresh_outcome(stored, False, first) == "reused"
-    assert service.refresh_outcome(None, True, second) == "revoked"
-    assert service.refresh_outcome(stored, True, second) == "revoked"
+    assert service.refresh_outcome(service.hash_refresh(first), None, False, first) == "ok"
+    second = service.new_refresh_token(device)  # rotation: current = second, previous = first
+    current, previous = service.hash_refresh(second), service.hash_refresh(first)
+    assert service.refresh_outcome(current, previous, False, second) == "ok"
+    assert service.refresh_outcome(current, previous, False, first) == "reused"
+    assert service.refresh_outcome(current, previous, False, f"{device}.guessed") == "invalid"
+    assert service.refresh_outcome(current, None, False, first) == "invalid"
+    assert service.refresh_outcome(None, None, True, second) == "revoked"
+    assert service.refresh_outcome(current, previous, True, second) == "revoked"
+
+
+def test_otp_request_wait_enforces_60_s_and_the_daily_cap() -> None:
+    """One code per 60 s; at most `daily_cap` per rolling 24 h; the wait says when the next is allowed."""
+    assert service.otp_request_wait([], NOW, 10) is None
+    assert service.otp_request_wait([NOW - timedelta(seconds=20)], NOW, 10) == 40
+    assert service.otp_request_wait([NOW - timedelta(seconds=61)], NOW, 10) is None
+    hourly = [NOW - timedelta(hours=h, minutes=1) for h in range(10)]  # 10 codes, oldest 9 h 1 min ago
+    assert service.otp_request_wait(hourly, NOW, 10) == (14 * 60 + 59) * 60
+    assert service.otp_request_wait(hourly[:9], NOW, 10) is None
+
+
+def test_super_admin_always_takes_the_pin_step() -> None:
+    """Farmers skip the PIN; office roles and every super-admin (even with a farmer membership) take it."""
+    for role in Role:
+        membership = Membership(role=role, fpo_id=uuid.uuid4(), user_id=uuid.uuid4())
+        assert service.needs_pin(User(is_super_admin=False), membership) is (role != Role.FARMER)
+        assert service.needs_pin(User(is_super_admin=True), membership) is True
 
 
 def test_roles_of_adds_super_admin_flag() -> None:

@@ -183,19 +183,6 @@
             "title": "Consent Version",
             "type": "string"
           },
-          "device_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Device that captured it.",
-            "title": "Device Id"
-          },
           "farmer_id": {
             "description": "Farmer who consented.",
             "format": "uuid",
@@ -261,7 +248,6 @@
           "recording_ref",
           "witnessed_by_user_id",
           "given_at",
-          "device_id",
           "revoked_at"
         ],
         "title": "ConsentOut",
@@ -589,6 +575,35 @@
           "has_more"
         ],
         "title": "Page[ConsentOut]",
+        "type": "object"
+      },
+      "PinChangeIn": {
+        "description": "Set the office PIN (first time) or change it (the current PIN is then required).",
+        "properties": {
+          "current_pin": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{4}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The PIN in force; required when a PIN is already set.",
+            "title": "Current Pin"
+          },
+          "pin": {
+            "description": "Exactly 4 digits.",
+            "pattern": "^[0-9]{4}$",
+            "title": "Pin",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pin"
+        ],
+        "title": "PinChangeIn",
         "type": "object"
       },
       "PinIn": {
@@ -1152,7 +1167,7 @@
     },
     "/v1/auth/pin": {
       "post": {
-        "description": "Set or change the caller's 4-digit PIN (office roles).\n\nArgs:\n    body: the new PIN.\n    session: database session.\n    user: the signed-in office user.\n\nRaises:\n    UnauthorizedError: not signed in.\n    ForbiddenError: farmers have no PIN.\n\nSide effects:\n    Stores the Argon2id hash and clears any PIN lock.",
+        "description": "Set or change the caller's 4-digit PIN (office roles); a change needs the current PIN.\n\nArgs:\n    body: the new PIN and, when one is set, the current PIN.\n    session: database session.\n    user: the signed-in office user.\n\nRaises:\n    UnauthorizedError: not signed in.\n    ForbiddenError: farmers have no PIN.\n    PinInvalidError: the current PIN is missing or wrong.\n    PinLockedError: 5 wrong current PINs.\n\nSide effects:\n    Stores the Argon2id hash and clears any PIN lock.",
         "operationId": "pin_set_v1_auth_pin_post",
         "parameters": [
           {
@@ -1198,7 +1213,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PinIn"
+                "$ref": "#/components/schemas/PinChangeIn"
               }
             }
           },
@@ -1207,6 +1222,12 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "409": {
+            "description": "`pin_locked` after 5 wrong current PINs."
+          },
+          "422": {
+            "description": "`pin_invalid`: current PIN missing or wrong."
           },
           "default": {
             "content": {
@@ -1232,7 +1253,7 @@
     },
     "/v1/auth/pin/verify": {
       "post": {
-        "description": "Trade the `pin_token` (as Bearer) and the 4-digit PIN for a full session.\n\nOn an office user's first sign-in (`pin_set: false`) the PIN sent here becomes their PIN.\n\nArgs:\n    body: the PIN.\n    request: the incoming request (`X-Client: web` selects the cookie transport).\n    response: the outgoing response (refresh cookie for web).\n    session: database session.\n    credentials: `Authorization: Bearer <pin_token>`.\n\nReturns:\n    The session.\n\nRaises:\n    UnauthorizedError: no pin token, or an access/expired/forged token in its place.\n    PinInvalidError: wrong PIN.\n    PinLockedError: 5 wrong PINs.",
+        "description": "Trade the `pin_token` (as Bearer) and the 4-digit PIN for a full session.\n\nOn an office user's first sign-in (`pin_set: false`) the PIN sent here becomes their PIN.\n\nArgs:\n    body: the PIN.\n    request: the incoming request (`X-Client: web` selects the cookie transport).\n    response: the outgoing response (refresh cookie for web).\n    session: database session.\n    credentials: `Authorization: Bearer <pin_token>`.\n\nReturns:\n    The session.\n\nRaises:\n    UnauthorizedError: no pin token, an access/expired/forged token in its place, or a pin token\n        already used for a sign-in.\n    PinInvalidError: wrong PIN.\n    PinLockedError: 5 wrong PINs.",
         "operationId": "pin_verify_v1_auth_pin_verify_post",
         "requestBody": {
           "content": {
@@ -1288,7 +1309,7 @@
     },
     "/v1/auth/refresh": {
       "post": {
-        "description": "Rotate the refresh token and get a new 15-minute access token.\n\nMobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie.\nPresenting an already-rotated token signs the device out (`refresh_reused`).\n\nArgs:\n    body: the refresh token (mobile) or nothing (web).\n    request: the incoming request (cookie and `X-Client`).\n    response: the outgoing response (new cookie for web).\n    session: database session.\n\nReturns:\n    A new session; the old refresh token is now invalid.\n\nRaises:\n    UnauthorizedError: no or unknown token, signed-out device.\n    RefreshReusedError: reuse of a rotated token.",
+        "description": "Rotate the refresh token and get a new 15-minute access token.\n\nMobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie.\nA token read from the cookie is always answered through the cookie. Presenting the token rotated out\nlast signs the device out (`refresh_reused`).\n\nArgs:\n    body: the refresh token (mobile) or nothing (web).\n    request: the incoming request (cookie and `X-Client`).\n    response: the outgoing response (new cookie for web).\n    session: database session.\n\nReturns:\n    A new session; the old refresh token is now invalid.\n\nRaises:\n    UnauthorizedError: no or unknown token, signed-out device.\n    RefreshReusedError: reuse of a rotated token.",
         "operationId": "refresh_v1_auth_refresh_post",
         "requestBody": {
           "content": {

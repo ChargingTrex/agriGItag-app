@@ -102,6 +102,27 @@ class Audited:
     """
 
 
+REDACTED = "[redacted]"
+_SECRET_SUFFIXES = ("_hash", "_secret")
+
+
+def is_secret_column(name: str) -> bool:
+    """Tell whether a column holds credential material that must never reach `audit_log`.
+
+    Args:
+        name: the column (attribute) name.
+
+    Returns:
+        True for `*_hash` and `*_secret` columns (e.g. `users.pin_hash`, `devices.refresh_token_hash`).
+    """
+    # DECISION D-024: secrets are redacted in the append-only audit trail, by column-name convention.
+    #   ADV: a 4-digit PIN hash is effectively the PIN; audit rows are permanent and widely read, so the
+    #     diff records only that the secret changed ("[redacted]"), never its value (CWE-532).
+    #   COMPROMISE: relies on the `_hash`/`_secret` naming convention; a secret column named otherwise
+    #     would leak, so new credential columns must follow it (tests/unit/test_identity_audit.py).
+    return name.endswith(_SECRET_SUFFIXES)
+
+
 def _json_default(value: object) -> str:
     """Render a non-JSON value (UUID, datetime, date, Decimal, geography) for the `diff` column.
 
@@ -124,7 +145,7 @@ def _diff(state: InstanceState[Any], action: str) -> dict[str, Any]:
 
     Returns:
         For `update`, `{column: [old, new]}` for changed columns only; otherwise `{column: value}` for every
-        loaded column. Values are made JSON-safe.
+        loaded column. Values are made JSON-safe; secret columns (`is_secret_column`) read `"[redacted]"`.
     """
     out: dict[str, Any] = {}
     for attr in state.mapper.column_attrs:
@@ -134,6 +155,8 @@ def _diff(state: InstanceState[Any], action: str) -> dict[str, Any]:
                 out[attr.key] = [next(iter(history.deleted), None), next(iter(history.added), None)]
         elif attr.key in state.dict:
             out[attr.key] = state.dict[attr.key]
+        if attr.key in out and is_secret_column(attr.key):
+            out[attr.key] = REDACTED
     result: dict[str, Any] = json.loads(json.dumps(out, default=_json_default))
     return result
 

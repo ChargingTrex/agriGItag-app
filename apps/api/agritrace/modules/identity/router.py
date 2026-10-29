@@ -29,6 +29,7 @@ from agritrace.modules.identity.schemas import (
     OtpRequestIn,
     OtpVerifyIn,
     OtpVerifyOut,
+    PinChangeIn,
     PinIn,
     RefreshIn,
     SessionOut,
@@ -59,26 +60,27 @@ def _is_web(request: Request) -> bool:
     return request.headers.get("x-client", "").lower() == "web"
 
 
-def _deliver(request: Request, response: Response, session_out: SessionOut) -> SessionOut:
+def _deliver(web: bool, response: Response, session_out: SessionOut) -> SessionOut:
     """Hand the refresh token to the client the safe way for its platform.
 
     Args:
-        request: the incoming request (`X-Client` decides the transport).
+        web: deliver by cookie: the request carries `X-Client: web`, or its refresh token came from the
+            cookie (a cookie token never moves into a body that page scripts can read).
         response: the outgoing response, which gets the cookie for web clients.
         session_out: the session issued by the service.
 
     Returns:
-        The session body; for web clients `refresh_token` is null because the cookie carries it.
+        The session body; for web delivery `refresh_token` is null because the cookie carries it.
 
     Side effects:
-        For `X-Client: web`, sets the `agritrace_refresh` cookie.
+        For web delivery, sets the `agritrace_refresh` cookie.
     """
     # DECISION D-022: the portal shares the API's origin, so its refresh token is an httpOnly,
     #   Secure, SameSite=Strict cookie scoped to /v1/auth; mobile keeps the body token.
     #   ADV: page scripts never see the refresh token (no XSS theft); no CORS; Strict blocks CSRF.
     #   COMPROMISE: two transports to test; the cookie is a browser-session cookie (closing the browser
     #     means OTP + PIN again), which suits shared office PCs.
-    if not _is_web(request) or session_out.refresh_token is None:
+    if not web or session_out.refresh_token is None:
         return session_out
     response.set_cookie(
         REFRESH_COOKIE,
@@ -140,7 +142,7 @@ async def otp_verify(
         OtpLockedError: 5 wrong codes.
     """
     result = await service.verify_otp(session, body)
-    return _deliver(request, response, result) if isinstance(result, SessionOut) else result
+    return _deliver(_is_web(request), response, result) if isinstance(result, SessionOut) else result
 
 
 @router.post(
@@ -174,36 +176,47 @@ async def pin_verify(
         The session.
 
     Raises:
-        UnauthorizedError: no pin token, or an access/expired/forged token in its place.
+        UnauthorizedError: no pin token, an access/expired/forged token in its place, or a pin token
+            already used for a sign-in.
         PinInvalidError: wrong PIN.
         PinLockedError: 5 wrong PINs.
     """
     if credentials is None:
         raise UnauthorizedError()
     claims = decode_token(credentials.credentials, "pin")
-    result = await service.verify_pin(session, uuid.UUID(claims["sub"]), uuid.UUID(claims["dev"]), body.pin)
-    return _deliver(request, response, result)
+    user_id, device_id = uuid.UUID(claims["sub"]), uuid.UUID(claims["dev"])
+    result = await service.verify_pin(session, user_id, device_id, int(claims["iat"]), body.pin)
+    return _deliver(_is_web(request), response, result)
 
 
-@router.post("/auth/pin", status_code=204)
+@router.post(
+    "/auth/pin",
+    status_code=204,
+    responses={
+        409: {"description": "`pin_locked` after 5 wrong current PINs."},
+        422: {"description": "`pin_invalid`: current PIN missing or wrong."},
+    },
+)
 async def pin_set(
-    body: PinIn, session: Session, user: Annotated[CurrentUser, Depends(require_role(*OFFICE_ROLES))]
+    body: PinChangeIn, session: Session, user: Annotated[CurrentUser, Depends(require_role(*OFFICE_ROLES))]
 ) -> None:
-    """Set or change the caller's 4-digit PIN (office roles).
+    """Set or change the caller's 4-digit PIN (office roles); a change needs the current PIN.
 
     Args:
-        body: the new PIN.
+        body: the new PIN and, when one is set, the current PIN.
         session: database session.
         user: the signed-in office user.
 
     Raises:
         UnauthorizedError: not signed in.
         ForbiddenError: farmers have no PIN.
+        PinInvalidError: the current PIN is missing or wrong.
+        PinLockedError: 5 wrong current PINs.
 
     Side effects:
         Stores the Argon2id hash and clears any PIN lock.
     """
-    await service.set_pin(session, user, body.pin)
+    await service.set_pin(session, user, body.pin, body.current_pin)
 
 
 @router.post(
@@ -215,7 +228,8 @@ async def refresh(body: RefreshIn, request: Request, response: Response, session
     """Rotate the refresh token and get a new 15-minute access token.
 
     Mobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie.
-    Presenting an already-rotated token signs the device out (`refresh_reused`).
+    A token read from the cookie is always answered through the cookie. Presenting the token rotated out
+    last signs the device out (`refresh_reused`).
 
     Args:
         body: the refresh token (mobile) or nothing (web).
@@ -230,10 +244,11 @@ async def refresh(body: RefreshIn, request: Request, response: Response, session
         UnauthorizedError: no or unknown token, signed-out device.
         RefreshReusedError: reuse of a rotated token.
     """
-    token = body.refresh_token or request.cookies.get(REFRESH_COOKIE)
+    from_cookie = body.refresh_token is None
+    token = request.cookies.get(REFRESH_COOKIE) if from_cookie else body.refresh_token
     if not token:
         raise UnauthorizedError()
-    return _deliver(request, response, await service.refresh(session, token))
+    return _deliver(_is_web(request) or from_cookie, response, await service.refresh(session, token))
 
 
 @router.post("/auth/logout", status_code=204)

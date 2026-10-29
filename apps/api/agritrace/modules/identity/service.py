@@ -14,6 +14,7 @@ tests/unit/test_identity_*.py, tests/integration/test_identity.py.
 import asyncio
 import hashlib
 import hmac
+import math
 import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -36,12 +37,14 @@ from agritrace.core.auth import (
     assert_same_fpo,
     issue_access_token,
     issue_pin_token,
+    issued_before_sign_in,
 )
 from agritrace.core.config import get_settings
 from agritrace.core.enums import Role, UserStatus
 from agritrace.core.errors import (
     ConflictError,
     ConsentConflictError,
+    DeviceInUseError,
     ForbiddenError,
     NotFoundError,
     OtpExpiredError,
@@ -95,13 +98,14 @@ __all__ = [
 
 OTP_TTL = timedelta(minutes=5)
 OTP_RESEND_AFTER = timedelta(seconds=60)
+OTP_CAP_WINDOW = timedelta(hours=24)
 OTP_MAX_ATTEMPTS = 5
 PIN_MAX_ATTEMPTS = 5
 PIN_LOCK = timedelta(minutes=5)
 OTP_TEMPLATE = "otp"
 
 Outcome = Literal["ok", "invalid", "expired", "locked"]
-RefreshOutcome = Literal["ok", "revoked", "reused"]
+RefreshOutcome = Literal["ok", "revoked", "reused", "invalid"]
 
 _hasher = PasswordHasher()  # Argon2id with argon2-cffi's RFC 9106 low-memory defaults
 
@@ -126,7 +130,7 @@ def hash_otp(phone: str, code: str) -> str:
         code: the 6-digit code.
 
     Returns:
-        Hex HMAC-SHA256 of `phone:code` keyed with `JWT_SECRET`.
+        Hex HMAC-SHA256 of `phone:code`, keyed with a key derived from `JWT_SECRET` for this purpose only.
 
     Raises:
         pydantic.ValidationError: `JWT_SECRET` is not configured.
@@ -135,8 +139,29 @@ def hash_otp(phone: str, code: str) -> str:
     #   ADV: a leaked otp_challenges table reveals nothing without the server secret, and the 1 M code
     #     space is too small for a slow hash to matter; no per-guess CPU cost on a public endpoint.
     #   COMPROMISE: rotating JWT_SECRET invalidates codes in flight (they expire within 5 minutes anyway).
-    key = get_settings().jwt_secret.encode()
+    key = hmac.new(get_settings().jwt_secret.encode(), b"agritrace-otp-v1", hashlib.sha256).digest()
     return hmac.new(key, f"{phone}:{code}".encode(), hashlib.sha256).hexdigest()
+
+
+def otp_request_wait(recent: list[datetime], now: datetime, daily_cap: int) -> int | None:
+    """Decide whether a phone may get another code now.
+
+    Args:
+        recent: `created_at` of the phone's challenges in the last 24 hours, newest first (at most
+            `daily_cap` of them are needed).
+        now: the current time.
+        daily_cap: most codes per phone per rolling 24 hours (`OTP_DAILY_CAP`).
+
+    Returns:
+        None when a code may be sent; otherwise the seconds to wait (`retry_after_s`), at least 1: until 60 s
+        after the newest code, or until the oldest of the last `daily_cap` codes leaves the 24-hour window.
+    """
+    waits = []
+    if recent and now - recent[0] < OTP_RESEND_AFTER:
+        waits.append(recent[0] + OTP_RESEND_AFTER - now)
+    if len(recent) >= daily_cap:
+        waits.append(recent[daily_cap - 1] + OTP_CAP_WINDOW - now)
+    return max(1, math.ceil(max(waits).total_seconds())) if waits else None
 
 
 def otp_outcome(attempts: int, expires_at: datetime, now: datetime, matches: bool) -> tuple[Outcome, int]:
@@ -256,21 +281,30 @@ def refresh_device_id(token: str) -> uuid.UUID | None:
         return None
 
 
-def refresh_outcome(stored_hash: str | None, revoked: bool, presented: str) -> RefreshOutcome:
-    """Classify a presented refresh token against the device's single current hash.
+def refresh_outcome(
+    stored_hash: str | None, previous_hash: str | None, revoked: bool, presented: str
+) -> RefreshOutcome:
+    """Classify a presented refresh token against the device's current and previous hashes.
 
     Args:
         stored_hash: the device's current refresh hash, or None when signed out.
+        previous_hash: the hash rotated out by the last refresh, or None.
         revoked: whether the device is revoked.
         presented: the token the client sent.
 
     Returns:
-        `ok` for the current token; `revoked` when the device is signed out; `reused` for any other token
-        of this device (an earlier, already-rotated one: someone else may hold a copy).
+        `ok` for the current token; `revoked` when the device is signed out; `reused` for the token rotated
+        out last (someone else may hold a copy); `invalid` for anything else (a guess built from a known
+        device id must not be able to sign the device out).
     """
     if revoked or stored_hash is None:
         return "revoked"
-    return "ok" if hmac.compare_digest(stored_hash, hash_refresh(presented)) else "reused"
+    presented_hash = hash_refresh(presented)
+    if hmac.compare_digest(stored_hash, presented_hash):
+        return "ok"
+    if previous_hash is not None and hmac.compare_digest(previous_hash, presented_hash):
+        return "reused"
+    return "invalid"
 
 
 def roles_of(user: User, membership: Membership) -> list[str]:
@@ -284,6 +318,19 @@ def roles_of(user: User, membership: Membership) -> list[str]:
         The membership role, plus `super_admin` when the user holds that flag.
     """
     return [membership.role.value] + ([SUPER_ADMIN] if user.is_super_admin else [])
+
+
+def needs_pin(user: User, membership: Membership) -> bool:
+    """Tell whether a sign-in must pass the PIN step.
+
+    Args:
+        user: the user who passed the OTP.
+        membership: the membership the session will be scoped to.
+
+    Returns:
+        True for every office role and for super-admins whatever their membership; False for farmers only.
+    """
+    return membership.role != Role.FARMER or user.is_super_admin
 
 
 # ---------------------------------------------------------------- sign-in
@@ -358,7 +405,8 @@ async def request_otp(session: AsyncSession, phone: str) -> None:
         phone: E.164 number.
 
     Raises:
-        RateLimitedError: a code was requested for this phone less than 60 s ago (`rate_limited`, 429).
+        RateLimitedError: a code was requested for this phone less than 60 s ago, or `OTP_DAILY_CAP` codes
+            in the last 24 hours (`rate_limited`, 429, `details.retry_after_s`).
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
         kombu.exceptions.OperationalError: the SMS task could not be enqueued.
 
@@ -368,12 +416,17 @@ async def request_otp(session: AsyncSession, phone: str) -> None:
     """
     # shortcut: two simultaneous requests can both pass this check; a unique partial index or an advisory
     #   lock would close it if SMS cost from that race ever matters.
-    recent = select(OtpChallenge.id).where(
-        OtpChallenge.phone == phone, OtpChallenge.created_at > utcnow() - OTP_RESEND_AFTER
+    settings, now = get_settings(), utcnow()
+    recent = await session.scalars(
+        select(OtpChallenge.created_at)
+        .where(OtpChallenge.phone == phone, OtpChallenge.created_at > now - OTP_CAP_WINDOW)
+        .order_by(OtpChallenge.created_at.desc())
+        .limit(settings.otp_daily_cap)
     )
-    if (await session.execute(recent.limit(1))).first() is not None:
-        raise RateLimitedError(details={"retry_after_s": int(OTP_RESEND_AFTER.total_seconds())})
-    dev_code = get_settings().otp_dev_code
+    wait = otp_request_wait(list(recent), now, settings.otp_daily_cap)
+    if wait is not None:
+        raise RateLimitedError(details={"retry_after_s": wait})
+    dev_code = settings.otp_dev_code
     code = dev_code or new_otp_code()
     session.add(OtpChallenge(phone=phone, code_hash=hash_otp(phone, code), expires_at=utcnow() + OTP_TTL))
     account = await _account(session, phone=phone)
@@ -391,9 +444,11 @@ async def _bind_device(session: AsyncSession, user_id: uuid.UUID, body: OtpVerif
         body: the verify request (device id, platform, app version).
 
     Returns:
-        The device row (new or rebound: a shared family phone may switch users).
+        The device row (new, or rebound from a user who signed out on it: a shared family phone).
 
     Raises:
+        DeviceInUseError: the device is signed in for another user (`device_in_use`, 409); knowing a
+            device id must not let someone sign its owner out.
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
@@ -404,13 +459,15 @@ async def _bind_device(session: AsyncSession, user_id: uuid.UUID, body: OtpVerif
     if device is None:
         device = Device(id=body.device_id, user_id=user_id, platform=body.platform)
         session.add(device)
+    elif device.user_id != user_id and device.revoked_at is None:
+        raise DeviceInUseError()
     device.user_id, device.platform, device.app_version = user_id, body.platform, body.app_version
-    device.refresh_token_hash, device.revoked_at = None, utcnow()
+    device.refresh_token_hash, device.previous_refresh_token_hash, device.revoked_at = None, None, utcnow()
     return device
 
 
 async def _open_session(
-    session: AsyncSession, user: User, membership: Membership, device: Device
+    session: AsyncSession, user: User, membership: Membership, device: Device, *, sign_in: bool
 ) -> SessionOut:
     """Issue an access token and a fresh refresh token on a device.
 
@@ -419,6 +476,9 @@ async def _open_session(
         user: the signed-in user.
         membership: the membership the session is scoped to.
         device: the device row the session is tied to.
+        sign_in: True after an OTP/PIN sign-in (stamps `signed_in_at`, so tokens issued before it, e.g.
+            ones killed by an earlier logout, stay dead); False for a refresh (keeps the rotated-out hash
+            as `previous_refresh_token_hash` for reuse detection).
 
     Returns:
         The session body (refresh token included; the router moves it to a cookie for web clients).
@@ -427,14 +487,14 @@ async def _open_session(
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Stores the new refresh hash, clears `revoked_at`, stamps `last_seen_at`; commits.
+        Stores the new refresh hash, clears `revoked_at`, stamps `last_seen_at` (and `signed_in_at` on a
+        sign-in); commits.
     """
-    refresh_token = new_refresh_token(device.id)
-    device.refresh_token_hash, device.revoked_at, device.last_seen_at = (
-        hash_refresh(refresh_token),
-        None,
-        utcnow(),
-    )
+    refresh_token, now = new_refresh_token(device.id), utcnow()
+    device.previous_refresh_token_hash = None if sign_in else device.refresh_token_hash
+    device.refresh_token_hash, device.revoked_at, device.last_seen_at = hash_refresh(refresh_token), None, now
+    if sign_in:
+        device.signed_in_at = now
     await session.commit()
     access = issue_access_token(
         user_id=user.id,
@@ -461,12 +521,14 @@ async def verify_otp(session: AsyncSession, body: OtpVerifyIn) -> SessionOut | P
         body: phone, code and the device to tie the session to.
 
     Returns:
-        `SessionOut` for farmers; `PinRequiredOut` for field officers, QC officers, admins and viewers.
+        `SessionOut` for farmers; `PinRequiredOut` for field officers, QC officers, admins, viewers and
+        every super-admin.
 
     Raises:
         OtpInvalidError: wrong code, no open challenge, or a phone that cannot sign in (same answer).
         OtpExpiredError: the challenge is older than 5 minutes.
         OtpLockedError: 5 wrong codes on this challenge.
+        DeviceInUseError: the device is signed in for another user.
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
@@ -501,8 +563,8 @@ async def verify_otp(session: AsyncSession, body: OtpVerifyIn) -> SessionOut | P
     user, membership = account
     challenge.consumed_at = utcnow()
     device = await _bind_device(session, user.id, body)
-    if membership.role == Role.FARMER:
-        return await _open_session(session, user, membership, device)
+    if not needs_pin(user, membership):
+        return await _open_session(session, user, membership, device, sign_in=True)
     await session.commit()
     return PinRequiredOut(
         kind="pin_required",
@@ -512,46 +574,29 @@ async def verify_otp(session: AsyncSession, body: OtpVerifyIn) -> SessionOut | P
     )
 
 
-async def verify_pin(session: AsyncSession, user_id: uuid.UUID, device_id: uuid.UUID, pin: str) -> SessionOut:
-    """Trade a `pin_token` plus the PIN for a session; the first PIN ever sent becomes the PIN.
+async def _check_pin(session: AsyncSession, user: User, pin: str, now: datetime) -> None:
+    """Verify an office PIN under the 5-tries lockout.
 
     Args:
-        session: database session.
-        user_id: the pin token's `sub`.
-        device_id: the pin token's `dev`.
+        session: database session (the caller holds the user row lock).
+        user: the user, with a PIN set.
         pin: the 4 digits entered.
-
-    Returns:
-        The session on the device bound at the OTP step.
+        now: the current time.
 
     Raises:
-        UnauthorizedError: the user can no longer sign in, or the device was rebound or is unknown.
         PinInvalidError: wrong PIN (`details.attempts_left`).
         PinLockedError: 5 wrong PINs; locked for 5 minutes (`details.locked_until`).
-        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Updates the user's PIN counter, lock or (first time) hash, which writes `audit_log` rows; opens the
-        session (refresh hash on the device). Commits.
+        Updates the counter and lock (audited) and commits them before raising; on success resets them
+        (not committed).
     """
-    set_audit_context(AuditContext(actor_user_id=user_id, device_id=device_id, request_id=str(uuid7())))
-    account = await _account(session, user_id=user_id, lock=True)
-    device = await session.get(Device, device_id, with_for_update=True)
-    if account is None or device is None or device.user_id != user_id:
-        raise UnauthorizedError()
-    user, membership = account
-    now = utcnow()
-    # DECISION D-024: an office user's first PIN is chosen at the PIN step, right after a passed OTP.
-    #   ADV: no session (and no refresh token) exists before a PIN, as the P00 contract requires.
-    #   COMPROMISE: whoever passes the first OTP chooses the PIN; same trust as the OTP itself.
-    if user.pin_hash is None:
-        user.pin_hash, outcome = await asyncio.to_thread(hash_pin, pin), "ok"
-    else:
-        locked = user.pin_locked_until is not None and now < user.pin_locked_until
-        matches = not locked and await asyncio.to_thread(pin_matches, user.pin_hash, pin)
-        outcome, user.pin_attempts, user.pin_locked_until = pin_outcome(
-            user.pin_attempts, user.pin_locked_until, now, matches
-        )
+    assert user.pin_hash is not None
+    locked = user.pin_locked_until is not None and now < user.pin_locked_until
+    matches = not locked and await asyncio.to_thread(pin_matches, user.pin_hash, pin)
+    outcome, user.pin_attempts, user.pin_locked_until = pin_outcome(
+        user.pin_attempts, user.pin_locked_until, now, matches
+    )
     if outcome == "locked":
         until = user.pin_locked_until
         await session.commit()
@@ -559,30 +604,94 @@ async def verify_pin(session: AsyncSession, user_id: uuid.UUID, device_id: uuid.
     if outcome != "ok":
         await session.commit()
         raise PinInvalidError(details={"attempts_left": PIN_MAX_ATTEMPTS - user.pin_attempts})
-    return await _open_session(session, user, membership, device)
 
 
-async def set_pin(session: AsyncSession, caller: CurrentUser, pin: str) -> None:
-    """Set or change the caller's office PIN.
+async def verify_pin(
+    session: AsyncSession, user_id: uuid.UUID, device_id: uuid.UUID, issued_at: int, pin: str
+) -> SessionOut:
+    """Trade a `pin_token` plus the PIN for a session; the first PIN ever sent becomes the PIN.
+
+    Args:
+        session: database session.
+        user_id: the pin token's `sub`.
+        device_id: the pin token's `dev`.
+        issued_at: the pin token's `iat`; a token older than the device's last sign-in is spent.
+        pin: the 4 digits entered.
+
+    Returns:
+        The session on the device bound at the OTP step.
+
+    Raises:
+        UnauthorizedError: the user can no longer sign in, the device was rebound or is unknown, or the
+            pin token was already used for a sign-in.
+        PinInvalidError: wrong PIN (`details.attempts_left`).
+        PinLockedError: 5 wrong PINs; locked for 5 minutes (`details.locked_until`).
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+
+    Side effects:
+        Updates the user's PIN counter, lock or (first time) hash, which writes `audit_log` rows (the hash
+        redacted); opens the session (refresh hash and `signed_in_at` on the device). Commits.
+    """
+    set_audit_context(AuditContext(actor_user_id=user_id, device_id=device_id, request_id=str(uuid7())))
+    account = await _account(session, user_id=user_id, lock=True)
+    device = await session.get(Device, device_id, with_for_update=True)
+    if account is None or device is None or device.user_id != user_id:
+        raise UnauthorizedError()
+    if issued_before_sign_in(issued_at, device.signed_in_at):
+        raise UnauthorizedError(details={"reason": "pin_token_used"})
+    user, membership = account
+    # DECISION D-024: an office user's first PIN is chosen at the PIN step, right after a passed OTP.
+    #   ADV: no session (and no refresh token) exists before a PIN, as the P00 contract requires.
+    #   COMPROMISE: whoever passes the first OTP chooses the PIN; same trust as the OTP itself.
+    # shortcut: the first OTP sets the PIN (accepted for the pilot, review B02-r1 P2-6); upgrade to an
+    #   admin-issued initial PIN for office users (B03/P01).
+    if user.pin_hash is None:
+        user.pin_hash = await asyncio.to_thread(hash_pin, pin)
+    else:
+        await _check_pin(session, user, pin, utcnow())
+    return await _open_session(session, user, membership, device, sign_in=True)
+
+
+async def set_pin(session: AsyncSession, caller: CurrentUser, pin: str, current_pin: str | None) -> None:
+    """Set or change the caller's office PIN; changing it needs the current PIN.
 
     Args:
         session: database session.
         caller: a signed-in office user (the router admits office roles only).
         pin: the new 4 digits.
+        current_pin: the PIN in force; required when one is set, ignored on the first set.
 
     Raises:
         UnauthorizedError: the user row is gone.
+        PinInvalidError: `current_pin` is missing or wrong (a wrong one counts toward the lock).
+        PinLockedError: 5 wrong PINs; locked for 5 minutes.
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Stores the new hash and clears the counter and lock (audited); commits.
+        Stores the new hash and clears the counter and lock (audited, hash redacted); commits.
     """
-    user = await session.get(User, caller.user_id)
+    user = await session.get(User, caller.user_id, with_for_update=True)
     if user is None:
         raise UnauthorizedError()
+    if user.pin_hash is not None:
+        if current_pin is None:
+            raise PinInvalidError("The current PIN is required.", details={"current_pin": "required"})
+        await _check_pin(session, user, current_pin, utcnow())
     user.pin_hash = await asyncio.to_thread(hash_pin, pin)
     user.pin_attempts, user.pin_locked_until = 0, None
     await session.commit()
+
+
+def _sign_out(device: Device) -> None:
+    """Revoke a device and forget its refresh tokens.
+
+    Args:
+        device: the device row.
+
+    Side effects:
+        Sets `revoked_at`; clears the current and previous refresh hashes (not committed).
+    """
+    device.refresh_token_hash, device.previous_refresh_token_hash, device.revoked_at = None, None, utcnow()
 
 
 async def refresh(session: AsyncSession, token: str) -> SessionOut:
@@ -596,8 +705,9 @@ async def refresh(session: AsyncSession, token: str) -> SessionOut:
         A new session on the same device; the presented token is no longer valid.
 
     Raises:
-        UnauthorizedError: malformed token, unknown or signed-out device, or the user can no longer sign in.
-        RefreshReusedError: an already-rotated token of this device (`refresh_reused`, 401); the device is
+        UnauthorizedError: malformed or unknown token, unknown or signed-out device, or the user can no
+            longer sign in. An unknown token for a known device changes nothing.
+        RefreshReusedError: the token this device rotated out last (`refresh_reused`, 401); the device is
             signed out so neither copy works any more.
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
@@ -608,16 +718,18 @@ async def refresh(session: AsyncSession, token: str) -> SessionOut:
     device = await session.get(Device, device_id, with_for_update=True) if device_id else None
     if device is None:
         raise UnauthorizedError()
-    outcome = refresh_outcome(device.refresh_token_hash, device.revoked_at is not None, token)
+    outcome = refresh_outcome(
+        device.refresh_token_hash, device.previous_refresh_token_hash, device.revoked_at is not None, token
+    )
     account = await _account(session, user_id=device.user_id) if outcome == "ok" else None
+    if outcome in ("reused", "ok") and account is None:
+        _sign_out(device)
+        await session.commit()
+    if outcome == "reused":
+        raise RefreshReusedError()
     if account is None:
-        if outcome != "revoked":
-            device.refresh_token_hash, device.revoked_at = None, utcnow()
-            await session.commit()
-        if outcome == "reused":
-            raise RefreshReusedError()
         raise UnauthorizedError()
-    return await _open_session(session, *account, device)
+    return await _open_session(session, *account, device, sign_in=False)
 
 
 async def logout(session: AsyncSession, caller: CurrentUser) -> None:
@@ -635,7 +747,7 @@ async def logout(session: AsyncSession, caller: CurrentUser) -> None:
     """
     device = await session.get(Device, caller.device_id)
     if device is not None:
-        device.refresh_token_hash, device.revoked_at = None, utcnow()
+        _sign_out(device)
         await session.commit()
 
 

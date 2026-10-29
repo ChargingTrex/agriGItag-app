@@ -218,6 +218,14 @@ class AssistSessionInvalidError(AppError):
     fix = "Start a new assist session (`POST /v1/assist/start`) and send its id in `X-Assist-Session`."
 
 
+class DeviceInUseError(AppError):
+    """The device id is signed in for another user; it must sign out before someone else signs in on it."""
+
+    code, status, message_key = "device_in_use", 409, "error.device_in_use"
+    message = "This device is signed in for another user."
+    fix = "Sign out on this device first (`POST /v1/auth/logout`), then sign in again."
+
+
 class ConsentConflictError(AppError):
     """A consent `client_id` already exists with different content or for another farmer (D-005)."""
 

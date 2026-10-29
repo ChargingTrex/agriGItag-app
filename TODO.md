@@ -38,6 +38,11 @@ _(empty)_
 - [ ] B02/B03: farmers and their users/memberships are created by registry (B03); identity only signs existing users in.
 - [ ] B02/P01: portal adapts to the auth contract differences listed in docs/api/conventions.md "Authentication".
 - [ ] B02: revisit `tests/conftest.py` JWT_SECRET (23 bytes triggers PyJWT InsecureKeyLengthWarning).
+- [ ] B02 (B02-r1 P2-6, accepted for the pilot): admin-issued initial PIN for office users (B03/P01); today the first OTP sets the PIN.
+- [ ] B02 (B02-r1 P3-7): security event log lines (OTP lock, PIN lock, refresh reuse, `device_in_use`) with no codes or tokens, when observability lands.
+- [ ] B02 (B02-r1 P3-8): idle expiry for refresh tokens (e.g. `last_seen_at > now - 90 d`); Orchestrator to decide before the pilot.
+- [ ] B02 (B02-r1 P3-11) for B11: no Celery `result_extended` and no task kwargs in failure logs (the OTP code travels in `payload.code`).
+- [ ] B02 (B02-r1 P3-2, P3-5, P3-13): unknown-phone timing on `otp/request` (enqueue after the response), maximum age for assist sessions, escalating PIN lock.
 - [ ] W01: a native Tamil speaker should review `apps/public-page/agritrace_page/i18n/ta.json`.
 - [ ] W03: the print stylesheet must open or expand the `<details>` timelines so printed pages are complete.
 - [ ] W02: the schema's number checks skip http(s) URLs to avoid false hits on hashed evidence URLs; the built-output privacy lint is the second line of defence and must stay in CI.

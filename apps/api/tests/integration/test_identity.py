@@ -2,18 +2,22 @@
 
 Covers: OTP rate limit and lock, unknown phones, farmer session and office PIN step, PIN lock, role guard
 (`GET /v1/flags` as a farmer), assist header, consent audit row, refresh rotation and reuse, logout, web
-cookie transport, and the SMS enqueue rule around `OTP_DEV_CODE`.
+cookie transport, and the SMS enqueue rule around `OTP_DEV_CODE`; round 2 (review B02-r1): PIN hash redacted
+in audit, current PIN for a change, super-admin PIN step, cookie-only refresh, stale tokens after a new
+sign-in, guessed refresh tokens, `device_in_use`, the OTP daily cap and no device id in consent responses.
 
 Serves: B02 acceptance (docs/agents/acceptance/B02.md), FR1, FR14, FR24, FR25, FR41, CLAUDE.md §6,
 D-005, D-022, D-024.
 Callers: pytest (`make test`); needs Docker (tests/conftest.py `stack` sets OTP_DEV_CODE=123456).
 """
 
+import asyncio
 import secrets
 import subprocess
 import sys
 import uuid
 from collections.abc import AsyncIterator
+from datetime import timedelta
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -26,9 +30,10 @@ from agritrace.core.auth import CurrentUser, get_current_user, require_role
 from agritrace.core.config import get_settings
 from agritrace.core.db import get_sessionmaker
 from agritrace.core.enums import OrgKind, Role
+from agritrace.core.time import utcnow
 from agritrace.main import create_app
 from agritrace.modules.identity import service
-from agritrace.modules.identity.models import AuditLog, Membership, User
+from agritrace.modules.identity.models import AuditLog, Membership, OtpChallenge, User
 from agritrace.modules.registry.models import Farmer, Fpo
 
 pytestmark = pytest.mark.integration
@@ -111,7 +116,7 @@ def _phone() -> str:
     return f"+9197{secrets.randbelow(10**8):08d}"
 
 
-async def _seed(role: Role) -> dict[str, Any]:
+async def _seed(role: Role, *, super_admin: bool = False) -> dict[str, Any]:
     """Create an FPO, a user with `role` there and (for any role) a farmer record.
 
     For a farmer user the farmer record is linked to the user; for an office user it is a separate farmer
@@ -119,6 +124,7 @@ async def _seed(role: Role) -> dict[str, Any]:
 
     Args:
         role: the user's membership role.
+        super_admin: the user's super-admin flag.
 
     Returns:
         `phone`, `user`, `fpo`, `farmer` (ids) for the test.
@@ -129,7 +135,7 @@ async def _seed(role: Role) -> dict[str, Any]:
     phone = _phone()
     async with get_sessionmaker()() as s:
         fpo = Fpo(code=f"FPO_{secrets.token_hex(4)}", name="Demo FPO", kind=OrgKind.FPO)
-        user = User(phone=phone, name="Test user")
+        user = User(phone=phone, name="Test user", is_super_admin=super_admin)
         s.add_all([fpo, user])
         await s.flush()
         s.add(Membership(user_id=user.id, fpo_id=fpo.id, role=role))
@@ -439,3 +445,166 @@ async def test_web_client_gets_the_refresh_token_as_an_httponly_cookie(api: Asyn
         "/v1/auth/refresh", json={}, headers={"X-Client": "web", "Cookie": f"agritrace_refresh={token}"}
     )
     assert r.status_code == 200 and r.json()["refresh_token"] is None
+
+
+# ---------------------------------------------------------------- review B02-r1 fixes (round 2)
+
+
+async def _new_phone(user_id: uuid.UUID) -> str:
+    """Give a user a fresh number so a second sign-in in the same test is not rate-limited.
+
+    Args:
+        user_id: the user.
+
+    Returns:
+        The new E.164 number.
+
+    Side effects:
+        Commits the change.
+    """
+    async with get_sessionmaker()() as s:
+        user = await s.get(User, user_id)
+        assert user is not None
+        user.phone = _phone()
+        await s.commit()
+        return user.phone
+
+
+async def test_pin_hash_never_reaches_the_audit_log(api: AsyncClient) -> None:
+    """R1: after choosing and changing a PIN, no `audit_log` diff holds an Argon2 hash.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FPO_ADMIN)
+    session = await _officer_session(api, seed)
+    r = await api.post("/v1/auth/pin", json={"pin": "1357", "current_pin": "2468"}, headers=_bearer(session))
+    assert r.status_code == 204, r.text
+    async with get_sessionmaker()() as s:
+        query = select(AuditLog.diff).where(
+            AuditLog.entity_type == "users", AuditLog.entity_id == seed["user"]
+        )
+        diffs = (await s.scalars(query)).all()
+    assert any(d.get("pin_hash") == "[redacted]" for d in diffs)
+    assert all("$argon2" not in str(d) for d in diffs)
+
+
+async def test_pin_change_requires_the_current_pin(api: AsyncClient) -> None:
+    """R6: `POST /v1/auth/pin` without or with a wrong current PIN is `pin_invalid`.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.QC_OFFICER)
+    session = await _officer_session(api, seed)
+    for body in ({"pin": "1357"}, {"pin": "1357", "current_pin": "0000"}):
+        r = await api.post("/v1/auth/pin", json=body, headers=_bearer(session))
+        assert (r.status_code, r.json()["error"]["code"]) == (422, "pin_invalid")
+
+
+async def test_super_admin_with_farmer_membership_takes_the_pin_step(api: AsyncClient) -> None:
+    """R7: a super-admin never gets a session from the OTP alone.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FARMER, super_admin=True)
+    assert (await _otp(api, seed["phone"]))["kind"] == "pin_required"
+
+
+async def test_cookie_refresh_without_x_client_stays_in_the_cookie(api: AsyncClient) -> None:
+    """R2: a cookie-sourced refresh answers through the cookie even when `X-Client` is missing.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FARMER)
+    session = await _otp(api, seed["phone"])
+    cookie = {"Cookie": f"agritrace_refresh={session['refresh_token']}"}
+    r = await api.post("/v1/auth/refresh", json={}, headers=cookie)
+    assert r.status_code == 200 and r.json()["refresh_token"] is None
+    assert "agritrace_refresh=" in r.headers["set-cookie"]
+
+
+async def test_old_access_token_stays_dead_after_signing_in_again(api: AsyncClient) -> None:
+    """R3: logout, then sign in again on the same device within 15 minutes: the old access token is 401.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FARMER)
+    device = uuid.uuid4()
+    first = await _otp(api, seed["phone"], device)
+    assert (await api.post("/v1/auth/logout", headers=_bearer(first))).status_code == 204
+    await asyncio.sleep(1.1)  # `iat` has whole-second precision
+    second = await _otp(api, await _new_phone(seed["user"]), device)
+    assert (await api.get("/v1/me", headers=_bearer(second))).status_code == 200
+    assert (await api.get("/v1/me", headers=_bearer(first))).status_code == 401
+
+
+async def test_guessed_refresh_token_does_not_sign_the_device_out(api: AsyncClient) -> None:
+    """R4a: `<device id>.<anything>` is a plain 401 and the real session keeps working.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FARMER)
+    device = uuid.uuid4()
+    session = await _otp(api, seed["phone"], device)
+    r = await api.post("/v1/auth/refresh", json={"refresh_token": f"{device}.guessed"})
+    assert (r.status_code, r.json()["error"]["code"]) == (401, "unauthorized")
+    r = await api.post("/v1/auth/refresh", json={"refresh_token": session["refresh_token"]})
+    assert r.status_code == 200
+
+
+async def test_active_device_of_another_user_is_device_in_use(api: AsyncClient) -> None:
+    """R4b: signing in on a device id that is signed in for someone else is 409 `device_in_use`.
+
+    Args:
+        api: the client.
+    """
+    owner, intruder = await _seed(Role.FARMER), await _seed(Role.FARMER)
+    device = uuid.uuid4()
+    session = await _otp(api, owner["phone"], device)
+    assert (await api.post("/v1/auth/otp/request", json={"phone": intruder["phone"]})).status_code == 204
+    body = {"phone": intruder["phone"], "code": DEV_CODE, "device_id": str(device), "platform": "android"}
+    r = await api.post("/v1/auth/otp/verify", json=body)
+    assert (r.status_code, r.json()["error"]["code"]) == (409, "device_in_use")
+    assert (await api.get("/v1/me", headers=_bearer(session))).status_code == 200
+
+
+async def test_otp_daily_cap(api: AsyncClient) -> None:
+    """R5: after `OTP_DAILY_CAP` codes in 24 hours the next request is 429 with `retry_after_s`.
+
+    Args:
+        api: the client.
+    """
+    phone = _phone()
+    cap = get_settings().otp_daily_cap
+    async with get_sessionmaker()() as s:
+        for hours in range(cap):
+            created = utcnow() - timedelta(hours=hours + 1)
+            s.add(OtpChallenge(phone=phone, code_hash="x", expires_at=created, created_at=created))
+        await s.commit()
+    r = await api.post("/v1/auth/otp/request", json={"phone": phone})
+    assert (r.status_code, r.json()["error"]["code"]) == (429, "rate_limited")
+    assert r.json()["error"]["details"]["retry_after_s"] > 60
+
+
+async def test_consent_response_carries_no_device_id(api: AsyncClient) -> None:
+    """R4: consent responses (visible to farmers and viewers) never expose a device id.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FARMER)
+    session = await _otp(api, seed["phone"])
+    body = {
+        "client_id": str(uuid.uuid4()),
+        "farmer_id": str(seed["farmer"]),
+        "consent_type": "public_name",
+        "consent_version": "v1-ta",
+        "given_at": "2026-03-04T08:12:10+05:30",
+    }
+    r = await api.post("/v1/consents", json=body, headers=_bearer(session))
+    assert r.status_code == 201 and "device_id" not in r.json()

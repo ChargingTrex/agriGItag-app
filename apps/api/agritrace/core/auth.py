@@ -40,6 +40,8 @@ PIN_TOKEN_TTL = timedelta(minutes=5)
 # Not a membership role: the `users.is_super_admin` flag, admitted only where a route lists it.
 SUPER_ADMIN = "super_admin"
 TokenType = Literal["access", "pin"]
+# Tolerated clock difference between API containers when checking `iat`/`exp`.
+LEEWAY = timedelta(seconds=30)
 
 # identity/models.py owns these tables; core may not import a module (D-004), so these lightweight handles
 # name the columns the hot path reads (tests/unit/test_identity_tokens.py keeps them in step).
@@ -48,6 +50,7 @@ DEVICES = table(
     column("id", Uuid()),
     column("user_id", Uuid()),
     column("revoked_at", DateTime(timezone=True)),
+    column("signed_in_at", DateTime(timezone=True)),
 )
 ASSIST_SESSIONS = table(
     "assist_sessions",
@@ -149,6 +152,11 @@ def issue_pin_token(*, user_id: uuid.UUID, device_id: uuid.UUID, now: datetime |
     Raises:
         pydantic.ValidationError: `JWT_SECRET` is not configured.
     """
+    # DECISION D-024: the PIN step uses its own token type (`typ=pin`), not a restricted access token.
+    #   ADV: `decode_token` refuses it everywhere except `/v1/auth/pin/verify`, and it carries no role,
+    #     FPO or refresh token, so nothing usable is released before the PIN (P00 contract).
+    #   COMPROMISE: one more token type to test; it is replayable for its 5 minutes until the PIN passes
+    #     (then `devices.signed_in_at` moves past its `iat`).
     return _encode({"sub": str(user_id), "dev": str(device_id)}, "pin", PIN_TOKEN_TTL, now)
 
 
@@ -170,6 +178,7 @@ def decode_token(token: str, typ: TokenType) -> dict[str, Any]:
             token,
             get_settings().jwt_secret,
             algorithms=[ALGORITHM],
+            leeway=LEEWAY,
             options={"require": ["exp", "iat", "jti", "sub", "typ", "dev"]},
         )
     except jwt.InvalidTokenError as e:
@@ -203,24 +212,42 @@ def user_from_claims(claims: dict[str, Any]) -> CurrentUser:
         raise UnauthorizedError(details={"reason": "bad_claims"}) from e
 
 
-async def _device_active(session: AsyncSession, device_id: uuid.UUID, user_id: uuid.UUID) -> bool:
-    """Check that the token's device is still signed in for this user.
+def issued_before_sign_in(issued_at: int, signed_in_at: datetime | None) -> bool:
+    """Tell whether a token predates the device's latest sign-in (so a sign-out it outlived still holds).
+
+    Args:
+        issued_at: the token's `iat` (whole seconds since the epoch).
+        signed_in_at: `devices.signed_in_at`, or None when never stamped.
+
+    Returns:
+        True when `iat < floor(signed_in_at)`; `iat` has whole-second precision, hence the floor.
+    """
+    return signed_in_at is not None and issued_at < int(signed_in_at.timestamp())
+
+
+async def _device_active(
+    session: AsyncSession, device_id: uuid.UUID, user_id: uuid.UUID, issued_at: int
+) -> bool:
+    """Check that the token's device is still signed in for this user, by this sign-in.
 
     Args:
         session: the request's database session.
         device_id: the token's `dev` claim.
         user_id: the token's `sub` claim.
+        issued_at: the token's `iat` claim.
 
     Returns:
-        True when the device row exists, belongs to the user and is not revoked.
+        True when the device row exists, belongs to the user, is not revoked, and the token was issued
+        at or after the device's latest sign-in (a token revoked by logout stays dead after a new sign-in).
 
     Raises:
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
-    query = select(DEVICES.c.id).where(
+    query = select(DEVICES.c.signed_in_at).where(
         DEVICES.c.id == device_id, DEVICES.c.user_id == user_id, DEVICES.c.revoked_at.is_(None)
     )
-    return (await session.execute(query)).first() is not None
+    row = (await session.execute(query)).first()
+    return row is not None and not issued_before_sign_in(issued_at, row.signed_in_at)
 
 
 async def _assist_farmer(
@@ -282,11 +309,14 @@ async def get_current_user(
     """
     if credentials is None:
         raise UnauthorizedError()
-    user = user_from_claims(decode_token(credentials.credentials, "access"))
+    claims = decode_token(credentials.credentials, "access")
+    user = user_from_claims(claims)
     assert user.device_id is not None  # always set by user_from_claims
-    # TODO(B02 follow-up): cache revocations (Valkey set of revoked device ids) if this read shows up in
-    #   p95 latency; today it is one primary-key lookup per request.
-    if not await _device_active(session, user.device_id, user.user_id):
+    # DECISION D-024: every request reads its device row (revoked? token older than the last sign-in?).
+    #   ADV: logout and refresh-reuse revocation take effect on the very next request, not after 15 min.
+    #   COMPROMISE: one primary-key read per request; TODO(B02 follow-up): cache revocations in Valkey if
+    #     it shows up in p95 latency.
+    if not await _device_active(session, user.device_id, user.user_id, int(claims["iat"])):
         raise UnauthorizedError("This device has been signed out.", details={"reason": "device_revoked"})
     if x_assist_session is not None:
         farmer_id = await _assist_farmer(session, x_assist_session, user.user_id)

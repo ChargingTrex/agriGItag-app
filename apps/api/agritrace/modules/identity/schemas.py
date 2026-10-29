@@ -79,6 +79,14 @@ class PinIn(BaseModel):
     pin: str = Field(pattern=r"^[0-9]{4}$", description="Exactly 4 digits.")
 
 
+class PinChangeIn(PinIn):
+    """Set the office PIN (first time) or change it (the current PIN is then required)."""
+
+    current_pin: str | None = Field(
+        None, pattern=r"^[0-9]{4}$", description="The PIN in force; required when a PIN is already set."
+    )
+
+
 class RefreshIn(BaseModel):
     """Rotate the refresh token. Web clients omit the body field and send the httpOnly cookie."""
 
@@ -172,5 +180,4 @@ class ConsentOut(BaseModel):
     recording_ref: str | None = Field(description="Object key of the recording, if any.")
     witnessed_by_user_id: uuid.UUID | None = Field(description="Officer who witnessed it (assist mode).")
     given_at: datetime = Field(description="When consent was given.")
-    device_id: uuid.UUID | None = Field(description="Device that captured it.")
     revoked_at: datetime | None = Field(description="When it was withdrawn; null while in force.")
