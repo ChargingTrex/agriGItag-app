@@ -1,0 +1,19 @@
+{
+  "//": "W02 Node dev tools for the public page: html-validate (0 HTML errors) and Lighthouse CI (BM-03 3G, BM-16 normal 4G). Callers: the public-page CI job, qa/robot/public/page.robot, developers. The page itself has no Node runtime (D-007).",
+  "name": "@agritrace/public-page-checks",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Validators and performance gates for the static AgriTrace public batch page (plan §7.4 W02).",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "html-validate out/site",
+    "lhci:3g": "lhci autorun --config=lighthouserc.3g.yml",
+    "lhci:4g": "lhci autorun --config=lighthouserc.4g.yml"
+  },
+  "devDependencies": {
+    "@lhci/cli": "0.15.1",
+    "html-validate": "11.4.0"
+  }
+}

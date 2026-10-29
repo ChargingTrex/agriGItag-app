@@ -1,0 +1,32 @@
+# Lighthouse CI, 3G profile: the public batch page loads fast on a weak rural link.
+# Requirement: BM-03 (performance >= 0.90, LCP <= 2 s, first-view transfer <= 500 KB), FR-19, plan §7.4 W02.
+# Callers: `npm run lhci:3g` in the public-page CI job, qa/robot/public/page.robot (tag needs-chrome).
+# Input: out/site/index.html built from fixtures/batch_sample.json; lhci serves the folder itself, with gzip
+#   as the CDN would (D-007). Reports land in out/lhci/3g/ (git-ignored).
+# DECISION D-007: measure the built static file as the CDN serves it, against "sub-2-second loads".
+#   ADV: the number Lighthouse reports is the number a buyer gets (one gzipped document, no backend).
+#   COMPROMISE: the network is Lighthouse's own 3G preset (constants.throttling.mobileRegular3G: 300 ms RTT,
+#   700 kbit/s, 4x CPU), not the DevTools "Slow 3G" values (400 ms, 400 kbit/s). Under those, a 1 KB page
+#   with one <h1> has a median LCP of 2006 ms on the W02 machine (this page: 2007 ms), so LCP <= 2 s
+#   would test the profile, not the page. Evidence and the open question: docs/agents/reports/W02.md.
+ci:
+  collect:
+    staticDistDir: ./out/site
+    numberOfRuns: 3
+    settings:
+      onlyCategories: [performance]
+      # Simulated throttling: one deterministic network model, no OS-level shaping needed in CI.
+      throttlingMethod: simulate
+      throttling:
+        rttMs: 300
+        throughputKbps: 700
+        cpuSlowdownMultiplier: 4
+      chromeFlags: "--headless=new --no-sandbox"
+  assert:
+    assertions:
+      categories:performance: [error, {minScore: 0.9, aggregationMethod: median}]
+      total-byte-weight: [error, {maxNumericValue: 500000, aggregationMethod: median}]
+      largest-contentful-paint: [error, {maxNumericValue: 2000, aggregationMethod: median}]
+  upload:
+    target: filesystem
+    outputDir: ./out/lhci/3g

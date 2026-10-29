@@ -1,0 +1,45 @@
+{
+  "_about": "W02 privacy canaries (BM-09, FR-16, CLAUDE.md §6). Fake sensitive strings that a leaking template or builder would print. tools/check_output.sh passes every `value` to infra/scripts/privacy-lint.py as --canary. tests/test_render.py plants each one into a copy of batch_sample.json at `plant.path` (`expect`: render refuses the record, or coarsens the pin so the value never appears) and injects each `value` into a copy of the template (the lint must then fail with `rule`). The 6-dp pin is the one batch_sample.json already carries for lot 1, so every clean build is linted against it; its latitude and longitude are separate canaries because a lone 6-dp number is invisible to the regex rules.",
+  "canaries": [
+    {
+      "kind": "phone",
+      "value": "98765 01234",
+      "rule": "phone",
+      "plant": {"path": ["lots", 0, "review_note"], "value": "Call 98765 01234 before visiting", "expect": "refused"}
+    },
+    {
+      "kind": "aadhaar",
+      "value": "2345 6789 0123",
+      "rule": "aadhaar",
+      "plant": {"path": ["lots", 0, "events", 0, "comment"], "value": "Aadhaar 2345 6789 0123 checked", "expect": "refused"}
+    },
+    {
+      "kind": "survey_number",
+      "value": "S.F. No. 123/4A",
+      "rule": "sensitive_label",
+      "plant": {"path": ["gi_verification_note"], "value": "Plot S.F. No. 123/4A inside the GI area", "expect": "refused"}
+    },
+    {
+      "kind": "latitude_6dp",
+      "value": "9.536271",
+      "rule": "canary",
+      "plant": {"path": ["lots", 0, "map_point"], "value": {"lat": 9.536271, "lon": 78.201934}, "expect": "coarsened"}
+    },
+    {
+      "kind": "longitude_6dp",
+      "value": "78.201934",
+      "rule": "canary",
+      "plant": {"path": ["lots", 0, "map_point"], "value": {"lat": 9.536271, "lon": 78.201934}, "expect": "coarsened"}
+    },
+    {
+      "kind": "temp_path",
+      "value": "temp_uploads/raw-0001.jpg",
+      "rule": "temp_path",
+      "plant": {
+        "path": ["lots", 0, "events", 0, "photos", 0, "jpeg_url"],
+        "value": "https://evidence.example/evidence/temp_uploads/raw-0001.jpg",
+        "expect": "refused"
+      }
+    }
+  ]
+}

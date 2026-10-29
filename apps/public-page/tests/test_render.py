@@ -2,14 +2,21 @@
 
 Purpose: W01 acceptance (valid HTML, bilingual crop, units everywhere, date order, no temporary or
 non-evidence paths) plus counts (FR63), budgets (plan §13 E1), consent names, lab badge (FR51).
-Requirements: FR15-FR19, FR51, FR58, FR61-FR63, FR72; CLAUDE.md §6.
-Callers: ``uv run pytest`` locally and in CI; the W01 Verifier.
+W02 canaries (end of file): the built page passes the privacy lint with fixtures/canaries.json, each
+canary planted in the record never reaches the page, and each canary injected into a template copy
+fails the lint (BM-09, "injected phone fails CI").
+Requirements: FR15-FR19, FR51, FR58, FR61-FR63, FR72; BM-09; CLAUDE.md §6.
+Callers: ``uv run pytest`` locally and in the public-page CI job; the W01 and W02 Verifiers.
 """
 
 import copy
 import datetime as dt
 import json
+import os
 import re
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 from xml.etree.ElementTree import Element
 
@@ -26,6 +33,8 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "fixtures" / "batch_sample.json"
 _SAMPLE = json.loads(FIXTURE.read_text("utf-8"))
 MOBILE = re.compile(r"(?<!\d)[6-9]\d{9}(?!\d)")
+CANARIES = json.loads((ROOT / "fixtures" / "canaries.json").read_text("utf-8"))["canaries"]
+CHECK_OUTPUT = ROOT / "tools" / "check_output.sh"
 
 
 @pytest.fixture
@@ -382,3 +391,82 @@ def test_cli_check_fails_over_budget(tmp_path: Path) -> None:
     """
     (tmp_path / "index.html").write_text("<p>" + "x" * BUDGETS["total"] + "</p>", "utf-8")
     assert main(["check", str(tmp_path)]) == 1
+
+
+def _check_output(out_dir: Path) -> subprocess.CompletedProcess[str]:
+    """Run tools/check_output.sh (privacy lint with the canaries) as CI does.
+
+    Args:
+        out_dir: Folder holding a built page.
+
+    Returns:
+        The completed process with text stdout and stderr.
+    """
+    return subprocess.run(
+        ["bash", str(CHECK_OUTPUT), str(out_dir)], capture_output=True, text=True, check=False
+    )
+
+
+def test_clean_build_passes_privacy_lint_with_canaries(tmp_path: Path) -> None:
+    """The fixture build has zero privacy-lint hits, canaries included ("canary fixture passes").
+
+    Args:
+        tmp_path: Output directory.
+    """
+    assert main(["build", str(FIXTURE), str(tmp_path)]) == 0
+    done = _check_output(tmp_path)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "0 hit(s) in 2 file(s) scanned" in done.stdout
+
+
+@pytest.mark.parametrize("canary", CANARIES, ids=[c["kind"] for c in CANARIES])
+def test_canary_planted_in_record_never_reaches_the_page(record: dict, canary: dict) -> None:
+    """A canary in a record field is refused by the schema, or (the 6-dp pin) coarsened away.
+
+    Args:
+        record: Sample record copy.
+        canary: One entry of fixtures/canaries.json.
+    """
+    *parents, last = canary["plant"]["path"]
+    node = record
+    for key in parents:
+        node = node[key]
+    node[last] = canary["plant"]["value"]
+    if canary["plant"]["expect"] == "refused":
+        with pytest.raises(ValidationError) as caught:
+            render(record)
+        assert canary["value"] not in str(caught.value)
+    else:
+        result = render(record)
+        assert canary["value"] not in result.html + result.data_json
+
+
+@pytest.mark.parametrize("canary", CANARIES, ids=[c["kind"] for c in CANARIES])
+def test_canary_injected_into_template_fails_privacy_lint(tmp_path: Path, canary: dict) -> None:
+    """A template copy that prints a canary builds a page the lint rejects without echoing the leak.
+
+    Args:
+        tmp_path: Holds the package copy and its output; the real template is never touched.
+        canary: One entry of fixtures/canaries.json.
+    """
+    package = tmp_path / "pkg"
+    shutil.copytree(
+        ROOT / "agritrace_page",
+        package / "agritrace_page",
+        ignore=shutil.ignore_patterns("__pycache__"),
+    )
+    template = package / "agritrace_page" / "templates" / "batch.html.j2"
+    source = template.read_text("utf-8")
+    template.write_text(source.replace("</main>", f"<p>{canary['value']}</p>\n</main>"), "utf-8")
+    out = tmp_path / "out"
+    subprocess.run(
+        [sys.executable, "-m", "agritrace_page", "build", str(FIXTURE), str(out)],
+        cwd=package,
+        env={**os.environ, "PYTHONPATH": str(package)},
+        check=True,
+    )
+    assert canary["value"] in (out / "index.html").read_text("utf-8")  # the copy was used
+    done = _check_output(out)
+    assert done.returncode == 1, done.stdout
+    assert f": {canary['rule']}: " in done.stdout and ": canary: <redacted>" in done.stdout
+    assert canary["value"] not in done.stdout
