@@ -1,0 +1,20 @@
+-- Append-only guard for Entries: the facts of a saved entry can never be updated, and entries are never deleted.
+-- Requirement: CLAUDE.md §6 (farm events are append-only; corrections add versions); Arch §Offline-first
+--   "Append-only facts"; D-005 (the server has the same triggers on event_versions).
+-- Callers: database.dart includes this file, so the triggers are part of the schema (created by onCreate and checked
+--   by the schema dump test). Only `status` and `server_received_at` may change after save (EntriesDao.mark*).
+import 'entries.dart';
+
+CREATE TRIGGER entries_facts_immutable
+  BEFORE UPDATE OF entry_id, root_id, version, supersedes_entry_id, entry_type, lot_id, plot_id, farmer_id,
+    instance_no, payload_json, device_time, gps_time, lat, lng, accuracy_m, location_status, entered_by_user_id,
+    assist_mode, entered_remotely, reason_code, undo_deadline, created_at
+  ON entries
+BEGIN
+  SELECT RAISE(ABORT, 'entries are append-only: save a new version instead');
+END;
+
+CREATE TRIGGER entries_no_delete BEFORE DELETE ON entries
+BEGIN
+  SELECT RAISE(ABORT, 'entries are append-only: they are never deleted');
+END;

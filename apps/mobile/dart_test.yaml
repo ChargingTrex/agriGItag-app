@@ -1,4 +1,6 @@
 # Test tags for `flutter test` (declared here so the runner does not warn about unknown tags).
 # golden: pixel comparisons against test/goldens/*.png (recorded on macOS; `flutter test -x golden` excludes them).
+# perf: host timing checks (test/db); skipped when CI is set because shared runners are too noisy for a 2 s limit.
 tags:
   golden: {}
+  perf: {}
