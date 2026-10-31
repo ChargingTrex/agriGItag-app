@@ -1,11 +1,16 @@
 /**
  * Route table: public `/login`, everything else behind the auth guard inside the shell layout.
- * Serves: plan §7.3 P00 (placeholder routes for the planned screens, auth guard), FR13, FR14.
+ * Serves: plan §7.3 P00 (placeholder routes for the planned screens, auth guard) and P01 (Members, farmer and
+ * plot detail, Processors), FR13, FR14.
  * Called by: src/main.tsx (inside BrowserRouter), src/test/render.tsx (inside MemoryRouter).
  */
 import { Navigate, Route, Routes } from 'react-router';
 import { LoginPage } from './auth/LoginPage';
 import { RequireAuth } from './auth/RequireAuth';
+import { FarmerPage } from './features/members/FarmerPage';
+import { MembersPage } from './features/members/MembersPage';
+import { PlotPage } from './features/members/PlotPage';
+import { ProcessorsPage } from './features/members/ProcessorsPage';
 import { AppLayout } from './layout/AppLayout';
 import { NAV_ITEMS } from './navigation';
 import { DashboardPage } from './pages/DashboardPage';
@@ -22,7 +27,11 @@ export function AppRoutes() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
-          {NAV_ITEMS.filter((item) => item.path !== '/').map((item) => (
+          <Route path="/members" element={<MembersPage />} />
+          <Route path="/members/:farmerId" element={<FarmerPage />} />
+          <Route path="/members/plots/:plotId" element={<PlotPage />} />
+          <Route path="/processors" element={<ProcessorsPage />} />
+          {NAV_ITEMS.filter((item) => item.wp !== 'P01' && item.path !== '/').map((item) => (
             <Route
               key={item.path}
               path={item.path}

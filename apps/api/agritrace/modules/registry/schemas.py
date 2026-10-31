@@ -6,7 +6,8 @@ Serves: Stage 0 (onboarding), FR27–FR32 (GI region), FR53 (structured address,
 FR54 (farming type vs irrigation source), FR56 (input categories), FR58 (units), FR64–FR72 (plot
 location), D-005 (client ids), D-017 (config-driven fields optional here), D-020 (additive changes);
 B13: village import rows, import reports, flag-gated ID documents and producer groups (FR53, FR56,
-PLAN "Gap analysis" Master data uploads).
+PLAN "Gap analysis" Master data uploads); B14 (portal gaps found by P01, PLAN gap analysis "Members",
+FR8, FR14, FR53, FR70): masked phone and reveal, reject, FPO bounding box.
 Callers: registry router and service only (other modules may not import schemas, D-004); OpenAPI
 generation (`agritrace.export_openapi`) builds the contract and the Dart/TS clients from these.
 """
@@ -116,6 +117,17 @@ class FpoOut(_Out):
     fssai_no: str | None = Field(description="FSSAI licence number.")
     gi_authorised_user_no: str | None = Field(description="GI authorised-user registration number.")
     public_show_farmer_names: bool = Field(description="Whether public pages may show farmer names.")
+    # DECISION D-020: B14 adds `bbox` as an optional response field; lists leave it null (additive only).
+    #   ADV: old clients ignore it; the list stays one query.  COMPROMISE: same model, two fill levels.
+    bbox: list[float] | None = Field(
+        None,
+        min_length=4,
+        max_length=4,
+        description="[min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI "
+        "regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for "
+        "fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on "
+        "lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.",
+    )
 
     @computed_field(description="Address on one line, without repeated parts.")  # type: ignore[prop-decorator]
     @property
@@ -221,7 +233,7 @@ class FarmerPatch(BaseModel):
 
 
 class FarmerOut(_Out):
-    """A farmer as returned by the API (no phone number: it lives on the sign-in account)."""
+    """A farmer as returned by the API; the phone (on the sign-in account) only masked (B14)."""
 
     id: uuid.UUID = Field(description="Farmer id.")
     fpo_id: uuid.UUID = Field(description="Owning FPO.")
@@ -233,10 +245,20 @@ class FarmerOut(_Out):
     address: Address | None = Field(description="Structured address.")
     village_id: uuid.UUID | None = Field(description="Village from the directory.")
     gi_authorised_user_no: str | None = Field(description="GI authorised-user registration number.")
-    status: FarmerStatus = Field(description="pending until an FPO admin approves; then active.")
+    status: FarmerStatus = Field(
+        description="pending until an FPO admin approves; then active; suspended when rejected (B14)."
+    )
     approved_by: uuid.UUID | None = Field(description="Admin who approved the farmer.")
     approved_at: datetime | None = Field(description="When the farmer was approved.")
     no_smartphone: bool = Field(description="True when the officer always enters data.")
+    # DECISION D-017: the phone is `internal` (fields/farmer.yaml); only its last 4 digits leave the API
+    #   here, the full number only through the audited GET /v1/farmers/{id}/phone (B14).
+    #   ADV: officers can still tell farmers apart and call-check by suffix.  COMPROMISE: one join per list.
+    phone_masked: str | None = Field(
+        None,
+        description="Phone of the sign-in account with all but the last 4 digits hidden, e.g. `XXXXXX3210`; "
+        "null without a phone. FPO admins read the full number via GET /v1/farmers/{id}/phone (audited).",
+    )
 
     @computed_field(description="Address on one line, without repeated parts.")  # type: ignore[prop-decorator]
     @property
@@ -247,6 +269,24 @@ class FarmerOut(_Out):
             `format_address(self.address)`.
         """
         return format_address(self.address)
+
+
+class FarmerPhoneOut(BaseModel):
+    """A farmer's full phone number, revealed to an FPO admin and audited (B14, D-017 `internal`)."""
+
+    farmer_id: uuid.UUID = Field(description="Farmer id.")
+    phone: str | None = Field(description="Phone in E.164 from the sign-in account; null without one.")
+
+
+class FarmerReject(BaseModel):
+    """Why an FPO admin turns down a pending farmer (Stage 0 approval, FR70)."""
+
+    reason_code: str = Field(
+        min_length=1,
+        max_length=64,
+        description="Coded reason, e.g. `duplicate`, `not_a_member`, `outside_gi_area`, `incomplete`.",
+    )
+    reason_text: str | None = Field(None, max_length=500, description="Free-text explanation.")
 
 
 # --- plots --------------------------------------------------------------------------------------------

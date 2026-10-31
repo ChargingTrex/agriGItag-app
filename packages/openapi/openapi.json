@@ -245,6 +245,45 @@
         "title": "Body_import_villages_v1_imports_villages_post",
         "type": "object"
       },
+      "BundleManifest": {
+        "description": "Every bundle part available to the caller, with version and ETag (FR4, plan \u00a713 C2).",
+        "properties": {
+          "parts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PartVersion"
+            },
+            "description": "Part name -> version and ETag. `gi_region` is absent while no region is in effect.",
+            "propertyNames": {
+              "$ref": "#/components/schemas/BundlePart"
+            },
+            "title": "Parts",
+            "type": "object"
+          }
+        },
+        "required": [
+          "parts"
+        ],
+        "title": "BundleManifest",
+        "type": "object"
+      },
+      "BundlePart": {
+        "description": "Offline reference-bundle parts (backend-design.md \u00a73; bodies per docs/agents/reports/M03.md).",
+        "enum": [
+          "plots",
+          "crops",
+          "inputs",
+          "standards",
+          "gi_region",
+          "farmer_profile",
+          "villages",
+          "fields",
+          "prompts",
+          "images",
+          "calendar"
+        ],
+        "title": "BundlePart",
+        "type": "string"
+      },
       "ChangeKind": {
         "description": "Why an event version exists (FR25 corrections with reason, FR59 system entries).",
         "enum": [
@@ -998,7 +1037,7 @@
                 "type": "null"
               }
             ],
-            "description": "{thumb_url, medium_url, jpeg_url, width, height} once variants exist.",
+            "description": "{thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never listed (it keeps exact EXIF GPS). Re-read for fresh links.",
             "title": "Variants"
           }
         },
@@ -1158,7 +1197,7 @@
         "type": "object"
       },
       "FarmerOut": {
-        "description": "A farmer as returned by the API (no phone number: it lives on the sign-in account).",
+        "description": "A farmer as returned by the API; the phone (on the sign-in account) only masked (B14).",
         "properties": {
           "address": {
             "anyOf": [
@@ -1254,6 +1293,18 @@
             "title": "No Smartphone",
             "type": "boolean"
           },
+          "phone_masked": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Phone of the sign-in account with all but the last 4 digits hidden, e.g. `XXXXXX3210`; null without a phone. FPO admins read the full number via GET /v1/farmers/{id}/phone (audited).",
+            "title": "Phone Masked"
+          },
           "photo_key": {
             "anyOf": [
               {
@@ -1268,7 +1319,7 @@
           },
           "status": {
             "$ref": "#/components/schemas/FarmerStatus",
-            "description": "pending until an FPO admin approves; then active."
+            "description": "pending until an FPO admin approves; then active; suspended when rejected (B14)."
           },
           "user_id": {
             "anyOf": [
@@ -1411,6 +1462,65 @@
           }
         },
         "title": "FarmerPatch",
+        "type": "object"
+      },
+      "FarmerPhoneOut": {
+        "description": "A farmer's full phone number, revealed to an FPO admin and audited (B14, D-017 `internal`).",
+        "properties": {
+          "farmer_id": {
+            "description": "Farmer id.",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Phone in E.164 from the sign-in account; null without one.",
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "farmer_id",
+          "phone"
+        ],
+        "title": "FarmerPhoneOut",
+        "type": "object"
+      },
+      "FarmerReject": {
+        "description": "Why an FPO admin turns down a pending farmer (Stage 0 approval, FR70).",
+        "properties": {
+          "reason_code": {
+            "description": "Coded reason, e.g. `duplicate`, `not_a_member`, `outside_gi_area`, `incomplete`.",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text explanation.",
+            "title": "Reason Text"
+          }
+        },
+        "required": [
+          "reason_code"
+        ],
+        "title": "FarmerReject",
         "type": "object"
       },
       "FarmerStatus": {
@@ -1818,6 +1928,213 @@
         "title": "FinalPackingVersion",
         "type": "object"
       },
+      "FlagOut": {
+        "description": "One rule finding and its review state.",
+        "properties": {
+          "assigned_role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Role"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Role expected to review it: field_officer, or fpo_admin."
+          },
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rule inputs and limits behind the finding; quantities carry `unit`.",
+            "title": "Details"
+          },
+          "fpo_id": {
+            "description": "FPO that owns the flagged record.",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "id": {
+            "description": "Flag id (UUIDv7, so newer flags sort later).",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "raised_at": {
+            "description": "When a rule first raised it, ISO 8601 UTC.",
+            "format": "date-time",
+            "title": "Raised At",
+            "type": "string"
+          },
+          "resolution_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reviewer's note: method, evidence, what was fixed.",
+            "title": "Resolution Note"
+          },
+          "resolution_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason of the resolution; `rule_passed` when a later rule run no longer raised it.",
+            "title": "Resolution Reason Code"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When it was resolved, ISO 8601 UTC.",
+            "title": "Resolved At"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "User who resolved it; null when open or closed by a rule.",
+            "title": "Resolved By"
+          },
+          "rule_code": {
+            "description": "Rule that raised it, e.g. `quantity_mismatch`, `event_off_plot`.",
+            "title": "Rule Code",
+            "type": "string"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity",
+            "description": "info, warn, or hold (keeps the lot out of GI-labelled batches)."
+          },
+          "status": {
+            "$ref": "#/components/schemas/FlagStatus",
+            "description": "open, cleared (looked fine), fixed, or escalated to the FPO admin."
+          },
+          "subject_id": {
+            "description": "Id of the flagged record.",
+            "format": "uuid",
+            "title": "Subject Id",
+            "type": "string"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/FlagSubject",
+            "description": "Kind of record flagged: plot, event, lot, batch or reading."
+          }
+        },
+        "required": [
+          "id",
+          "fpo_id",
+          "subject_type",
+          "subject_id",
+          "rule_code",
+          "severity",
+          "details",
+          "status",
+          "assigned_role",
+          "raised_at",
+          "resolved_by",
+          "resolution_reason_code",
+          "resolution_note",
+          "resolved_at"
+        ],
+        "title": "FlagOut",
+        "type": "object"
+      },
+      "FlagResolveIn": {
+        "description": "A reviewer's outcome for one flag (FR70).",
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free text: method, evidence, what changed.",
+            "title": "Note"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason, e.g. `land_record_checked`, `field_visit`; required (else 422).",
+            "title": "Reason Code"
+          },
+          "resolution": {
+            "description": "looks_fine \u2192 cleared; fixed \u2192 fixed; escalated \u2192 escalated and reassigned to fpo_admin.",
+            "enum": [
+              "looks_fine",
+              "fixed",
+              "escalated"
+            ],
+            "title": "Resolution",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resolution"
+        ],
+        "title": "FlagResolveIn",
+        "type": "object"
+      },
+      "FlagStatus": {
+        "description": "Flag resolution state (FR70).",
+        "enum": [
+          "open",
+          "cleared",
+          "fixed",
+          "escalated"
+        ],
+        "title": "FlagStatus",
+        "type": "string"
+      },
+      "FlagSubject": {
+        "description": "What a rule flag is raised on (FR11, FR28, FR69).",
+        "enum": [
+          "plot",
+          "event",
+          "lot",
+          "batch",
+          "reading"
+        ],
+        "title": "FlagSubject",
+        "type": "string"
+      },
       "FpoIn": {
         "description": "A new FPO (tenant); created by a super-admin.",
         "properties": {
@@ -1911,6 +2228,23 @@
             "readOnly": true,
             "title": "Address Line",
             "type": "string"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 4,
+                "minItems": 4,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "[min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.",
+            "title": "Bbox"
           },
           "code": {
             "description": "Stable upper-case code.",
@@ -4866,6 +5200,41 @@
         "title": "Page[FarmerOut]",
         "type": "object"
       },
+      "Page_FlagOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/FlagOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[FlagOut]",
+        "type": "object"
+      },
       "Page_InstrumentOut_": {
         "properties": {
           "has_more": {
@@ -4934,6 +5303,41 @@
           "has_more"
         ],
         "title": "Page[NotificationOut]",
+        "type": "object"
+      },
+      "Page_PlotOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/PlotOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[PlotOut]",
         "type": "object"
       },
       "Page_QualityReadingOut_": {
@@ -5478,6 +5882,27 @@
           "outcome"
         ],
         "title": "ParameterResult",
+        "type": "object"
+      },
+      "PartVersion": {
+        "description": "Version and ETag of one bundle part as the caller would download it now.",
+        "properties": {
+          "etag": {
+            "description": "Strong ETag of the part body; send it in `If-None-Match` for a 304.",
+            "title": "Etag",
+            "type": "string"
+          },
+          "version": {
+            "description": "Part version: from `reference_versions` for database-fed parts (only grows), a content fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`.",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "etag"
+        ],
+        "title": "PartVersion",
         "type": "object"
       },
       "PhotoConfirmOut": {
@@ -6882,6 +7307,80 @@
         "title": "ProfileVersionStatus",
         "type": "string"
       },
+      "PullChange": {
+        "description": "One server-side change for the phone's local copy.",
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "description": "The record, lean; decimals are strings, times ISO 8601 UTC.",
+            "title": "Data",
+            "type": "object"
+          },
+          "entity": {
+            "description": "Kind of record in `data`.",
+            "enum": [
+              "flag",
+              "lot",
+              "event",
+              "intake",
+              "notification",
+              "photo_pending"
+            ],
+            "title": "Entity",
+            "type": "string"
+          },
+          "op": {
+            "const": "upsert",
+            "description": "Always `upsert`: replace the local row with the same `id`.",
+            "title": "Op",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "op",
+          "data"
+        ],
+        "title": "PullChange",
+        "type": "object"
+      },
+      "PullOut": {
+        "description": "One page of changes since the cursor (backend-design.md \u00a73).",
+        "properties": {
+          "changes": {
+            "description": "Changes ordered by change time, then id.",
+            "items": {
+              "$ref": "#/components/schemas/PullChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "has_more": {
+            "description": "True when another page is waiting; call again with `next_cursor`.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor to send next time; equals the sent cursor when nothing changed.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "changes",
+          "next_cursor",
+          "has_more"
+        ],
+        "title": "PullOut",
+        "type": "object"
+      },
       "QualityReadingIn": {
         "description": "One measured parameter of a lot or batch at a stage (FR42\u2013FR46). Also the sync `quality_reading` data.\n\nExactly one of `lot_id` and `batch_id` is set.",
         "properties": {
@@ -7440,6 +7939,55 @@
         "title": "ReadingStage",
         "type": "string"
       },
+      "ReferenceOut": {
+        "description": "Parts whose version differs from the ones the phone holds (plan \u00a713 C2).",
+        "properties": {
+          "parts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ReferencePart"
+            },
+            "description": "Changed or new parts only.",
+            "propertyNames": {
+              "$ref": "#/components/schemas/BundlePart"
+            },
+            "title": "Parts",
+            "type": "object"
+          }
+        },
+        "required": [
+          "parts"
+        ],
+        "title": "ReferenceOut",
+        "type": "object"
+      },
+      "ReferencePart": {
+        "description": "A changed bundle part with its body.",
+        "properties": {
+          "body": {
+            "additionalProperties": true,
+            "description": "The part body, as `GET /v1/sync/bundle/{part}` returns it.",
+            "title": "Body",
+            "type": "object"
+          },
+          "etag": {
+            "description": "Strong ETag of the part body; send it in `If-None-Match` for a 304.",
+            "title": "Etag",
+            "type": "string"
+          },
+          "version": {
+            "description": "Part version: from `reference_versions` for database-fed parts (only grows), a content fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`.",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "etag",
+          "body"
+        ],
+        "title": "ReferencePart",
+        "type": "object"
+      },
       "RefreshIn": {
         "description": "Rotate the refresh token. Web clients omit the body field and send the httpOnly cookie.",
         "properties": {
@@ -7567,6 +8115,16 @@
         ],
         "title": "SessionOut",
         "type": "object"
+      },
+      "Severity": {
+        "description": "Flag severity; `hold` blocks GI labelling until resolved (FR68, FR70).",
+        "enum": [
+          "info",
+          "warn",
+          "hold"
+        ],
+        "title": "Severity",
+        "type": "string"
       },
       "SignedQuantity-Input": {
         "description": "A quantity that may be negative, used only for adjustments and differences.",
@@ -8154,7 +8712,7 @@
           },
           "data": {
             "additionalProperties": true,
-            "description": "`event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: not in the pilot. The entry's `client_id` is used as the record's id.",
+            "description": "`event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id). Otherwise the entry's `client_id` is used as the record's id.",
             "title": "Data",
             "type": "object"
           },
@@ -10483,7 +11041,7 @@
     },
     "/v1/farmers": {
       "get": {
-        "description": "List farmers of the caller's FPO (a farmer sees only themself).",
+        "description": "List farmers of the caller's FPO (a farmer sees only themself), filtered and searched on the server.",
         "operationId": "list_farmers_v1_farmers_get",
         "parameters": [
           {
@@ -10534,6 +11092,63 @@
               ],
               "description": "Status filter.",
               "title": "Status"
+            }
+          },
+          {
+            "description": "Only farmers of this village.",
+            "in": "query",
+            "name": "village_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only farmers of this village.",
+              "title": "Village Id"
+            }
+          },
+          {
+            "description": "Part of the name, local name or farmer code; 1\u20134 digits also match the last digits of the phone (the `phone_masked` suffix).",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Part of the name, local name or farmer code; 1\u20134 digits also match the last digits of the phone (the `phone_masked` suffix).",
+              "title": "Q"
+            }
+          },
+          {
+            "description": "Comma-separated item fields to return, e.g. `id,code,name` (lean list); items then carry only those keys. Unknown or tenant-disabled names \u2192 422 `validation_error`.",
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 500,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated item fields to return, e.g. `id,code,name` (lean list); items then carry only those keys. Unknown or tenant-disabled names \u2192 422 `validation_error`.",
+              "title": "Fields"
             }
           },
           {
@@ -11154,6 +11769,772 @@
         ]
       }
     },
+    "/v1/farmers/{farmer_id}/phone": {
+      "get": {
+        "description": "Return the full phone of a farmer of the caller's FPO; every call writes an audit row (D-017).\n\nSent with `Cache-Control: no-store`, so shared office browsers and proxies keep no copy.",
+        "operationId": "reveal_phone_v1_farmers__farmer_id__phone_get",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerPhoneOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Reveal a farmer's full phone number (FPO admin, audited)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}/plots": {
+      "get": {
+        "description": "List the plots of one farmer of the caller's FPO; each carries `gi_tag_id` for the region to draw.",
+        "operationId": "list_farmer_plots_v1_farmers__farmer_id__plots_get",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Cursor from the previous page's `next_cursor`.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cursor from the previous page's `next_cursor`.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size (1\u2013200).",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size (1\u2013200).",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PlotOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List a farmer's plots",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}/reject": {
+      "post": {
+        "description": "Turn down a pending farmer (FPO admin): status `suspended`, reason kept in the audit trail.",
+        "operationId": "reject_farmer_v1_farmers__farmer_id__reject_post",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FarmerReject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Reject a pending farmer",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/flags": {
+      "get": {
+        "description": "Rule findings of one FPO (default: the caller's; any FPO for a super-admin), newest first. Filter by `assignee` (role expected to review), `status`, `severity`; `hold` flags keep a lot out of GI-labelled batches until an FPO admin resolves them.",
+        "operationId": "list_flags_v1_flags_get",
+        "parameters": [
+          {
+            "description": "FPO to list; default the caller's.",
+            "in": "query",
+            "name": "fpo_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "FPO to list; default the caller's.",
+              "title": "Fpo Id"
+            }
+          },
+          {
+            "description": "Only flags assigned to this role.",
+            "in": "query",
+            "name": "assignee",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only flags assigned to this role.",
+              "title": "Assignee"
+            }
+          },
+          {
+            "description": "Only flags in this status.",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/FlagStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only flags in this status.",
+              "title": "Status"
+            }
+          },
+          {
+            "description": "Only flags of this severity.",
+            "in": "query",
+            "name": "severity",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Severity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only flags of this severity.",
+              "title": "Severity"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_FlagOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unauthorized`: no valid access token."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: farmers use sync pull."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List flags",
+        "tags": [
+          "flags"
+        ]
+      }
+    },
+    "/v1/flags/{flag_id}": {
+      "get": {
+        "description": "One rule finding with the inputs and limits behind it (`details`) and its review state.",
+        "operationId": "get_flag_v1_flags__flag_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "flag_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Flag Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlagOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unauthorized`: no valid access token."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: no such flag, or it belongs to another FPO."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Read a flag",
+        "tags": [
+          "flags"
+        ]
+      }
+    },
+    "/v1/flags/{flag_id}/resolve": {
+      "post": {
+        "description": "Records the review outcome (FR70): `looks_fine` \u2192 cleared, `fixed` \u2192 fixed, `escalated` \u2192 handed to the FPO admin. A coded `reason_code` is required. Field officers resolve info and warn flags; only an FPO admin resolves a `hold` or an escalated flag. Clearing the last hold of a lot makes it eligible for GI batches again. A later rule run reopens the flag when the problem comes back worse (higher severity); at the same severity a `looks_fine` decision stands. Open and escalated flags whose rule no longer fires are closed by the system as `fixed` / `rule_passed`.",
+        "operationId": "resolve_flag_v1_flags__flag_id__resolve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "flag_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Flag Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlagResolveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlagOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unauthorized`: no valid access token."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: role is not field_officer or fpo_admin; `resolution_forbidden`: a field officer on a hold or escalated flag."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: no such flag, or it belongs to another FPO."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`flag_not_open`: already cleared or fixed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`reason_required`: no `reason_code`; `validation_error`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Resolve a flag",
+        "tags": [
+          "flags"
+        ]
+      }
+    },
     "/v1/fpos": {
       "get": {
         "description": "List FPOs visible to the caller.",
@@ -11315,6 +12696,95 @@
           }
         ],
         "summary": "Create an FPO",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/fpos/{fpo_id}": {
+      "get": {
+        "description": "Read the caller's FPO (super-admin: any FPO); staff get `bbox` from its plots or the GI regions.",
+        "operationId": "get_fpo_v1_fpos__fpo_id__get",
+        "parameters": [
+          {
+            "description": "FPO id.",
+            "in": "path",
+            "name": "fpo_id",
+            "required": true,
+            "schema": {
+              "description": "FPO id.",
+              "format": "uuid",
+              "title": "Fpo Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FpoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Read an FPO with its map frame (bbox)",
         "tags": [
           "registry"
         ]
@@ -13914,6 +15384,187 @@
         ]
       }
     },
+    "/v1/sync/bundle": {
+      "get": {
+        "description": "Every offline reference part available to you with its `version` and strong `etag`: `plots` (yours, or the FPO's for officers), `crops` (with `event_schema {mandatory, tracks}`), `inputs` (global + FPO), `standards` (full profile rules per crop), `gi_region` (simplified outline \u2264 50 KB + buffer; absent while none is in effect), `farmer_profile`, `villages` (the FPO's district), `fields` (field configuration), `prompts`, `images` (product-picture URLs) and `calendar`. Download a part with `GET /v1/sync/bundle/{part}`; later ask `GET /v1/sync/reference?since=` for changes only.",
+        "operationId": "sync_bundle_v1_sync_bundle_get",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleManifest"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List reference-bundle parts",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
+    "/v1/sync/bundle/{part}": {
+      "get": {
+        "description": "The part body in the shape the app parses (docs/api/conventions.md \"Reference bundles\"). Sends a strong `ETag`; send it back in `If-None-Match` to get 304 without a body. Unknown part \u2192 422.",
+        "operationId": "sync_bundle_part_v1_sync_bundle__part__get",
+        "parameters": [
+          {
+            "description": "Part name, as listed by `GET /v1/sync/bundle`.",
+            "in": "path",
+            "name": "part",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BundlePart",
+              "description": "Part name, as listed by `GET /v1/sync/bundle`."
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Sync Bundle Part V1 Sync Bundle  Part  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Unchanged; keep your copy."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`gi_region_missing`: `gi_region` asked while no region is in effect."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Download one reference-bundle part",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
     "/v1/sync/photos/confirm": {
       "post": {
         "description": "Call after each presigned PUT succeeded. For each photo the server checks storage: `received` means the object is there (its version id is stored and verification of SHA-256 and EXIF time/GPS is queued), `missing` means upload again (ask for fresh URLs by resending the entry) and confirm again. Unknown ids and photos of entries someone else pushed also answer `missing`. Bodies over 256 KB \u2192 413 `payload_too_large`.",
@@ -14006,9 +15657,130 @@
         ]
       }
     },
+    "/v1/sync/pull": {
+      "get": {
+        "description": "Changes since `cursor`, oldest first: `flag`, `lot`, `event` (current version, e.g. after an officer correction; photo variant URLs are presigned for 1 hour), `intake`, `notification` (yours) and, on the last page, `photo_pending` (photos still not uploaded 24 h after their entry: resend the entry to get fresh upload URLs). Farmers see their own lots, plots and events; other roles the whole FPO. Every change is an `upsert` by `id`. Store `next_cursor` and call again while `has_more`. Changes appear about 30 s after they are written. An invalid cursor \u2192 422 `validation_error`.",
+        "operationId": "sync_pull_v1_sync_pull_get",
+        "parameters": [
+          {
+            "description": "`next_cursor` of your previous pull; omit the first time.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of your previous pull; omit the first time.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Most changes per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "description": "Most changes per page.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`: invalid cursor or limit."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Pull server-side changes",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
     "/v1/sync/push": {
       "post": {
-        "description": "Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`; `flag_resolution` is rejected with `not_implemented_pilot` in the pilot. Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.",
+        "description": "Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.",
         "operationId": "sync_push_v1_sync_push_post",
         "parameters": [
           {
@@ -14108,6 +15880,116 @@
           }
         ],
         "summary": "Push offline entries",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
+    "/v1/sync/reference": {
+      "get": {
+        "description": "Delta sync (plan \u00a713 C2). `since` lists the part versions you hold as `<part>:<version>` joined by commas, e.g. `plots:41,crops:7,fields:90210`. Answers the parts whose version differs from yours, each compared on its own, with body, version and etag; parts you do not list are new to you and included. 304 when nothing changed. A malformed `since` \u2192 422 `validation_error`.",
+        "operationId": "sync_reference_v1_sync_reference_get",
+        "parameters": [
+          {
+            "description": "Part versions you hold: `<part>:<version>,...`; omit for all.",
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 1000,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Part versions you hold: `<part>:<version>,...`; omit for all.",
+              "title": "Since"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Unchanged; keep your copy."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`: `since` is not `<part>:<version>,...`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Changed reference-bundle parts",
         "tags": [
           "events",
           "events"

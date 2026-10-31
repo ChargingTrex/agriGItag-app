@@ -12,6 +12,8 @@ class _$FpoOut extends FpoOut {
   @override
   final String addressLine;
   @override
+  final BuiltList<num>? bbox;
+  @override
   final String code;
   @override
   final String? fssaiNo;
@@ -32,6 +34,7 @@ class _$FpoOut extends FpoOut {
   _$FpoOut._(
       {this.address,
       required this.addressLine,
+      this.bbox,
       required this.code,
       this.fssaiNo,
       this.giAuthorisedUserNo,
@@ -53,6 +56,7 @@ class _$FpoOut extends FpoOut {
     return other is FpoOut &&
         address == other.address &&
         addressLine == other.addressLine &&
+        bbox == other.bbox &&
         code == other.code &&
         fssaiNo == other.fssaiNo &&
         giAuthorisedUserNo == other.giAuthorisedUserNo &&
@@ -67,6 +71,7 @@ class _$FpoOut extends FpoOut {
     var _$hash = 0;
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, addressLine.hashCode);
+    _$hash = $jc(_$hash, bbox.hashCode);
     _$hash = $jc(_$hash, code.hashCode);
     _$hash = $jc(_$hash, fssaiNo.hashCode);
     _$hash = $jc(_$hash, giAuthorisedUserNo.hashCode);
@@ -83,6 +88,7 @@ class _$FpoOut extends FpoOut {
     return (newBuiltValueToStringHelper(r'FpoOut')
           ..add('address', address)
           ..add('addressLine', addressLine)
+          ..add('bbox', bbox)
           ..add('code', code)
           ..add('fssaiNo', fssaiNo)
           ..add('giAuthorisedUserNo', giAuthorisedUserNo)
@@ -104,6 +110,10 @@ class FpoOutBuilder implements Builder<FpoOut, FpoOutBuilder> {
   String? _addressLine;
   String? get addressLine => _$this._addressLine;
   set addressLine(String? addressLine) => _$this._addressLine = addressLine;
+
+  ListBuilder<num>? _bbox;
+  ListBuilder<num> get bbox => _$this._bbox ??= ListBuilder<num>();
+  set bbox(ListBuilder<num>? bbox) => _$this._bbox = bbox;
 
   String? _code;
   String? get code => _$this._code;
@@ -144,6 +154,7 @@ class FpoOutBuilder implements Builder<FpoOut, FpoOutBuilder> {
     if ($v != null) {
       _address = $v.address?.toBuilder();
       _addressLine = $v.addressLine;
+      _bbox = $v.bbox?.toBuilder();
       _code = $v.code;
       _fssaiNo = $v.fssaiNo;
       _giAuthorisedUserNo = $v.giAuthorisedUserNo;
@@ -177,6 +188,7 @@ class FpoOutBuilder implements Builder<FpoOut, FpoOutBuilder> {
             address: _address?.build(),
             addressLine: BuiltValueNullFieldError.checkNotNull(
                 addressLine, r'FpoOut', 'addressLine'),
+            bbox: _bbox?.build(),
             code:
                 BuiltValueNullFieldError.checkNotNull(code, r'FpoOut', 'code'),
             fssaiNo: fssaiNo,
@@ -194,6 +206,9 @@ class FpoOutBuilder implements Builder<FpoOut, FpoOutBuilder> {
       try {
         _$failedField = 'address';
         _address?.build();
+
+        _$failedField = 'bbox';
+        _bbox?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'FpoOut', _$failedField, e.toString());

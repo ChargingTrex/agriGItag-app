@@ -511,7 +511,7 @@ export interface paths {
         };
         /**
          * List the FPO's farmers
-         * @description List farmers of the caller's FPO (a farmer sees only themself).
+         * @description List farmers of the caller's FPO (a farmer sees only themself), filtered and searched on the server.
          */
         get: operations["list_farmers_v1_farmers_get"];
         put?: never;
@@ -623,6 +623,128 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/farmers/{farmer_id}/phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reveal a farmer's full phone number (FPO admin, audited)
+         * @description Return the full phone of a farmer of the caller's FPO; every call writes an audit row (D-017).
+         *
+         *     Sent with `Cache-Control: no-store`, so shared office browsers and proxies keep no copy.
+         */
+        get: operations["reveal_phone_v1_farmers__farmer_id__phone_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/plots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a farmer's plots
+         * @description List the plots of one farmer of the caller's FPO; each carries `gi_tag_id` for the region to draw.
+         */
+        get: operations["list_farmer_plots_v1_farmers__farmer_id__plots_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a pending farmer
+         * @description Turn down a pending farmer (FPO admin): status `suspended`, reason kept in the audit trail.
+         */
+        post: operations["reject_farmer_v1_farmers__farmer_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List flags
+         * @description Rule findings of one FPO (default: the caller's; any FPO for a super-admin), newest first. Filter by `assignee` (role expected to review), `status`, `severity`; `hold` flags keep a lot out of GI-labelled batches until an FPO admin resolves them.
+         */
+        get: operations["list_flags_v1_flags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/flags/{flag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a flag
+         * @description One rule finding with the inputs and limits behind it (`details`) and its review state.
+         */
+        get: operations["get_flag_v1_flags__flag_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/flags/{flag_id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve a flag
+         * @description Records the review outcome (FR70): `looks_fine` → cleared, `fixed` → fixed, `escalated` → handed to the FPO admin. A coded `reason_code` is required. Field officers resolve info and warn flags; only an FPO admin resolves a `hold` or an escalated flag. Clearing the last hold of a lot makes it eligible for GI batches again. A later rule run reopens the flag when the problem comes back worse (higher severity); at the same severity a `looks_fine` decision stands. Open and escalated flags whose rule no longer fires are closed by the system as `fixed` / `rule_passed`.
+         */
+        post: operations["resolve_flag_v1_flags__flag_id__resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/fpos": {
         parameters: {
             query?: never;
@@ -641,6 +763,26 @@ export interface paths {
          * @description Create an FPO (super-admin only).
          */
         post: operations["create_fpo_v1_fpos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/fpos/{fpo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read an FPO with its map frame (bbox)
+         * @description Read the caller's FPO (super-admin: any FPO); staff get `bbox` from its plots or the GI regions.
+         */
+        get: operations["get_fpo_v1_fpos__fpo_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1133,6 +1275,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sync/bundle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List reference-bundle parts
+         * @description Every offline reference part available to you with its `version` and strong `etag`: `plots` (yours, or the FPO's for officers), `crops` (with `event_schema {mandatory, tracks}`), `inputs` (global + FPO), `standards` (full profile rules per crop), `gi_region` (simplified outline ≤ 50 KB + buffer; absent while none is in effect), `farmer_profile`, `villages` (the FPO's district), `fields` (field configuration), `prompts`, `images` (product-picture URLs) and `calendar`. Download a part with `GET /v1/sync/bundle/{part}`; later ask `GET /v1/sync/reference?since=` for changes only.
+         */
+        get: operations["sync_bundle_v1_sync_bundle_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sync/bundle/{part}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download one reference-bundle part
+         * @description The part body in the shape the app parses (docs/api/conventions.md "Reference bundles"). Sends a strong `ETag`; send it back in `If-None-Match` to get 304 without a body. Unknown part → 422.
+         */
+        get: operations["sync_bundle_part_v1_sync_bundle__part__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sync/photos/confirm": {
         parameters: {
             query?: never;
@@ -1153,6 +1335,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sync/pull": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pull server-side changes
+         * @description Changes since `cursor`, oldest first: `flag`, `lot`, `event` (current version, e.g. after an officer correction; photo variant URLs are presigned for 1 hour), `intake`, `notification` (yours) and, on the last page, `photo_pending` (photos still not uploaded 24 h after their entry: resend the entry to get fresh upload URLs). Farmers see their own lots, plots and events; other roles the whole FPO. Every change is an `upsert` by `id`. Store `next_cursor` and call again while `has_more`. Changes appear about 30 s after they are written. An invalid cursor → 422 `validation_error`.
+         */
+        get: operations["sync_pull_v1_sync_pull_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sync/push": {
         parameters: {
             query?: never;
@@ -1164,9 +1366,29 @@ export interface paths {
         put?: never;
         /**
          * Push offline entries
-         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`; `flag_resolution` is rejected with `not_implemented_pilot` in the pilot. Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
+         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
          */
         post: operations["sync_push_v1_sync_push_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sync/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Changed reference-bundle parts
+         * @description Delta sync (plan §13 C2). `since` lists the part versions you hold as `<part>:<version>` joined by commas, e.g. `plots:41,crops:7,fields:90210`. Answers the parts whose version differs from yours, each compared on its own, with body, version and etag; parts you do not list are new to you and included. 304 when nothing changed. A malformed `since` → 422 `validation_error`.
+         */
+        get: operations["sync_reference_v1_sync_reference_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1331,6 +1553,25 @@ export interface components {
              */
             file: string;
         };
+        /**
+         * BundleManifest
+         * @description Every bundle part available to the caller, with version and ETag (FR4, plan §13 C2).
+         */
+        BundleManifest: {
+            /**
+             * Parts
+             * @description Part name -> version and ETag. `gi_region` is absent while no region is in effect.
+             */
+            parts: {
+                [key: string]: components["schemas"]["PartVersion"];
+            };
+        };
+        /**
+         * BundlePart
+         * @description Offline reference-bundle parts (backend-design.md §3; bodies per docs/agents/reports/M03.md).
+         * @enum {string}
+         */
+        BundlePart: "plots" | "crops" | "inputs" | "standards" | "gi_region" | "farmer_profile" | "villages" | "fields" | "prompts" | "images" | "calendar";
         /**
          * ChangeKind
          * @description Why an event version exists (FR25 corrections with reason, FR59 system entries).
@@ -1739,7 +1980,7 @@ export interface components {
             status: components["schemas"]["PhotoStatus"];
             /**
              * Variants
-             * @description {thumb_url, medium_url, jpeg_url, width, height} once variants exist.
+             * @description {thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never listed (it keeps exact EXIF GPS). Re-read for fresh links.
              */
             variants?: {
                 [key: string]: unknown;
@@ -1816,7 +2057,7 @@ export interface components {
         };
         /**
          * FarmerOut
-         * @description A farmer as returned by the API (no phone number: it lives on the sign-in account).
+         * @description A farmer as returned by the API; the phone (on the sign-in account) only masked (B14).
          */
         FarmerOut: {
             /** @description Structured address. */
@@ -1874,11 +2115,16 @@ export interface components {
              */
             no_smartphone: boolean;
             /**
+             * Phone Masked
+             * @description Phone of the sign-in account with all but the last 4 digits hidden, e.g. `XXXXXX3210`; null without a phone. FPO admins read the full number via GET /v1/farmers/{id}/phone (audited).
+             */
+            phone_masked?: string | null;
+            /**
              * Photo Key
              * @description Object key of the profile photo.
              */
             photo_key: string | null;
-            /** @description pending until an FPO admin approves; then active. */
+            /** @description pending until an FPO admin approves; then active; suspended when rejected (B14). */
             status: components["schemas"]["FarmerStatus"];
             /**
              * User Id
@@ -1928,6 +2174,39 @@ export interface components {
              * @description Village picked from GET /v1/villages.
              */
             village_id?: string | null;
+        };
+        /**
+         * FarmerPhoneOut
+         * @description A farmer's full phone number, revealed to an FPO admin and audited (B14, D-017 `internal`).
+         */
+        FarmerPhoneOut: {
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer id.
+             */
+            farmer_id: string;
+            /**
+             * Phone
+             * @description Phone in E.164 from the sign-in account; null without one.
+             */
+            phone: string | null;
+        };
+        /**
+         * FarmerReject
+         * @description Why an FPO admin turns down a pending farmer (Stage 0 approval, FR70).
+         */
+        FarmerReject: {
+            /**
+             * Reason Code
+             * @description Coded reason, e.g. `duplicate`, `not_a_member`, `outside_gi_area`, `incomplete`.
+             */
+            reason_code: string;
+            /**
+             * Reason Text
+             * @description Free-text explanation.
+             */
+            reason_text?: string | null;
         };
         /**
          * FarmerStatus
@@ -2144,6 +2423,110 @@ export interface components {
             version_no: number;
         };
         /**
+         * FlagOut
+         * @description One rule finding and its review state.
+         */
+        FlagOut: {
+            /** @description Role expected to review it: field_officer, or fpo_admin. */
+            assigned_role: components["schemas"]["Role"] | null;
+            /**
+             * Details
+             * @description Rule inputs and limits behind the finding; quantities carry `unit`.
+             */
+            details: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description FPO that owns the flagged record.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Flag id (UUIDv7, so newer flags sort later).
+             */
+            id: string;
+            /**
+             * Raised At
+             * Format: date-time
+             * @description When a rule first raised it, ISO 8601 UTC.
+             */
+            raised_at: string;
+            /**
+             * Resolution Note
+             * @description Reviewer's note: method, evidence, what was fixed.
+             */
+            resolution_note: string | null;
+            /**
+             * Resolution Reason Code
+             * @description Coded reason of the resolution; `rule_passed` when a later rule run no longer raised it.
+             */
+            resolution_reason_code: string | null;
+            /**
+             * Resolved At
+             * @description When it was resolved, ISO 8601 UTC.
+             */
+            resolved_at: string | null;
+            /**
+             * Resolved By
+             * @description User who resolved it; null when open or closed by a rule.
+             */
+            resolved_by: string | null;
+            /**
+             * Rule Code
+             * @description Rule that raised it, e.g. `quantity_mismatch`, `event_off_plot`.
+             */
+            rule_code: string;
+            /** @description info, warn, or hold (keeps the lot out of GI-labelled batches). */
+            severity: components["schemas"]["Severity"];
+            /** @description open, cleared (looked fine), fixed, or escalated to the FPO admin. */
+            status: components["schemas"]["FlagStatus"];
+            /**
+             * Subject Id
+             * Format: uuid
+             * @description Id of the flagged record.
+             */
+            subject_id: string;
+            /** @description Kind of record flagged: plot, event, lot, batch or reading. */
+            subject_type: components["schemas"]["FlagSubject"];
+        };
+        /**
+         * FlagResolveIn
+         * @description A reviewer's outcome for one flag (FR70).
+         */
+        FlagResolveIn: {
+            /**
+             * Note
+             * @description Free text: method, evidence, what changed.
+             */
+            note?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason, e.g. `land_record_checked`, `field_visit`; required (else 422).
+             */
+            reason_code?: string | null;
+            /**
+             * Resolution
+             * @description looks_fine → cleared; fixed → fixed; escalated → escalated and reassigned to fpo_admin.
+             * @enum {string}
+             */
+            resolution: "looks_fine" | "fixed" | "escalated";
+        };
+        /**
+         * FlagStatus
+         * @description Flag resolution state (FR70).
+         * @enum {string}
+         */
+        FlagStatus: "open" | "cleared" | "fixed" | "escalated";
+        /**
+         * FlagSubject
+         * @description What a rule flag is raised on (FR11, FR28, FR69).
+         * @enum {string}
+         */
+        FlagSubject: "plot" | "event" | "lot" | "batch" | "reading";
+        /**
          * FpoIn
          * @description A new FPO (tenant); created by a super-admin.
          */
@@ -2194,6 +2577,11 @@ export interface components {
              * @description Address on one line, without repeated parts.
              */
             readonly address_line: string;
+            /**
+             * Bbox
+             * @description [min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.
+             */
+            bbox?: number[] | null;
             /**
              * Code
              * @description Stable upper-case code.
@@ -3766,6 +4154,24 @@ export interface components {
              */
             next_cursor?: string | null;
         };
+        /** Page[FlagOut] */
+        Page_FlagOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["FlagOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
         /** Page[InstrumentOut] */
         Page_InstrumentOut_: {
             /**
@@ -3796,6 +4202,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["NotificationOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[PlotOut] */
+        Page_PlotOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["PlotOut"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -4092,6 +4516,22 @@ export interface components {
              * @description Value used.
              */
             value?: string | null;
+        };
+        /**
+         * PartVersion
+         * @description Version and ETag of one bundle part as the caller would download it now.
+         */
+        PartVersion: {
+            /**
+             * Etag
+             * @description Strong ETag of the part body; send it in `If-None-Match` for a 304.
+             */
+            etag: string;
+            /**
+             * Version
+             * @description Part version: from `reference_versions` for database-fed parts (only grows), a content fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`.
+             */
+            version: number;
         };
         /**
          * PhotoConfirmOut
@@ -4806,6 +5246,52 @@ export interface components {
          */
         ProfileVersionStatus: "draft" | "published" | "retired";
         /**
+         * PullChange
+         * @description One server-side change for the phone's local copy.
+         */
+        PullChange: {
+            /**
+             * Data
+             * @description The record, lean; decimals are strings, times ISO 8601 UTC.
+             */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Entity
+             * @description Kind of record in `data`.
+             * @enum {string}
+             */
+            entity: "flag" | "lot" | "event" | "intake" | "notification" | "photo_pending";
+            /**
+             * Op
+             * @description Always `upsert`: replace the local row with the same `id`.
+             * @constant
+             */
+            op: "upsert";
+        };
+        /**
+         * PullOut
+         * @description One page of changes since the cursor (backend-design.md §3).
+         */
+        PullOut: {
+            /**
+             * Changes
+             * @description Changes ordered by change time, then id.
+             */
+            changes: components["schemas"]["PullChange"][];
+            /**
+             * Has More
+             * @description True when another page is waiting; call again with `next_cursor`.
+             */
+            has_more: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque cursor to send next time; equals the sent cursor when nothing changed.
+             */
+            next_cursor: string | null;
+        };
+        /**
          * QualityReadingIn
          * @description One measured parameter of a lot or batch at a stage (FR42–FR46). Also the sync `quality_reading` data.
          *
@@ -5072,6 +5558,42 @@ export interface components {
          */
         ReadingStage: "drying_end" | "intake" | "grading" | "storage";
         /**
+         * ReferenceOut
+         * @description Parts whose version differs from the ones the phone holds (plan §13 C2).
+         */
+        ReferenceOut: {
+            /**
+             * Parts
+             * @description Changed or new parts only.
+             */
+            parts: {
+                [key: string]: components["schemas"]["ReferencePart"];
+            };
+        };
+        /**
+         * ReferencePart
+         * @description A changed bundle part with its body.
+         */
+        ReferencePart: {
+            /**
+             * Body
+             * @description The part body, as `GET /v1/sync/bundle/{part}` returns it.
+             */
+            body: {
+                [key: string]: unknown;
+            };
+            /**
+             * Etag
+             * @description Strong ETag of the part body; send it in `If-None-Match` for a 304.
+             */
+            etag: string;
+            /**
+             * Version
+             * @description Part version: from `reference_versions` for database-fed parts (only grows), a content fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`.
+             */
+            version: number;
+        };
+        /**
          * RefreshIn
          * @description Rotate the refresh token. Web clients omit the body field and send the httpOnly cookie.
          */
@@ -5153,6 +5675,12 @@ export interface components {
              */
             roles: string[];
         };
+        /**
+         * Severity
+         * @description Flag severity; `hold` blocks GI labelling until resolved (FR68, FR70).
+         * @enum {string}
+         */
+        Severity: "info" | "warn" | "hold";
         /**
          * SignedQuantity
          * @description A quantity that may be negative, used only for adjustments and differences.
@@ -5471,7 +5999,7 @@ export interface components {
             client_id: string;
             /**
              * Data
-             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: not in the pilot. The entry's `client_id` is used as the record's id.
+             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id). Otherwise the entry's `client_id` is used as the record's id.
              */
             data: {
                 [key: string]: unknown;
@@ -6740,6 +7268,12 @@ export interface operations {
                 limit?: number;
                 /** @description Status filter. */
                 status?: components["schemas"]["FarmerStatus"] | null;
+                /** @description Only farmers of this village. */
+                village_id?: string | null;
+                /** @description Part of the name, local name or farmer code; 1–4 digits also match the last digits of the phone (the `phone_masked` suffix). */
+                q?: string | null;
+                /** @description Comma-separated item fields to return, e.g. `id,code,name` (lean list); items then carry only those keys. Unknown or tenant-disabled names → 422 `validation_error`. */
+                fields?: string | null;
             };
             header?: {
                 /** @description Open assist session id (field officer entering data for a farmer). */
@@ -7002,6 +7536,330 @@ export interface operations {
             };
         };
     };
+    reveal_phone_v1_farmers__farmer_id__phone_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerPhoneOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_farmer_plots_v1_farmers__farmer_id__plots_get: {
+        parameters: {
+            query?: {
+                /** @description Cursor from the previous page's `next_cursor`. */
+                cursor?: string | null;
+                /** @description Page size (1–200). */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_PlotOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    reject_farmer_v1_farmers__farmer_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FarmerReject"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_flags_v1_flags_get: {
+        parameters: {
+            query?: {
+                /** @description FPO to list; default the caller's. */
+                fpo_id?: string | null;
+                /** @description Only flags assigned to this role. */
+                assignee?: components["schemas"]["Role"] | null;
+                /** @description Only flags in this status. */
+                status?: components["schemas"]["FlagStatus"] | null;
+                /** @description Only flags of this severity. */
+                severity?: components["schemas"]["Severity"] | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_FlagOut_"];
+                };
+            };
+            /** @description `unauthorized`: no valid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `forbidden`: farmers use sync pull. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_flag_v1_flags__flag_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                flag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagOut"];
+                };
+            };
+            /** @description `unauthorized`: no valid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: no such flag, or it belongs to another FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    resolve_flag_v1_flags__flag_id__resolve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                flag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FlagResolveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagOut"];
+                };
+            };
+            /** @description `unauthorized`: no valid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `forbidden`: role is not field_officer or fpo_admin; `resolution_forbidden`: a field officer on a hold or escalated flag. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: no such flag, or it belongs to another FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `flag_not_open`: already cleared or fixed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `reason_required`: no `reason_code`; `validation_error`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_fpos_v1_fpos_get: {
         parameters: {
             query?: never;
@@ -7056,6 +7914,43 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FpoOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_fpo_v1_fpos__fpo_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description FPO id. */
+                fpo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8236,6 +9131,95 @@ export interface operations {
             };
         };
     };
+    sync_bundle_v1_sync_bundle_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BundleManifest"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_bundle_part_v1_sync_bundle__part__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Part name, as listed by `GET /v1/sync/bundle`. */
+                part: components["schemas"]["BundlePart"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Unchanged; keep your copy. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `gi_region_missing`: `gi_region` asked while no region is in effect. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     sync_photos_confirm_v1_sync_photos_confirm_post: {
         parameters: {
             query?: never;
@@ -8261,6 +9245,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PhotoConfirmOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_pull_v1_sync_pull_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of your previous pull; omit the first time. */
+                cursor?: string | null;
+                /** @description Most changes per page. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PullOut"];
+                };
+            };
+            /** @description `validation_error`: invalid cursor or limit. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */
@@ -8311,6 +9343,59 @@ export interface operations {
                 };
             };
             /** @description `validation_error`: the envelope does not parse, or more than 50 entries. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_reference_v1_sync_reference_get: {
+        parameters: {
+            query?: {
+                /** @description Part versions you hold: `<part>:<version>,...`; omit for all. */
+                since?: string | null;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceOut"];
+                };
+            };
+            /** @description Unchanged; keep your copy. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `validation_error`: `since` is not `<part>:<version>,...`. */
             422: {
                 headers: {
                     [name: string]: unknown;

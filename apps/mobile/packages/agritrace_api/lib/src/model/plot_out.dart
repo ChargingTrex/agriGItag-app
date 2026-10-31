@@ -25,6 +25,7 @@ part 'plot_out.g.dart';
 /// * [farmerId] - Owner.
 /// * [farmingType] - irrigated or rainfed.
 /// * [fpoId] - Owning FPO.
+/// * [giTagId] - GI tag stored at onboarding or correction; null when none was sent (fallback).
 /// * [id] - Plot id (client-generated, D-005).
 /// * [irrigationSource] - Water source.
 /// * [landRecordRef] - Land-record reference (internal only).
@@ -72,6 +73,10 @@ abstract class PlotOut implements Built<PlotOut, PlotOutBuilder> {
   /// Owning FPO.
   @BuiltValueField(wireName: r'fpo_id')
   String get fpoId;
+
+  /// GI tag stored at onboarding or correction; null when none was sent (fallback).
+  @BuiltValueField(wireName: r'gi_tag_id')
+  String? get giTagId;
 
   /// Plot id (client-generated, D-005).
   @BuiltValueField(wireName: r'id')
@@ -206,6 +211,13 @@ class _$PlotOutSerializer implements PrimitiveSerializer<PlotOut> {
       object.fpoId,
       specifiedType: const FullType(String),
     );
+    if (object.giTagId != null) {
+      yield r'gi_tag_id';
+      yield serializers.serialize(
+        object.giTagId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'id';
     yield serializers.serialize(
       object.id,
@@ -386,6 +398,14 @@ class _$PlotOutSerializer implements PrimitiveSerializer<PlotOut> {
             specifiedType: const FullType(String),
           ) as String;
           result.fpoId = valueDes;
+          break;
+        case r'gi_tag_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.giTagId = valueDes;
           break;
         case r'id':
           final valueDes = serializers.deserialize(

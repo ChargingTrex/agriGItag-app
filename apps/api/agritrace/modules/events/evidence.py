@@ -7,7 +7,8 @@ Serves: FR3 (photo evidence), FR26 (time and place of capture), FR61 (permanent,
 time and GPS checked against the event), plan §13 B3 (presigned PUT + SHA-256) and B6 (WebP thumbnail
 ~60 KB, medium ~150 KB), D-011, W01 cross-package expectation (variants carry `width`, `height`,
 `jpeg_url`).
-Callers: `events.service` (keys, upload instructions), `events.tasks` (verify, make_variants),
+Callers: `events.service` (keys, upload instructions, `signed_variants` for the lot timeline),
+`events.pull_service` (`signed_variants`, B07), `events.tasks` (verify, make_variants),
 tests/unit/test_events_evidence.py, tests/integration/test_sync.py.
 """
 
@@ -222,6 +223,11 @@ def _read_object(key: str) -> bytes:
     return data
 
 
+# Long enough for a phone on 2G to load a timeline's thumbnails; short enough that a leaked link dies soon.
+VARIANT_URL_TTL_S = 3600
+SIGNED_VARIANTS = ("thumb_url", "medium_url")
+
+
 def _public_url(key: str) -> str:
     """URL of an evidence object on the public storage endpoint (B10 may front it with a CDN).
 
@@ -233,6 +239,29 @@ def _public_url(key: str) -> str:
     """
     s = get_settings()
     return f"{s.s3_public_endpoint.rstrip('/')}/{s.s3_bucket_evidence}/{key}"
+
+
+def signed_variants(variants: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Prepare stored variants for the timeline and pull: presign the WebP links, drop the original JPEG.
+
+    Args:
+        variants: the stored `variants` record (URLs made by `_public_url`), or None.
+
+    Returns:
+        A copy with `thumb_url` and `medium_url` presigned (1 h; the evidence bucket is private, B06 review
+        P3) and sizes unchanged, without `jpeg_url`; None for None.
+    """
+    if variants is None:
+        return None
+    # Split on the bucket, not the whole public prefix, so links stored under an older endpoint still resolve.
+    marker = f"/{get_settings().s3_bucket_evidence}/"
+    # The original JPEG keeps the phone's exact EXIF GPS (M04), so it never leaves through these views
+    # (review B07-r1 P2-1); the WebP variants carry no EXIF.
+    return {
+        k: storage.presign_get(v.split(marker, 1)[-1], VARIANT_URL_TTL_S) if k in SIGNED_VARIANTS else v
+        for k, v in variants.items()
+        if k != "jpeg_url"
+    }
 
 
 async def verify(session: AsyncSession, photo_id: uuid.UUID) -> tuple[PhotoStatus, uuid.UUID | None, bool]:

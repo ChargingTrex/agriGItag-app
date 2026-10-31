@@ -30,6 +30,8 @@ class _$FarmerOut extends FarmerOut {
   @override
   final bool noSmartphone;
   @override
+  final String? phoneMasked;
+  @override
   final String? photoKey;
   @override
   final FarmerStatus status;
@@ -53,6 +55,7 @@ class _$FarmerOut extends FarmerOut {
       required this.name,
       this.nameLocal,
       required this.noSmartphone,
+      this.phoneMasked,
       this.photoKey,
       required this.status,
       this.userId,
@@ -80,6 +83,7 @@ class _$FarmerOut extends FarmerOut {
         name == other.name &&
         nameLocal == other.nameLocal &&
         noSmartphone == other.noSmartphone &&
+        phoneMasked == other.phoneMasked &&
         photoKey == other.photoKey &&
         status == other.status &&
         userId == other.userId &&
@@ -100,6 +104,7 @@ class _$FarmerOut extends FarmerOut {
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, nameLocal.hashCode);
     _$hash = $jc(_$hash, noSmartphone.hashCode);
+    _$hash = $jc(_$hash, phoneMasked.hashCode);
     _$hash = $jc(_$hash, photoKey.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, userId.hashCode);
@@ -122,6 +127,7 @@ class _$FarmerOut extends FarmerOut {
           ..add('name', name)
           ..add('nameLocal', nameLocal)
           ..add('noSmartphone', noSmartphone)
+          ..add('phoneMasked', phoneMasked)
           ..add('photoKey', photoKey)
           ..add('status', status)
           ..add('userId', userId)
@@ -178,6 +184,10 @@ class FarmerOutBuilder implements Builder<FarmerOut, FarmerOutBuilder> {
   bool? get noSmartphone => _$this._noSmartphone;
   set noSmartphone(bool? noSmartphone) => _$this._noSmartphone = noSmartphone;
 
+  String? _phoneMasked;
+  String? get phoneMasked => _$this._phoneMasked;
+  set phoneMasked(String? phoneMasked) => _$this._phoneMasked = phoneMasked;
+
   String? _photoKey;
   String? get photoKey => _$this._photoKey;
   set photoKey(String? photoKey) => _$this._photoKey = photoKey;
@@ -212,6 +222,7 @@ class FarmerOutBuilder implements Builder<FarmerOut, FarmerOutBuilder> {
       _name = $v.name;
       _nameLocal = $v.nameLocal;
       _noSmartphone = $v.noSmartphone;
+      _phoneMasked = $v.phoneMasked;
       _photoKey = $v.photoKey;
       _status = $v.status;
       _userId = $v.userId;
@@ -255,6 +266,7 @@ class FarmerOutBuilder implements Builder<FarmerOut, FarmerOutBuilder> {
             nameLocal: nameLocal,
             noSmartphone: BuiltValueNullFieldError.checkNotNull(
                 noSmartphone, r'FarmerOut', 'noSmartphone'),
+            phoneMasked: phoneMasked,
             photoKey: photoKey,
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'FarmerOut', 'status'),

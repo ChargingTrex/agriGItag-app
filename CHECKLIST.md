@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 25 % (15/60 items)
+Completion: 27 % (16/60 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -41,13 +41,13 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] W02 — `privacy_lint.py` (canary strings + regexes for phone/Aadhaar/survey/polygon/coordinate pr — wave 2 — worker: Opus — reviewer: WEB PASS r1 — verifier: PASS (docs/agents/qa/W02.md; BM-03 LCP 1530 ms, BM-16 565 ms)
 - [ ] B06 — Events + sync push + evidence — wave 3 — worker: Opus (2 rounds) — reviewer: SEC PASS-PENDING-STACK — verifier: PENDING (merged conditionally; 17 integration tests deferred)
 - [ ] B13 — Config-driven fields/features + masters + bulk import (from the gap analysis) — wave 3 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
-- [ ] M02 — Sync engine (outbox, triggers incl. reachability probe, timeouts 10 s/30 s, retry only on  — wave 3 — worker: — reviewer: — verifier:
+- [ ] M02 — Sync engine (outbox, triggers incl. reachability probe, timeouts 10 s/30 s, retry only on  — wave 3 — worker: Opus (done, f039ae4) — reviewer: MOB r1 in progress — verifier:
 - [x] M03 — Ref data + local preview rules (GI point-in-polygon + buffer, yield 20/30, event order, mo — wave 3 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 + r2 confirm — verifier: Orchestrator-run rules suite PASS (63/63 parity)
-- [ ] P01 — Members: approvals, roster, farmer/plot detail with MapLibre/OSM + GI outline — wave 3 — worker: — reviewer: — verifier:
+- [ ] P01 — Members: approvals, roster, farmer/plot detail with MapLibre/OSM + GI outline — wave 3 — worker: Opus (2 rounds) — reviewer: WEB PASS r1 + r2 confirm — verifier: PENDING (acceptance line 'masked phone + audited reveal' waits on B14; live API deferred)
 - [ ] P03 — Ready lots → Create batch: tick, running total, share %, greyed lots with reason, non-GI t — wave 3 — worker: — reviewer: — verifier:
-- [ ] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: — reviewer: — verifier:
-- [ ] B07 — Reference bundle + sync pull — wave 4 — worker: — reviewer: — verifier:
-- [ ] B08 — Rules & flags — wave 4 — worker: — reviewer: — verifier:
+- [ ] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
+- [ ] B07 — Reference bundle + sync pull — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK r1 + r2 confirm — verifier: PENDING (merged conditionally 2026-10-31; 7 integration tests deferred)
+- [ ] B08 — Rules & flags — wave 4 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / r2 confirmed by Orchestrator — verifier: PENDING (merged conditionally 2026-10-31; 14 integration tests deferred)
 - [ ] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: — reviewer: — verifier:
 - [ ] P02 — Flags & plot review — wave 4 — worker: — reviewer: — verifier:
 - [ ] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: — reviewer: — verifier:
@@ -55,9 +55,9 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G3 Mobile core
 
-- [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: — reviewer: — verifier:
+- [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (in progress) — reviewer: — verifier:
 - [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: — reviewer: — verifier:
-- [ ] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: — reviewer: — verifier:
+- [ ] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (done, 1500e30) — reviewer: MOB r1 in progress — verifier:
 - [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: — reviewer: — verifier:
 - [ ] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: — reviewer: — verifier:
 - [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: — reviewer: — verifier:
