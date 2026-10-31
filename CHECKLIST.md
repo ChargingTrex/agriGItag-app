@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 31 % (19/62 items)
+Completion: 30 % (19/64 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -57,6 +57,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / PASS-PENDING-STACK r2 — verifier: PENDING (merged conditionally 2026-10-31; 8 integration tests deferred)
 - [ ] B15 — Backend gaps from B08 review and M09 (grading-loss split D-030, `farmer` push kind + `client_id` D-031, assist_session kind D-032) — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 22 integration tests deferred)
+- [ ] B16 — QC intake via sync (`lot_intake` push kind, `POST /intakes` for QC, processor default, moisture gate at intake; D-040), non-GI holds (D-041), assist_session_id per kind (D-042) — wave 6 — worker: — reviewer: — verifier:
 - [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: Opus (micro-patch in progress) — reviewer: MOB PASS r1 (P2: History owner filter, fixed before merge) — verifier:
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
 - [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (done, 1f1c583) — reviewer: MOB/SEC r1 in progress — verifier:
@@ -86,3 +87,4 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] Q05 — Release gate: benchmark sweep → `docs/agents/qa/benchmarks.json`, rubric, G5 report — wave 7 — worker: — reviewer: — verifier:
 - [ ] **Gate G5 signed** (docs/agents/gates/G5.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 - [ ] **G5 condition (rulings 2026-10-31 §4):** B15, M02 r2 and M09 r2 all merged before any field device runs onboarding or assist mode; offline onboarding push `[farmer, assist_session, consent, plot]` → 4 × accepted, replay → 4 × duplicate, online timeout then sync → one farmer
+- [ ] **G5 condition (rulings 2026-10-31b §1):** B16 and M11 r2 both merged before any field device runs QC intake; P04 live-API run needs B16
