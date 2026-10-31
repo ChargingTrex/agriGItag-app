@@ -1,10 +1,12 @@
 // F14 Settings (every role): the unsent-entries reminder with "Send now" (a red triangle once entries waited 7 days),
-// the language button, "Photos on Wi-Fi only" (default off), the voice tour replay and sign-out.
+// the language button, "Photos on Wi-Fi only" (default off), "Reminders" (default on, M12), the voice tour replay and
+// sign-out.
 // Requirement: UserFlows §Design rules ("Language first ... switched with one button"; "Works with no signal"),
 //   §Alerts, help and feature phones ("A 60-second voice tour can be replayed from the menu"), §When things go wrong
 //   (unsent entries on a lost phone are lost, "so the cloud icon reminds farmers to get signal"); PLAN §13 B5 ("Send
 //   photos on Wi-Fi only", default OFF); mobile-design.md §3 ("after 7 days unsent → red triangle + voice prompt");
-//   M06 sign-out (D-029: unsent entries stay on the phone); plan §7.2 M08 (language toggle flips strings + next prompt).
+//   M06 sign-out (D-029: unsent entries stay on the phone); plan §7.2 M08 (language toggle flips strings + next prompt);
+//   FR7 and plan §7.2 M12 (reminders switch, D-046).
 // Callers: app_router.dart route `/settings` (gear on the farmer home and on the placeholder homes).
 
 import 'package:flutter/material.dart';
@@ -20,6 +22,7 @@ import '../../core/widgets/farmer_button.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/voice_prompt_bar.dart';
 import '../event_log/event_log_controller.dart' show afterSaveProvider, clockProvider;
+import '../notifications/reminders.dart' show remindersOnProvider;
 
 /// How long entries may wait unsent before Settings shows the red "needs attention" warning (mobile-design.md §3).
 const unsentWarnAfter = Duration(days: 7);
@@ -60,7 +63,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  /// Builds the reminder, the buttons and the switch. [context] supplies theme and strings. Returns the screen;
+  /// Builds the reminder, the buttons and the switches. [context] supplies theme and strings. Returns the screen;
   /// throws nothing.
   @override
   Widget build(BuildContext context) {
@@ -113,6 +116,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 icon: const Icon(Icons.volume_up),
                 onPressed: () => playPrompt(ref, context, 'wifiOnlyPhotos'),
               ),
+            ),
+          ),
+          gap,
+          SwitchListTile(
+            title: Text(l10n.remindersToggle),
+            // FR7: on by default; turning it off cancels every scheduled reminder (startReminders reschedules).
+            value: ref.watch(remindersOnProvider).value ?? true,
+            onChanged: (on) => ref.read(remindersOnProvider.notifier).set(on),
+            secondary: IconButton(
+              style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget)),
+              tooltip: l10n.playVoice,
+              icon: const Icon(Icons.volume_up),
+              onPressed: () => playPrompt(ref, context, 'remindersToggle'),
             ),
           ),
           gap,

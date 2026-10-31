@@ -679,4 +679,16 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get unsentOld =>
       'சில பதிவுகள் 7 நாட்களுக்கு மேல் காத்திருக்கின்றன. அனுப்ப சிக்னல் உள்ள இடத்துக்குச் செல்லுங்கள், அல்லது அலுவலரை அழையுங்கள்.';
+
+  @override
+  String get remindersToggle => 'நினைவூட்டல்கள்';
+
+  @override
+  String get remindersRationale =>
+      'அறுவடை போன்ற அடுத்த வேலையைப் பதிவு செய்யும் நேரம் வந்தால் AgriTrace உங்களுக்கு நினைவூட்டும். நினைவூட்டல்களை அனுமதிக்கவா?';
+
+  @override
+  String reminderTitle(String event) {
+    return 'பதிவு செய்யும் நேரம்: $event';
+  }
 }

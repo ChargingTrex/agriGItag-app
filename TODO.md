@@ -33,6 +33,9 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 
 - [ ] B04 `notifications/service.py` `deliver`: no error column, so a failure reason is stored in `provider_ref` as `error:<reason>`; add `notifications.error` with the first real provider.
 
+- [ ] M12 `features/notifications/push.dart` `ConsolePushProvider`: no FCM/APNs; add firebase_messaging (LIBRARIES row) and a provider returning its token once the Firebase project exists.
+- [ ] M12 `features/notifications/push.dart` `registerPush`: the API has no device-token endpoint; the token goes nowhere. Add the call with the endpoint.
+
 ## 4. Reviewer and worker follow-ups
 - [ ] B02: integration tests `apps/api/tests/integration/test_identity.py` and migration 0002 under `alembic check` not yet run on PostGIS (Docker down); run before merge to main is final.
 - [x] B02: `notifications.send` kwargs contract for B11: `user_id`, `template_key="otp"`, `channel="sms"`, `lang`, `payload={"code"}`; the task must resolve the phone from `user_id` and never log `payload.code`. Done in B04 (`notifications/tasks.py`).
@@ -260,11 +263,18 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B11 (D-039): audit viewer does not show rows about deleted records or untenanted tables (users, devices, consent_records, batch_approvals, batch_shares); add `audit_log.fpo_id` stamped by the listener when this matters or the IN-subqueries get slow.
 - [ ] B11: integration tests `tests/integration/test_reporting.py` not run on the Docker stack (10 of 11 passed on a local Postgres 14 with geography as text; the 429 one needs Valkey, covered by unit test with a stand-in).
 
+- [ ] M12 (B07/B12): crop-calendar reminders need tasks on the phone: the `calendar` bundle part is empty (B07) and its items carry no id or farmer; give them `{id, farmer_id, lot_id, event_type, due_on, prompt_id}` and mirror them into Tasks in `bundle_fetcher.dart` (M02 TODO "nothing writes Tasks"); reminders then follow with no M12 change.
+- [ ] M12 (M02/B04): pulled `notification` entities are ignored by `pull_service.dart` and carry no event/lot/due date (B04 payload is template variables only); a harvest reminder from the server needs a `task` pull entity (or those fields) mirrored into Tasks.
+- [ ] M12: a pull in the 15-min background isolate does not reschedule reminders until the app is opened (the listener lives in the app); call `scheduleReminders` at the end of the background callback if server tasks become common.
+- [ ] M12 (backend): add `push_notifications: false` to `apps/api/config/features.yaml` and the `Features` schema (the phone reads it from the `fields` bundle; absent = off), and a device-token endpoint before push is turned on.
+- [ ] M12: reminders carry no voice clip (UserFlows "with a voice clip"); add per-prompt notification sounds (Android channel sound / iOS `.caf`) when the real recordings land; `remindersToggle` and `remindersRationale` have no clips yet (text only).
+- [ ] M12: device checks for Q01 — Android 13 prompt after the rationale, reminder at due time with the app killed, reboot re-arm, tap from killed/background state, iOS foreground presentation.
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).
 - [x] Run `/plugin install ponytail@ponytail` in this project (done 2026-10-30).
 - [ ] Provide SMS/OTP provider credentials when moving past the console OTP sender.
 - [ ] Record Tamil voice prompts (about 150 clips).
+- [ ] M12 push (PLAN §12): create the Firebase project; add `android/app/google-services.json`, `ios/Runner/GoogleService-Info.plist`, the APNs auth key in Firebase, and the Push Notifications + Background Modes (remote notifications) entitlement in Xcode; then a worker adds firebase_messaging behind `PushProvider`.
 - [ ] Decide on the Datameet / Census 2011 sub-district file versus a surveyed GI boundary.
 - [ ] Allow the `localstack/localstack` image to run if a permission prompt appears for the Verifier (replaces MinIO, D-008).
 - [ ] B05: `?fields=` on the quality list endpoints (docs/api/conventions.md) is not implemented; add with the shared helper when B03 or a core WP provides one.

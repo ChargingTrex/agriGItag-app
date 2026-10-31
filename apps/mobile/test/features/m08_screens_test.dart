@@ -225,7 +225,8 @@ void main() {
     testWidgets('Photos on Wi-Fi only: off by default, the switch stores it for the sync engine', (tester) async {
       final h = FlowHarness();
       await h.start(tester, location: '/settings');
-      final tile = find.byType(SwitchListTile);
+      // Settings has two switches since M12 (Reminders); this test is about the Wi-Fi one.
+      final tile = find.widgetWithText(SwitchListTile, 'Photos on Wi-Fi only');
       expect(tester.widget<SwitchListTile>(tile).value, isFalse);
       expect((await h.db.sessionDao.read())!.wifiOnlyPhotos, isFalse);
       await tester.tap(tile);

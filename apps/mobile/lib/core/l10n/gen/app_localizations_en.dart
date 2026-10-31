@@ -683,4 +683,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unsentOld => 'Some entries have waited more than 7 days. Get signal to send them, or call your officer.';
+
+  @override
+  String get remindersToggle => 'Reminders';
+
+  @override
+  String get remindersRationale =>
+      'AgriTrace can remind you when it is time to log the next step, like harvest. Allow reminders?';
+
+  @override
+  String reminderTitle(String event) {
+    return 'Time to log: $event';
+  }
 }
