@@ -1,5 +1,6 @@
-// One sign-in step: a prompt, one sentence (problem or notice), the typed digits and a large digit keypad, plus one
-//   action button. Shared by the phone, OTP and PIN screens; also maps sign-in failures to one sentence.
+// One sign-in step: a spoken prompt, one sentence (problem or notice), the typed digits and a large digit keypad, the
+//   step's action button and the language button. Shared by the phone, OTP and PIN screens; also maps sign-in
+//   failures to one sentence.
 // Requirement: FR1, UserFlows §Log in once, §Design rules ("Tap, never type": a number pad, never a free-text box;
 //   "Big targets" 64 dp keys; "Language first" one-button switch), §When things go wrong (one short sentence, never an
 //   error code); D-024 error codes (docs/api/conventions.md "Authentication").
@@ -13,6 +14,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/l10n/gen/app_localizations.dart';
 import '../../core/router/session.dart';
 import '../../core/theme/farmer_tokens.dart';
+import '../../core/voice/voice_player.dart';
+import '../../core/widgets/farmer_button.dart';
+import '../../core/widgets/voice_prompt_bar.dart';
 
 /// Returns the one sentence a sign-in [failure] shows, in [l10n]'s language.
 ///
@@ -46,12 +50,13 @@ String authMessage(AppLocalizations l10n, AuthFailure failure, {DateTime? now}) 
 class AuthStep extends ConsumerWidget {
   /// Creates the step.
   ///
-  /// [prompt] says what to enter; [message] is one localised sentence (a problem, or a notice) or null; [prefix] is
+  /// [prompt] says what to enter and [promptId] is its ARB key (the voice clip id); [message] is one localised sentence (a problem, or a notice) or null; [prefix] is
   /// shown before the digits (`+91`); [value] holds the digits typed so far, at most [length]; [obscure] hides them;
   /// [onChanged] receives the new digits after each key (null while a request runs); [action] is the step's button.
   const AuthStep({
     super.key,
     required this.prompt,
+    required this.promptId,
     required this.value,
     required this.length,
     required this.onChanged,
@@ -63,6 +68,9 @@ class AuthStep extends ConsumerWidget {
 
   /// What to enter, e.g. "Enter mobile number".
   final String prompt;
+
+  /// ARB key of [prompt]; the recorded clip `assets/audio/<lang>/<promptId>.ogg` (D-016).
+  final String promptId;
 
   /// One sentence: what went wrong or why the user is here; null shows nothing.
   final String? message;
@@ -95,23 +103,17 @@ class AuthStep extends ConsumerWidget {
     final locale = ref.watch(sessionProvider.select((s) => s.locale));
     final slots = List.generate(length, (i) => i < value.length ? (obscure ? '●' : value[i]) : '–').join(' ');
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.signIn),
-        actions: [
-          TextButton(
-            onPressed: () => ref.read(sessionProvider.notifier).setLocale(locale == tamil ? english : tamil),
-            child: Text(l10n.switchLanguage),
-          ),
-        ],
-      ),
+      // No implied back arrow (48 dp, below the farmer minimum): each step has its own 56 dp+ buttons and the
+      // system back gesture still returns to the previous step.
+      appBar: AppBar(title: Text(l10n.signIn), automaticallyImplyLeading: false),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(tokens.gap),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // shortcut: no speaker for the prompt yet; swap the Text for M05's VoicePromptBar once it is merged.
-              Text(prompt, style: theme.textTheme.titleLarge),
+              // Keyed by prompt: a new prompt (PIN chosen → repeat it) is spoken again.
+              VoicePromptBar(key: ValueKey(promptId), promptId: promptId, text: prompt),
               if (message != null) ...[
                 SizedBox(height: tokens.gap),
                 Row(
@@ -135,6 +137,13 @@ class AuthStep extends ConsumerWidget {
               ),
               _DigitKeys(value: value, length: length, onChanged: onChanged, deleteLabel: l10n.authDelete),
               if (action != null) ...[SizedBox(height: tokens.gap), action!],
+              SizedBox(height: tokens.gap),
+              FarmerButton(
+                icon: Icons.translate,
+                label: l10n.switchLanguage,
+                onPressed: () => ref.read(sessionProvider.notifier).setLocale(locale == tamil ? english : tamil),
+                onSpeak: () => playPrompt(ref, context, 'switchLanguage'),
+              ),
             ],
           ),
         ),
@@ -144,6 +153,10 @@ class AuthStep extends ConsumerWidget {
 }
 
 /// 3 x 4 grid of 64 dp digit keys with a delete key; appends to or trims [value], up to [length] digits.
+///
+/// shortcut: own keypad because M05's NumberPad drops a leading zero (PIN 0123 becomes 123), groups a 10-digit
+/// phone Indian-style (98,76,54,3210) and cannot mask a PIN; swap to NumberPad when it gets fixed-length and
+/// obscure modes.
 class _DigitKeys extends StatelessWidget {
   /// Creates the keys. [value] is the current digits; [length] the most digits; [onChanged] receives the new digits
   /// (null disables every key); [deleteLabel] is the spoken name of the delete key.

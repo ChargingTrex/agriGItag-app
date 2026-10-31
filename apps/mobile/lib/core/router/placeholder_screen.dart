@@ -35,6 +35,8 @@ class PlaceholderScreen extends ConsumerWidget {
         title: Text(l10n.appTitle),
         actions: [
           IconButton(
+            // 56 dp: the farmer minimum (Material's default is 48 dp).
+            style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget)),
             icon: const Icon(Icons.settings),
             tooltip: l10n.settingsTitle,
             onPressed: () => context.push('/settings'),
@@ -82,7 +84,11 @@ class _SettingsPlaceholderState extends ConsumerState<SettingsPlaceholder> {
     final l10n = AppLocalizations.of(context);
     final tokens = Theme.of(context).extension<FarmerTokens>()!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsTitle)),
+      appBar: AppBar(
+        title: Text(l10n.settingsTitle),
+        // 56 dp back button (Material's implied one is 48 dp, below the farmer minimum).
+        leading: BackButton(style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget))),
+      ),
       body: Padding(
         padding: EdgeInsets.all(tokens.gap),
         child: Column(
@@ -106,7 +112,12 @@ class _SettingsPlaceholderState extends ConsumerState<SettingsPlaceholder> {
                   ? null
                   : () async {
                       setState(() => _busy = true);
-                      await ref.read(sessionProvider.notifier).signOut();
+                      try {
+                        await ref.read(sessionProvider.notifier).signOut();
+                      } finally {
+                        // On success the router has already left this screen; on a failure the button works again.
+                        if (mounted) setState(() => _busy = false);
+                      }
                     },
               // shortcut: no voice clip yet, so the speaker slot is disabled; M05 wires the prompt player.
               onSpeak: null,

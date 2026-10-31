@@ -22,8 +22,9 @@ Future<String Function()> _pump(
   ProviderContainer container, {
   String? location,
   Object? extra,
+  Locale locale = english,
 }) async {
-  container.read(sessionProvider.notifier).setLocale(english);
+  container.read(sessionProvider.notifier).setLocale(locale);
   await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const AgriTraceApp()));
   await tester.pumpAndSettle();
   final router = container.read(routerProvider);
@@ -56,9 +57,46 @@ PinRequiredOut _pinStep({required bool pinSet}) => PinRequiredOut(
     ..pinSet = pinSet,
 );
 
+/// Farmer tap-target rule: every tappable control at least 56 x 56 dp (UserFlows §Design rules "Big targets").
+const _farmerTapTarget = MinimumTapTargetGuideline(
+  size: Size(56, 56),
+  link: 'docs/source/AgriTrace — User Flows.md §Design rules',
+);
+
 /// Screen states.
 void main() {
   const phone = '+919876543210', verify = 'POST /v1/auth/otp/verify', pinVerify = 'POST /v1/auth/pin/verify';
+
+  // Each step as it is really reached (OTP and PIN are pushed, so an implied back arrow would show), in Tamil.
+  for (final (location, extra) in [
+    ('/auth', null),
+    ('/auth/otp', phone),
+    ('/auth/pin', _pinStep(pinSet: true)),
+    ('/settings', null),
+  ]) {
+    for (final scale in [1.0, 1.5]) {
+      testWidgets('$location: every control is at least 56 dp at text scale $scale', (tester) async {
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        final container = location == '/settings'
+            ? (await tester.runAsync(() => signedIn('farmer')))!
+            : _container(FakeApi());
+        await _pump(tester, container, location: location == '/auth' ? null : location, extra: extra, locale: tamil);
+        await tester.runAsync(pumpEventQueue);
+        await tester.pumpAndSettle();
+        expect(find.byType(BackButton), location == '/settings' ? findsOneWidget : findsNothing);
+        await expectLater(tester, meetsGuideline(_farmerTapTarget));
+        if (location == '/settings') {
+          // Leave the screen inside the test so Drift's outbox-count stream closes its zero-delay timer.
+          await tester.pumpWidget(const SizedBox());
+          for (var i = 0; i < 3; i++) {
+            await tester.runAsync(pumpEventQueue);
+            await tester.pump(const Duration(milliseconds: 1));
+          }
+        }
+      });
+    }
+  }
 
   testWidgets('phone: 10 digits → Get code → OTP step', (tester) async {
     final api = FakeApi({

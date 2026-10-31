@@ -3,6 +3,8 @@
 // Requirement: UserFlows §Log in once, §When things go wrong "Phone lost or changed", §Who uses what (shared phones);
 //   D-024 contract; D-027 (tokens in the platform keystore). Callers: flutter test (CI mobile job).
 
+import 'dart:async';
+
 import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/db/providers.dart';
 import 'package:agritrace/core/router/session.dart';
@@ -211,6 +213,27 @@ void main() {
       expect(await db.sessionDao.read(), isNull);
       expect((await storedValues()).keys, ['device_id']);
       expect(await db.outboxDao.pendingCount().first, 1, reason: 'unsent entries are never deleted');
+    });
+
+    test('a refresh answer arriving after sign-out is discarded', () async {
+      final api = FakeApi({
+        refresh: [(200, sessionJson(nonce: 2))],
+        logout: [(204, null)],
+      });
+      final gate = Completer<void>();
+      api.gates[refresh] = gate.future;
+      final container = await signedIn('farmer', api: api);
+      final notifier = container.read(sessionProvider.notifier);
+
+      final pending = notifier.refreshAccessToken();
+      await notifier.signOut();
+      gate.complete();
+
+      expect(await pending, isNull);
+      expect(notifier.accessToken, isNull);
+      expect((await storedValues()).keys, ['device_id'], reason: 'no tokens written back after sign-out');
+      expect(container.read(sessionProvider).role, isNull);
+      expect(container.read(sessionProvider).sessionEnded, isFalse);
     });
 
     test('no signal → signed out on the phone anyway', () async {

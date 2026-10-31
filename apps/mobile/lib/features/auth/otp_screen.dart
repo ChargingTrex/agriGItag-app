@@ -13,7 +13,8 @@ import 'package:smart_auth/smart_auth.dart';
 
 import '../../core/l10n/gen/app_localizations.dart';
 import '../../core/router/session.dart';
-import '../../core/theme/farmer_tokens.dart';
+import '../../core/voice/voice_player.dart';
+import '../../core/widgets/error_sheet.dart';
 import '../../core/widgets/farmer_button.dart';
 import 'auth_step.dart';
 
@@ -107,32 +108,16 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   /// device binding and retries the same code. Returns when the sheet closes; throws nothing.
   Future<void> _deviceInUse() async {
     final l10n = AppLocalizations.of(context);
-    final tokens = Theme.of(context).extension<FarmerTokens>()!;
     final signOut = await showModalBottomSheet<bool>(
       context: context,
-      // shortcut: M05's ErrorSheet (picture, sentence + speaker, one button) is unmerged; swap this body for
-      // `ErrorSheet(picture: ..., sentence: l10n.errorDeviceInUse, actionLabel: l10n.signOut, ...)` once it lands.
-      builder: (sheet) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(tokens.gap),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Icon(Icons.phonelink_lock, size: 96),
-              SizedBox(height: tokens.gap),
-              Text(l10n.errorDeviceInUse, style: Theme.of(sheet).textTheme.titleMedium),
-              SizedBox(height: tokens.gap),
-              FarmerButton(
-                icon: Icons.logout,
-                label: l10n.signOut,
-                onPressed: () => Navigator.of(sheet).pop(true),
-                onSpeak: null,
-                prominent: true,
-              ),
-            ],
-          ),
-        ),
+      builder: (sheet) => ErrorSheet(
+        picture: const Icon(Icons.phonelink_lock, size: 96),
+        sentence: l10n.errorDeviceInUse,
+        promptId: 'errorDeviceInUse',
+        actionIcon: Icons.logout,
+        actionLabel: l10n.signOut,
+        actionPromptId: 'signOut',
+        onAction: () => Navigator.of(sheet).pop(true),
       ),
     );
     if (!mounted) return;
@@ -164,6 +149,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     final l10n = AppLocalizations.of(context);
     return AuthStep(
       prompt: l10n.authOtpTitle,
+      promptId: 'authOtpTitle',
       message: _error == null ? null : authMessage(l10n, _error!),
       value: _code,
       length: 6,
@@ -172,7 +158,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         icon: Icons.refresh,
         label: l10n.authResend,
         onPressed: _busy ? null : _resend,
-        onSpeak: null,
+        onSpeak: () => playPrompt(ref, context, 'authResend'),
       ),
     );
   }

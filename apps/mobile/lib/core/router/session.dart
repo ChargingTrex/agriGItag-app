@@ -132,14 +132,17 @@ class SessionNotifier extends Notifier<Session> {
   /// An expired access token is renewed in the background (a `refresh_reused`/401 answer signs out with an
   /// explanation; no signal keeps the session). A row without tokens (keystore wiped) or tokens without a row (iOS
   /// Keychain outlives a reinstall) means signed out, and the leftovers are cleared. Returns once the local state is
-  /// known; throws nothing. Side effects: may create the device id, clear storage, start a refresh.
+  /// known. Throws what Drift throws when the database file cannot be opened (nothing works without it); keystore
+  /// failures are absorbed. Side effects: may clear storage, start a refresh.
   Future<void> restore() async {
     final row = await ref.read(appDatabaseProvider).sessionDao.read();
     try {
-      _deviceId = await _storage.read(key: _kDevice);
-      _access = await _storage.read(key: _kAccess);
-      _refresh = await _storage.read(key: _kRefresh);
-      _expiresAt = DateTime.tryParse(await _storage.read(key: _kExpires) ?? '');
+      // One platform call instead of four before the first frame.
+      final stored = await _storage.readAll();
+      _deviceId = stored[_kDevice];
+      _access = stored[_kAccess];
+      _refresh = stored[_kRefresh];
+      _expiresAt = DateTime.tryParse(stored[_kExpires] ?? '');
     } on PlatformException {
       // Android can lose the Keystore key (e.g. restored backup): start clean rather than fail to open.
       await _storage.deleteAll();
@@ -260,10 +263,12 @@ class SessionNotifier extends Notifier<Session> {
           .api
           .getIdentityApi()
           .refreshV1AuthRefreshPost(refreshIn: RefreshIn((b) => b.refreshToken = token));
+      // Signed out (or signed in again) while the call was in flight: the answer belongs to a session that is over.
+      if (_refresh != token) return null;
       await _storeTokens(response.data!);
       return _access;
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) await _endLocally(sessionEnded: true);
+      if (e.response?.statusCode == 401 && _refresh == token) await _endLocally(sessionEnded: true);
       return null;
     }
   }
@@ -274,6 +279,13 @@ class SessionNotifier extends Notifier<Session> {
   /// fails and the phone signs out anyway; the server still sees this device as signed in, which the next user
   /// clears with [forgetDevice] when sign-in answers `device_in_use`. Returns when signed out; throws nothing.
   /// Side effects: network call, secure storage and Session row cleared, state signed out (router opens /auth).
+  ///
+  /// DECISION D-029: the outbox is per user. Sign-out keeps every unsent entry, tagged with the signing-out user's
+  /// id (`Entries.enteredByUserId`); M02 never sends them under another user's session, sends them when that user
+  /// signs in again on this phone, and the next user's cloud indicator counts only their own entries.
+  ///   ADV: a shared family phone never deletes or misattributes anyone's unsent work (FR4, UserFlows §Who uses what).
+  ///   COMPROMISE: entries of a user who never signs in again on this phone stay unsent (the cloud reminder on
+  ///   sign-out says so); M02 must filter the outbox by user.
   Future<void> signOut() async {
     if (_access != null) {
       try {

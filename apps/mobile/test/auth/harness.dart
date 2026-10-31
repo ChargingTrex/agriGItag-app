@@ -10,8 +10,10 @@ import 'package:agritrace/core/api/api_client.dart';
 import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/db/providers.dart';
 import 'package:agritrace/core/router/session.dart';
+import 'package:agritrace/core/voice/voice_player.dart';
 import 'package:agritrace_api/agritrace_api.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -30,6 +32,9 @@ class FakeApi implements HttpClientAdapter {
   /// Answers per route; tests may add routes later.
   final Map<String, List<Answer>> routes;
 
+  /// Per-route gates: a request to a gated route waits until its future completes (to order races in tests).
+  final Map<String, Future<void>> gates = {};
+
   /// Every request seen, in order, with its headers as sent.
   final List<RequestOptions> requests = [];
 
@@ -46,6 +51,7 @@ class FakeApi implements HttpClientAdapter {
   ) async {
     // Snapshot: a retried request reuses and mutates the same RequestOptions.
     requests.add(options.copyWith(headers: Map.of(options.headers)));
+    await gates['${options.method} ${options.path}'];
     final queue = routes['${options.method} ${options.path}'];
     if (queue == null || queue.isEmpty) {
       throw DioException.connectionError(requestOptions: options, reason: 'no signal (test)');
@@ -111,6 +117,9 @@ ProviderContainer authContainer(
     overrides: [
       appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://api.test')),
       appDatabaseProvider.overrideWithValue(database),
+      // Silent voice: no platform audio player in tests, and no autoplay on screen entry.
+      voicePlayerProvider.overrideWithValue(VoicePlayer(bundle: rootBundle, playClip: (_) async {})),
+      voiceAutoplayProvider.overrideWithValue(false),
       apiClientProvider.overrideWith((ref) {
         final session = ref.read(sessionProvider.notifier);
         return ApiClient(

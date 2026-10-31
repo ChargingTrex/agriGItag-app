@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/gen/app_localizations.dart';
 import '../../core/router/session.dart';
+import '../../core/voice/voice_player.dart';
 import '../../core/widgets/farmer_button.dart';
 import 'auth_step.dart';
 
@@ -78,6 +79,7 @@ class _PinScreenState extends ConsumerState<PinScreen> {
     final l10n = AppLocalizations.of(context);
     return AuthStep(
       prompt: widget.step.pinSet ? l10n.authPinTitle : (_first == null ? l10n.authPinChoose : l10n.authPinRepeat),
+      promptId: widget.step.pinSet ? 'authPinTitle' : (_first == null ? 'authPinChoose' : 'authPinRepeat'),
       message: _message,
       value: _pin,
       length: 4,
@@ -89,7 +91,7 @@ class _PinScreenState extends ConsumerState<PinScreen> {
               icon: Icons.restart_alt,
               label: l10n.authStartAgain,
               onPressed: () => context.go('/auth'),
-              onSpeak: null,
+              onSpeak: () => playPrompt(ref, context, 'authStartAgain'),
               prominent: true,
             )
           : null,

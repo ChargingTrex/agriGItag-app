@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/gen/app_localizations.dart';
 import '../../core/router/session.dart';
+import '../../core/voice/voice_player.dart';
 import '../../core/widgets/farmer_button.dart';
 import 'auth_step.dart';
 
@@ -53,6 +54,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
     final ended = ref.watch(sessionProvider.select((s) => s.sessionEnded));
     return AuthStep(
       prompt: l10n.authPhoneTitle,
+      promptId: 'authPhoneTitle',
       message: _error != null ? authMessage(l10n, _error!) : (ended ? l10n.sessionEnded : null),
       prefix: countryCode,
       value: _digits,
@@ -67,8 +69,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
         icon: Icons.sms_outlined,
         label: l10n.authGetCode,
         onPressed: _digits.length == 10 && !_busy ? _submit : null,
-        // shortcut: no voice clip yet, so the speaker slot is disabled; M05 wires the prompt player.
-        onSpeak: null,
+        onSpeak: () => playPrompt(ref, context, 'authGetCode'),
         prominent: true,
       ),
     );
