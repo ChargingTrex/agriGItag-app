@@ -8,15 +8,17 @@
 // Callers: flutter test (CI mobile job).
 
 import 'package:agritrace/core/capture/gps_fix.dart';
+import 'package:agritrace/core/db/daos/entries_dao.dart';
 import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/router/session.dart';
 import 'package:agritrace/features/officer_assist/assist_controller.dart';
 import 'package:agritrace/features/officer_moisture/moisture_screen.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:drift/native.dart' show NativeDatabase;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../auth/harness.dart' show apiError, sessionOut;
+import '../../auth/harness.dart' show FakeApi, apiError, authContainer, sessionOut;
 import '../../db/db_fixtures.dart' show entryAt;
 import '../harness.dart';
 import 'officer_fixtures.dart';
@@ -196,9 +198,7 @@ void main() {
     await h.dispose(tester);
   });
 
-  testWidgets('"Fix it" on a warn: corrected bags, mandatory reason, correction version + flag_resolution', (
-    tester,
-  ) async {
+  testWidgets('"Fix it" on a warn: corrected bags, mandatory reason, the correction version only', (tester) async {
     final h = FlowHarness();
     await startOfficer(tester, h);
     final harvest = await h.seedFlags();
@@ -226,13 +226,10 @@ void main() {
       'bags': 10,
       'occurred_on': '2026-02-10',
     });
-    final resolution = (await queued(h, 'flag_resolution')).single;
-    expect(payloadOf(resolution), {'flag_id': warnFlag, 'resolution': 'fixed', 'reason_code': 'field_visit'});
-    // The outcome goes first, so the server's rule re-run after the correction cannot close the flag before it.
-    expect(await queuedTypes(h), ['flag_resolution', 'harvest']);
-    // The resolved flag leaves the list until the pull brings the server's status.
-    expect(find.text('Harvest above the yield limit'), findsNothing);
-    expect(find.byType(ListTile), findsNWidgets(2));
+    // No `fixed` resolution: the server closes the flag (`rule_passed`) only if the correction passes the rule.
+    expect(await queuedTypes(h), ['harvest']);
+    // The flag stays listed until the pull brings the server's status.
+    expect(find.text('Harvest above the yield limit'), findsOneWidget);
     await h.dispose(tester);
   });
 
@@ -346,6 +343,34 @@ void main() {
     await h.dispose(tester);
   });
 
+  test('a sign-out during the assist_session write does not bring the session back', () async {
+    final db = _HookedDb();
+    final c = authContainer(FakeApi(), db: db);
+    await c.read(sessionProvider.notifier).openSession(sessionOut(role: 'field_officer'));
+    await db
+        .into(db.farmers)
+        .insert(
+          FarmersCompanion.insert(
+            farmerId: 'farmer-1',
+            fpoId: 'fpo-1',
+            name: 'Murugan',
+            village: 'Sattur',
+            hasSmartphone: true,
+            language: 'ta',
+            status: 'active',
+            json: '{}',
+          ),
+        );
+    final farmer = await db.select(db.farmers).getSingle();
+    db.afterSave = () async {
+      await c.read(sessionProvider.notifier).signOut();
+      expect(c.read(assistProvider), isNull, reason: 'signed out: the screens rebuild without a session');
+    };
+    await c.read(assistProvider.notifier).start(farmer);
+    expect(c.read(assistProvider), isNull);
+    expect([for (final e in await db.select(db.entries).get()) e.entryType], ['assist_session'], reason: 'D-029');
+  });
+
   testWidgets('leaving the assist scope without End assist (not-found Home) ends the session', (tester) async {
     final h = FlowHarness();
     await startOfficer(tester, h);
@@ -431,4 +456,34 @@ void main() {
     expect(calibrationExpired(due, DateTime(2026, 2, 14, 23, 59)), isFalse);
     expect(calibrationExpired(due, DateTime(2026, 2, 15, 0, 1)), isTrue);
   });
+}
+
+/// An in-memory database whose [EntriesDao.save] awaits [afterSave] once the write is done, before its caller resumes.
+class _HookedDb extends AppDatabase {
+  /// Creates it on a fresh in-memory SQLite.
+  _HookedDb() : super(NativeDatabase.memory());
+
+  /// Runs after each save; null runs nothing.
+  Future<void> Function()? afterSave;
+
+  late final _dao = _HookedDao(this);
+
+  @override
+  EntriesDao get entriesDao => _dao;
+}
+
+/// [EntriesDao] that calls [_HookedDb.afterSave] after the write.
+class _HookedDao extends EntriesDao {
+  /// Creates it on [hooked].
+  _HookedDao(this.hooked) : super(hooked);
+
+  /// The database holding the hook.
+  final _HookedDb hooked;
+
+  /// Saves [entry] and [media] as [EntriesDao.save] does, then awaits the hook. Throws what either throws.
+  @override
+  Future<void> save(EntriesCompanion entry, List<MediaCompanion> media) async {
+    await super.save(entry, media);
+    await hooked.afterSave?.call();
+  }
 }

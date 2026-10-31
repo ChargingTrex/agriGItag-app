@@ -1,6 +1,6 @@
 // Flags the officer clears, and what clearing one writes: "Fix it" (a correction version of the flagged entry with a
-//   reason code, CLAUDE.md §6 append-only), "Looks fine" and "Escalate" (a `flag_resolution` entry), all queued for the
-//   sync push.
+//   reason code, CLAUDE.md §6 append-only; the server's rule re-run closes the flag), "Looks fine" and "Escalate" (a
+//   `flag_resolution` entry), all queued for the sync push.
 // Requirement: UserFlows §Field officer flows "Clearing a flag" (open it, see what triggered it; "Looks fine", "Fix it"
 //   or "Escalate to FPO admin"; a reason from a short picture list; the log keeps the reason), §When things go wrong
 //   ("After 24 hours only the field officer can correct, with a reason"); FR6, FR70; B08 (`flag_resolution` push kind,
@@ -25,7 +25,8 @@ const flagResolutionEntryType = 'flag_resolution';
 
 /// The three outcomes of UserFlows "Clearing a flag", with the server's `resolution` value.
 enum FlagAction {
-  /// "Fix it": correct the entry; resolution `fixed`.
+  /// "Fix it": correct the entry. Its server value `fixed` is never sent: the server closes the flag itself
+  /// (`rule_passed`) when the correction passes the rule.
   fix('fixed'),
 
   /// "Looks fine": nothing wrong; resolution `looks_fine`.
@@ -101,9 +102,9 @@ final flaggedEntryProvider = FutureProvider.autoDispose.family<Entry?, String>((
 /// [FlagAction.fix] writes a correction of [entry] (the flagged event's latest version): version + 1 superseding it,
 /// the same event type, lot, plot, farmer and instance, `reasonCode`, and the payload with [bags] (harvest and
 /// packing: kg = bags × [kBagKg]) when given; the officer is the author and assist mode is off (an officer correction
-/// is the officer's own act, FR6). When [officerMayResolve], a `flag_resolution` entry `{flag_id, resolution,
-/// reason_code}` is queued before it, so the server records the officer's outcome before its rule re-run can close the
-/// flag. Returns when written.
+/// is the officer's own act, FR6), and nothing else: the server's rule re-run closes the flag as `rule_passed` only if
+/// the correction cures it, and reopens it if the rule fires again. "Looks fine" and "Escalate", when
+/// [officerMayResolve], queue a `flag_resolution` entry `{flag_id, resolution, reason_code}`. Returns when written.
 /// Throws [StateError] when nobody is signed in, or [action] is fix without [entry]; `SqliteException` when the write
 /// fails (nothing is written then, e.g. the version was taken). Side effects: Entries and Outbox rows.
 Future<void> saveFlagAction(
@@ -118,9 +119,9 @@ Future<void> saveFlagAction(
   final officer = await db.sessionDao.read() ?? (throw StateError('signed out'));
   if (action == FlagAction.fix && entry == null) throw StateError('nothing to fix');
   await db.transaction(() async {
-    // The resolution goes first: the correction makes the server re-run the rules, which may close the flag
-    // (`rule_passed`) before a later resolution arrives and is refused as `flag_not_open` (review M10-r1 P3-3).
-    if (officerMayResolve(flag)) {
+    // No resolution with a fix: a flag closed as `fixed` stays closed even when the correction still breaks the rule
+    // (B08 `reopens()` only reopens `rule_passed` or a worse severity), e.g. 1,250 → 1,240 kg/acre over 1,200.
+    if (action != FlagAction.fix && officerMayResolve(flag)) {
       final id = const Uuid().v7();
       await db.entriesDao.save(
         EntriesCompanion.insert(

@@ -69,13 +69,15 @@ class AssistNotifier extends Notifier<AssistSession?> {
   ///
   /// Mints the session's UUIDv7 and queues an `assist_session` entry (`{farmer_id, started_at, started_gps}`, the
   /// push `data` of D-032) through `EntriesDao.save`, the same path online and offline; [gps] is the officer's latest
-  /// fix, or null when none came yet. Returns when the entry is written and the state set.
+  /// fix, or null when none came yet. Returns when the entry is written and the state set; when the officer signed
+  /// out during the write, returns without setting it (the entry stays queued under the officer's id, D-029).
   /// Throws [StateError] when nobody is signed in; `SqliteException` when the write fails (state unchanged then).
   /// Side effects: one Entries row and its outbox row; a send kick ([afterSaveProvider]); see [end].
   Future<void> start(Farmer farmer, {LocationFix? gps}) async {
     end();
     final db = ref.read(appDatabaseProvider);
     final officer = await db.sessionDao.read() ?? (throw StateError('signed out'));
+    final role = ref.read(sessionProvider).role;
     final now = ref.read(clockProvider)();
     final id = const Uuid().v7();
     // DECISION D-032: assist mode starts with an `assist_session` entry, not a `POST /assist/start` call.
@@ -112,6 +114,8 @@ class AssistNotifier extends Notifier<AssistSession?> {
       ),
       const [],
     );
+    // A sign-out during the write must not bring the officer's session back for the next user (review M10-r1 P1-1).
+    if (ref.read(sessionProvider).role != role) return;
     state = (sessionId: id, farmerId: farmer.farmerId, name: farmer.name);
     ref.read(afterSaveProvider)();
   }
