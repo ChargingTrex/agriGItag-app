@@ -118,6 +118,8 @@ jobs:
       - run: flutter pub get
       - name: Farmer screens have no free-text fields
         run: tool/no_textfield_lint.sh
+      - name: Shared rule fixtures identical to the server's (D-006 contract test)
+        run: tool/check_shared_fixtures.sh
       - run: dart format --output=none --set-exit-if-changed lib test
       - name: Analyze (incl. public_member_api_docs)
         run: flutter analyze --fatal-infos

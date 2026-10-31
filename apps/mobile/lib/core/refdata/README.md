@@ -1,1 +1,1 @@
-Reference-data bundles (crops, GI outlines, standards, field config) with ETag and delta sync (M03, D-016, D-017). Empty until M03.
+Reference-data bundles (crops, GI outlines, standards, field config) with ETag and delta sync (M03, D-016, D-017). Entry point: bundle_repository.dart (the only Drift reader); typed models in models/.

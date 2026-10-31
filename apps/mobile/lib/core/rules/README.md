@@ -1,1 +1,1 @@
-On-phone preview rules (GI check, yield, event order, moisture, practice tags, grade); the server stays the authority (M03, D-006). Empty until M03.
+On-phone preview rules (GI check, yield, event order, moisture, practice tags, grade); the server stays the authority (M03, D-006). One pure-Dart file per rule; grade_calculator.dart ports apps/api/agritrace/modules/quality/grade_engine.py and is held equal by test/fixtures/grade_cases.json.
