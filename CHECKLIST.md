@@ -55,7 +55,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G3 Mobile core
 
-- [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (in progress) — reviewer: — verifier:
+- [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (round 2 in progress) — reviewer: BE FAIL r1 (P1: line-4 test faked a hold; P2 row locks, intake correction) — verifier:
 - [ ] B15 — Backend gaps from B08 review and M09 (grading-loss split D-030, `farmer` push kind + `client_id` D-031, assist_session kind D-032) — wave 5 — worker: Opus (in progress) — reviewer: — verifier:
 - [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: — reviewer: — verifier:
 - [ ] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (round 2 in progress) — reviewer: MOB FAIL r1 (P1: self-crossing boundary rejects the plot) — verifier:
