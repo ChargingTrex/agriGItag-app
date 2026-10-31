@@ -2,7 +2,8 @@
 
 Serves: D-008 (local S3 stand-in; `evidence` write-once, `public-pages` anonymous read),
 D-011 (single presigned PUT per photo with SHA-256), D-007 (static public pages in object storage).
-Callers: events service (presign, head, read photos; B06), publishing service (put_public; B10),
+Callers: events service (presign, head, read photos; B06), events evidence (`presign_get` for variant URLs in
+the lot timeline and `/sync/pull`; B07), publishing service (put_public; B10),
 `agritrace.main` health check (`client`), registry ID documents (presign into id-docs; B13),
 tests/integration/test_storage.py.
 """
@@ -93,6 +94,24 @@ def presign_put(
             "ContentType": content_type,
             "ChecksumSHA256": checksum,
         },
+        ExpiresIn=expires,
+    )
+    return url
+
+
+def presign_get(key: str, expires: int) -> str:
+    """Presign a GET of an evidence object, so phones and the portal can show it without S3 credentials.
+
+    Args:
+        key: object key inside the evidence bucket.
+        expires: URL lifetime in seconds.
+
+    Returns:
+        The presigned URL on `S3_PUBLIC_ENDPOINT` (signing needs no network).
+    """
+    url: str = _client_for(get_settings().s3_public_endpoint).generate_presigned_url(
+        "get_object",
+        Params={"Bucket": get_settings().s3_bucket_evidence, "Key": key},
         ExpiresIn=expires,
     )
     return url

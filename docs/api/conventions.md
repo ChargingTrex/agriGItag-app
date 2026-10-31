@@ -158,6 +158,62 @@ Every error response, whatever the status, has this body:
   against the entry and builds the WebP variants; a mismatch is flagged, never rejected. An expired URL is re-issued by resending the entry.
 - `metrics[]` rows (`entry_client_id`, `saved_at`, `acked_at`, `photo_upload_ms`, `failures`,
   `network_type`) are stored for the sync-health dashboard against the token's device.
+- **Pull** `GET /v1/sync/pull?cursor=&limit=200` → `{changes: [{entity, op: "upsert", data}], next_cursor,
+  has_more}`. Entities: `flag`, `lot`, `event` (the event with its current version and photos, e.g. after an
+  officer correction), `intake`, `notification` (your own) and `photo_pending`. Farmers get their own lots,
+  plots, events and flags on them; other roles the whole FPO. Apply each change as an upsert by `data.id`;
+  duplicates are harmless. Order is (change time, id); the cursor is opaque — store `next_cursor` (it equals
+  the sent cursor when nothing changed) and call again while `has_more`. A change is served about 30 s after
+  it is written (rows are ordered by transaction start, so very fresh rows wait one pull). `photo_pending`
+  (`{id, event_id, event_version_id, status}`) lists, on the last page, your photos still `pending_upload`
+  24 h after their entry arrived: resend that entry to get fresh upload URLs. The server records the
+  device's last cursor (`sync_cursors`). A cursor this endpoint did not issue → 422 `validation_error`.
+- **Photo URLs.** `variants.thumb_url` and `variants.medium_url` in the lot timeline and in pulled events are
+  presigned GETs of the WebP variants in the private `evidence` bucket, valid 1 hour
+  (`core.storage.presign_get`). The original JPEG (`jpeg_url`) is never listed: it keeps the phone's exact
+  EXIF GPS. Do not store the links; load the image, or re-read the timeline for fresh links (a pull does
+  not resend an event when only its photos change).
+
+## Reference bundles (B07, plan §13 C2/C3, D-006, D-016, D-017)
+
+- `GET /v1/sync/bundle` → `{parts: {<part>: {version, etag}}}` for the caller. `GET /v1/sync/bundle/{part}`
+  → the part body with a strong `ETag` (SHA-256 of the body); send it in `If-None-Match` for a 304 with no
+  body. An unknown part → 422. Responses are `Cache-Control: private, no-cache`.
+- `version` is an integer. For parts fed by database tables (`plots`, `crops`, `inputs`, `standards`,
+  `gi_region`, `villages`) it comes from `reference_versions`, bumped by triggers: the global row plus your
+  FPO's row, summed, so it grows with every change. The other parts carry a content fingerprint (first 48
+  bits of the ETag hash), which has no order.
+- **Delta:** `GET /v1/sync/reference?since=<part>:<version>,<part>:<version>,...`, e.g.
+  `since=plots:41,crops:7,fields:90210`. Each part is compared on its own (never one global number: the
+  shared sequence orders transaction starts, not commits). A part is returned when its version differs
+  from yours or you did not list it; unknown names are ignored; a bare number or a malformed item → 422
+  `validation_error`. Answer: `{parts: {<part>: {version, etag, body}}}`, or 304 when nothing changed.
+- **Bodies** (the shapes `apps/mobile/lib/core/refdata` parses; docs/agents/reports/M03.md):
+  - `plots` `{plots: [{id, farmer_id, code, pin: {lat, lon}, declared_area, area_unit: "acre", gi_tag_id}]}` —
+    your plots, or the FPO's for officer roles. Never boundaries or land records.
+  - `crops` `{crops: [{id, code, name_en, name_local, gi_tag_id, event_schema: {mandatory: [type], tracks:
+    {name: [type in date order]}}}]}` (active crops).
+  - `inputs` `{inputs: [{id, name_en, name_local, manufacturer, category, unit}]}` — global list + your FPO's.
+  - `standards` `{profiles: {<crop_id>: <full rules JSON>}}` — the published `standards_profile_versions.rules`
+    the server grades with (D-006), including `grades`, `fail_grade`, `parameters`, `trail_rules`,
+    `lot_gates`, `yield`, `lab_certified_requires`.
+  - `gi_region` `{geometry: <GeoJSON Polygon|MultiPolygon>, tolerance_buffer_m, version_no,
+    region_version_id, gi_tag_id, simplified_tolerance_m, source_ref, licence, confidence, effective_from}`
+    — the region in effect for the active crops' GI tag, simplified (50 m, coarser until ≤ 50 KB). Absent
+    from the manifest, and 404 `gi_region_missing` on download, while no region is in effect.
+  - `farmer_profile` `{farmers: [{id, code, name, name_local, village_id, status, no_smartphone}]}` — you, or
+    the FPO's farmers (assist mode). No phone numbers, addresses or ID numbers.
+  - `villages` `{villages: [{id, lgd_code, name_en, name_local, block, taluk, district, pincode}]}` — the
+    FPO's district (from the FPO address); empty when the FPO has no district.
+  - `fields` `{version, entities, features}` = `fieldconfig.bundle_part(fpo_code)` (D-017).
+  - `prompts` `{prompts: []}` — downloadable voice packs beyond the bundled ta/en clips; items will be
+    `{lang, prompt_id, key, url}` (none exist yet, D-016).
+  - `images` `{images: [{id, kind: "input", key, url}]}` — product pictures of the inputs; `url` is a plain
+    link into the anonymous-read `public-pages` bucket (stable, so the ETag is stable; D-016). Only
+    non-sensitive assets live there.
+  - `calendar` `{calendar: []}` — crop-calendar reminders `{event_type, due_on: "YYYY-MM-DD", prompt_id,
+    lot_id?}`; empty until lots carry sowing dates.
+
 ## Config: fields, features, imports (D-017)
 
 - **Where.** `apps/api/config/fields/<entity>.yaml` (farmer, plot, lot, quality_reading, village, input,

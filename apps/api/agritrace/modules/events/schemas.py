@@ -1,16 +1,19 @@
-"""Request and response schemas of the events module: event versions, the sync push envelope, photo confirm.
+"""Request and response schemas of the events module: event versions, sync push/pull, photo confirm, bundles.
 
 The event version is a discriminated union on `event_type` (one variant per type, each with its own typed
 payload), rendered in OpenAPI as `oneOf` with a discriminator.
 
 Serves: FR3 (structured event fields), FR4 and Arch §Offline-first (sync envelope, three clocks, client
 UUIDs), FR25/FR59 (corrections and undo as versions), FR26 (GPS at submission), FR61 (evidence photos),
-FR63 (lot timeline), backend-design.md §3 (binding sync protocol), plan §13 A3, A4, F1, D-005, D-011, D-014.
-Callers: `events.router`, `events.sync_router`, `events.service`, `events.evidence`; tests.
+FR63 (lot timeline), backend-design.md §3 (binding sync protocol), plan §13 A3, A4, C2 (reference bundles with
+per-part delta), F1, D-005, D-011, D-014, D-016.
+Callers: `events.router`, `events.sync_router`, `events.service`, `events.evidence`, `events.bundle_service`,
+`events.pull_service`; tests.
 """
 
 import uuid
 from datetime import date, datetime
+from enum import StrEnum
 from typing import Annotated, Any, Literal, Self
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
@@ -338,7 +341,12 @@ class EventPhotoOut(BaseModel):
     id: uuid.UUID = Field(description="Photo id.")
     status: PhotoStatus = Field(description="Upload and verification state.")
     variants: dict[str, Any] | None = Field(
-        None, description="{thumb_url, medium_url, jpeg_url, width, height} once variants exist."
+        None,
+        description=(
+            "{thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of "
+            "the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never "
+            "listed (it keeps exact EXIF GPS). Re-read for fresh links."
+        ),
     )
 
 
@@ -359,3 +367,71 @@ class EventOut(BaseModel):
     is_system_generated: bool = Field(description="True for platform entries (FR59).")
     reason_code: str | None = Field(description="Reason of a correction or undo.")
     photos: list[EventPhotoOut] = Field(description="Photos of the latest version.")
+
+
+class BundlePart(StrEnum):
+    """Offline reference-bundle parts (backend-design.md §3; bodies per docs/agents/reports/M03.md)."""
+
+    PLOTS = "plots"
+    CROPS = "crops"
+    INPUTS = "inputs"
+    STANDARDS = "standards"
+    GI_REGION = "gi_region"
+    FARMER_PROFILE = "farmer_profile"
+    VILLAGES = "villages"
+    FIELDS = "fields"
+    PROMPTS = "prompts"
+    IMAGES = "images"
+    CALENDAR = "calendar"
+
+
+class PartVersion(BaseModel):
+    """Version and ETag of one bundle part as the caller would download it now."""
+
+    version: int = Field(
+        description=(
+            "Part version: from `reference_versions` for database-fed parts (only grows), a content "
+            "fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`."
+        )
+    )
+    etag: str = Field(description="Strong ETag of the part body; send it in `If-None-Match` for a 304.")
+
+
+class BundleManifest(BaseModel):
+    """Every bundle part available to the caller, with version and ETag (FR4, plan §13 C2)."""
+
+    parts: dict[BundlePart, PartVersion] = Field(
+        description="Part name -> version and ETag. `gi_region` is absent while no region is in effect."
+    )
+
+
+class ReferencePart(PartVersion):
+    """A changed bundle part with its body."""
+
+    body: dict[str, Any] = Field(description="The part body, as `GET /v1/sync/bundle/{part}` returns it.")
+
+
+class ReferenceOut(BaseModel):
+    """Parts whose version differs from the ones the phone holds (plan §13 C2)."""
+
+    parts: dict[BundlePart, ReferencePart] = Field(description="Changed or new parts only.")
+
+
+class PullChange(BaseModel):
+    """One server-side change for the phone's local copy."""
+
+    entity: Literal["flag", "lot", "event", "intake", "notification", "photo_pending"] = Field(
+        description="Kind of record in `data`."
+    )
+    op: Literal["upsert"] = Field(description="Always `upsert`: replace the local row with the same `id`.")
+    data: dict[str, Any] = Field(description="The record, lean; decimals are strings, times ISO 8601 UTC.")
+
+
+class PullOut(BaseModel):
+    """One page of changes since the cursor (backend-design.md §3)."""
+
+    changes: list[PullChange] = Field(description="Changes ordered by change time, then id.")
+    next_cursor: str | None = Field(
+        description="Opaque cursor to send next time; equals the sent cursor when nothing changed."
+    )
+    has_more: bool = Field(description="True when another page is waiting; call again with `next_cursor`.")
