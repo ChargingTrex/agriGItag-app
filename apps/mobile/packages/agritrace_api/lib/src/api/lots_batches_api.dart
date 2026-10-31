@@ -32,7 +32,7 @@ class LotsBatchesApi {
   const LotsBatchesApi(this._dio, this._serializers);
 
   /// Approve the batch grading
-  /// Approves the latest grade of &#x60;POST /batches/{id}/grading&#x60;; graded kg caps final packing.
+  /// Approves the latest grade of &#x60;POST /batches/{id}/grading&#x60;; graded kg caps final packing. In a batch without the GI label, GI-only holds (&#x60;plot_outside_gi_region&#x60;, &#x60;yield_over_ceiling&#x60;) do not block; they stay open and are recorded on the approval (D-041).
   ///
   /// Parameters:
   /// * [batchId] - Batch id.
@@ -252,7 +252,7 @@ class LotsBatchesApi {
   }
 
   /// Receive a lot at the processor (idempotent on client_id)
-  /// Stage 7 intake of a &#x60;ready_for_sale&#x60; lot. Runs the lot rules synchronously and returns the active flags (e.g. &#x60;quantity_mismatch&#x60; when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched, send a new intake with &#x60;supersedes_intake_id&#x60; and &#x60;correction_reason&#x60;; the new row becomes the lot&#39;s current intake (D-033).
+  /// Stage 7 intake of a lot by a QC officer or FPO admin (D-040; the QC phone sends the same body as push kind &#x60;lot_intake&#x60;). The lot is &#x60;ready_for_sale&#x60;, or &#x60;open&#x60;/&#x60;drying&#x60; and passes the ready gate here (latest drying-end moisture at or under the limit). Without &#x60;processor_id&#x60; the FPO&#39;s only own processor receives it. Runs the lot rules synchronously and returns the active flags (e.g. &#x60;quantity_mismatch&#x60; when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched (FPO admin only), send a new intake with &#x60;supersedes_intake_id&#x60; and &#x60;correction_reason&#x60;; the new row becomes the lot&#39;s current intake (D-033).
   ///
   /// Parameters:
   /// * [intakeIn]
@@ -466,7 +466,7 @@ class LotsBatchesApi {
   }
 
   /// Sign off final packing
-  /// Sign off final packing.
+  /// Packed kg may not exceed graded kg. In a batch without the GI label, GI-only holds (&#x60;plot_outside_gi_region&#x60;, &#x60;yield_over_ceiling&#x60;) do not block; they stay open and are recorded on the approval (D-041).
   ///
   /// Parameters:
   /// * [batchId] - Batch id.
@@ -1128,7 +1128,7 @@ class LotsBatchesApi {
   }
 
   /// Publish the public page (final sign-off)
-  /// Lists every unmet gate at once; when all are met, queues a page build (&#x60;page_builds&#x60;, &#x60;publishing.build_page&#x60;) and answers 202. A GI-blocked batch is published without the GI badge.
+  /// Lists every unmet gate at once; when all are met, queues a page build (&#x60;page_builds&#x60;, &#x60;publishing.build_page&#x60;) and answers 202. A GI-blocked batch is published without the GI badge. In a batch without the GI label, GI-only holds (&#x60;plot_outside_gi_region&#x60;, &#x60;yield_over_ceiling&#x60;) do not block; they stay open and are recorded on the approval (D-041).
   ///
   /// Parameters:
   /// * [batchId] - Batch id.

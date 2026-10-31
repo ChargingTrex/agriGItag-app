@@ -112,7 +112,7 @@ abstract class AppLocalizations {
   /// **'விவசாயி'**
   String get roleFarmer;
 
-  /// Role name of an FPO field officer, shown on the officer home placeholder.
+  /// Role name of an FPO field officer, the title of the officer home.
   ///
   /// In ta, this message translates to:
   /// **'கள அலுவலர்'**
@@ -123,12 +123,6 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'தர ஆய்வாளர்'**
   String get roleQc;
-
-  /// Title of the assist-mode placeholder: the field officer is entering data for this farmer.
-  ///
-  /// In ta, this message translates to:
-  /// **'உதவி: {farmerId}'**
-  String assistFor(String farmerId);
 
   /// Label of the one-button language switch. It names the language the app switches TO, written in that language.
   ///
@@ -1323,6 +1317,546 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'சில பதிவுகள் 7 நாட்களுக்கு மேல் காத்திருக்கின்றன. அனுப்ப சிக்னல் உள்ள இடத்துக்குச் செல்லுங்கள், அல்லது அலுவலரை அழையுங்கள்.'**
   String get unsentOld;
+
+  /// Officer home button that opens the onboarding wizard.
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயி சேர்'**
+  String get officerAddFarmer;
+
+  /// Officer home button that opens the flag list, with the number of open flags.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிசெய்ய வேண்டியவை: {count}'**
+  String officerFlags(int count);
+
+  /// Officer home heading: farmers with an event due today, grouped by village.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்றைய வருகைகள்'**
+  String get officerVisitsToday;
+
+  /// Officer home line under the visits heading when no farmer has an event due.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்று வருகை எதுவும் இல்லை.'**
+  String get officerNoVisits;
+
+  /// Officer home heading: every farmer of the FPO, grouped by village; a tap starts assist mode.
+  ///
+  /// In ta, this message translates to:
+  /// **'எல்லா விவசாயிகளும்'**
+  String get officerAllFarmers;
+
+  /// Officer home marker of a farmer without a smartphone (the officer logs their events).
+  ///
+  /// In ta, this message translates to:
+  /// **'தொலைபேசி இல்லை'**
+  String get officerNoPhone;
+
+  /// Officer home line: unsent entries of another user on a shared phone (they send when that user signs in).
+  ///
+  /// In ta, this message translates to:
+  /// **'வேறு பயனரின் {count} பதிவுகள் இந்தத் தொலைபேசியில் காத்திருக்கின்றன.'**
+  String officerStranded(int count);
+
+  /// Officer button on the assisted farmer's home: ends assist mode and returns to the officer home.
+  ///
+  /// In ta, this message translates to:
+  /// **'உதவி முடி'**
+  String get assistEnd;
+
+  /// App bar title of the officer flag screens.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிசெய்ய வேண்டியவை'**
+  String get flagsTitle;
+
+  /// Flag list line when no flag is open.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிசெய்ய எதுவும் இல்லை.'**
+  String get flagsNone;
+
+  /// Word next to a flag's glyph: hold (red triangle), warn (orange circle), info (grey).
+  ///
+  /// In ta, this message translates to:
+  /// **'{severity, select, hold{நிறுத்தம்} warn{சரிபார்} other{குறிப்பு}}'**
+  String flagSeverity(String severity);
+
+  /// What triggered a flag, by its server rule code; other codes read "Check this record".
+  ///
+  /// In ta, this message translates to:
+  /// **'{code, select, event_off_plot{வயலுக்கு வெளியே பதிவு} yield_over_ceiling{மகசூல் வரம்பை மீறியது} event_out_of_order{நிகழ்வு வரிசை தவறு} gps_poor_accuracy{பலவீனமான GPS} quantity_mismatch{அளவுகள் பொருந்தவில்லை} photo_checksum_mismatch{புகைப்படம் பொருந்தவில்லை} exif_mismatch{புகைப்பட தேதி அல்லது இடம் பொருந்தவில்லை} plot_outside_gi_region{வயல் GI பகுதிக்கு வெளியே} other{இந்தப் பதிவைச் சரிபார்க்கவும்}}'**
+  String flagRule(String code);
+
+  /// Flag button: correct the flagged entry (a new version with a reason).
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிசெய்'**
+  String get flagFixIt;
+
+  /// Flag button: close the flag, nothing is wrong.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரியாக உள்ளது'**
+  String get flagLooksFine;
+
+  /// Flag button: send the flag to the FPO admin.
+  ///
+  /// In ta, this message translates to:
+  /// **'மேலே அனுப்பு'**
+  String get flagEscalate;
+
+  /// Flag detail line when the flagged entry is not stored on the officer's phone.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தப் பதிவு இந்தத் தொலைபேசியில் இல்லை; இங்கே சரிசெய்ய முடியாது.'**
+  String get flagNotOnPhone;
+
+  /// Flag detail line for holds and escalated flags, which the officer may not clear.
+  ///
+  /// In ta, this message translates to:
+  /// **'இதை FPO நிர்வாகி மட்டுமே சரிசெய்ய முடியும்.'**
+  String get flagAdminOnly;
+
+  /// Prompt above the reason picture cards of a flag outcome.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏன்? ஒரு காரணத்தைத் தேர்ந்தெடுக்கவும்.'**
+  String get flagReasonPrompt;
+
+  /// Label of a reason card (reason codes field_visit, farmer_confirmed, photo_checked, entry_mistake).
+  ///
+  /// In ta, this message translates to:
+  /// **'{reason, select, field_visit{வயல் பார்வை} farmer_confirmed{விவசாயி கூறினார்} photo_checked{புகைப்படம் பார்த்தேன்} other{பதிவுப் பிழை}}'**
+  String flagReason(String reason);
+
+  /// Title of the moisture reading screen and the officer button that opens it.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஈரப்பதம்'**
+  String get moistureTitle;
+
+  /// Prompt above the moisture meter cards.
+  ///
+  /// In ta, this message translates to:
+  /// **'எந்த மீட்டர்?'**
+  String get moistureMeterPrompt;
+
+  /// Moisture meter card: make, model and serial, and the last day of its calibration ("14 Feb").
+  ///
+  /// In ta, this message translates to:
+  /// **'{label}, {date} வரை அளவுத்திருத்தம்'**
+  String moistureMeterCard(String label, String date);
+
+  /// Sentence that blocks a reading with a meter whose calibration date has passed.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த மீட்டரின் அளவுத்திருத்தம் {date} அன்று முடிந்தது. சரியான அளவுத்திருத்தம் உள்ள மீட்டரைப் பயன்படுத்தவும்.'**
+  String moistureCalibrationExpired(String date);
+
+  /// Moisture screen line when no meter was ever downloaded.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தத் தொலைபேசியில் ஈரப்பத மீட்டர் இல்லை. இணையத்துடன் இணைத்து மீண்டும் திறக்கவும்.'**
+  String get moistureNoMeter;
+
+  /// Moisture screen line when the assisted farmer has no active lot.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த விவசாயிக்கு அளக்க பயிர் இல்லை.'**
+  String get moistureNoLot;
+
+  /// Prompt above the number pad for the moisture value in percent.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீட்டரில் உள்ள அளவு'**
+  String get moistureValuePrompt;
+
+  /// Flag detail line when this phone has a correction of the flagged entry that the server has not answered yet.
+  ///
+  /// In ta, this message translates to:
+  /// **'திருத்தம் அனுப்பப்பட்டது; மறு சரிபார்ப்புக்குக் காத்திருக்கிறது.'**
+  String get flagFixSent;
+
+  /// Title of the assist-mode placeholder: the field officer is entering data for this farmer.
+  ///
+  /// In ta, this message translates to:
+  /// **'உதவி: {farmerId}'**
+  String assistFor(String farmerId);
+
+  /// Spoken prompt of the QC home screen (M11).
+  ///
+  /// In ta, this message translates to:
+  /// **'பெறுவதற்கு லாட்டை ஸ்கேன் செய்யுங்கள், அல்லது தொகுப்பைத் தரம் பிரியுங்கள்.'**
+  String get qcHomePrompt;
+
+  /// QC home button that opens the lot scanner (intake).
+  ///
+  /// In ta, this message translates to:
+  /// **'லாட் பெறு'**
+  String get qcReceiveLot;
+
+  /// QC home button that opens the batch list (grading and packing).
+  ///
+  /// In ta, this message translates to:
+  /// **'தரம் பிரி'**
+  String get qcGradeBatch;
+
+  /// Spoken prompt of the lot scanner.
+  ///
+  /// In ta, this message translates to:
+  /// **'லாட்டின் QR குறியீட்டை நோக்கி கேமராவைக் காட்டுங்கள்.'**
+  String get qcScanPrompt;
+
+  /// Scanner fallback button: pick the lot from the list of ready lots instead of scanning.
+  ///
+  /// In ta, this message translates to:
+  /// **'லாட் தேர்வு'**
+  String get qcPickLot;
+
+  /// Spoken prompt above the list of ready lots.
+  ///
+  /// In ta, this message translates to:
+  /// **'பெற வேண்டிய லாட்டைத் தொடுங்கள்.'**
+  String get qcPickLotPrompt;
+
+  /// Shown when the ready-lot list is empty.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தப் போனில் விற்கத் தயாரான லாட் இல்லை. ஒத்திசைத்து மீண்டும் முயலுங்கள்.'**
+  String get qcNoReadyLots;
+
+  /// Shown when a scanned code matches no lot on the phone.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த லாட் இந்தப் போனில் இல்லை. ஒத்திசைத்து மீண்டும் ஸ்கேன் செய்யுங்கள்.'**
+  String get qcLotNotFound;
+
+  /// Label of the lot id on the lot card.
+  ///
+  /// In ta, this message translates to:
+  /// **'லாட்'**
+  String get qcLot;
+
+  /// Label of the farmer on the lot card.
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயி'**
+  String get qcFarmer;
+
+  /// Label of the farmer's packed quantity on the lot card.
+  ///
+  /// In ta, this message translates to:
+  /// **'கட்டியது'**
+  String get qcPacked;
+
+  /// Spoken prompt of the intake check screen.
+  ///
+  /// In ta, this message translates to:
+  /// **'மூட்டைகளை எடை போடுங்கள், பிறகு ஈரப்பதம் அளவிடுங்கள்.'**
+  String get qcIntakePrompt;
+
+  /// Intake field: weight received at the gate (kg).
+  ///
+  /// In ta, this message translates to:
+  /// **'பெற்ற எடை'**
+  String get qcReceived;
+
+  /// Intake field: price paid per kg (optional, field config).
+  ///
+  /// In ta, this message translates to:
+  /// **'கிலோ விலை'**
+  String get qcPricePerKg;
+
+  /// Intake field: moisture reading (%).
+  ///
+  /// In ta, this message translates to:
+  /// **'ஈரப்பதம்'**
+  String get qcMoisture;
+
+  /// Orange check when received and packed weights differ by more than 5 %.
+  ///
+  /// In ta, this message translates to:
+  /// **'{received} கிலோ பெறப்பட்டது, ஆனால் {packed} கிலோ கட்டப்பட்டது: 5 %-க்கு மேல் வேறுபாடு.'**
+  String qcWeightMismatch(String received, String packed);
+
+  /// Green check when received and packed weights are within 5 %.
+  ///
+  /// In ta, this message translates to:
+  /// **'எடை கட்டிய அளவுடன் பொருந்துகிறது.'**
+  String get qcWeightOk;
+
+  /// Orange check when the intake moisture is above the profile gate.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஈரப்பதம் {value} %, வரம்பு {limit} %-ஐ விட அதிகம்.'**
+  String qcMoistureHigh(String value, String limit);
+
+  /// Green check when the intake moisture is within the profile gate.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஈரப்பதம் {limit} % வரம்புக்குள் உள்ளது.'**
+  String qcMoistureOk(String limit);
+
+  /// Heading of the instrument choice.
+  ///
+  /// In ta, this message translates to:
+  /// **'அளந்த கருவி'**
+  String get qcMeter;
+
+  /// Reason an instrument cannot be picked (FR50); date like 14 Feb.
+  ///
+  /// In ta, this message translates to:
+  /// **'அளவுத்திருத்தம் {date} அன்று காலாவதியானது. வேறு கருவியைப் பயன்படுத்துங்கள்.'**
+  String qcCalibrationExpired(String date);
+
+  /// Calibration due date under an instrument; date like 14 Feb.
+  ///
+  /// In ta, this message translates to:
+  /// **'{date} வரை அளவுத்திருத்தம்'**
+  String qcCalibrationDue(String date);
+
+  /// Disabled instrument option for Bluetooth meters (not in the pilot).
+  ///
+  /// In ta, this message translates to:
+  /// **'கருவி (புளூடூத்)'**
+  String get qcBluetoothMeter;
+
+  /// Why the Bluetooth option is disabled.
+  ///
+  /// In ta, this message translates to:
+  /// **'விரைவில் வரும்'**
+  String get qcComingSoon;
+
+  /// Shown when no instrument is stored on the phone.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தப் போனில் கருவி இல்லை. FPO நிர்வாகியிடம் பதிவு செய்யச் சொல்லுங்கள்.'**
+  String get qcNoMeter;
+
+  /// Instrument choice for a visual reading (colour card, FR44).
+  ///
+  /// In ta, this message translates to:
+  /// **'கண்ணால்'**
+  String get qcVisual;
+
+  /// Why Save is disabled: a reading has no instrument.
+  ///
+  /// In ta, this message translates to:
+  /// **'அளவீட்டைச் சேமிக்க கருவியைத் தேர்ந்தெடுங்கள்.'**
+  String get qcPickMeter;
+
+  /// Why Save is disabled: a required field (field config) is empty.
+  ///
+  /// In ta, this message translates to:
+  /// **'சேமிக்க {field} உள்ளிடுங்கள்.'**
+  String qcFillRequired(String field);
+
+  /// Save button of the QC screens.
+  ///
+  /// In ta, this message translates to:
+  /// **'சேமி'**
+  String get qcSave;
+
+  /// Spoken confirmation after a QC save.
+  ///
+  /// In ta, this message translates to:
+  /// **'சேமிக்கப்பட்டது. சிக்னல் வந்ததும் அனுப்பப்படும்.'**
+  String get qcSaved;
+
+  /// Button back to the QC home after a save.
+  ///
+  /// In ta, this message translates to:
+  /// **'முடிந்தது'**
+  String get qcDone;
+
+  /// Spoken prompt of the batch list.
+  ///
+  /// In ta, this message translates to:
+  /// **'தரம் பிரிக்க அல்லது பொதி செய்ய தொகுப்பைத் தொடுங்கள்.'**
+  String get qcBatchesPrompt;
+
+  /// Shown when the batch list cannot be loaded.
+  ///
+  /// In ta, this message translates to:
+  /// **'சிக்னல் இல்லை. தொகுப்புகளுக்கு இணையம் தேவை.'**
+  String get qcBatchesOffline;
+
+  /// Button that reloads the batch list.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீண்டும் முயல்'**
+  String get qcRetry;
+
+  /// Shown when the batch list is empty.
+  ///
+  /// In ta, this message translates to:
+  /// **'தரம் பிரிக்கவோ பொதி செய்யவோ தொகுப்பு இல்லை.'**
+  String get qcNoBatches;
+
+  /// One batch in the list: code and received weight.
+  ///
+  /// In ta, this message translates to:
+  /// **'தொகுப்பு {code}: {kg} கிலோ'**
+  String qcBatchLine(String code, String kg);
+
+  /// Batch status in the list: waiting for grading.
+  ///
+  /// In ta, this message translates to:
+  /// **'தரம் பிரிக்க'**
+  String get qcToGrade;
+
+  /// Batch status in the list: graded, waiting for packing.
+  ///
+  /// In ta, this message translates to:
+  /// **'பொதி செய்ய'**
+  String get qcToPack;
+
+  /// Spoken prompt of the grading form.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஒவ்வொரு அளவீட்டையும் உள்ளிடுங்கள். தரம் கீழே தெரியும்.'**
+  String get qcGradingPrompt;
+
+  /// Grading field: graded quantity in kg.
+  ///
+  /// In ta, this message translates to:
+  /// **'தரம் பிரித்த எடை'**
+  String get qcGradedWeight;
+
+  /// Grade preview computed on the phone from the standard.
+  ///
+  /// In ta, this message translates to:
+  /// **'தரம்: {grade}'**
+  String qcGrade(String grade);
+
+  /// Standard and edition the grade preview used.
+  ///
+  /// In ta, this message translates to:
+  /// **'{name}, பதிப்பு {edition}'**
+  String qcStandardEdition(String name, String edition);
+
+  /// Grey grade preview listing the required readings still missing.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்னும் தரம் இல்லை. இல்லாதவை: {list}'**
+  String qcGradeMissing(String list);
+
+  /// Heading of the declared-grade choice.
+  ///
+  /// In ta, this message translates to:
+  /// **'அறிவித்த தரம்'**
+  String get qcDeclaredGrade;
+
+  /// Warning when the declared grade is better than the computed one (FR49).
+  ///
+  /// In ta, this message translates to:
+  /// **'அறிவித்த {declared}, கணக்கிட்ட {computed}-ஐ விட உயர்ந்தது. நிர்வாகி இதை ஒப்புதல் அளிக்க முடியாது.'**
+  String qcDeclaredAbove(String declared, String computed);
+
+  /// Plausible range under a grading input.
+  ///
+  /// In ta, this message translates to:
+  /// **'வரம்பு {min} முதல் {max} {unit}'**
+  String qcRange(String min, String max, String unit);
+
+  /// A reading outside the plausible range (FR50); blocks Save.
+  ///
+  /// In ta, this message translates to:
+  /// **'{min} முதல் {max} {unit}-க்கு வெளியே: அளவீட்டைச் சரிபாருங்கள்.'**
+  String qcOutOfRange(String min, String max, String unit);
+
+  /// A reading whose source the standard does not accept (FR44); blocks Save.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த முறையில் ஏற்கப்படாது. கருவி அல்லது ஆய்வகம் பயன்படுத்துங்கள்.'**
+  String get qcSourceNotAllowed;
+
+  /// Shown when the standards bundle part has no profile for the crop.
+  ///
+  /// In ta, this message translates to:
+  /// **'தரநிலை இந்தப் போனில் இல்லை. முதலில் ஒத்திசையுங்கள்.'**
+  String get qcNoStandards;
+
+  /// Button from a saved grading to final packing.
+  ///
+  /// In ta, this message translates to:
+  /// **'பொதி செய்'**
+  String get qcPack;
+
+  /// Spoken prompt of the final packing screen.
+  ///
+  /// In ta, this message translates to:
+  /// **'பொதி செய்த எடையை உள்ளிடுங்கள்.'**
+  String get qcPackingPrompt;
+
+  /// Final packing field: packed quantity in kg.
+  ///
+  /// In ta, this message translates to:
+  /// **'பொதி எடை'**
+  String get qcPackedWeight;
+
+  /// Final packing field: size of one pack in grams.
+  ///
+  /// In ta, this message translates to:
+  /// **'பொதி அளவு'**
+  String get qcPackSize;
+
+  /// Final packing field: number of packs.
+  ///
+  /// In ta, this message translates to:
+  /// **'பொதிகள்'**
+  String get qcPacks;
+
+  /// Final packing field: average sale price per kg.
+  ///
+  /// In ta, this message translates to:
+  /// **'சராசரி கிலோ விலை'**
+  String get qcAvgPrice;
+
+  /// Graded quantity, the ceiling for packing.
+  ///
+  /// In ta, this message translates to:
+  /// **'தரம் பிரித்தது: {kg} கிலோ'**
+  String qcGradedCeiling(String kg);
+
+  /// Blocks Save when the packed weight is above the graded weight.
+  ///
+  /// In ta, this message translates to:
+  /// **'{packed} கிலோ, தரம் பிரித்த {graded} கிலோவை விட அதிகம். எடையைச் சரிபாருங்கள்.'**
+  String qcPackAboveGraded(String packed, String graded);
+
+  /// Blocks Save when no graded weight is known for the batch.
+  ///
+  /// In ta, this message translates to:
+  /// **'தரம் பிரித்த எடை தெரியவில்லை. முதலில் தரம் பிரியுங்கள்.'**
+  String get qcGradedUnknown;
+
+  /// Unit: kilograms.
+  ///
+  /// In ta, this message translates to:
+  /// **'கிலோ'**
+  String get unitKg;
+
+  /// Unit: rupees per kilogram.
+  ///
+  /// In ta, this message translates to:
+  /// **'₹/கிலோ'**
+  String get unitRupeePerKg;
+
+  /// Unit: grams.
+  ///
+  /// In ta, this message translates to:
+  /// **'கி'**
+  String get unitGram;
+
+  /// Lot card line when the lot is known only from the farmer's Sell QR (checksum, not a signature).
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தப் போனில் இன்னும் இல்லை: விவசாயி, எடை விவசாயியின் QR-இலிருந்து வந்தவை, சரிபார்க்கப்படவில்லை. சரிபார்க்க ஒத்திசையுங்கள்.'**
+  String get qcLotUnverified;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

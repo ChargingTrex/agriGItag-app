@@ -63,8 +63,8 @@ Future<void> refreshUploadUrls(SyncContext c, List<Entry> entries) async {
 ///
 /// Event types ([eventTypes]) and `undo` become an `event_version` built from the columns and the payload. Entry
 /// types named like another push kind (`farmer`, `assist_session`, `plot`, `consent`, `quality_reading`,
-/// `flag_resolution`) are sent as that kind with the payload as `data`. The payload key [assistSessionKey], when
-/// present, moves to the push entry's top-level `assist_session_id` for every kind (D-032).
+/// `flag_resolution`, `lot_intake` (D-040)) are sent as that kind with the payload as `data`. The payload key
+/// [assistSessionKey], when present, moves to the push entry's top-level `assist_session_id` for every kind (D-032).
 /// Returns the JSON map, or null for any other entry type (the caller marks it needs_attention; it is never guessed
 /// to be an event). Throws [FormatException] when `payloadJson` is not a JSON object and [StateError] when an undo's
 /// original is missing (cannot happen: entries are never deleted).

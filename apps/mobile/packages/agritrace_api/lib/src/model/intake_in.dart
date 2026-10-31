@@ -17,9 +17,9 @@ part 'intake_in.g.dart';
 /// * [clientId] - UUIDv7 made by the client; intake id and idempotency key.
 /// * [correctionReason] - Why the superseded intake was wrong.
 /// * [intakeMoistureReadingId] - Moisture reading (`moisture`, stage `intake`) of this lot (`POST /v1/quality-readings`)
-/// * [lotId] - Lot received; must be `ready_for_sale`.
+/// * [lotId] - Lot received; `ready_for_sale`, or `open`/`drying` with a drying-end moisture that passes the ready gate (run here, D-040).
 /// * [pricePerKg]
-/// * [processorId] - Receiving processor.
+/// * [processorId] - Receiving processor (own or shared); absent → the FPO's only own processor (D-040), zero or several own processors → `field_required`.
 /// * [received] - Quantity received, unit `kg`.
 /// * [saleDate] - Date of sale, YYYY-MM-DD.
 /// * [supersedesIntakeId] - Correct this intake (the lot's current one, lot not yet batched); needs a reason.
@@ -37,16 +37,16 @@ abstract class IntakeIn implements Built<IntakeIn, IntakeInBuilder> {
   @BuiltValueField(wireName: r'intake_moisture_reading_id')
   String? get intakeMoistureReadingId;
 
-  /// Lot received; must be `ready_for_sale`.
+  /// Lot received; `ready_for_sale`, or `open`/`drying` with a drying-end moisture that passes the ready gate (run here, D-040).
   @BuiltValueField(wireName: r'lot_id')
   String get lotId;
 
   @BuiltValueField(wireName: r'price_per_kg')
   PricePerKg? get pricePerKg;
 
-  /// Receiving processor.
+  /// Receiving processor (own or shared); absent → the FPO's only own processor (D-040), zero or several own processors → `field_required`.
   @BuiltValueField(wireName: r'processor_id')
-  String get processorId;
+  String? get processorId;
 
   /// Quantity received, unit `kg`.
   @BuiltValueField(wireName: r'received')
@@ -114,11 +114,13 @@ class _$IntakeInSerializer implements PrimitiveSerializer<IntakeIn> {
         specifiedType: const FullType.nullable(PricePerKg),
       );
     }
-    yield r'processor_id';
-    yield serializers.serialize(
-      object.processorId,
-      specifiedType: const FullType(String),
-    );
+    if (object.processorId != null) {
+      yield r'processor_id';
+      yield serializers.serialize(
+        object.processorId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'received';
     yield serializers.serialize(
       object.received,
@@ -202,8 +204,9 @@ class _$IntakeInSerializer implements PrimitiveSerializer<IntakeIn> {
         case r'processor_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
           result.processorId = valueDes;
           break;
         case r'received':

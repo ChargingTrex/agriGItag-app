@@ -1,5 +1,6 @@
 // Contract tests: every enum value and every JSON key the sync engine puts on the wire exists in the committed
-// OpenAPI spec (the D-003 guard for the hand-built push envelope), and wireName maps camelCase to snake_case.
+// OpenAPI spec (the D-003 guard for the hand-built push envelope; officer corrections included), and wireName maps
+// camelCase to snake_case.
 // Requirement: D-003 (one contract), backend-design.md §3, M01 review P3-6 (camelCase on disk, snake_case on the
 //   wire); WP-M02 deliverable 6.
 // Callers: `flutter test test/sync` (run from apps/mobile, so the spec is ../../packages/openapi/openapi.json).
@@ -11,6 +12,7 @@ import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/sync/enum_wire_names.dart';
 import 'package:agritrace/core/sync/metrics.dart';
 import 'package:agritrace/core/sync/outbox_processor.dart';
+import 'package:agritrace/features/officer_flags/flag_actions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'harness.dart';
@@ -28,7 +30,7 @@ void main() {
     expect(fromWire(SyncKind.values, 'quality_reading'), SyncKind.qualityReading);
     expect(fromWire(SyncKind.values, 'harvest'), isNull);
     final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
-    // D-031/D-032 kinds `farmer` and `assist_session` are served since B15 merged (2026-10-31).
+    // D-031/D-032 kinds `farmer` and `assist_session` (B15) and D-040 `lot_intake` (B16) are all in the spec.
     expect(SyncKind.values.map(wireName), unorderedEquals((kind['enum'] as List).cast<String>()));
     expect(eventTypes, unorderedEquals(((schemas['EventType'] as Map)['enum'] as List).cast<String>()));
     final changeKinds = ((schemas['ChangeKind'] as Map)['enum'] as List).cast<String>();
@@ -107,7 +109,57 @@ void main() {
     await w.dispose();
   });
 
+  test(
+    'an officer "Fix it" goes out as a `correct` version with the reason and the original day, nothing else',
+    () async {
+      final w = World();
+      await w.init();
+      final original = await w.entry(await w.save());
+      final day = ((await entryToWire(w.db, original))!['data']! as Map)['occurred_on'];
+      final flag = Flag(
+        flagId: 'flag-1',
+        farmerId: original.farmerId,
+        entryId: original.rootId,
+        type: 'yield_above_limit',
+        severity: 'warn',
+        status: 'open',
+        detailJson: '{}',
+        updatedAt: t0,
+      );
+      final now = t0.add(const Duration(days: 3));
+      await saveFlagAction(
+        w.db,
+        flag: flag,
+        action: FlagAction.fix,
+        reasonCode: 'field_visit',
+        now: now,
+        entry: original,
+        bags: 10,
+      );
+      final rows = await w.db.select(w.db.entries).get();
+      expect(rows.map((e) => e.entryType), ['harvest', 'harvest'], reason: 'no flag_resolution with a fix');
+      final wire = (await entryToWire(w.db, rows.singleWhere((e) => e.version == 2)))!;
+      final data = wire['data']! as Map<String, Object?>;
+      expect(props('SyncEntry'), containsAll(wire.keys));
+      expect(props('HarvestVersion'), containsAll(data.keys));
+      expect(data.keys, containsAll(required('HarvestVersion')));
+      expect(((schemas['ChangeKind'] as Map)['enum'] as List), contains(data['change_kind']));
+      expect(
+        (data['event_id'], data['version_no'], data['change_kind'], data['reason_code'], data['occurred_on']),
+        (original.rootId, 2, 'correct', 'field_visit', day),
+      );
+      await w.dispose();
+    },
+  );
+
   // D-031/D-032 are served since B15 merged (2026-10-31): the two kinds and the per-entry key are in openapi.json.
+  test('D-040 (B16): SyncEntry has kind lot_intake and IntakeIn needs no processor_id', () {
+    expect(wireName(SyncKind.lotIntake), 'lot_intake');
+    final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
+    expect(kind['enum'] as List, contains(wireName(SyncKind.lotIntake)));
+    expect(required('IntakeIn'), isNot(contains('processor_id')));
+  });
+
   test('D-031/D-032: SyncEntry has kinds farmer and assist_session and a top-level assist_session_id', () {
     final entry = (schemas['SyncEntry'] as Map)['properties'] as Map;
     final kinds = ((entry['kind'] as Map)['enum'] as List).cast<String>();

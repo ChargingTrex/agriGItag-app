@@ -6,7 +6,7 @@ Serves: FR13 (FPO dashboard), FR20 (scan analytics), FR21 (audit export), FR58 (
 unit column in the CSV), FR25 / FR59 (who entered each version, assist session), plan §7.1 B11, plan §7.3
 P06, plan §13 F1 (sync health), D-037 (stage progress and completeness), D-038 (scan rate limit),
 D-039 (audit log FPO scope), CLAUDE.md §6 (FPO scope; no phones or coordinates in any payload).
-Callers: `reporting.router` (which commits); tests/unit/test_reporting.py,
+Callers: `reporting.router` (which commits); tests/unit/test_reporting_unit.py,
 tests/integration/test_reporting.py. No other module calls it (`__all__` is empty).
 """
 

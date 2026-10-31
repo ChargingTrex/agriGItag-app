@@ -3,7 +3,8 @@
 // Requirement: UserFlows §When things go wrong (No signal: "Entry saves with a green tick and a small grey cloud";
 //   Wrong entry: "Undo" for 24 hours), §Each farm event (sowing "Again" button; packing → "Ready to sell"), Dataflow
 //   Stages 5–6 (lot stays in Drying above the moisture limit, farmer prompted to continue drying); FR6.
-// Callers: app_router.dart route `/home/saved` (ConfirmScreen after the save). History and the entry detail with its
+//   Assist mode hides Undo: the server lets only the farmer who entered an event undo it (officers correct, FR6).
+// Callers: app_router.dart routes `/home/saved` and `/assist/:farmerId/saved` (ConfirmScreen after the save). History and the entry detail with its
 //   own Undo are M08.
 
 import 'package:flutter/material.dart';
@@ -68,7 +69,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
     } on StateError {
       // Window closed or entry changed meanwhile: nothing to undo here any more.
     }
-    if (mounted) context.go('/home');
+    if (mounted) context.go(farmerPath(ref, '/home'));
   }
 
   /// Builds tick (+ cloud while waiting), sentence, Home, Undo, Again (sowing) and Call officer. [context] supplies
@@ -118,11 +119,11 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
           FarmerButton(
             icon: Icons.home,
             label: l10n.goHome,
-            onPressed: () => context.go('/home'),
+            onPressed: () => context.go(farmerPath(ref, '/home')),
             onSpeak: () => playPrompt(ref, context, 'goHome'),
             prominent: true,
           ),
-          if (d.savedEntryId != null) ...[
+          if (d.savedEntryId != null && ref.watch(assistFarmerProvider) == null) ...[
             gap,
             FarmerButton(
               icon: Icons.undo,
@@ -136,7 +137,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             FarmerButton(
               icon: Icons.replay,
               label: l10n.logAgain,
-              onPressed: () => context.go('/log/${FarmEvent.sowing.wireName}'),
+              onPressed: () => context.go(farmerPath(ref, '/log/${FarmEvent.sowing.wireName}')),
               onSpeak: () => playPrompt(ref, context, 'logAgain'),
             ),
           ],

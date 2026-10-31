@@ -2,7 +2,8 @@
 // Requirement: FR47–FR50, FR68 (limits, plausibility, trail, yield margins), Dataflow Stages 5, 7, 8,
 //   backend-design.md §3 (`standards` bundle part) and §4 (profile JSON), D-015 (versioned profile JSON).
 // Callers: bundle_repository.dart (parses the `standards` part), lib/core/rules/grade_calculator.dart,
-//   yield_check.dart, moisture_limit.dart, test/rules/grade_calculator_test.dart (the shared grade_cases.json).
+//   yield_check.dart, moisture_limit.dart, the M11 QC grading form (labels, method, standard edition),
+//   test/rules/grade_calculator_test.dart (the shared grade_cases.json).
 //
 // Defaults equal the Pydantic defaults in apps/api/agritrace/modules/quality/schemas.py, so a trimmed bundle
 // part (no `sources_allowed`, no `role`, ...) parses to what the server assumes. Validation stays on the server:
@@ -47,6 +48,9 @@ class Parameter {
   const Parameter({
     required this.code,
     required this.unit,
+    this.nameEn,
+    this.nameLocal,
+    this.methodRef,
     this.required = false,
     this.gradingStage = 'grading',
     this.limits,
@@ -63,6 +67,9 @@ class Parameter {
   factory Parameter.fromJson(Map<String, dynamic> j) => Parameter(
     code: j['code'] as String,
     unit: (j['unit'] as String?) ?? '',
+    nameEn: j['name_en'] as String?,
+    nameLocal: j['name_local'] as String?,
+    methodRef: j['method_ref'] as String?,
     required: (j['required'] as bool?) ?? false,
     gradingStage: (j['grading_stage'] as String?) ?? 'grading',
     limits: (j['limits'] as Map<String, dynamic>?)?.map(
@@ -80,6 +87,15 @@ class Parameter {
 
   /// Unit every reading must carry, e.g. `%`.
   final String unit;
+
+  /// English label for forms (M11 grading form); null falls back to [code].
+  final String? nameEn;
+
+  /// Label in the local script (Tamil for the pilot); null falls back to [nameEn].
+  final String? nameLocal;
+
+  /// Test method the standard prescribes (FR42), copied onto each reading; null when the profile names none.
+  final String? methodRef;
 
   /// A grading reading is needed for a complete grade (only when [limits] is set).
   final bool required;
@@ -208,6 +224,8 @@ class StandardsRules {
     required this.grades,
     required this.failGrade,
     required this.parameters,
+    this.standardName = '',
+    this.standardEdition = '',
     this.labCertifiedRequires,
     this.lotGates = const {},
     this.trailRules = const [],
@@ -223,6 +241,8 @@ class StandardsRules {
     parameters: [
       for (final p in j['parameters'] as List<dynamic>? ?? const []) Parameter.fromJson(p as Map<String, dynamic>),
     ],
+    standardName: ((j['standard'] as Map<String, dynamic>?)?['name'] as String?) ?? '',
+    standardEdition: ((j['standard'] as Map<String, dynamic>?)?['edition'] as String?) ?? '',
     labCertifiedRequires: j['lab_certified_requires'] == null
         ? null
         : LabCertifiedRequires.fromJson(j['lab_certified_requires'] as Map<String, dynamic>),
@@ -243,6 +263,12 @@ class StandardsRules {
 
   /// Every parameter of the standard.
   final List<Parameter> parameters;
+
+  /// Name of the standard the limits come from (`standard.name`, FR47); empty when the part omits it.
+  final String standardName;
+
+  /// Edition cited (`standard.edition`, FR47, FR51), shown beside the grade preview (M11); empty when omitted.
+  final String standardEdition;
 
   /// Condition for the Lab-certified badge; null means never lab-certified.
   final LabCertifiedRequires? labCertifiedRequires;

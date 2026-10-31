@@ -11,9 +11,9 @@ Name | Type | Description | Notes
 **clientId** | **String** | UUIDv7 made by the client; intake id and idempotency key. | 
 **correctionReason** | **String** | Why the superseded intake was wrong. | [optional] 
 **intakeMoistureReadingId** | **String** | Moisture reading (`moisture`, stage `intake`) of this lot (`POST /v1/quality-readings`) | [optional] 
-**lotId** | **String** | Lot received; must be `ready_for_sale`. | 
+**lotId** | **String** | Lot received; `ready_for_sale`, or `open`/`drying` with a drying-end moisture that passes the ready gate (run here, D-040). | 
 **pricePerKg** | [**PricePerKg**](PricePerKg.md) |  | [optional] 
-**processorId** | **String** | Receiving processor. | 
+**processorId** | **String** | Receiving processor (own or shared); absent → the FPO's only own processor (D-040), zero or several own processors → `field_required`. | [optional] 
 **received** | [**QuantityInput**](QuantityInput.md) | Quantity received, unit `kg`. | 
 **saleDate** | [**Date**](Date.md) | Date of sale, YYYY-MM-DD. | 
 **supersedesIntakeId** | **String** | Correct this intake (the lot's current one, lot not yet batched); needs a reason. | [optional] 
