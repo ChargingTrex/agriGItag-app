@@ -413,6 +413,18 @@ class DeviceInUseError(AppError):
     fix = "Sign out on this device first (`POST /v1/auth/logout`), then sign in again."
 
 
+class AccountInactiveError(AppError):
+    """The OTP matched, but the account has no FPO membership left or is suspended (B14: rejected farmer).
+
+    Raised only after the code check, so a wrong code still gets `otp_invalid` and a phone number alone
+    reveals nothing (D-024).
+    """
+
+    code, status, message_key = "account_inactive", 403, "error.account_inactive"
+    message = "This account is not active in any FPO."
+    fix = "Your FPO has not approved this account; contact the FPO office."
+
+
 class ConsentConflictError(AppError):
     """A consent `client_id` already exists with different content or for another farmer (D-005)."""
 

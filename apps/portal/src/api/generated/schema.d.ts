@@ -511,7 +511,7 @@ export interface paths {
         };
         /**
          * List the FPO's farmers
-         * @description List farmers of the caller's FPO (a farmer sees only themself).
+         * @description List farmers of the caller's FPO (a farmer sees only themself), filtered and searched on the server.
          */
         get: operations["list_farmers_v1_farmers_get"];
         put?: never;
@@ -623,6 +623,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/farmers/{farmer_id}/phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reveal a farmer's full phone number (FPO admin, audited)
+         * @description Return the full phone of a farmer of the caller's FPO; every call writes an audit row (D-017).
+         *
+         *     Sent with `Cache-Control: no-store`, so shared office browsers and proxies keep no copy.
+         */
+        get: operations["reveal_phone_v1_farmers__farmer_id__phone_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/plots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a farmer's plots
+         * @description List the plots of one farmer of the caller's FPO; each carries `gi_tag_id` for the region to draw.
+         */
+        get: operations["list_farmer_plots_v1_farmers__farmer_id__plots_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a pending farmer
+         * @description Turn down a pending farmer (FPO admin): status `suspended`, reason kept in the audit trail.
+         */
+        post: operations["reject_farmer_v1_farmers__farmer_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/fpos": {
         parameters: {
             query?: never;
@@ -641,6 +703,26 @@ export interface paths {
          * @description Create an FPO (super-admin only).
          */
         post: operations["create_fpo_v1_fpos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/fpos/{fpo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read an FPO with its map frame (bbox)
+         * @description Read the caller's FPO (super-admin: any FPO); staff get `bbox` from its plots or the GI regions.
+         */
+        get: operations["get_fpo_v1_fpos__fpo_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1816,7 +1898,7 @@ export interface components {
         };
         /**
          * FarmerOut
-         * @description A farmer as returned by the API (no phone number: it lives on the sign-in account).
+         * @description A farmer as returned by the API; the phone (on the sign-in account) only masked (B14).
          */
         FarmerOut: {
             /** @description Structured address. */
@@ -1874,11 +1956,16 @@ export interface components {
              */
             no_smartphone: boolean;
             /**
+             * Phone Masked
+             * @description Phone of the sign-in account with all but the last 4 digits hidden, e.g. `XXXXXX3210`; null without a phone. FPO admins read the full number via GET /v1/farmers/{id}/phone (audited).
+             */
+            phone_masked?: string | null;
+            /**
              * Photo Key
              * @description Object key of the profile photo.
              */
             photo_key: string | null;
-            /** @description pending until an FPO admin approves; then active. */
+            /** @description pending until an FPO admin approves; then active; suspended when rejected (B14). */
             status: components["schemas"]["FarmerStatus"];
             /**
              * User Id
@@ -1928,6 +2015,39 @@ export interface components {
              * @description Village picked from GET /v1/villages.
              */
             village_id?: string | null;
+        };
+        /**
+         * FarmerPhoneOut
+         * @description A farmer's full phone number, revealed to an FPO admin and audited (B14, D-017 `internal`).
+         */
+        FarmerPhoneOut: {
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer id.
+             */
+            farmer_id: string;
+            /**
+             * Phone
+             * @description Phone in E.164 from the sign-in account; null without one.
+             */
+            phone: string | null;
+        };
+        /**
+         * FarmerReject
+         * @description Why an FPO admin turns down a pending farmer (Stage 0 approval, FR70).
+         */
+        FarmerReject: {
+            /**
+             * Reason Code
+             * @description Coded reason, e.g. `duplicate`, `not_a_member`, `outside_gi_area`, `incomplete`.
+             */
+            reason_code: string;
+            /**
+             * Reason Text
+             * @description Free-text explanation.
+             */
+            reason_text?: string | null;
         };
         /**
          * FarmerStatus
@@ -2194,6 +2314,11 @@ export interface components {
              * @description Address on one line, without repeated parts.
              */
             readonly address_line: string;
+            /**
+             * Bbox
+             * @description [min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.
+             */
+            bbox?: number[] | null;
             /**
              * Code
              * @description Stable upper-case code.
@@ -3796,6 +3921,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["NotificationOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[PlotOut] */
+        Page_PlotOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["PlotOut"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -6740,6 +6883,12 @@ export interface operations {
                 limit?: number;
                 /** @description Status filter. */
                 status?: components["schemas"]["FarmerStatus"] | null;
+                /** @description Only farmers of this village. */
+                village_id?: string | null;
+                /** @description Part of the name, local name or farmer code; 1–4 digits also match the last digits of the phone (the `phone_masked` suffix). */
+                q?: string | null;
+                /** @description Comma-separated item fields to return, e.g. `id,code,name` (lean list); items then carry only those keys. Unknown or tenant-disabled names → 422 `validation_error`. */
+                fields?: string | null;
             };
             header?: {
                 /** @description Open assist session id (field officer entering data for a farmer). */
@@ -7002,6 +7151,126 @@ export interface operations {
             };
         };
     };
+    reveal_phone_v1_farmers__farmer_id__phone_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerPhoneOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_farmer_plots_v1_farmers__farmer_id__plots_get: {
+        parameters: {
+            query?: {
+                /** @description Cursor from the previous page's `next_cursor`. */
+                cursor?: string | null;
+                /** @description Page size (1–200). */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_PlotOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    reject_farmer_v1_farmers__farmer_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FarmerReject"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_fpos_v1_fpos_get: {
         parameters: {
             query?: never;
@@ -7056,6 +7325,43 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FpoOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_fpo_v1_fpos__fpo_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description FPO id. */
+                fpo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

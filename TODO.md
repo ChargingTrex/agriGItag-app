@@ -39,7 +39,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B02: multi-FPO users sign in to their oldest membership; add an FPO switch when needed (D-024 Revisit).
 - [ ] B02: refresh tokens have no idle expiry and office roles get no PIN prompt on app open; SEC review to decide (D-024 Revisit).
 - [ ] B02/B03: farmers and their users/memberships are created by registry (B03); identity only signs existing users in.
-- [ ] B02/P01: portal adapts to the auth contract differences listed in docs/api/conventions.md "Authentication".
+- [x] B02/P01: portal adapts to the auth contract differences listed in docs/api/conventions.md "Authentication" (P01: `kind`, `pin_token`, first PIN typed twice, `X-Client: web`, cookie refresh, device id in localStorage).
 - [ ] B02: revisit `tests/conftest.py` JWT_SECRET (23 bytes triggers PyJWT InsecureKeyLengthWarning).
 - [ ] B02 (B02-r1 P2-6, accepted for the pilot): admin-issued initial PIN for office users (B03/P01); today the first OTP sets the PIN.
 - [ ] B02 (B02-r1 P3-7): security event log lines (OTP lock, PIN lock, refresh reuse, `device_in_use`) with no codes or tokens, when observability lands.
@@ -75,7 +75,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Q00 (W02 owner): `t.me/+91…` links stay masked; a phone number in a non-WhatsApp URL path stays masked (X17, by decision); two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is ~400 lines and should be split when W02 touches it. (Done in r4: `.jsonl/.yaml/.vcf/.map`, `R.S./T.S. No.`, `&ndash;`/U+2212.)
 - [ ] P00: `apps/portal/ci-job.yml` must be pasted under `jobs:` in `.github/workflows/ci.yml` (Orchestrator, at merge).
 - [ ] B12: `make clients` must call `npm run gen:api` (writes `apps/portal/src/api/generated/schema.d.ts`) and the Dart generator.
-- [ ] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); B02 decided: httpOnly refresh cookie with `X-Client: web` (D-022, D-024); P01 removes sessionStorage.
+- [x] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); B02 decided: httpOnly refresh cookie with `X-Client: web` (D-022, D-024); P01 removed sessionStorage (access token in React state only).
 - [ ] Infra: no `portal` service in docker-compose yet; production must serve the portal and `/v1` from one origin (CORS/cookie decision with B02).
 - [ ] Ledger: `lightningcss` (Vite build dependency) is MPL-2.0, build-time only, not shipped; accepted under D-018 as file-level copyleft in unmodified use (same reasoning as certifi/pathspec).
 - [ ] B09: enforce Σ `batch_shares.share_pct` = 100 ± 0.01 in the service (spans rows; not a CHECK).
@@ -89,7 +89,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] M05: consider a bold Tamil weight in the subset font.
 - [ ] M00 risk: goldens recorded on macOS; if the first Linux CI run fails, regenerate goldens on Linux rather than raising tolerance. `gen_api.sh` needs network (npx + generator download) in CI.
 - [ ] Dev machine: Android cmdline-tools missing and SDK licences unaccepted; system Java is 1.8 (Android Studio JDK 21 via JAVA_HOME works). Not needed for CI.
-- [ ] B06/B07 (B01 review F1): `GET /v1/sync/reference?since=` must compare versions per part, because one global sequence number is not commit-ordered; a part can be missed until it changes again.
+- [x] B06/B07 (B01 review F1): `GET /v1/sync/reference?since=` compares versions per part (B07).
 - [x] B06/B07 (F4): the sync write path uses Core `INSERT … ON CONFLICT`, which the ORM audit listener does not see; those writes must insert audit rows explicitly.
 - [ ] Compliance (F5, DPDP Act 2023): append-only tables need an erasure runbook for valid deletion requests; the API's database role must not own the tables (so it cannot disable triggers); consider redacting phone, plot pin and survey number from audit diffs. Owner: SEC review before G5.
 - [ ] B03 (F7, Architect-Gate ruling): create a `users` row for every farmer who has a phone, including feature-phone farmers, so the phone has exactly one home.
@@ -158,6 +158,17 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B07/B08/B12 (from M03 review): use the crop `event_schema` shape `{mandatory, tracks}` that M03 introduced; B08 copies the Dart rules only after M03 r2 (practice_tags `other` fix) merges.
 - [ ] M11 (from M03 review): always send timestamps with an offset or Z (the phone parser now rejects naive timestamps like the server).
 - [ ] B06 r2 leftovers: a dedicated declared-EXIF column after migration 0003 (today it lives in the push audit row); chunked bodies without Content-Length are read before measuring (ALB cap still needed).
+- [ ] ADR wording (M06 review P3-2/P3-3): D-027 should say pin_token and `pin_set` are not persisted and name the Android backend actually used; the D-013 code comment's COMPROMISE line should match the ADR.
+- [ ] P02 (from B14 review): type `?fields=`-trimmed farmer rows as partial; add "undo a rejection" (approve refuses `suspended`); rejected vs suspended share one status, distinguished by the audit action.
+- [x] Orchestrator ruling (B14 r2): rejecting a farmer removes their membership, revokes their devices, and sign-in answers `account_inactive` only after the OTP matched.
+- [ ] B07 hand-offs: `calendar` and `prompts` bundle parts are empty (no source yet: crop calendar belongs to B12 seed / M12 reminders; prompt manifest to M05/M08 assets); input pictures have no upload path (`photo_key` is read as a public-pages key — B13/P08 import or an admin upload needed); one GI tag per bundle (multi-GI FPOs later); pull visibility lag ~30 s (`shortcut:`); manifest builds every part body per call (add caching when FPOs grow); `?since=` misses changes with no version trigger (crop↔profile link, FPO district, future-dated region) — the manifest ETag catches them; B12 seed must set `crops.gi_tag_id` or `gi_region` never appears; B10/portal still need `presign_get` for photo URLs outside pull/timeline.
+- [x] B06/B07 (B01 review F1): `?since=` compares versions per part — done in B07.
+- [x] B07: `/sync/pull`, bundles and per-part `since` — done; photos on quality readings still have no upload path (open).
+- [ ] B08 hand-offs: M03 adds the Dart test that reads `apps/api/tests/fixtures/rule_cases.json` (shared rule fixture); B09 wires `run_gate_checks` into intake/grading/final-packing/publish gates; B12 points the rules integration test at the real seed; rule thresholds are code constants (`shortcut:` — pin radius 200 m, accuracy 30 m, skew 10 min, quantity 5 %, default buffer 50 m) until B13 flags are read; no periodic sweep for lost checks; no `subject_id` filter or `?fields=` on `/v1/flags`; only kg quantities are reconciled.
+- [ ] Product (from B08): a farmer selling part of a lot gets a `quantity_mismatch` warning and grading losses over 5 % raise `batch_quantity_unattributed` — confirm both readings of PRD §12.2 with product; both are warnings, not holds.
+- [ ] M08/M06 l10n: add Tamil/English text for `error.account_inactive` (new code from B14 r2); P02: `error-messages.ts` regenerated at merge.
+- [ ] Cost note (B14 r2): OTP SMS now goes to any known phone, including suspended users; the 60 s and daily caps still apply.
+- [ ] B07 P3 hand-offs (review B07-r1): B08 flag `details` reach farmers through pull (keep them free of other farmers' data); M02: pulled events never pick up later photo variants and their links expire after an hour (refetch on view); M02/M06: wipe reference data on sign-out when the phone switches user; settle-clock note (API clock vs DB `updated_at`).
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 - [ ] B03 → Architect-Gate (D-019 wording): the Datameet maps repo has no sub-district layer (only Census 2011 districts) and Datameet village boundaries skip Tamil Nadu; open Census-2011 taluk files found are CC BY-NC-SA (rejected) or restricted. `infra/scripts/gi_boundary/README.md` therefore recommends geoBoundaries gbOpen IND ADM3 + ADM2 (ODbL-1.0, LGD-derived, commit 9469f09); measured v0 40.7 KB / v1 33.1 KB, reference point inside both. Amend D-019's source sentence, and decide the ODbL attribution line on the public page (B10).
 - [x] B03 → B06: the sync push `plot` entry kind should reuse `registry.service.create_plot` + `enqueue_plot_check` (after the per-entry commit); `create_plot` takes the registry `PlotIn` schema, which other modules may not import (D-004), so B06 needs a service entry that accepts the entry's dict (add it to `service.__all__` then).
@@ -197,3 +208,10 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B04: Celery task events stay off (`worker_send_task_events` default); events and `celery inspect` carry `kwargsrepr` unmasked, so set `kwargsrepr` at publish before enabling Flower or events.
 - [ ] B04: `GET /v1/notifications` has no `?fields=` (conventions.md); no list endpoint implements it yet.
 - [ ] B04: real SMS gateway (TODO(provider) in `notifications/providers.py`, `SMS_SENDER_ID`, DLT template ids), FCM push and WhatsApp providers; until then `sms`/`push`/`whatsapp` rows fail `provider_not_configured` unless `SMS_PROVIDER=console` (sms only).
+- [ ] B14 output 1 (B14/P01; contract gap, blocks P01 acceptance "phone masked except audited reveal"): `FarmerOut` carries no phone and there is no reveal endpoint. Proposal: add `phone_masked` (`XXXXXX1234`) to `FarmerOut` and an audited `GET /v1/farmers/{id}/phone` → `{phone}` (fpo_admin only, audit row per call); P01 then adds the column and the Reveal button.
+- [ ] B14 output 2 (B14/P01): no way to reject a pending farmer (only `POST /v1/farmers/{id}/approve`); add `POST /v1/farmers/{id}/reject {reason_text}` (or a `rejected` status) and P01 adds the button with a reason.
+- [ ] B14 output 3 (B14/P01): no per-farmer plot list; add `GET /v1/plots?farmer_id=` (Page, `?fields=`) so the farmer detail lists all plots (gap analysis "Multiple farm lands"). Until then plot pages open by URL (`/members/plots/:plotId`, P02 links from flags).
+- [ ] B14 output 4 (B14/P01): `GET /v1/farmers` has no `q`/`village_id` filter and no `?fields=`; the portal search filters only loaded pages (`shortcut:` in MembersPage.tsx).
+- [ ] B14 output 5 (B14/P01): plots do not name their crop/GI tag and FPOs have no bounding box; the plot map uses the first GI crop's region and its bbox as the tile area (`shortcut:` in PlotPage.tsx).
+- [ ] P01 ops: tile.openstreetmap.org allows light use only; production needs its own tile host or a provider. Satellite layer uses EOX Sentinel-2 cloudless 2016 (CC BY 4.0): compliance to confirm; the reverse proxy must serve `.mjs` (MapLibre worker) as `text/javascript`.
+- [ ] P01 risk: two portal tabs restoring a session at the same moment both refresh the cookie and can trip `refresh_reused` (device signed out); acceptable for the pilot, revisit with a BroadcastChannel lock if users report it.
