@@ -1,72 +1,59 @@
-# Handover — AgriTrace build, end of day 2026-10-30 (00:30 IST)
+# Handover — AgriTrace build, end of day 2026-10-31 (18:30 IST, refreshed while three agents still run)
 
-Written for: whoever resumes the multi-agent build tomorrow (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §5.
+Written for: whoever resumes the multi-agent build (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §5 and the "Architect-Gate queue" / decision-ledger lines.
 
 ## 1. Where things stand
 
 | Area | State |
 |---|---|
-| Plan | `PLAN.md` at the root (approved 2026-10-29); design specs in `docs/agents/specs/` |
-| Progress | `CHECKLIST.md` completion line (17 % at close; see table below for conditional merges that will tick once the stack runs) |
-| Decisions | `DECISIONS.md` D-001 … D-025 with ADRs in `docs/adr/` |
-| Follow-ups | `TODO.md` (about 100 open items, grouped; §5 is the human to-do list) |
-| Agent protocol | `docs/agents/{roles,checkpoint-protocol,qa-rubric}.md`; every review in `docs/agents/reviews/`, every verification in `docs/agents/qa/`, every worker report in `docs/agents/reports/` |
-| Gate G0 | Open, `docs/agents/gates/G0.md`, blocked on the Docker stack run |
+| Plan | `PLAN.md` (approved 2026-10-29); binding specs in `docs/agents/specs/`; rulings in `docs/agents/gates/rulings-2026-10-31.md` and `rulings-2026-10-31b.md` |
+| Progress | `CHECKLIST.md`: **36 % (23/64)** ticked; **25 more packages are merged on main but wait only for the Docker stack** (their reviewer verdicts are PASS-PENDING-STACK); 3 packages in flight; Q01–Q05 not started |
+| Decisions | `DECISIONS.md` D-001 … D-053 (D-049 unused; D-018 amended twice: MPL-2.0 build/transitive, GPL-2.0 with Classpath Exception for `desugar_jdk_libs`) |
+| Follow-ups | `TODO.md` (~300 lines, grouped; the decision-number ledger line pre-assigns numbers to in-flight branches) |
+| Agent protocol | `docs/agents/{roles,checkpoint-protocol,qa-rubric}.md`; every review in `docs/agents/reviews/<WP>-r<n>.md`, every worker report in `docs/agents/reports/<WP>.md` |
+| Gates | G0–G4 all unsigned: every gate needs the stack run first (see §2) |
+| Main | `git log` ~286 commits; backend 617 unit tests / 768 collected; mobile 793 tests; portal 120 Vitest; public page 76 pytest; 49 error codes; migrations 0001–0004 single head; OpenAPI, TS and Dart clients regenerated after the last backend merge |
 
-### Merged to `main`
+### Merged to `main` today (2026-10-31), in order
+B07, B08, B09, B10, B11, B15, B16 (backend); M02, M07, M08, M09, M10 (+ follow-up), M11, M12 (mobile); P02, P03, P04, P06, P08 (portal); W03 (public page); B12 (seed, e2e, `make clients`). Plus the three Architect-Gate rulings batches (D-030–D-032, D-040–D-043) and D-033–D-053 from workers.
 
-| WP | Review | Verification | Note |
-|---|---|---|---|
-| W01 public page renderer | PASS r2 | PASS | fully verified |
-| P00 portal skeleton | PASS | PASS | fully verified, screenshots in docs/agents/qa/P00 |
-| M00 Flutter skeleton | PASS (+r2 fixes) | PASS | fully verified |
-| B00 backend scaffold + infra | PASS-PENDING-STACK | **deferred** | compose stack never ran on this machine |
-| Q00 QA harness | r4 closure | CONDITIONAL | Robot smoke on live stack deferred |
-| B01 domain schema (39 tables, migration 0001) | Architect-Gate APPROVED-PENDING-STACK | **deferred** | `alembic check` + 8 integration tests not run |
-| B05 quality + grade engine | PASS-PENDING-STACK (+r2) | **deferred** | 166 unit tests pass; 7 integration tests not run |
-| B03 registry + PostGIS geo | PASS-PENDING-STACK (+r2) | **deferred** | 107 unit tests pass; 6 PostGIS integration tests not run |
-| B02 identity + auth (OTP, PIN, JWT, refresh rotation, assist, consent; migration 0002) | SEC FAIL r1 → PASS-PENDING-STACK r2 | **deferred** (20 integration tests, `alembic check` after 0002, audit_log `$argon2` SQL check) | contract in `docs/api/conventions.md` → Authentication; P01 must adapt the portal; mobile needs a sign-out action |
-| W02 public-page validators + CI gates | PASS r1 | reviewer-executed acceptance; formal Verifier **deferred** | privacy linter coordinate rules, canary check, html-validate, Lighthouse 3G/4G (D-025), Robot public suite real |
+### In flight at hand-over (worktrees under `.claude/worktrees/`)
 
-`main` at close: backend 277 unit tests green, import-linter 2 kept / 0 broken, interrogate 100 %, 37 registered error codes, migrations 0001 + 0002 (single head), OpenAPI spec and portal client regenerated.
+| WP | Agent state | Next step |
+|---|---|---|
+| P05 labels PDF + CSV exports | worker done @ `e263801`; WEB reviewer running | on PASS: micro-patch if any → Orchestrator confirm → merge (expect `AppRoutes.tsx`/`navigation.ts` conflicts with P06: resolve by hand, never "keep both" in code) |
+| P07 Playwright chain + axe | worker running | review → merge; the live chain is the Verifier's (`make up && make seed && cd apps/portal && E2E_LIVE=1 npm run e2e`) |
+| M13 hardening & release | worker running (size, cold start, low-storage purge, WorkManager proof, D-029 user-switch clearing, rejected-packing ready fix, schema v3) | MOB review → merge; then the mobile tree is complete |
 
-### Done but not merged (branches in `.claude/worktrees/`)
+## 2. Blockers only a human can clear (do these first)
 
-| WP | Branch / commit | State at close | Next step |
-|---|---|---|---|
-| M01 Drift offline store | `worktree-agent-abd04c405cb9f3ca4` @ **642abed** | review r1 PASS; **round 2 done 00:28** (recursive_triggers, stuck-`sent` reset, entries-only nextBatch, perf test tagged, D-026 cited; 40 tests green) | **first merge tomorrow**: quick confirm of the r2 diff → verify (`flutter test test/db`) → merge (D-026 ADR already written) |
-| M05 farmer widget kit | `worktree-agent-afab3dd3b4350ce54` @ 8d5bd91 | **unreviewed** (finished 00:14) | spawn MOB reviewer (use `/ponytail-review`) → verify → merge; conflicts expected with M01 in `docs/LIBRARIES.md`, `CHANGELOG.md`, `pubspec.yaml`, `ios/` files |
-
-## 2. Blockers only a human can clear (do these first tomorrow)
-
-1. **Docker Desktop is broken.** Its container store was corrupted when the disk filled. Fix: Docker Desktop → Troubleshoot → *Clean / Purge data* (deletes all local images and volumes), then start it. After that, run the deferred verifications in this order (each is one Verifier agent): B00 (`make up`, `GET/HEAD /v1/healthz`, `make test`), B01 (`alembic check`, 8 integration tests), B05, B03, then sign G0.
-2. **Two stale `uv` processes hold the uv cache lock** (they are graphify MCP servers from `~/.claude` config with a misspelled package `graphifyy`; PIDs 53285 and 66002 at close). `kill 53285 66002 && uv cache clean` frees about 4.9 GB and stops every worker tripping on the lock. Fix the spelling in the MCP config so they do not come back.
-3. **Disk.** Free space oscillated between 1.4 and 6 GB all evening. Candidates measured (regenerable): `~/Library/Caches` 28 GB, `~/.gradle` 4.6 GB, `~/.cache/uv` 4.9 GB (after the kill above), `~/Downloads` 11 GB. Flutter release builds need several GB of headroom.
-4. Optional but useful: confirm the GI 883 taluk list from GI Journal No. 200 (`infra/scripts/gi_boundary/taluks.json` has `confirmed: false`); decide on the 3-decimal public map rounding (TODO §2).
+1. **Docker Desktop reset** (Troubleshoot → Clean / Purge data, then start). Everything below has never executed on a stack: ~190 backend integration tests, the 2 e2e tests, `make seed`, the Robot suites, Lighthouse on a quiet host, the portal live chain. After the reset, run Verifiers in this order (each one Opus agent, rubric in `docs/agents/qa-rubric.md`): B00 → B01 → B05 → B03 → B02 → B06 → B13 → B14 → B04 → B07 → B08 → B09 → B15 → B16 → B10 → B11 → B12 (`make seed` + e2e) → then sign G0, G1, G2. Expect a batch of asyncpg/PostGIS typing fixes on the first live `make test`.
+2. **Kill stale processes**: `pkill -f graphifyy` (misspelled MCP package in `~/.claude` config; fix the spelling) and `uv cache clean`; the CodeGraph watchers (`~/.codegraph/.../node`, one per worktree) die when worktrees are pruned. Load averages reached 950 on 12 cores during the afternoon; the Flutter test runs are the cost.
+3. **Disk**: 11 GB free. Flutter release builds (M13 size check) need several GB.
+4. **Product confirmations still open**: GI 883 taluk list from GI Journal 200; 3-dp public map rounding; the 15 % `grading_loss_warn_pct` default (D-030); farm area and grade readings are now `public` in the field YAML (D-034 ruling) — confirm with the FPO.
+5. **Firebase/APNs** (M12): project, config files, APNs key and entitlement are human steps; the API has no device-token endpoint yet (`push_notifications` flag off).
 
 ## 3. Resume procedure (Orchestrator)
 
-1. `git status` clean on `main`; `git worktree list` shows the four branches above.
-2. Finish the in-flight reviews: read `docs/agents/reviews/B02-r2.md` / `W02-r1.md` / `M01-r1.md` if they exist (agents may have written them after this handover); otherwise spawn the reviewer per `docs/agents/checkpoint-protocol.md`.
-3. Merge order: M01 (after its round 2) → M05 (W02 merged 00:19, B02 merged 00:20). Both touch `pubspec.yaml`, `docs/LIBRARIES.md`, `CHANGELOG.md`, `ios/Podfile` and the xcconfig files: expect conflicts, keep both sides. For each: `git merge --no-ff <branch>`; append-only conflicts in `CHANGELOG.md`, `TODO.md`, `docs/LIBRARIES.md` are resolved by keeping both sides; after any backend merge run `cd apps/api && uv run python -m agritrace.export_openapi && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py && cd ../portal && npm run gen:api`, then `cd apps/api && uv run pytest tests/unit -q && uv run lint-imports`; then `codegraph sync .`, tick `CHECKLIST.md`, `python3 infra/scripts/checklist-progress.py`, commit.
-4. Then start Wave 3 per `PLAN.md` §7.6: **B04 notifications**, **B06 events + sync push** (B02 and B03 are merged, so it can start immediately), **B13 config-driven fields + masters**, **M04 capture kit**, **M06 auth** (needs B02 contract in `docs/api/conventions.md`), **M02 sync engine** (needs B06). Worker prompt pattern: role card + acceptance file + spec sections + "DOCUMENTATION RULES ARE NOT OPTIONAL" + Ponytail; keep ≤ 4 workers while disk is tight.
-5. Reviewers now invoke the `ponytail:ponytail-review` skill (plugin loaded 2026-10-30); at the end of each wave run `ponytail:ponytail-audit` and file `docs/agents/audits/wave-<n>.md`.
+1. `git status` clean on `main`; `git worktree list` shows the three in-flight branches.
+2. For each in-flight WP: if its report exists, spawn/resume the reviewer; on PASS confirm the exact fixes yourself when the reviewer specified them, otherwise a round 2 with the same reviewer (resume by `SendMessage`); merge with `git merge --no-ff`.
+3. After any backend merge: `cd apps/api && uv run python -m agritrace.export_openapi && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py && uv run pytest tests/unit -q && uv run lint-imports`, then `cd ../portal && npm run gen:api`, then `cd ../mobile && JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" tool/gen_api.sh` (slow under load; run in the background). After any mobile merge: `flutter analyze --fatal-infos && flutter test -x golden -x perf`. After any portal merge: `npm ci` once if `axe-core` is missing, then `npm run typecheck && npm test -- --no-file-parallelism`.
+4. Conflicts: `CHANGELOG.md`/`TODO.md`/`docs/LIBRARIES.md` keep both sides (LIBRARIES: union the files column of a same-row conflict; `DECISIONS.md`: rows in number order); generated files (`openapi.json`, `error-codes.md`, clients) take main's then regenerate; **code files by hand** then lint/typecheck/tests before committing.
+5. Bookkeeping per merge: tick/annotate `CHECKLIST.md`, `python3 infra/scripts/checklist-progress.py`, CHANGELOG status suffix, TODO lines from the review, `codegraph sync .`, `git worktree remove -f -f` + `git branch -d`.
+6. Then wave 7: Q01–Q05 Verifiers (need the stack and the Go AVD), the `/ponytail-audit` per wave (`docs/agents/audits/wave-<n>.md`, none written yet — waves 3–6 are owed), gates G0–G5.
 
-## 4. Decisions taken today that future work must respect
+## 4. Decisions and rulings today that future work must respect
 
-- D-008 LocalStack **4.14.0 pinned** (community MinIO is gone; `latest` LocalStack needs a licence token); D-021 Valkey instead of Redis; D-019 GI boundary from **geoBoundaries (ODbL)** with attribution; D-022 portal and API on one origin (httpOnly refresh cookie for web); D-023 enums as VARCHAR+CHECK; D-024 phone+OTP+PIN session model (pin_hash must be redacted from audit diffs — B02 r2); D-025 BM-03 3G = Lighthouse built-in preset.
-- Rulings recorded in TODO/acceptance files: Lab-certified badge = any lab reading with a non-blank NABL number on the batch; visual moisture rejected at entry; 100 MB APK ceiling / 40 MB target / 30 MB AAB download; first-OTP-sets-PIN accepted for pilot; single privacy linter (`infra/scripts/privacy-lint.py`).
-- Process deviations (logged in G0.md): Q00 had 4 worker rounds, B00 4, B02 will have 2; several packages merged on PASS-PENDING-STACK because Docker was down.
-
-## 4a. Small chores left at close
-- M01 P3s (review M01-r1): Linux CI may need `libsqlite3-dev`; add a CI check that Drift generated code and the schema dump are current; M02 must map camelCase enum names to the server's snake_case; perf test must be measured file-backed on the Go AVD by Q01.
-- Delete the BM-16 placeholder test in `qa/robot/mobile/network_profiles.robot` (the real one is in `qa/robot/public/page.robot`), so `gate-readiness.py G1` passes.
-- Spawn the formal W02 Verifier (no Docker needed).
+- D-030 grading-loss split; D-031 `farmer` push kind + `FarmerIn.client_id`; D-032 `assist_session` push kind + per-entry `assist_session_id`; D-040 `lot_intake` push kind (QC receives a lot; processor default; moisture gate at intake); D-041 GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block non-GI batches; D-042 assist context per kind; D-043 "Log" counts as navigation, next-task card is the 3 (+1) path.
+- D-033 intake corrections (pre-batch versions; post-batch void path owed by B10/B11); D-034 page-required fields are `public` and tenant YAML cannot narrow them; D-035 Sell QR `sig` is a checksum; D-044 assist mode is the `/assist/:farmerId` route scope; D-045 schematic map thumbnail; D-046 local reminders; D-047 in-house CSV reader; D-048 seed by direct inserts + real `create_batch`; D-050 `VITE_PUBLIC_BASE_URL`; D-051 per-lot packed kg derived from shares.
+- **G5 conditions added**: B15 + M02 r2 + M09 r2 merged before any field device runs onboarding/assist (done); B16 + M11 r2 merged before any device runs QC intake (done); the Verifier must still push `lot_intake`, `farmer` and `assist_session` to a live server.
+- Process: decision numbers are assigned by the Orchestrator in the TODO ledger (four workers picked D-044 the same afternoon); the Orchestrator's own `/ponytail-review` passes on merged M10, W03, M08, B11, B12, P06 produced a merged M10 follow-up and four TODO lines.
 
 ## 5. Known risks going into tomorrow
 
-- Every backend package since B01 has integration tests that have **never executed**; expect a batch of PostGIS/asyncpg typing fixes on the first live `make test`.
-- `audit_log` is append-only: the B02 P1 (PIN hash in audit diffs) must land before any real office PIN is set.
-- Goldens are macOS-recorded and skipped on Linux until Q01 re-records them.
-- The portal `gen:check` CI step fails whenever a backend merge changes the spec without regenerating the client (procedure in §3 step 3 covers it).
-- iOS cannot play `.ogg` voice clips (M05): CAF/AAC copies needed before an iOS pilot.
+- ~190 integration tests, the e2e, `make seed` and every Robot suite have never run. The first stack run will find typing and fixture issues; budget a day.
+- Shared-phone data: on user switch M02 clears the cursor and bundles but the previous user's pulled lots/plots/farmers/tasks/flags stay until M13 lands (in flight); reminders (M12) and Sell/Money read them.
+- `ready_for_sale` kept by the pull can outlive a rejected packing (fix in M13's brief).
+- Dashboard completeness ignores plot-level events logged before a lot existed (TODO from the B11 review); `make seed` re-run after a refused batch dies on the staff phone index (TODO from the B12 review).
+- `batch_quantity_unattributed`/`grading_loss_high` 15 % default, the `nm` and `desugar_jdk_libs` licences, and the `mobile_scanner` ML Kit size are all accepted with notes; M13 measures the APK.
+- Goldens are macOS-recorded; the Lighthouse 3G gate fails under heavy host load (W03 has ~300 ms margin).
