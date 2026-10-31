@@ -30,7 +30,7 @@ void main() {
     expect(fromWire(SyncKind.values, 'quality_reading'), SyncKind.qualityReading);
     expect(fromWire(SyncKind.values, 'harvest'), isNull);
     final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
-    // D-031/D-032 kinds `farmer` and `assist_session` are served since B15 merged (2026-10-31).
+    // D-031/D-032 kinds `farmer` and `assist_session` (B15) and D-040 `lot_intake` (B16) are all in the spec.
     expect(SyncKind.values.map(wireName), unorderedEquals((kind['enum'] as List).cast<String>()));
     expect(eventTypes, unorderedEquals(((schemas['EventType'] as Map)['enum'] as List).cast<String>()));
     final changeKinds = ((schemas['ChangeKind'] as Map)['enum'] as List).cast<String>();
@@ -153,6 +153,13 @@ void main() {
   );
 
   // D-031/D-032 are served since B15 merged (2026-10-31): the two kinds and the per-entry key are in openapi.json.
+  test('D-040 (B16): SyncEntry has kind lot_intake and IntakeIn needs no processor_id', () {
+    expect(wireName(SyncKind.lotIntake), 'lot_intake');
+    final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
+    expect(kind['enum'] as List, contains(wireName(SyncKind.lotIntake)));
+    expect(required('IntakeIn'), isNot(contains('processor_id')));
+  });
+
   test('D-031/D-032: SyncEntry has kinds farmer and assist_session and a top-level assist_session_id', () {
     final entry = (schemas['SyncEntry'] as Map)['properties'] as Map;
     final kinds = ((entry['kind'] as Map)['enum'] as List).cast<String>();

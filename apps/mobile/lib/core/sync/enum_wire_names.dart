@@ -2,7 +2,7 @@
 // Requirement: backend-design.md §3 (push `kind` values), D-023 (server enums are snake_case strings), M01 review
 //   P3-6 ("camelCase enum names on disk, M02 maps them"); PLAN §13 A2–A4 (the push envelope).
 // Callers: outbox_processor.dart (entry kind, change kind, event types), test/sync/contract_test.dart (checks every
-//   value against packages/openapi/openapi.json, and the D-031/D-032 kinds against backend-design.md §3 until B15).
+//   value against packages/openapi/openapi.json, D-040 `lot_intake` included since B16).
 
 /// Event types the server accepts in an `event_version` (`EventType`); an entry of one of these types (or `undo`)
 /// is pushed as an event version.
@@ -44,6 +44,10 @@ enum SyncKind {
 
   /// An officer's flag resolution (B08 `resolve_from_sync`; sent by the M10 flag screens).
   flagResolution,
+
+  /// A QC officer's lot intake, `data` = `IntakeIn` without `client_id`, id = intake id; receives the lot
+  /// (`lot_intakes`), which an `intake` event version never does (D-040; served by B16, M11 r2 sends it).
+  lotIntake,
 }
 
 /// How an event version came about (`change_kind` on the server).

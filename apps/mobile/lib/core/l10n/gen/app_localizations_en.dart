@@ -791,4 +791,226 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flagFixSent => 'Fix sent, awaiting the re-check.';
+
+  @override
+  String assistFor(String farmerId) {
+    return 'Helping $farmerId';
+  }
+
+  @override
+  String get qcHomePrompt => 'Scan a lot to receive it, or grade a batch.';
+
+  @override
+  String get qcReceiveLot => 'Receive lot';
+
+  @override
+  String get qcGradeBatch => 'Grade batch';
+
+  @override
+  String get qcScanPrompt => 'Point the camera at the lot\'s QR code.';
+
+  @override
+  String get qcPickLot => 'Pick lot';
+
+  @override
+  String get qcPickLotPrompt => 'Tap the lot to receive.';
+
+  @override
+  String get qcNoReadyLots => 'No lot on this phone is ready to sell. Sync and try again.';
+
+  @override
+  String get qcLotNotFound => 'This lot is not on this phone. Sync and scan again.';
+
+  @override
+  String get qcLot => 'Lot';
+
+  @override
+  String get qcFarmer => 'Farmer';
+
+  @override
+  String get qcPacked => 'Packed';
+
+  @override
+  String get qcIntakePrompt => 'Weigh the bags, then take a moisture reading.';
+
+  @override
+  String get qcReceived => 'Received weight';
+
+  @override
+  String get qcPricePerKg => 'Price per kg';
+
+  @override
+  String get qcMoisture => 'Moisture';
+
+  @override
+  String qcWeightMismatch(String received, String packed) {
+    return '$received kg received but $packed kg packed: more than 5 % apart.';
+  }
+
+  @override
+  String get qcWeightOk => 'Weight matches the packed quantity.';
+
+  @override
+  String qcMoistureHigh(String value, String limit) {
+    return 'Moisture $value % is above the $limit % limit.';
+  }
+
+  @override
+  String qcMoistureOk(String limit) {
+    return 'Moisture is within the $limit % limit.';
+  }
+
+  @override
+  String get qcMeter => 'Measured with';
+
+  @override
+  String qcCalibrationExpired(String date) {
+    return 'Calibration expired $date. Use another meter.';
+  }
+
+  @override
+  String qcCalibrationDue(String date) {
+    return 'Calibrated until $date';
+  }
+
+  @override
+  String get qcBluetoothMeter => 'Instrument (Bluetooth)';
+
+  @override
+  String get qcComingSoon => 'Coming soon';
+
+  @override
+  String get qcNoMeter => 'No meter on this phone. Ask the FPO admin to register one.';
+
+  @override
+  String get qcVisual => 'Visual';
+
+  @override
+  String get qcPickMeter => 'Pick the instrument to save the reading.';
+
+  @override
+  String qcFillRequired(String field) {
+    return 'Enter $field to save.';
+  }
+
+  @override
+  String get qcSave => 'Save';
+
+  @override
+  String get qcSaved => 'Saved. It is sent when there is signal.';
+
+  @override
+  String get qcDone => 'Done';
+
+  @override
+  String get qcBatchesPrompt => 'Tap the batch to grade or pack.';
+
+  @override
+  String get qcBatchesOffline => 'No signal. Batches need the internet.';
+
+  @override
+  String get qcRetry => 'Try again';
+
+  @override
+  String get qcNoBatches => 'No batch is waiting for grading or packing.';
+
+  @override
+  String qcBatchLine(String code, String kg) {
+    return 'Batch $code: $kg kg';
+  }
+
+  @override
+  String get qcToGrade => 'To grade';
+
+  @override
+  String get qcToPack => 'To pack';
+
+  @override
+  String get qcGradingPrompt => 'Enter each reading. The grade shows below.';
+
+  @override
+  String get qcGradedWeight => 'Graded weight';
+
+  @override
+  String qcGrade(String grade) {
+    return 'Grade: $grade';
+  }
+
+  @override
+  String qcStandardEdition(String name, String edition) {
+    return '$name, edition $edition';
+  }
+
+  @override
+  String qcGradeMissing(String list) {
+    return 'No grade yet. Missing: $list';
+  }
+
+  @override
+  String get qcDeclaredGrade => 'Declared grade';
+
+  @override
+  String qcDeclaredAbove(String declared, String computed) {
+    return 'Declared $declared is above the computed $computed. The admin cannot approve it.';
+  }
+
+  @override
+  String qcRange(String min, String max, String unit) {
+    return 'Range $min to $max $unit';
+  }
+
+  @override
+  String qcOutOfRange(String min, String max, String unit) {
+    return 'Outside $min to $max $unit: check the reading.';
+  }
+
+  @override
+  String get qcSourceNotAllowed => 'Not accepted from this source. Use a meter or a lab.';
+
+  @override
+  String get qcNoStandards => 'The grading standard is not on this phone. Sync first.';
+
+  @override
+  String get qcPack => 'Pack';
+
+  @override
+  String get qcPackingPrompt => 'Enter the packed weight.';
+
+  @override
+  String get qcPackedWeight => 'Packed weight';
+
+  @override
+  String get qcPackSize => 'Pack size';
+
+  @override
+  String get qcPacks => 'Packs';
+
+  @override
+  String get qcAvgPrice => 'Average price per kg';
+
+  @override
+  String qcGradedCeiling(String kg) {
+    return 'Graded: $kg kg';
+  }
+
+  @override
+  String qcPackAboveGraded(String packed, String graded) {
+    return '$packed kg is more than the $graded kg graded. Check the weight.';
+  }
+
+  @override
+  String get qcGradedUnknown => 'Graded weight unknown. Grade the batch first.';
+
+  @override
+  String get unitKg => 'kg';
+
+  @override
+  String get unitRupeePerKg => '₹/kg';
+
+  @override
+  String get unitGram => 'g';
+
+  @override
+  String get qcLotUnverified =>
+      'Not on this phone yet: farmer and weight come from the farmer\'s QR and are not checked. Sync to check.';
 }

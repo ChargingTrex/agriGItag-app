@@ -10,16 +10,13 @@
 
 import 'dart:convert';
 
-import 'package:agritrace_api/agritrace_api.dart' show InstrumentKind;
-import 'package:dio/dio.dart';
-import 'package:drift/drift.dart' show BooleanExpressionOperators, Value;
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../core/api/api_client.dart';
 import '../../core/db/database.dart';
 import '../../core/db/providers.dart';
 import '../../core/l10n/gen/app_localizations.dart';
@@ -31,6 +28,7 @@ import '../event_log/event_log_controller.dart';
 import '../officer_assist/assist_controller.dart';
 import '../officer_home/officer_button.dart';
 import '../onboarding_farmer/onboarding_notifier.dart' show assistSessionKey;
+import '../qc_home/qc_common.dart' show qcInstrumentsProvider;
 
 /// Entry type of a reading; M02 sends it as push kind `quality_reading` with the payload as `data` (QualityReadingIn
 /// without `client_id`: the entry id is the reading id).
@@ -45,41 +43,15 @@ const _moistureMeter = 'moisture_meter';
 bool calibrationExpired(DateTime due, DateTime now) =>
     DateTime(now.year, now.month, now.day).isAfter(DateTime(due.year, due.month, due.day));
 
-/// The FPO's moisture meters from the Instruments table, refreshed from `GET /v1/instruments` first when there is
-/// signal.
-///
-/// shortcut: the sync pull has no instrument entity, so this screen fetches them itself (one page, 50 meters); move it
-///   into M02's pull when M11's QC screens need instruments too.
-final moistureMetersProvider = FutureProvider.autoDispose<List<Instrument>>((ref) async {
-  final db = ref.watch(appDatabaseProvider);
-  try {
-    final page = await ref.read(apiClientProvider).api.getQualityApi().listInstrumentsV1InstrumentsGet(active: true);
-    final items = page.data!.items;
-    await db.batch((b) {
-      // Meters deactivated (or removed) on the server stop being choices: the server refuses their readings.
-      b.deleteWhere(
-        db.instruments,
-        (i) => i.kind.equals(_moistureMeter) & i.instrumentId.isNotIn([for (final m in items) m.id]),
-      );
-      for (final i in items) {
-        final due = i.calibrationDueOn;
-        // No due date: the server refuses every reading with it, so it never becomes a choice.
-        if (due == null || i.kind != InstrumentKind.moistureMeter) continue;
-        b.insertAllOnConflictUpdate(db.instruments, [
-          InstrumentsCompanion.insert(
-            instrumentId: i.id,
-            kind: _moistureMeter,
-            label: '${i.makeModel} ${i.serialNo}',
-            calibrationDueDate: due.toDateTime(),
-          ),
-        ]);
-      }
-    });
-  } on DioException {
-    // No signal: the meters stored last time are used.
-  }
-  return (db.select(db.instruments)..where((i) => i.kind.equals(_moistureMeter))).get();
-});
+/// The FPO's moisture meters: M11's instrument mirror (`qcInstrumentsProvider`: `GET /v1/instruments` replaces the
+/// cached rows when there is signal, the cache is used offline; D-036), filtered to moisture meters. One fetch for
+/// both the officer and the QC screens, so neither overwrites the other's rows. Throws what Drift throws.
+final moistureMetersProvider = FutureProvider.autoDispose<List<Instrument>>(
+  (ref) async => [
+    for (final i in await ref.watch(qcInstrumentsProvider.future))
+      if (i.kind == _moistureMeter) i,
+  ],
+);
 
 /// The moisture reading screen for the assisted farmer.
 class MoistureScreen extends ConsumerStatefulWidget {

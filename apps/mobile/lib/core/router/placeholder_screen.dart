@@ -3,9 +3,9 @@
 // Requirement: plan §7.2 M00 (placeholder screens showing the role name; locale switch re-renders the
 //   sample screen in Tamil), UserFlows §Design rules "Language first" (switched with one button);
 //   UserFlows §When things go wrong (never an error code: one picture, one sentence read aloud, one button).
-// Callers: app_router.dart routes /officer, /qc, /assist/:farmerId, /home/farm and its errorBuilder (NotFoundScreen,
+// Callers: app_router.dart routes /officer, /assist/:farmerId, /home/farm and its errorBuilder (NotFoundScreen,
 //   also M08 history detail for an unknown entry). M08 replaced the Sell, Money and settings placeholders
-//   (features/sell, money, settings); M09 (my farm), M10 (officer, assist) and M11 (QC) replace the rest.
+//   (features/sell, money, settings); M09 (my farm), M10 (officer, assist) replace the rest; M11 put the QC home on /qc.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

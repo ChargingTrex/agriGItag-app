@@ -1139,5 +1139,393 @@
   "flagFixSent": "Fix sent, awaiting the re-check.",
   "@flagFixSent": {
     "description": "Flag detail line when this phone has a correction of the flagged entry that the server has not answered yet."
+  },
+  "assistFor": "Helping {farmerId}",
+  "@assistFor": {
+    "description": "Title of the assist-mode placeholder: the field officer is entering data for this farmer.",
+    "placeholders": {
+      "farmerId": {
+        "type": "String",
+        "example": "F-0042"
+      }
+    }
+  },
+  "qcHomePrompt": "Scan a lot to receive it, or grade a batch.",
+  "@qcHomePrompt": {
+    "description": "Spoken prompt of the QC home screen (M11)."
+  },
+  "qcReceiveLot": "Receive lot",
+  "@qcReceiveLot": {
+    "description": "QC home button that opens the lot scanner (intake)."
+  },
+  "qcGradeBatch": "Grade batch",
+  "@qcGradeBatch": {
+    "description": "QC home button that opens the batch list (grading and packing)."
+  },
+  "qcScanPrompt": "Point the camera at the lot's QR code.",
+  "@qcScanPrompt": {
+    "description": "Spoken prompt of the lot scanner."
+  },
+  "qcPickLot": "Pick lot",
+  "@qcPickLot": {
+    "description": "Scanner fallback button: pick the lot from the list of ready lots instead of scanning."
+  },
+  "qcPickLotPrompt": "Tap the lot to receive.",
+  "@qcPickLotPrompt": {
+    "description": "Spoken prompt above the list of ready lots."
+  },
+  "qcNoReadyLots": "No lot on this phone is ready to sell. Sync and try again.",
+  "@qcNoReadyLots": {
+    "description": "Shown when the ready-lot list is empty."
+  },
+  "qcLotNotFound": "This lot is not on this phone. Sync and scan again.",
+  "@qcLotNotFound": {
+    "description": "Shown when a scanned code matches no lot on the phone."
+  },
+  "qcLot": "Lot",
+  "@qcLot": {
+    "description": "Label of the lot id on the lot card."
+  },
+  "qcFarmer": "Farmer",
+  "@qcFarmer": {
+    "description": "Label of the farmer on the lot card."
+  },
+  "qcPacked": "Packed",
+  "@qcPacked": {
+    "description": "Label of the farmer's packed quantity on the lot card."
+  },
+  "qcIntakePrompt": "Weigh the bags, then take a moisture reading.",
+  "@qcIntakePrompt": {
+    "description": "Spoken prompt of the intake check screen."
+  },
+  "qcReceived": "Received weight",
+  "@qcReceived": {
+    "description": "Intake field: weight received at the gate (kg)."
+  },
+  "qcPricePerKg": "Price per kg",
+  "@qcPricePerKg": {
+    "description": "Intake field: price paid per kg (optional, field config)."
+  },
+  "qcMoisture": "Moisture",
+  "@qcMoisture": {
+    "description": "Intake field: moisture reading (%)."
+  },
+  "qcWeightMismatch": "{received} kg received but {packed} kg packed: more than 5 % apart.",
+  "@qcWeightMismatch": {
+    "description": "Orange check when received and packed weights differ by more than 5 %.",
+    "placeholders": {
+      "received": {
+        "type": "String",
+        "example": "230"
+      },
+      "packed": {
+        "type": "String",
+        "example": "200"
+      }
+    }
+  },
+  "qcWeightOk": "Weight matches the packed quantity.",
+  "@qcWeightOk": {
+    "description": "Green check when received and packed weights are within 5 %."
+  },
+  "qcMoistureHigh": "Moisture {value} % is above the {limit} % limit.",
+  "@qcMoistureHigh": {
+    "description": "Orange check when the intake moisture is above the profile gate.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "11.5"
+      },
+      "limit": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "qcMoistureOk": "Moisture is within the {limit} % limit.",
+  "@qcMoistureOk": {
+    "description": "Green check when the intake moisture is within the profile gate.",
+    "placeholders": {
+      "limit": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "qcMeter": "Measured with",
+  "@qcMeter": {
+    "description": "Heading of the instrument choice."
+  },
+  "qcCalibrationExpired": "Calibration expired {date}. Use another meter.",
+  "@qcCalibrationExpired": {
+    "description": "Reason an instrument cannot be picked (FR50); date like 14 Feb.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "qcCalibrationDue": "Calibrated until {date}",
+  "@qcCalibrationDue": {
+    "description": "Calibration due date under an instrument; date like 14 Feb.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "qcBluetoothMeter": "Instrument (Bluetooth)",
+  "@qcBluetoothMeter": {
+    "description": "Disabled instrument option for Bluetooth meters (not in the pilot)."
+  },
+  "qcComingSoon": "Coming soon",
+  "@qcComingSoon": {
+    "description": "Why the Bluetooth option is disabled."
+  },
+  "qcNoMeter": "No meter on this phone. Ask the FPO admin to register one.",
+  "@qcNoMeter": {
+    "description": "Shown when no instrument is stored on the phone."
+  },
+  "qcVisual": "Visual",
+  "@qcVisual": {
+    "description": "Instrument choice for a visual reading (colour card, FR44)."
+  },
+  "qcPickMeter": "Pick the instrument to save the reading.",
+  "@qcPickMeter": {
+    "description": "Why Save is disabled: a reading has no instrument."
+  },
+  "qcFillRequired": "Enter {field} to save.",
+  "@qcFillRequired": {
+    "description": "Why Save is disabled: a required field (field config) is empty.",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "Received weight"
+      }
+    }
+  },
+  "qcSave": "Save",
+  "@qcSave": {
+    "description": "Save button of the QC screens."
+  },
+  "qcSaved": "Saved. It is sent when there is signal.",
+  "@qcSaved": {
+    "description": "Spoken confirmation after a QC save."
+  },
+  "qcDone": "Done",
+  "@qcDone": {
+    "description": "Button back to the QC home after a save."
+  },
+  "qcBatchesPrompt": "Tap the batch to grade or pack.",
+  "@qcBatchesPrompt": {
+    "description": "Spoken prompt of the batch list."
+  },
+  "qcBatchesOffline": "No signal. Batches need the internet.",
+  "@qcBatchesOffline": {
+    "description": "Shown when the batch list cannot be loaded."
+  },
+  "qcRetry": "Try again",
+  "@qcRetry": {
+    "description": "Button that reloads the batch list."
+  },
+  "qcNoBatches": "No batch is waiting for grading or packing.",
+  "@qcNoBatches": {
+    "description": "Shown when the batch list is empty."
+  },
+  "qcBatchLine": "Batch {code}: {kg} kg",
+  "@qcBatchLine": {
+    "description": "One batch in the list: code and received weight.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "FGP8T4033HM7"
+      },
+      "kg": {
+        "type": "String",
+        "example": "320"
+      }
+    }
+  },
+  "qcToGrade": "To grade",
+  "@qcToGrade": {
+    "description": "Batch status in the list: waiting for grading."
+  },
+  "qcToPack": "To pack",
+  "@qcToPack": {
+    "description": "Batch status in the list: graded, waiting for packing."
+  },
+  "qcGradingPrompt": "Enter each reading. The grade shows below.",
+  "@qcGradingPrompt": {
+    "description": "Spoken prompt of the grading form."
+  },
+  "qcGradedWeight": "Graded weight",
+  "@qcGradedWeight": {
+    "description": "Grading field: graded quantity in kg."
+  },
+  "qcGrade": "Grade: {grade}",
+  "@qcGrade": {
+    "description": "Grade preview computed on the phone from the standard.",
+    "placeholders": {
+      "grade": {
+        "type": "String",
+        "example": "Standard"
+      }
+    }
+  },
+  "qcStandardEdition": "{name}, edition {edition}",
+  "@qcStandardEdition": {
+    "description": "Standard and edition the grade preview used.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "AGMARK Dry Chillies"
+      },
+      "edition": {
+        "type": "String",
+        "example": "2019"
+      }
+    }
+  },
+  "qcGradeMissing": "No grade yet. Missing: {list}",
+  "@qcGradeMissing": {
+    "description": "Grey grade preview listing the required readings still missing.",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Moisture"
+      }
+    }
+  },
+  "qcDeclaredGrade": "Declared grade",
+  "@qcDeclaredGrade": {
+    "description": "Heading of the declared-grade choice."
+  },
+  "qcDeclaredAbove": "Declared {declared} is above the computed {computed}. The admin cannot approve it.",
+  "@qcDeclaredAbove": {
+    "description": "Warning when the declared grade is better than the computed one (FR49).",
+    "placeholders": {
+      "declared": {
+        "type": "String",
+        "example": "Special"
+      },
+      "computed": {
+        "type": "String",
+        "example": "Standard"
+      }
+    }
+  },
+  "qcRange": "Range {min} to {max} {unit}",
+  "@qcRange": {
+    "description": "Plausible range under a grading input.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "0"
+      },
+      "max": {
+        "type": "String",
+        "example": "100"
+      },
+      "unit": {
+        "type": "String",
+        "example": "%"
+      }
+    }
+  },
+  "qcOutOfRange": "Outside {min} to {max} {unit}: check the reading.",
+  "@qcOutOfRange": {
+    "description": "A reading outside the plausible range (FR50); blocks Save.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "0"
+      },
+      "max": {
+        "type": "String",
+        "example": "100"
+      },
+      "unit": {
+        "type": "String",
+        "example": "%"
+      }
+    }
+  },
+  "qcSourceNotAllowed": "Not accepted from this source. Use a meter or a lab.",
+  "@qcSourceNotAllowed": {
+    "description": "A reading whose source the standard does not accept (FR44); blocks Save."
+  },
+  "qcNoStandards": "The grading standard is not on this phone. Sync first.",
+  "@qcNoStandards": {
+    "description": "Shown when the standards bundle part has no profile for the crop."
+  },
+  "qcPack": "Pack",
+  "@qcPack": {
+    "description": "Button from a saved grading to final packing."
+  },
+  "qcPackingPrompt": "Enter the packed weight.",
+  "@qcPackingPrompt": {
+    "description": "Spoken prompt of the final packing screen."
+  },
+  "qcPackedWeight": "Packed weight",
+  "@qcPackedWeight": {
+    "description": "Final packing field: packed quantity in kg."
+  },
+  "qcPackSize": "Pack size",
+  "@qcPackSize": {
+    "description": "Final packing field: size of one pack in grams."
+  },
+  "qcPacks": "Packs",
+  "@qcPacks": {
+    "description": "Final packing field: number of packs."
+  },
+  "qcAvgPrice": "Average price per kg",
+  "@qcAvgPrice": {
+    "description": "Final packing field: average sale price per kg."
+  },
+  "qcGradedCeiling": "Graded: {kg} kg",
+  "@qcGradedCeiling": {
+    "description": "Graded quantity, the ceiling for packing.",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "180"
+      }
+    }
+  },
+  "qcPackAboveGraded": "{packed} kg is more than the {graded} kg graded. Check the weight.",
+  "@qcPackAboveGraded": {
+    "description": "Blocks Save when the packed weight is above the graded weight.",
+    "placeholders": {
+      "packed": {
+        "type": "String",
+        "example": "200"
+      },
+      "graded": {
+        "type": "String",
+        "example": "180"
+      }
+    }
+  },
+  "qcGradedUnknown": "Graded weight unknown. Grade the batch first.",
+  "@qcGradedUnknown": {
+    "description": "Blocks Save when no graded weight is known for the batch."
+  },
+  "unitKg": "kg",
+  "@unitKg": {
+    "description": "Unit: kilograms."
+  },
+  "unitRupeePerKg": "₹/kg",
+  "@unitRupeePerKg": {
+    "description": "Unit: rupees per kilogram."
+  },
+  "unitGram": "g",
+  "@unitGram": {
+    "description": "Unit: grams."
+  },
+  "qcLotUnverified": "Not on this phone yet: farmer and weight come from the farmer's QR and are not checked. Sync to check.",
+  "@qcLotUnverified": {
+    "description": "Lot card line when the lot is known only from the farmer's Sell QR (checksum, not a signature)."
   }
 }

@@ -8,6 +8,7 @@
 //   M10 adds the officer home, flags and assist mode (UserFlows §Field officer flows): under `/assist/:farmerId` the
 //   farmer's home and event screens run again for the assisted farmer, only while that farmer's assist session runs.
 //   M08 adds Sell, Money, History (+ entry detail) and the real Settings (UserFlows §Selling to the FPO).
+//   M11 puts the QC home on /qc (UserFlows §Grade a batch).
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
 //   test/widget/router_test.dart.
 
@@ -35,6 +36,7 @@ import '../../features/officer_flags/flags_screen.dart';
 import '../../features/officer_home/officer_home_screen.dart';
 import '../../features/officer_moisture/moisture_screen.dart';
 import '../../features/onboarding_farmer/onboarding_wizard.dart';
+import '../../features/qc_home/qc_home_screen.dart';
 import '../../features/sell/sell_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../l10n/gen/app_localizations.dart';
@@ -187,10 +189,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(
-        path: '/qc',
-        builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).roleQc),
-      ),
+      GoRoute(path: '/qc', builder: (context, _) => const QcHomeScreen()),
       // DECISION D-044: assist mode is this route scope: the farmer screens again, for the assisted farmer, open only
       //   while that farmer's assist session runs (typed URL, app restarted → officer home).
       //   ADV: no copy of the farmer UI; every entry made here gets assistMode and the session (CLAUDE.md §6, D-032).

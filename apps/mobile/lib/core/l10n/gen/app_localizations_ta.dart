@@ -787,4 +787,226 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get flagFixSent => 'திருத்தம் அனுப்பப்பட்டது; மறு சரிபார்ப்புக்குக் காத்திருக்கிறது.';
+
+  @override
+  String assistFor(String farmerId) {
+    return 'உதவி: $farmerId';
+  }
+
+  @override
+  String get qcHomePrompt => 'பெறுவதற்கு லாட்டை ஸ்கேன் செய்யுங்கள், அல்லது தொகுப்பைத் தரம் பிரியுங்கள்.';
+
+  @override
+  String get qcReceiveLot => 'லாட் பெறு';
+
+  @override
+  String get qcGradeBatch => 'தரம் பிரி';
+
+  @override
+  String get qcScanPrompt => 'லாட்டின் QR குறியீட்டை நோக்கி கேமராவைக் காட்டுங்கள்.';
+
+  @override
+  String get qcPickLot => 'லாட் தேர்வு';
+
+  @override
+  String get qcPickLotPrompt => 'பெற வேண்டிய லாட்டைத் தொடுங்கள்.';
+
+  @override
+  String get qcNoReadyLots => 'இந்தப் போனில் விற்கத் தயாரான லாட் இல்லை. ஒத்திசைத்து மீண்டும் முயலுங்கள்.';
+
+  @override
+  String get qcLotNotFound => 'இந்த லாட் இந்தப் போனில் இல்லை. ஒத்திசைத்து மீண்டும் ஸ்கேன் செய்யுங்கள்.';
+
+  @override
+  String get qcLot => 'லாட்';
+
+  @override
+  String get qcFarmer => 'விவசாயி';
+
+  @override
+  String get qcPacked => 'கட்டியது';
+
+  @override
+  String get qcIntakePrompt => 'மூட்டைகளை எடை போடுங்கள், பிறகு ஈரப்பதம் அளவிடுங்கள்.';
+
+  @override
+  String get qcReceived => 'பெற்ற எடை';
+
+  @override
+  String get qcPricePerKg => 'கிலோ விலை';
+
+  @override
+  String get qcMoisture => 'ஈரப்பதம்';
+
+  @override
+  String qcWeightMismatch(String received, String packed) {
+    return '$received கிலோ பெறப்பட்டது, ஆனால் $packed கிலோ கட்டப்பட்டது: 5 %-க்கு மேல் வேறுபாடு.';
+  }
+
+  @override
+  String get qcWeightOk => 'எடை கட்டிய அளவுடன் பொருந்துகிறது.';
+
+  @override
+  String qcMoistureHigh(String value, String limit) {
+    return 'ஈரப்பதம் $value %, வரம்பு $limit %-ஐ விட அதிகம்.';
+  }
+
+  @override
+  String qcMoistureOk(String limit) {
+    return 'ஈரப்பதம் $limit % வரம்புக்குள் உள்ளது.';
+  }
+
+  @override
+  String get qcMeter => 'அளந்த கருவி';
+
+  @override
+  String qcCalibrationExpired(String date) {
+    return 'அளவுத்திருத்தம் $date அன்று காலாவதியானது. வேறு கருவியைப் பயன்படுத்துங்கள்.';
+  }
+
+  @override
+  String qcCalibrationDue(String date) {
+    return '$date வரை அளவுத்திருத்தம்';
+  }
+
+  @override
+  String get qcBluetoothMeter => 'கருவி (புளூடூத்)';
+
+  @override
+  String get qcComingSoon => 'விரைவில் வரும்';
+
+  @override
+  String get qcNoMeter => 'இந்தப் போனில் கருவி இல்லை. FPO நிர்வாகியிடம் பதிவு செய்யச் சொல்லுங்கள்.';
+
+  @override
+  String get qcVisual => 'கண்ணால்';
+
+  @override
+  String get qcPickMeter => 'அளவீட்டைச் சேமிக்க கருவியைத் தேர்ந்தெடுங்கள்.';
+
+  @override
+  String qcFillRequired(String field) {
+    return 'சேமிக்க $field உள்ளிடுங்கள்.';
+  }
+
+  @override
+  String get qcSave => 'சேமி';
+
+  @override
+  String get qcSaved => 'சேமிக்கப்பட்டது. சிக்னல் வந்ததும் அனுப்பப்படும்.';
+
+  @override
+  String get qcDone => 'முடிந்தது';
+
+  @override
+  String get qcBatchesPrompt => 'தரம் பிரிக்க அல்லது பொதி செய்ய தொகுப்பைத் தொடுங்கள்.';
+
+  @override
+  String get qcBatchesOffline => 'சிக்னல் இல்லை. தொகுப்புகளுக்கு இணையம் தேவை.';
+
+  @override
+  String get qcRetry => 'மீண்டும் முயல்';
+
+  @override
+  String get qcNoBatches => 'தரம் பிரிக்கவோ பொதி செய்யவோ தொகுப்பு இல்லை.';
+
+  @override
+  String qcBatchLine(String code, String kg) {
+    return 'தொகுப்பு $code: $kg கிலோ';
+  }
+
+  @override
+  String get qcToGrade => 'தரம் பிரிக்க';
+
+  @override
+  String get qcToPack => 'பொதி செய்ய';
+
+  @override
+  String get qcGradingPrompt => 'ஒவ்வொரு அளவீட்டையும் உள்ளிடுங்கள். தரம் கீழே தெரியும்.';
+
+  @override
+  String get qcGradedWeight => 'தரம் பிரித்த எடை';
+
+  @override
+  String qcGrade(String grade) {
+    return 'தரம்: $grade';
+  }
+
+  @override
+  String qcStandardEdition(String name, String edition) {
+    return '$name, பதிப்பு $edition';
+  }
+
+  @override
+  String qcGradeMissing(String list) {
+    return 'இன்னும் தரம் இல்லை. இல்லாதவை: $list';
+  }
+
+  @override
+  String get qcDeclaredGrade => 'அறிவித்த தரம்';
+
+  @override
+  String qcDeclaredAbove(String declared, String computed) {
+    return 'அறிவித்த $declared, கணக்கிட்ட $computed-ஐ விட உயர்ந்தது. நிர்வாகி இதை ஒப்புதல் அளிக்க முடியாது.';
+  }
+
+  @override
+  String qcRange(String min, String max, String unit) {
+    return 'வரம்பு $min முதல் $max $unit';
+  }
+
+  @override
+  String qcOutOfRange(String min, String max, String unit) {
+    return '$min முதல் $max $unit-க்கு வெளியே: அளவீட்டைச் சரிபாருங்கள்.';
+  }
+
+  @override
+  String get qcSourceNotAllowed => 'இந்த முறையில் ஏற்கப்படாது. கருவி அல்லது ஆய்வகம் பயன்படுத்துங்கள்.';
+
+  @override
+  String get qcNoStandards => 'தரநிலை இந்தப் போனில் இல்லை. முதலில் ஒத்திசையுங்கள்.';
+
+  @override
+  String get qcPack => 'பொதி செய்';
+
+  @override
+  String get qcPackingPrompt => 'பொதி செய்த எடையை உள்ளிடுங்கள்.';
+
+  @override
+  String get qcPackedWeight => 'பொதி எடை';
+
+  @override
+  String get qcPackSize => 'பொதி அளவு';
+
+  @override
+  String get qcPacks => 'பொதிகள்';
+
+  @override
+  String get qcAvgPrice => 'சராசரி கிலோ விலை';
+
+  @override
+  String qcGradedCeiling(String kg) {
+    return 'தரம் பிரித்தது: $kg கிலோ';
+  }
+
+  @override
+  String qcPackAboveGraded(String packed, String graded) {
+    return '$packed கிலோ, தரம் பிரித்த $graded கிலோவை விட அதிகம். எடையைச் சரிபாருங்கள்.';
+  }
+
+  @override
+  String get qcGradedUnknown => 'தரம் பிரித்த எடை தெரியவில்லை. முதலில் தரம் பிரியுங்கள்.';
+
+  @override
+  String get unitKg => 'கிலோ';
+
+  @override
+  String get unitRupeePerKg => '₹/கிலோ';
+
+  @override
+  String get unitGram => 'கி';
+
+  @override
+  String get qcLotUnverified =>
+      'இந்தப் போனில் இன்னும் இல்லை: விவசாயி, எடை விவசாயியின் QR-இலிருந்து வந்தவை, சரிபார்க்கப்படவில்லை. சரிபார்க்க ஒத்திசையுங்கள்.';
 }
