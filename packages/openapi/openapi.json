@@ -245,6 +245,45 @@
         "title": "Body_import_villages_v1_imports_villages_post",
         "type": "object"
       },
+      "BundleManifest": {
+        "description": "Every bundle part available to the caller, with version and ETag (FR4, plan \u00a713 C2).",
+        "properties": {
+          "parts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PartVersion"
+            },
+            "description": "Part name -> version and ETag. `gi_region` is absent while no region is in effect.",
+            "propertyNames": {
+              "$ref": "#/components/schemas/BundlePart"
+            },
+            "title": "Parts",
+            "type": "object"
+          }
+        },
+        "required": [
+          "parts"
+        ],
+        "title": "BundleManifest",
+        "type": "object"
+      },
+      "BundlePart": {
+        "description": "Offline reference-bundle parts (backend-design.md \u00a73; bodies per docs/agents/reports/M03.md).",
+        "enum": [
+          "plots",
+          "crops",
+          "inputs",
+          "standards",
+          "gi_region",
+          "farmer_profile",
+          "villages",
+          "fields",
+          "prompts",
+          "images",
+          "calendar"
+        ],
+        "title": "BundlePart",
+        "type": "string"
+      },
       "ChangeKind": {
         "description": "Why an event version exists (FR25 corrections with reason, FR59 system entries).",
         "enum": [
@@ -998,7 +1037,7 @@
                 "type": "null"
               }
             ],
-            "description": "{thumb_url, medium_url, jpeg_url, width, height} once variants exist.",
+            "description": "{thumb_url, medium_url, jpeg_url, width, height} once variants exist; each `*_url` is a presigned GET valid for 1 hour (the evidence bucket is private). Re-read for fresh links.",
             "title": "Variants"
           }
         },
@@ -5480,6 +5519,27 @@
         "title": "ParameterResult",
         "type": "object"
       },
+      "PartVersion": {
+        "description": "Version and ETag of one bundle part as the caller would download it now.",
+        "properties": {
+          "etag": {
+            "description": "Strong ETag of the part body; send it in `If-None-Match` for a 304.",
+            "title": "Etag",
+            "type": "string"
+          },
+          "version": {
+            "description": "Part version: from `reference_versions` for database-fed parts (only grows), a content fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`.",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "etag"
+        ],
+        "title": "PartVersion",
+        "type": "object"
+      },
       "PhotoConfirmOut": {
         "description": "Whether storage holds the photo.",
         "properties": {
@@ -6882,6 +6942,80 @@
         "title": "ProfileVersionStatus",
         "type": "string"
       },
+      "PullChange": {
+        "description": "One server-side change for the phone's local copy.",
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "description": "The record, lean; decimals are strings, times ISO 8601 UTC.",
+            "title": "Data",
+            "type": "object"
+          },
+          "entity": {
+            "description": "Kind of record in `data`.",
+            "enum": [
+              "flag",
+              "lot",
+              "event",
+              "intake",
+              "notification",
+              "photo_pending"
+            ],
+            "title": "Entity",
+            "type": "string"
+          },
+          "op": {
+            "const": "upsert",
+            "description": "Always `upsert`: replace the local row with the same `id`.",
+            "title": "Op",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "op",
+          "data"
+        ],
+        "title": "PullChange",
+        "type": "object"
+      },
+      "PullOut": {
+        "description": "One page of changes since the cursor (backend-design.md \u00a73).",
+        "properties": {
+          "changes": {
+            "description": "Changes ordered by change time, then id.",
+            "items": {
+              "$ref": "#/components/schemas/PullChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "has_more": {
+            "description": "True when another page is waiting; call again with `next_cursor`.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor to send next time; equals the sent cursor when nothing changed.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "changes",
+          "next_cursor",
+          "has_more"
+        ],
+        "title": "PullOut",
+        "type": "object"
+      },
       "QualityReadingIn": {
         "description": "One measured parameter of a lot or batch at a stage (FR42\u2013FR46). Also the sync `quality_reading` data.\n\nExactly one of `lot_id` and `batch_id` is set.",
         "properties": {
@@ -7439,6 +7573,55 @@
         ],
         "title": "ReadingStage",
         "type": "string"
+      },
+      "ReferenceOut": {
+        "description": "Parts whose version differs from the ones the phone holds (plan \u00a713 C2).",
+        "properties": {
+          "parts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ReferencePart"
+            },
+            "description": "Changed or new parts only.",
+            "propertyNames": {
+              "$ref": "#/components/schemas/BundlePart"
+            },
+            "title": "Parts",
+            "type": "object"
+          }
+        },
+        "required": [
+          "parts"
+        ],
+        "title": "ReferenceOut",
+        "type": "object"
+      },
+      "ReferencePart": {
+        "description": "A changed bundle part with its body.",
+        "properties": {
+          "body": {
+            "additionalProperties": true,
+            "description": "The part body, as `GET /v1/sync/bundle/{part}` returns it.",
+            "title": "Body",
+            "type": "object"
+          },
+          "etag": {
+            "description": "Strong ETag of the part body; send it in `If-None-Match` for a 304.",
+            "title": "Etag",
+            "type": "string"
+          },
+          "version": {
+            "description": "Part version: from `reference_versions` for database-fed parts (only grows), a content fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`.",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "etag",
+          "body"
+        ],
+        "title": "ReferencePart",
+        "type": "object"
       },
       "RefreshIn": {
         "description": "Rotate the refresh token. Web clients omit the body field and send the httpOnly cookie.",
@@ -13914,6 +14097,187 @@
         ]
       }
     },
+    "/v1/sync/bundle": {
+      "get": {
+        "description": "Every offline reference part available to you with its `version` and strong `etag`: `plots` (yours, or the FPO's for officers), `crops` (with `event_schema {mandatory, tracks}`), `inputs` (global + FPO), `standards` (full profile rules per crop), `gi_region` (simplified outline \u2264 50 KB + buffer; absent while none is in effect), `farmer_profile`, `villages` (the FPO's district), `fields` (field configuration), `prompts`, `images` (product-picture URLs) and `calendar`. Download a part with `GET /v1/sync/bundle/{part}`; later ask `GET /v1/sync/reference?since=` for changes only.",
+        "operationId": "sync_bundle_v1_sync_bundle_get",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleManifest"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List reference-bundle parts",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
+    "/v1/sync/bundle/{part}": {
+      "get": {
+        "description": "The part body in the shape the app parses (docs/api/conventions.md \"Reference bundles\"). Sends a strong `ETag`; send it back in `If-None-Match` to get 304 without a body. Unknown part \u2192 422.",
+        "operationId": "sync_bundle_part_v1_sync_bundle__part__get",
+        "parameters": [
+          {
+            "description": "Part name, as listed by `GET /v1/sync/bundle`.",
+            "in": "path",
+            "name": "part",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BundlePart",
+              "description": "Part name, as listed by `GET /v1/sync/bundle`."
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Sync Bundle Part V1 Sync Bundle  Part  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Unchanged; keep your copy."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`gi_region_missing`: `gi_region` asked while no region is in effect."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Download one reference-bundle part",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
     "/v1/sync/photos/confirm": {
       "post": {
         "description": "Call after each presigned PUT succeeded. For each photo the server checks storage: `received` means the object is there (its version id is stored and verification of SHA-256 and EXIF time/GPS is queued), `missing` means upload again (ask for fresh URLs by resending the entry) and confirm again. Unknown ids and photos of entries someone else pushed also answer `missing`. Bodies over 256 KB \u2192 413 `payload_too_large`.",
@@ -14000,6 +14364,127 @@
           }
         ],
         "summary": "Confirm uploaded photos",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
+    "/v1/sync/pull": {
+      "get": {
+        "description": "Changes since `cursor`, oldest first: `flag`, `lot`, `event` (current version, e.g. after an officer correction; photo variant URLs are presigned for 1 hour), `intake`, `notification` (yours) and, on the last page, `photo_pending` (photos still not uploaded 24 h after their entry: resend the entry to get fresh upload URLs). Farmers see their own lots, plots and events; other roles the whole FPO. Every change is an `upsert` by `id`. Store `next_cursor` and call again while `has_more`. Changes appear about 30 s after they are written. An invalid cursor \u2192 422 `validation_error`.",
+        "operationId": "sync_pull_v1_sync_pull_get",
+        "parameters": [
+          {
+            "description": "`next_cursor` of your previous pull; omit the first time.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of your previous pull; omit the first time.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Most changes per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "description": "Most changes per page.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`: invalid cursor or limit."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Pull server-side changes",
         "tags": [
           "events",
           "events"
@@ -14108,6 +14593,116 @@
           }
         ],
         "summary": "Push offline entries",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
+    "/v1/sync/reference": {
+      "get": {
+        "description": "Delta sync (plan \u00a713 C2). `since` lists the part versions you hold as `<part>:<version>` joined by commas, e.g. `plots:41,crops:7,fields:90210`. Answers the parts whose version differs from yours, each compared on its own, with body, version and etag; parts you do not list are new to you and included. 304 when nothing changed. A malformed `since` \u2192 422 `validation_error`.",
+        "operationId": "sync_reference_v1_sync_reference_get",
+        "parameters": [
+          {
+            "description": "Part versions you hold: `<part>:<version>,...`; omit for all.",
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 1000,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Part versions you hold: `<part>:<version>,...`; omit for all.",
+              "title": "Since"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Unchanged; keep your copy."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`: `since` is not `<part>:<version>,...`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Changed reference-bundle parts",
         "tags": [
           "events",
           "events"
