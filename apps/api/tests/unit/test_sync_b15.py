@@ -5,16 +5,19 @@ Covers the `farmer` and `assist_session` kinds' role checks, the plot assist-far
 
 Serves: B15 acceptance (D-031 farmer kind idempotent and officer/admin only, D-032 per-entry assist context:
 unknown session → `assist_session_invalid` and the next entry still runs, a session for farmer A on farmer B
-→ `forbidden`, the `farmer` kind ignores assist), CLAUDE.md §6. The database paths are covered by
+→ `forbidden`, the `farmer` kind ignores assist), B15 r2 (a `farmer` entry that loses the insert race to the
+online POST is a `duplicate`, review P2-2), CLAUDE.md §6. The database paths are covered by
 tests/integration/test_sync_b15.py.
 Callers: pytest (`make test-unit`); no Docker needed.
 """
 
 import uuid
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from agritrace.core import audit
 from agritrace.core.audit import AuditContext, reset_audit_context, set_audit_context
@@ -22,7 +25,7 @@ from agritrace.core.auth import CurrentUser
 from agritrace.core.enums import Role
 from agritrace.core.errors import ClientIdConflictError, ForbiddenError
 from agritrace.modules.events import service
-from agritrace.modules.events.schemas import SyncPushIn, SyncResult
+from agritrace.modules.events.schemas import SyncEntry, SyncPushIn, SyncResult
 from agritrace.modules.identity import service as identity_service
 from agritrace.modules.registry import service as registry_service
 from agritrace.modules.registry.models import Farmer
@@ -210,3 +213,46 @@ async def test_farmer_client_id_resend_and_foreign_fpo() -> None:
     other = CurrentUser(user_id=uuid.uuid4(), fpo_id=uuid.uuid4(), role=Role.FIELD_OFFICER)
     with pytest.raises(ClientIdConflictError):
         await registry_service.create_farmer(_Session(stored), other, body)  # type: ignore[arg-type]
+
+
+async def test_farmer_entry_that_loses_the_insert_race_is_a_duplicate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """B15 r2 (review P2-2): first insert hits the primary key (online POST won); the retry is `duplicate`.
+
+    Args:
+        monkeypatch: replaces registry's `create_farmer_from_sync`.
+    """
+    farmer = SimpleNamespace(id=uuid.uuid4())
+    calls: list[str] = []
+
+    async def create(*_: object) -> tuple[object, bool]:
+        """Fail like a lost race on the first call, find the stored farmer on the second.
+
+        Returns:
+            The stored farmer, not created now.
+
+        Raises:
+            IntegrityError: on the first call.
+        """
+        calls.append("create")
+        if len(calls) == 1:
+            raise IntegrityError("INSERT INTO farmers", {}, Exception("duplicate key"))
+        return farmer, False
+
+    class Session:
+        """Session stand-in recording rollback and commit."""
+
+        async def rollback(self) -> None:
+            """Record a rollback."""
+            calls.append("rollback")
+
+        async def commit(self) -> None:
+            """Record a commit."""
+            calls.append("commit")
+
+    monkeypatch.setattr(registry_service, "create_farmer_from_sync", create)
+    entry = SyncEntry(client_id=farmer.id, kind="farmer", data={"name": "Muthu"})
+    result = await service._push_farmer(Session(), OFFICER, entry, "1.0.3")  # type: ignore[arg-type]
+    assert (result.status, result.server_id) == ("duplicate", farmer.id)
+    assert calls == ["create", "rollback", "create", "commit"]

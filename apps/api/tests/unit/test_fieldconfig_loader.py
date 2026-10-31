@@ -138,6 +138,10 @@ def test_features_and_public_fields() -> None:
     assert fieldconfig.features_for("NO_FILE_FPO").producer_groups is False
     assert fieldconfig.features_for(DEMO).boundary_walk is True
     assert fieldconfig.features_for("NO_FILE_FPO").grading_loss_warn_pct == 15
+    assert "phone" not in fieldconfig.public_fields("farmer", None)
+    assert {"pin", "land_record_ref", "walked_boundary"}.isdisjoint(fieldconfig.public_fields("plot", None))
+    part = fieldconfig.bundle_part(DEMO)
+    assert part["version"].startswith('"') and "soil_type" not in str(part["entities"]["plot"])
 
 
 def test_tenant_overrides_grading_loss_limit(config_dir: Path) -> None:
@@ -149,10 +153,6 @@ def test_tenant_overrides_grading_loss_limit(config_dir: Path) -> None:
     _replace(config_dir / TENANT, "features:", "features:\n  grading_loss_warn_pct: 5")
     assert fieldconfig.features_for(DEMO).grading_loss_warn_pct == 5
     assert fieldconfig.features_for("NO_FILE_FPO").grading_loss_warn_pct == 15
-    assert "phone" not in fieldconfig.public_fields("farmer", None)
-    assert {"pin", "land_record_ref", "walked_boundary"}.isdisjoint(fieldconfig.public_fields("plot", None))
-    part = fieldconfig.bundle_part(DEMO)
-    assert part["version"].startswith('"') and "soil_type" not in str(part["entities"]["plot"])
 
 
 def test_public_fields_honour_tenant_hiding(config_dir: Path) -> None:

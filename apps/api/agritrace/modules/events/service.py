@@ -783,18 +783,26 @@ async def _push_farmer(session: AsyncSession, user: CurrentUser, entry: SyncEntr
     Raises:
         AppError: every error of `registry.service.create_farmer_from_sync` (`forbidden`, `validation_error`,
             `client_id_conflict`, `farmer_phone_taken`, `field_required`).
+        sqlalchemy.exc.IntegrityError: the retry after a lost race fails on a constraint again.
 
     Side effects:
-        Commits the farmer and its `users` / `memberships` / `audit_log` rows.
+        Commits the farmer and its `users` / `memberships` / `audit_log` rows. On a lost insert race (the
+        same id or phone committed by a concurrent request) rolls back and runs once more.
     """
     # DECISION D-031: offline onboarding is a push kind idempotent on the phone's farmer id, like plots.
     #   ADV: one outbox path (batching, retry, per-entry result); consent and plot entries keep the id.
     #   COMPROMISE: one more kind in the server, both clients and the spec; a rejected farmer leaves its
     #     consent and plot entries rejected too, for the officer to fix.
-    farmer, created = await registry_service.create_farmer_from_sync(
-        session, user, {**entry.data, "client_id": str(entry.client_id)}
-    )
-    await session.commit()
+    data = {**entry.data, "client_id": str(entry.client_id)}
+    try:
+        farmer, created = await registry_service.create_farmer_from_sync(session, user, data)
+        await session.commit()
+    except IntegrityError:
+        # The online POST with the same id (or phone) committed first; the second run sees its row and
+        # answers duplicate, client_id_conflict or farmer_phone_taken instead of a 500.
+        await session.rollback()
+        farmer, created = await registry_service.create_farmer_from_sync(session, user, data)
+        await session.commit()
     return SyncResult(
         client_id=entry.client_id, status="accepted" if created else "duplicate", server_id=farmer.id
     )
@@ -817,6 +825,10 @@ async def _push_assist_session(
     Raises:
         AppError: every error of `identity.service.start_assist_from_sync` (`forbidden`, `validation_error`,
             `not_found`, `conflict`).
+
+    Side effects:
+        A new session inserts an `assist_sessions` row and commits through `start_assist`; that table is
+        not `Audited`, so no `audit_log` row is written (the row itself records officer, farmer and start).
     """
     row, created = await identity_service.start_assist_from_sync(
         session, user, {**entry.data, "client_id": str(entry.client_id)}
