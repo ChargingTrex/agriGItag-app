@@ -8,6 +8,7 @@ Callers: pytest (`make test-unit`); no Docker needed.
 
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import pytest
 
@@ -146,3 +147,71 @@ def test_sqlstate_23001_maps_to_append_only_violation() -> None:
     assert isinstance(append_only_error(Wrapped("23001")), AppendOnlyViolationError)
     assert append_only_error(Wrapped("23505")) is None
     assert append_only_error(ValueError()) is None
+
+
+async def test_overlapping_retry_that_loses_the_version_check_is_a_duplicate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A retry blocked behind the first send fails `version_no` but the same client id is stored by then.
+
+    Args:
+        monkeypatch: replaces the insert step and the re-read.
+    """
+    from agritrace.modules.events import service
+
+    stored = service.Written(uuid.uuid4(), uuid.uuid4(), created=False)
+    found: list[service.Written | None] = [stored]
+
+    async def stale(*_: object) -> service.Written:
+        """Fail like a retry that waited for the first send's row lock.
+
+        Returns:
+            Never.
+
+        Raises:
+            StaleVersionError: always.
+        """
+        raise StaleVersionError(details={"expected_version_no": 3, "sent": 2})
+
+    async def existing(*_: object) -> service.Written | None:
+        """Return what the first send committed (or nothing).
+
+        Returns:
+            The stored version, or None.
+        """
+        return found[0]
+
+    class Session:
+        """Session stand-in recording rollback and commit."""
+
+        calls: list[str] = []
+
+        async def rollback(self) -> None:
+            """Record a rollback."""
+            self.calls.append("rollback")
+
+        async def commit(self) -> None:
+            """Record a commit."""
+            self.calls.append("commit")
+
+    monkeypatch.setattr(service, "_add_version", stale)
+    monkeypatch.setattr(service, "_existing", existing)
+    version = service.parse_version(
+        {
+            "event_id": str(uuid.uuid4()),
+            "version_no": 2,
+            "change_kind": "correct",
+            "subject_type": "lot",
+            "lot_id": str(uuid.uuid4()),
+            "event_type": "harvest",
+            "occurred_on": "2026-03-04",
+            "clocks": {"device_time": "2026-03-04T08:00:00+05:30"},
+            "payload": {},
+        }
+    )
+    session: Any = Session()
+    assert await service.write_version(session, OFFICER, uuid.uuid4(), version, "sync.push") is stored
+    assert session.calls == ["rollback", "commit"]
+    found[0] = None  # nothing stored under this id: the stale version stands
+    with pytest.raises(StaleVersionError):
+        await service.write_version(session, OFFICER, uuid.uuid4(), version, "sync.push")

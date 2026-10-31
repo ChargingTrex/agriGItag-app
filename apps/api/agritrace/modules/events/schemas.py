@@ -35,7 +35,7 @@ MAX_PHOTO_BYTES = 5_000_000  # phones compress to <= 350 KB (M04); this only sto
 
 
 class PhotoIn(BaseModel):
-    """An evidence photo announced with its entry; the bytes follow by presigned PUT (D-011)."""
+    """An evidence photo or voice note announced with its entry; bytes follow by presigned PUT (D-011)."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -44,8 +44,10 @@ class PhotoIn(BaseModel):
         pattern=r"^[0-9a-f]{64}$", description="Lower-case hex SHA-256 of the JPEG; bound into the PUT."
     )
     size_bytes: int = Field(gt=0, le=MAX_PHOTO_BYTES, description="File size in bytes.")
-    content_type: Literal["image/jpeg"] = Field(
-        "image/jpeg", description="MIME type; the phone always uploads JPEG (M04)."
+    content_type: Literal["image/jpeg", "audio/ogg", "audio/mp4"] = Field(
+        "image/jpeg",
+        description="`image/jpeg` for photos (M04); voice notes `audio/ogg` (Android 10+) or `audio/mp4` "
+        "(iOS, Android 8–9). Bound into the PUT; picks the object key extension.",
     )
     exif_taken_at: AwareDatetime | None = Field(
         None, description="Capture time the phone wrote into EXIF, with offset; re-read by the server."

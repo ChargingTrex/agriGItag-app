@@ -7,9 +7,11 @@ Callers: `events.router` includes `router` (module discovery mounts only `router
 app's sync engine (M02) through the generated Dart client.
 """
 
+from collections.abc import Callable, Coroutine
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
+from fastapi.routing import APIRoute
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core.auth import CurrentUser, require_role
@@ -25,30 +27,50 @@ from agritrace.modules.events.schemas import (
     SyncPushOut,
 )
 
-router = APIRouter(tags=["events"])
-
 MAX_PUSH_BYTES = 256 * 1024
 Session = Annotated[AsyncSession, Depends(get_session)]
 AnyRole = Annotated[CurrentUser, Depends(require_role())]
 
 
-async def limit_body(request: Request) -> None:
-    """Refuse push bodies over 256 KB (plan §13 A4).
+class CappedRoute(APIRoute):
+    """Route that refuses bodies over 256 KB before FastAPI parses them (plan §13 A4)."""
 
-    Args:
-        request: the incoming request (Starlette caches the body, so it is read once).
+    def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+        """Wrap FastAPI's handler with the size check.
 
-    Raises:
-        PayloadTooLargeError: the body is over `MAX_PUSH_BYTES` (`payload_too_large`, 413).
-    """
-    # shortcut: the body is read before it is measured; the load balancer must cap request size in prod
-    #   (infra) so a client cannot make the API buffer megabytes.
-    if len(await request.body()) > MAX_PUSH_BYTES:
-        raise PayloadTooLargeError(details={"max_bytes": MAX_PUSH_BYTES, "max_entries": MAX_ENTRIES})
+        Returns:
+            The wrapped request handler.
+        """
+        handler = super().get_route_handler()
+
+        async def capped(request: Request) -> Response:
+            """Check the size, then run the normal handler (parsing, dependencies, endpoint).
+
+            Args:
+                request: the incoming request.
+
+            Returns:
+                The endpoint's response.
+
+            Raises:
+                PayloadTooLargeError: `Content-Length` or the body is over `MAX_PUSH_BYTES` (413), also for a
+                    body that is not JSON.
+            """
+            # shortcut: a chunked body without Content-Length is read before it is measured; the load
+            #   balancer caps request size in prod (TODO, infra).
+            declared = int(request.headers.get("content-length") or 0)
+            if declared > MAX_PUSH_BYTES or len(await request.body()) > MAX_PUSH_BYTES:
+                raise PayloadTooLargeError(details={"max_bytes": MAX_PUSH_BYTES, "max_entries": MAX_ENTRIES})
+            return await handler(request)
+
+        return capped
 
 
-def _errors(**by_status: str) -> dict[int | str, dict[str, Any]]:
-    """Document error responses of a route with the shared envelope.
+router = APIRouter(tags=["events"], route_class=CappedRoute)
+
+
+def errors(**by_status: str) -> dict[int | str, dict[str, Any]]:
+    """Document error responses of a route with the shared envelope (also used by `events.router`).
 
     Args:
         **by_status: description per status, keyed `e<status>`.
@@ -75,27 +97,21 @@ def _errors(**by_status: str) -> dict[int | str, dict[str, Any]]:
         "(15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then "
         "`POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard."
     ),
-    responses=_errors(
+    responses=errors(
         e413="`payload_too_large`: body over 256 KB.",
         e422="`validation_error`: the envelope does not parse, or more than 50 entries.",
     ),
 )
-async def sync_push(
-    session: Session, user: AnyRole, body: SyncPushIn, _limit: Annotated[None, Depends(limit_body)]
-) -> SyncPushOut:
+async def sync_push(session: Session, user: AnyRole, body: SyncPushIn) -> SyncPushOut:
     """Process a sync push.
 
     Args:
         session: database session.
         user: the caller (any signed-in role; each kind checks its own roles).
-        body: the envelope.
-        _limit: the 256 KB check (dependency).
+        body: the envelope (its size was checked by `CappedRoute`).
 
     Returns:
         Per-entry results.
-
-    Raises:
-        PayloadTooLargeError: body over 256 KB.
     """
     return await service.push(session, user, body)
 
@@ -108,7 +124,8 @@ async def sync_push(
         "Call after each presigned PUT succeeded. For each photo the server checks storage: `received` "
         "means the object is there (its version id is stored and verification of SHA-256 and EXIF time/GPS "
         "is queued), `missing` means upload again (ask for fresh URLs by resending the entry) and confirm "
-        "again. Unknown ids and other FPOs' photos also answer `missing`."
+        "again. Unknown ids and photos of entries someone else pushed also answer `missing`. Bodies over "
+        "256 KB → 413 `payload_too_large`."
     ),
 )
 async def sync_photos_confirm(

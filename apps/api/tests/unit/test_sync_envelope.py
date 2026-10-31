@@ -98,3 +98,16 @@ async def test_body_over_256_kb_is_payload_too_large(client: AsyncClient) -> Non
     error = response.json()["error"]
     assert error["code"] == "payload_too_large"
     assert error["details"] == {"max_bytes": 256 * 1024, "max_entries": 50}
+
+
+async def test_non_json_body_over_256_kb_is_payload_too_large(client: AsyncClient) -> None:
+    """The size check runs before JSON parsing, so a large non-JSON body is 413, not 422.
+
+    Args:
+        client: the HTTP client (fixture).
+    """
+    response = await client.post(
+        "/v1/sync/push", content=b"x" * (257 * 1024), headers={"Content-Type": "application/json"}
+    )
+    assert response.status_code == 413
+    assert response.json()["error"]["code"] == "payload_too_large"

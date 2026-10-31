@@ -5131,7 +5131,7 @@
       },
       "PhotoIn": {
         "additionalProperties": false,
-        "description": "An evidence photo announced with its entry; the bytes follow by presigned PUT (D-011).",
+        "description": "An evidence photo or voice note announced with its entry; bytes follow by presigned PUT (D-011).",
         "properties": {
           "client_id": {
             "description": "UUIDv7 generated on the phone; the photo's id (D-005).",
@@ -5140,9 +5140,13 @@
             "type": "string"
           },
           "content_type": {
-            "const": "image/jpeg",
             "default": "image/jpeg",
-            "description": "MIME type; the phone always uploads JPEG (M04).",
+            "description": "`image/jpeg` for photos (M04); voice notes `audio/ogg` (Android 10+) or `audio/mp4` (iOS, Android 8\u20139). Bound into the PUT; picks the object key extension.",
+            "enum": [
+              "image/jpeg",
+              "audio/ogg",
+              "audio/mp4"
+            ],
             "title": "Content Type",
             "type": "string"
           },
@@ -12620,7 +12624,7 @@
     },
     "/v1/sync/photos/confirm": {
       "post": {
-        "description": "Call after each presigned PUT succeeded. For each photo the server checks storage: `received` means the object is there (its version id is stored and verification of SHA-256 and EXIF time/GPS is queued), `missing` means upload again (ask for fresh URLs by resending the entry) and confirm again. Unknown ids and other FPOs' photos also answer `missing`.",
+        "description": "Call after each presigned PUT succeeded. For each photo the server checks storage: `received` means the object is there (its version id is stored and verification of SHA-256 and EXIF time/GPS is queued), `missing` means upload again (ask for fresh URLs by resending the entry) and confirm again. Unknown ids and photos of entries someone else pushed also answer `missing`. Bodies over 256 KB \u2192 413 `payload_too_large`.",
         "operationId": "sync_photos_confirm_v1_sync_photos_confirm_post",
         "parameters": [
           {

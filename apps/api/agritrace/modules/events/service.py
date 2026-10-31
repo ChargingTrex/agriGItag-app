@@ -70,7 +70,7 @@ from agritrace.modules.identity.models import ConsentRecord
 from agritrace.modules.lots_batches.models import Batch, Lot
 from agritrace.modules.quality import service as quality_service
 from agritrace.modules.registry import service as registry_service
-from agritrace.modules.registry.models import Farmer, Plot
+from agritrace.modules.registry.models import Farmer
 
 __all__: list[str] = []
 
@@ -265,7 +265,7 @@ async def enqueue(name: str, **kwargs: Any) -> None:
 
 
 async def _check_subject(session: AsyncSession, user: CurrentUser, v: AnyEventVersion) -> None:
-    """Check the caller may write events on this lot or batch (and plot) (FR24, CLAUDE.md §6).
+    """Check the caller may write events on this lot or batch, and that the plot is the lot's (FR24, FR69).
 
     Args:
         session: database session.
@@ -274,7 +274,8 @@ async def _check_subject(session: AsyncSession, user: CurrentUser, v: AnyEventVe
 
     Raises:
         ForbiddenError: viewers; farmers on batches; an assist session for another farmer (403).
-        NotFoundError: lot, batch or plot not in the caller's FPO, or a farmer's lot of someone else (404).
+        NotFoundError: lot or batch not in the caller's FPO, or a farmer's lot of someone else (404).
+        ValidationFailedError: `plot_id` is not the lot's plot, or is set on a batch event (422).
     """
     if user.role == Role.VIEWER:
         raise ForbiddenError(details={"reason": "viewers cannot record events"})
@@ -288,16 +289,16 @@ async def _check_subject(session: AsyncSession, user: CurrentUser, v: AnyEventVe
                 raise NotFoundError(details={"lot_id": str(v.lot_id)})
         if user.on_behalf_of_farmer_id is not None and lot.farmer_id != user.on_behalf_of_farmer_id:
             raise ForbiddenError("The assist session is for another farmer.")
+        plot_ok = v.plot_id in (None, lot.plot_id)  # FR69 checks the GPS fix against this plot
     else:
         if user.role == Role.FARMER:
             raise ForbiddenError(details={"reason": "farmers cannot record batch events"})
         batch = await session.get(Batch, v.batch_id)
         if batch is None or batch.fpo_id != user.fpo_id:
             raise NotFoundError(details={"batch_id": str(v.batch_id)})
-    if v.plot_id is not None:
-        plot = await session.get(Plot, v.plot_id)
-        if plot is None or plot.fpo_id != user.fpo_id:
-            raise NotFoundError(details={"plot_id": str(v.plot_id)})
+        plot_ok = v.plot_id is None
+    if not plot_ok:
+        raise ValidationFailedError("plot_id must be the lot's plot.", {"plot_id": str(v.plot_id)})
 
 
 async def _existing(session: AsyncSession, user: CurrentUser, version_id: uuid.UUID) -> Written | None:
@@ -483,7 +484,7 @@ async def _add_version(
     pending = [
         PendingPhoto(
             p.client_id,
-            evidence.object_key(user.fpo_id, v.occurred_on.year, v.event_id, p.client_id),
+            evidence.object_key(user.fpo_id, v.occurred_on.year, v.event_id, p.client_id, p.content_type),
             p.content_type,
             p.sha256,
             expires,
@@ -502,8 +503,6 @@ async def _add_version(
                     "content_type": p.content_type,
                     "size_bytes": p.size_bytes,
                     "sha256_client": p.sha256,
-                    "exif_taken_at": p.exif_taken_at,
-                    "exif_gps": _point(p.exif_gps),
                     "status": PhotoStatus.PENDING_UPLOAD,
                     "upload_url_expires_at": expires,
                 }
@@ -529,7 +528,9 @@ async def _add_version(
                 "event_type": v.event_type.value,
                 "version_no": v.version_no,
                 "change_kind": v.change_kind,
-                "photo_ids": [str(i) for i in photo_ids],
+                # The phone-declared EXIF lives here, append-only; the verify task fills the photo's
+                # exif_* columns with what it reads, so both are kept and neither is overwritten.
+                "photos": [p.model_dump(mode="json", exclude={"sha256", "size_bytes"}) for p in v.photos],
             },
         )
     )
@@ -545,7 +546,7 @@ async def write_version(
     action: str,
     app_version: str | None = None,
 ) -> Written:
-    """Write one event version in its own transaction; a lost insert race answers as a duplicate.
+    """Write one event version in its own transaction; a lost race with the same client id is a duplicate.
 
     Args:
         session: database session (committed or rolled back here).
@@ -559,8 +560,8 @@ async def write_version(
         What was written, or the duplicate found.
 
     Raises:
-        AppError: every error of `_add_version`; `stale_version` when a concurrent request wrote the same
-            version number; `append_only_violation` (SQLSTATE 23001).
+        AppError: every error of `_add_version`; `stale_version` when another version took the number and
+            this client id is not stored; `append_only_violation` (SQLSTATE 23001).
 
     Side effects:
         Commits the version, its event, photos and audit rows, or rolls everything back.
@@ -568,12 +569,16 @@ async def write_version(
     try:
         written = await _add_version(session, user, version_id, v, action, app_version)
         await session.commit()
-    except (IntegrityError, _LostRace) as e:
+    except (IntegrityError, _LostRace, StaleVersionError) as e:
+        # A retry overlapping the first send (2G) can lose at the version-number check or the insert;
+        # when the same client id is stored by then, it is a duplicate, not a conflict (plan §13 A3).
         await session.rollback()
         if (mapped := append_only_error(e)) is not None:
             raise mapped from e
         found = await _existing(session, user, version_id)
         if found is None:
+            if isinstance(e, StaleVersionError):
+                raise
             raise StaleVersionError(details={"event_id": str(v.event_id), "sent": v.version_no}) from e
         await session.commit()
         written = found
@@ -855,7 +860,8 @@ async def confirm_photos(
         body: the photo ids.
 
     Returns:
-        `received` (stored, or already confirmed) or `missing` (no object, unknown id or another FPO's).
+        `received` (stored, or already confirmed) or `missing` (no object, unknown id, or a photo of an
+        entry someone else pushed).
 
     Raises:
         botocore.exceptions.ClientError: storage errors other than not-found.
@@ -867,7 +873,18 @@ async def confirm_photos(
     out, queued = [], []
     for ref in body.photos:
         photo = await session.get(EvidencePhoto, ref.client_id)
-        if photo is None or not photo.object_key.startswith(prefix):
+        version = (
+            await session.get(EventVersion, photo.event_version_id)
+            if photo and photo.event_version_id
+            else None
+        )
+        # Only the user who pushed the entry (the uploading phone) confirms its photos.
+        if (
+            photo is None
+            or version is None
+            or version.entered_by_user_id != user.user_id
+            or not photo.object_key.startswith(prefix)
+        ):
             out.append(PhotoConfirmOut(client_id=ref.client_id, status="missing"))
             continue
         if photo.status == PhotoStatus.PENDING_UPLOAD:

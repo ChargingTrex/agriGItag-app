@@ -137,3 +137,52 @@ def test_union_renders_as_one_of_with_discriminator() -> None:
     assert data["discriminator"]["propertyName"] == "event_type"
     assert set(data["discriminator"]["mapping"]) == {t.value for t in EventType}
     assert len(data["oneOf"]) == len(EventType)
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "entered_by_user_id",
+        "on_behalf_of_farmer_id",
+        "assist_session_id",
+        "device_id",
+        "entered_remotely",
+        "server_received_at",
+        "is_system_generated",
+    ],
+)
+def test_identity_fields_in_the_body_are_refused(field: str) -> None:
+    """Who entered it, assist mode, device and server time come from the token and server, never the body.
+
+    Args:
+        field: a server-owned field sent by the client.
+    """
+    with pytest.raises(ValidationFailedError):
+        parse_version({**version(EventType.HARVEST, {}), field: str(uuid.uuid4())})
+    with pytest.raises(ValidationFailedError):
+        parse_version(version(EventType.HARVEST, {}, change_kind="system", version_no=2))
+
+
+@pytest.mark.parametrize(
+    ("content_type", "ok"),
+    [("image/jpeg", True), ("audio/ogg", True), ("audio/mp4", True), ("image/png", False)],
+)
+def test_media_content_types(content_type: str, ok: bool) -> None:
+    """Photos are JPEG; voice notes are Ogg (Android 10+) or MP4 (iOS, Android 8–9); nothing else.
+
+    Args:
+        content_type: the declared MIME type.
+        ok: whether it is accepted.
+    """
+    media = {
+        "client_id": str(uuid.uuid4()),
+        "sha256": "ab" * 32,
+        "size_bytes": 9000,
+        "content_type": content_type,
+    }
+    data = version(EventType.PROBLEM, {}, photos=[media])
+    if ok:
+        assert parse_version(data).photos[0].content_type == content_type
+    else:
+        with pytest.raises(ValidationFailedError):
+            parse_version(data)

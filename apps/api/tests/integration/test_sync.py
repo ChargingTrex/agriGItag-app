@@ -71,13 +71,16 @@ def migrated(stack: None) -> None:
 
 @dataclass
 class World:
-    """One seeded FPO: a farmer with a lot and plot, a field officer, and the current caller."""
+    """One seeded FPO: a farmer and a neighbour, each with lot and plot, a field officer, the caller."""
 
     fpo: uuid.UUID
     farmer_user: uuid.UUID
     officer: uuid.UUID
     lot: uuid.UUID
     plot: uuid.UUID
+    neighbour: uuid.UUID
+    neighbour_lot: uuid.UUID
+    neighbour_plot: uuid.UUID
     caller: CurrentUser
     sent: list[tuple[str, dict[str, Any]]] = field(default_factory=list)
 
@@ -95,7 +98,7 @@ class World:
 
 
 async def _seed() -> dict[str, uuid.UUID]:
-    """Insert an FPO, a farmer user with farmer row, plot and lot, and a field officer.
+    """Insert an FPO, a field officer, and two farmers (the caller and a neighbour), each with plot and lot.
 
     Returns:
         Ids by name.
@@ -104,45 +107,46 @@ async def _seed() -> dict[str, uuid.UUID]:
         Commits rows.
     """
     async with get_sessionmaker()() as s:
-        farmer_user = User(phone=f"+9198{secrets.randbelow(10**8):08d}", name="Muthu")
         officer = User(phone=f"+9197{secrets.randbelow(10**8):08d}", name="Officer")
         fpo = Fpo(code=f"FPO_{secrets.token_hex(4)}", name="Demo FPO", kind=OrgKind.FPO)
         crop = Crop(code=f"CHILLI_{secrets.token_hex(4)}", name_en="Samba Vathal", event_schema={})
-        s.add_all([farmer_user, officer, fpo, crop])
+        s.add_all([officer, fpo, crop])
         await s.flush()
-        farmer = Farmer(fpo_id=fpo.id, code="F-001", name="Muthu", user_id=farmer_user.id)
-        s.add(farmer)
-        await s.flush()
-        plot = Plot(
-            id=uuid7(),
-            fpo_id=fpo.id,
-            farmer_id=farmer.id,
-            code="P-01",
-            pin=WKTElement(f"POINT({LON} {LAT})", srid=4326),
-            pin_method=PinMethod.LIVE_GPS,
-            pin_device_time=datetime(2026, 3, 4, tzinfo=UTC),
-            pin_server_received_at=datetime(2026, 3, 4, tzinfo=UTC),
-            declared_area_acres=Decimal("1.5"),
-        )
-        s.add(plot)
-        await s.flush()
-        lot = Lot(
-            fpo_id=fpo.id,
-            farmer_id=farmer.id,
-            plot_id=plot.id,
-            crop_id=crop.id,
-            season_label="2025-26",
-            code=lot_code(),
-        )
-        s.add(lot)
+        ids = {"fpo": fpo.id, "officer": officer.id}
+        for prefix, code in (("", "F-001"), ("neighbour_", "F-002")):
+            user = User(phone=f"+9198{secrets.randbelow(10**8):08d}", name=code)
+            s.add(user)
+            await s.flush()
+            farmer = Farmer(fpo_id=fpo.id, code=code, name=code, user_id=user.id)
+            s.add(farmer)
+            await s.flush()
+            plot = Plot(
+                id=uuid7(),
+                fpo_id=fpo.id,
+                farmer_id=farmer.id,
+                code="P-01",
+                pin=WKTElement(f"POINT({LON} {LAT})", srid=4326),
+                pin_method=PinMethod.LIVE_GPS,
+                pin_device_time=datetime(2026, 3, 4, tzinfo=UTC),
+                pin_server_received_at=datetime(2026, 3, 4, tzinfo=UTC),
+                declared_area_acres=Decimal("1.5"),
+            )
+            s.add(plot)
+            await s.flush()
+            lot = Lot(
+                fpo_id=fpo.id,
+                farmer_id=farmer.id,
+                plot_id=plot.id,
+                crop_id=crop.id,
+                season_label="2025-26",
+                code=lot_code(),
+            )
+            s.add(lot)
+            await s.flush()
+            key = "neighbour" if prefix else "farmer_user"
+            ids |= {key: user.id, f"{prefix}lot": lot.id, f"{prefix}plot": plot.id}
         await s.commit()
-        return {
-            "fpo": fpo.id,
-            "farmer_user": farmer_user.id,
-            "officer": officer.id,
-            "lot": lot.id,
-            "plot": plot.id,
-        }
+        return ids
 
 
 @pytest.fixture
@@ -466,6 +470,7 @@ async def test_sync_writes_have_audit_rows(world: tuple[World, AsyncClient]) -> 
     assert [(r.action, r.entity_type, r.actor_user_id) for r in rows] == [
         ("sync.push", "event_versions", w.farmer_user)
     ]
+    assert rows[0].diff["photos"] == []
 
 
 async def test_append_only_violation_is_mapped(world: tuple[World, AsyncClient]) -> None:
@@ -485,3 +490,87 @@ async def test_append_only_violation_is_mapped(world: tuple[World, AsyncClient])
             )
         await s.rollback()
     assert isinstance(append_only_error(exc.value), AppendOnlyViolationError)
+
+
+async def test_plot_must_be_the_lots_plot(world: tuple[World, AsyncClient]) -> None:
+    """A neighbour's plot in the same FPO on the farmer's own lot is rejected (FR69 compares to it).
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    entry = harvest(w, plot_id=str(w.neighbour_plot))
+    result = (await client.post("/v1/sync/push", json=envelope(entry))).json()["results"][0]
+    assert result["status"] == "rejected" and result["error"]["code"] == "validation_error"
+
+
+async def test_farmer_cannot_write_on_another_farmers_lot(world: tuple[World, AsyncClient]) -> None:
+    """The neighbour's lot is not found for this farmer (404 semantics, nothing stored).
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    entry = harvest(w, lot_id=str(w.neighbour_lot), plot_id=str(w.neighbour_plot))
+    result = (await client.post("/v1/sync/push", json=envelope(entry))).json()["results"][0]
+    assert result["status"] == "rejected" and result["error"]["code"] == "not_found"
+    assert await count(EventVersion, EventVersion.id == uuid.UUID(entry["client_id"])) == 0
+
+
+async def test_voice_note_gets_its_own_key_and_type(world: tuple[World, AsyncClient]) -> None:
+    """An `audio/ogg` voice note is registered with a `.ogg` key and a PUT bound to its type.
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    note = {"client_id": str(uuid7()), "sha256": "cd" * 32, "size_bytes": 48_000, "content_type": "audio/ogg"}
+    result = (await client.post("/v1/sync/push", json=envelope(harvest(w, photos=[note])))).json()["results"][
+        0
+    ]
+    upload = result["photo_uploads"][0]
+    assert upload["headers"]["Content-Type"] == "audio/ogg"
+    assert upload["url"].split("?")[0].endswith(f"{note['client_id']}.ogg")
+
+
+async def test_only_the_uploader_confirms(world: tuple[World, AsyncClient]) -> None:
+    """Another user of the same FPO confirming the farmer's photo gets `missing` and queues nothing.
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    photo_id = uuid7()
+    meta = {"client_id": str(photo_id), "sha256": "ab" * 32, "size_bytes": 10}
+    await client.post("/v1/sync/push", json=envelope(harvest(w, photos=[meta])))
+    w.act_as(w.officer, Role.FIELD_OFFICER)
+    response = await client.post("/v1/sync/photos/confirm", json={"photos": [{"client_id": str(photo_id)}]})
+    assert response.json() == [{"client_id": str(photo_id), "status": "missing"}]
+
+
+async def test_declared_exif_is_kept_in_the_audit_row(world: tuple[World, AsyncClient]) -> None:
+    """The phone's declared EXIF time is stored append-only; the photo's exif columns wait for verify.
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    photo_id = uuid7()
+    meta = {
+        "client_id": str(photo_id),
+        "sha256": "ab" * 32,
+        "size_bytes": 10,
+        "exif_taken_at": "2026-03-04T08:10:00+05:30",
+        "exif_gps": {"lat": LAT, "lon": LON},
+    }
+    entry = harvest(w, photos=[meta])
+    await client.post("/v1/sync/push", json=envelope(entry))
+    async with get_sessionmaker()() as s:
+        row = (
+            await s.execute(select(AUDIT_LOG).where(AUDIT_LOG.c.entity_id == uuid.UUID(entry["client_id"])))
+        ).one()
+        photo = await s.get(EvidencePhoto, photo_id)
+    declared = row.diff["photos"][0]
+    assert declared["client_id"] == str(photo_id) and declared["exif_gps"]["lat"] == LAT
+    assert declared["exif_taken_at"].startswith("2026-03-04T08:10:00")
+    assert photo is not None and photo.exif_taken_at is None

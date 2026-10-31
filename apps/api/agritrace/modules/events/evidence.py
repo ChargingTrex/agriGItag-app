@@ -36,6 +36,8 @@ from agritrace.modules.events.models import EventVersion, EvidencePhoto
 from agritrace.modules.events.schemas import PhotoUpload
 
 UPLOAD_TTL = timedelta(minutes=15)
+# Photos (M04) and voice notes: Android 10+ records Opus in Ogg, iOS and Android 8–9 AAC in MP4.
+EXTENSIONS = {"image/jpeg": "jpg", "audio/ogg": "ogg", "audio/mp4": "m4a"}
 # shortcut: tolerances are constants until B13 field configuration carries them; tune after field trials.
 EXIF_TIME_TOLERANCE = timedelta(minutes=30)  # photo taken while filling the entry, which is saved later
 EXIF_GPS_TOLERANCE_M = 250.0
@@ -48,19 +50,25 @@ WEBP_QUALITIES = (80, 70, 60, 50, 40, 30)
 _GEOD = Geod(ellps="WGS84")
 
 
-def object_key(fpo_id: uuid.UUID, year: int, event_id: uuid.UUID, photo_id: uuid.UUID) -> str:
-    """Build the permanent object key of an evidence photo (FR61; never a temporary path).
+def object_key(
+    fpo_id: uuid.UUID, year: int, event_id: uuid.UUID, photo_id: uuid.UUID, content_type: str = "image/jpeg"
+) -> str:
+    """Build the permanent object key of an evidence photo or voice note (FR61; never a temporary path).
 
     Args:
         fpo_id: owning FPO.
         year: year of the event (`occurred_on`).
-        event_id: the event the photo documents.
-        photo_id: the photo's client id.
+        event_id: the event the media documents.
+        photo_id: the media's client id.
+        content_type: one of `EXTENSIONS`; picks the file extension.
 
     Returns:
-        `evidence/{fpo_id}/{yyyy}/{event_id}/{photo_id}.jpg` inside the evidence bucket.
+        `evidence/{fpo_id}/{yyyy}/{event_id}/{photo_id}.{jpg|ogg|m4a}` inside the evidence bucket.
+
+    Raises:
+        KeyError: an unsupported content type (the request schema admits only `EXTENSIONS`).
     """
-    return f"evidence/{fpo_id}/{year:04d}/{event_id}/{photo_id}.jpg"
+    return f"evidence/{fpo_id}/{year:04d}/{event_id}/{photo_id}.{EXTENSIONS[content_type]}"
 
 
 def upload_instruction(
@@ -243,8 +251,9 @@ async def verify(session: AsyncSession, photo_id: uuid.UUID) -> tuple[PhotoStatu
         LookupError: no photo with this id.
 
     Side effects:
-        Downloads the object; updates `sha256_server`, `exif_taken_at`, `exif_gps`, `status`,
-        `verified_at` (columns the append-only trigger allows) and commits.
+        Downloads the object; updates `sha256_server`, `exif_taken_at`, `exif_gps` (what the file says;
+        the phone's declared values stay in the push audit row), `status`, `verified_at` (columns the
+        append-only trigger allows) and commits. Voice notes get the checksum check only.
     """
     photo = await session.get(EvidencePhoto, photo_id)
     if photo is None:
@@ -258,6 +267,10 @@ async def verify(session: AsyncSession, photo_id: uuid.UUID) -> tuple[PhotoStatu
     photo.verified_at = utcnow()
     if photo.sha256_server != photo.sha256_client:
         photo.status = PhotoStatus.CHECKSUM_MISMATCH
+        await session.commit()
+        return photo.status, event_id, True
+    if not photo.content_type.startswith("image/"):
+        photo.status = PhotoStatus.VERIFIED  # audio has no EXIF to compare
         await session.commit()
         return photo.status, event_id, True
     taken_at, gps = read_exif(data)
@@ -284,8 +297,8 @@ async def make_variants(session: AsyncSession, photo_id: uuid.UUID) -> dict[str,
         photo_id: the photo.
 
     Returns:
-        The `variants` record, or None when the photo is unknown, not verified (checksum mismatch or not
-        yet checked) or already has variants.
+        The `variants` record, or None when the photo is unknown, a voice note, not verified (checksum
+        mismatch or not yet checked) or already has variants.
 
     Raises:
         botocore.exceptions.ClientError: storage refused a read or write.
@@ -298,6 +311,8 @@ async def make_variants(session: AsyncSession, photo_id: uuid.UUID) -> dict[str,
     photo = await session.get(EvidencePhoto, photo_id)
     ready = (PhotoStatus.VERIFIED, PhotoStatus.EXIF_MISMATCH)
     if photo is None or photo.variants is not None or photo.status not in ready:
+        return None
+    if not photo.content_type.startswith("image/"):
         return None
     data = await asyncio.to_thread(_read_object, photo.object_key)
     image = ImageOps.exif_transpose(Image.open(BytesIO(data)))

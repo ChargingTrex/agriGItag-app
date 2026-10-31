@@ -134,12 +134,16 @@ Every error response, whatever the status, has this body:
   pull, re-apply, resend. Who entered it, the assist session and `server_received_at` come from the
   server, never the body. The REST routes `POST /v1/events/{id}/versions` and `POST /v1/events/{id}/undo`
   use the same rules.
-- Photos: announce them in `data.photos[]` (`client_id`, lower-case hex `sha256`, `size_bytes`,
-  `content_type: image/jpeg`, optional EXIF time and GPS). The result carries one presigned PUT per photo
+- `plot_id` on a lot event must be the lot's own plot (or omitted); batch events carry none
+  (`validation_error` otherwise).
+- Photos and voice notes: announce them in `data.photos[]` (`client_id`, lower-case hex `sha256`,
+  `size_bytes`, `content_type` `image/jpeg`, or `audio/ogg` / `audio/mp4` for voice notes, optional EXIF
+  time and GPS, kept as declared in the audit trail). The result carries one presigned PUT per photo
   (15 minutes); send exactly the returned `Content-Type` and `x-amz-checksum-sha256` headers, then
-  `POST /v1/sync/photos/confirm {photos: [{client_id}]}` → `[{client_id, status: received | missing}]`.
-  The server then checks SHA-256 and EXIF time (±30 min) and GPS (±250 m) against the entry and builds the
-  WebP variants; a mismatch is flagged, never rejected. An expired URL is re-issued by resending the entry.
+  `POST /v1/sync/photos/confirm {photos: [{client_id}]}` → `[{client_id, status: received | missing}]`
+  (only the user who pushed the entry can confirm its media; anyone else gets `missing`).
+  The server then checks SHA-256 (voice notes: only that) and EXIF time (±30 min) and GPS (±250 m)
+  against the entry and builds the WebP variants; a mismatch is flagged, never rejected. An expired URL is re-issued by resending the entry.
 - `metrics[]` rows (`entry_client_id`, `saved_at`, `acked_at`, `photo_upload_ms`, `failures`,
   `network_type`) are stored for the sync-health dashboard against the token's device.
 

@@ -166,3 +166,17 @@ def test_webp_variants_fit_their_budgets() -> None:
     assert Image.open(BytesIO(thumb)).format == "WEBP"
     small, sw, sh = evidence.webp_variant(Image.new("RGB", (300, 200), "green"), *evidence.THUMB)
     assert (sw, sh) == (300, 200)  # never upscaled
+
+
+@pytest.mark.parametrize(
+    ("content_type", "ext"), [("image/jpeg", "jpg"), ("audio/ogg", "ogg"), ("audio/mp4", "m4a")]
+)
+def test_object_key_extension_follows_content_type(content_type: str, ext: str) -> None:
+    """Voice notes keep their own extension next to photos.
+
+    Args:
+        content_type: the media type.
+        ext: the expected extension.
+    """
+    key = evidence.object_key(uuid.uuid4(), 2026, uuid.uuid4(), uuid.uuid4(), content_type)
+    assert key.endswith(f".{ext}")

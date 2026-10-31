@@ -7,7 +7,7 @@ through the generated clients (D-003).
 """
 
 import uuid
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,9 +15,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from agritrace.core.auth import CurrentUser, require_role
 from agritrace.core.db import get_session
 from agritrace.core.enums import Role
-from agritrace.core.schemas import ErrorEnvelope, Page
+from agritrace.core.schemas import Page
 from agritrace.modules.events import service, sync_router
 from agritrace.modules.events.schemas import CorrectionIn, EventOut, SyncResult, UndoIn
+from agritrace.modules.events.sync_router import errors
 
 router = APIRouter(tags=["events"])
 router.include_router(sync_router.router)
@@ -29,18 +30,6 @@ Farmer = Annotated[CurrentUser, Depends(require_role(Role.FARMER))]
 EventId = Annotated[uuid.UUID, Path(description="Event id (the client id it was created with).")]
 
 
-def _errors(**by_status: str) -> dict[int | str, dict[str, Any]]:
-    """Document error responses of a route with the shared envelope.
-
-    Args:
-        **by_status: description per status, keyed `e<status>`.
-
-    Returns:
-        The `responses=` mapping for FastAPI.
-    """
-    return {int(k[1:]): {"model": ErrorEnvelope, "description": v} for k, v in by_status.items()}
-
-
 @router.get(
     "/lots/{lot_id}/events",
     response_model=Page[EventOut],
@@ -50,7 +39,7 @@ def _errors(**by_status: str) -> dict[int | str, dict[str, Any]]:
         "(FR63). Undone events stay listed with status `undone`. A lot has a few dozen events at most, so "
         "the whole list is one page (`has_more` false)."
     ),
-    responses=_errors(e404="`not_found`: lot not in your FPO (farmers: not your lot)."),
+    responses=errors(e404="`not_found`: lot not in your FPO (farmers: not your lot)."),
 )
 async def list_lot_events(
     session: Session,
@@ -86,7 +75,7 @@ async def list_lot_events(
         "`reason_required`). The earlier version stays stored (append-only, FR25). Resending the same "
         "`client_id` answers `duplicate`."
     ),
-    responses=_errors(
+    responses=errors(
         e403="`forbidden`: not a field officer or FPO admin.",
         e404="`not_found`: event, lot, batch or plot not in your FPO.",
         e409="`stale_version`, `client_id_conflict`.",
@@ -122,7 +111,7 @@ async def correct_event(
         "`undo_window_closed` (ask the field officer for a correction). Adds a version with "
         "`change_kind=undo`; the event's status becomes `undone`. `version_no` must be the current max + 1."
     ),
-    responses=_errors(
+    responses=errors(
         e403="`forbidden`: not a farmer, or not your entry.",
         e404="`not_found`: event not in your FPO.",
         e409="`undo_window_closed`, `stale_version`, `client_id_conflict`.",
