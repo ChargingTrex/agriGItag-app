@@ -60,10 +60,10 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
 - [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
-- [ ] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
+- [ ] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (done, 6b251c6) — reviewer: MOB r1 in progress — verifier:
 - [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: — reviewer: — verifier:
 - [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: — reviewer: — verifier:
-- [ ] P08 — Master data uploads: CSV import for farmers, villages, inputs with template download, dry- — wave 5 — worker: — reviewer: — verifier:
+- [ ] P08 — Master data uploads: CSV import for farmers, villages, inputs with template download, dry- — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] **Gate G3 signed** (docs/agents/gates/G3.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G4 Portal + Publish
