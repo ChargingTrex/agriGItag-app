@@ -37,5 +37,99 @@
   "playVoice": "குரல் கேள்",
   "@playVoice": {
     "description": "Screen-reader label of the speaker icon that plays the recorded voice prompt for a button."
+  },
+  "statusDone": "முடிந்தது",
+  "@statusDone": {
+    "description": "Status badge text next to the green tick: the task or entry is done (server confirmed). At most two words."
+  },
+  "statusTodo": "செய்ய வேண்டும்",
+  "@statusTodo": {
+    "description": "Status badge text next to the orange circle: still to do. At most two words."
+  },
+  "statusAttention": "கவனம் தேவை",
+  "@statusAttention": {
+    "description": "Status badge text next to the red triangle: something needs attention. At most two words."
+  },
+  "stepperLess": "குறை",
+  "@stepperLess": {
+    "description": "Screen-reader label of the big minus button of a quantity stepper."
+  },
+  "stepperMore": "கூட்டு",
+  "@stepperMore": {
+    "description": "Screen-reader label of the big plus button of a quantity stepper."
+  },
+  "numberPadDelete": "அழி",
+  "@numberPadDelete": {
+    "description": "Screen-reader label of the number pad's backspace key (removes the last digit)."
+  },
+  "numberPadPoint": "புள்ளி",
+  "@numberPadPoint": {
+    "description": "Screen-reader label of the number pad's decimal point key."
+  },
+  "voiceMissing": "குரல் இல்லை",
+  "@voiceMissing": {
+    "description": "Screen-reader label of the greyed speaker when no recorded clip exists for this screen; the text is shown instead."
+  },
+  "callOfficer": "அலுவலரை அழை",
+  "@callOfficer": {
+    "description": "Label of the button on every farmer screen that phones the farmer's field officer. At most two words. Also the voice prompt id of its recorded clip."
+  },
+  "confirmCorrect": "சரி",
+  "@confirmCorrect": {
+    "description": "Label of the big tick on the confirm screen: the farmer agrees the entry is right and saves it. At most two words."
+  },
+  "retake": "மீண்டும் எடு",
+  "@retake": {
+    "description": "Label of the button that discards the photo and opens the camera again. At most two words."
+  },
+  "cloudPending": "{count} அனுப்பக் காத்திருக்கிறது",
+  "@cloudPending": {
+    "description": "Screen-reader label of the grey cloud: this many entries are saved on the phone and not yet sent.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "cloudAllSent": "அனைத்தும் அனுப்பப்பட்டது",
+  "@cloudAllSent": {
+    "description": "Screen-reader label of the green tick that replaces the cloud when nothing is waiting to send."
+  },
+  "loggingFor": "இவருக்காகப் பதிவு: {name}",
+  "@loggingFor": {
+    "description": "Assist-mode top bar: the field officer is entering data on behalf of this farmer.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Murugan"
+      }
+    }
+  },
+  "gpsHold": "தொலைபேசியை உயர்த்திப் பிடியுங்கள், உங்கள் இடத்தைத் தேடுகிறது",
+  "@gpsHold": {
+    "description": "Sentence under the filling GPS ring while the location is not yet accurate. Also the voice prompt id of its recorded clip."
+  },
+  "gpsFound": "இடம் கிடைத்தது",
+  "@gpsFound": {
+    "description": "Sentence under the GPS ring once it turns green (accuracy 20 m or better)."
+  },
+  "gpsAccuracy": "± {metres} மீ",
+  "@gpsAccuracy": {
+    "description": "Current GPS accuracy under the ring, in whole metres.",
+    "placeholders": {
+      "metres": {
+        "type": "int",
+        "example": "35"
+      }
+    }
+  },
+  "saveAnyway": "இப்படியே சேமி",
+  "@saveAnyway": {
+    "description": "Button shown 60 seconds into a weak GPS fix: saves the location with its low accuracy (flagged for the field officer). At most two words."
+  },
+  "photoNotClear": "புகைப்படம் தெளிவாக இல்லை. மீண்டும் எடுக்கவா?",
+  "@photoNotClear": {
+    "description": "Error sheet sentence when the photo is too dark or blurry (UserFlows §When things go wrong). Also a voice prompt id."
   }
 }

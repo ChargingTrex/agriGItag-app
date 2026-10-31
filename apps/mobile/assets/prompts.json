@@ -1,0 +1,12 @@
+{
+  "$comment": "Voice prompt manifest (mobile-design.md §5, D-016). A prompt id is the ARB string key; its clip is assets/audio/<locale>/<promptId>.ogg (Opus, mono, 24 kbps). Read by lib/core/voice/prompt_catalog.dart. An id missing here plays no sound: the screen shows the text and VoicePlayer counts the miss. placeholders lists, per language, the clips that are still 0.4 s tones; remove an id when its real recording lands.",
+  "version": 1,
+  "placeholders": {
+    "ta": ["callOfficer", "gpsHold"],
+    "en": ["callOfficer", "gpsHold"]
+  },
+  "clips": {
+    "ta": ["callOfficer", "gpsHold"],
+    "en": ["callOfficer", "gpsHold"]
+  }
+}

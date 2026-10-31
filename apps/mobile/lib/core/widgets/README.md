@@ -1,1 +1,1 @@
-Farmer widget kit (>= 56 dp, icon + <= 2-word label + speaker). M00 ships `FarmerButton`; M05 adds the rest.
+Farmer widget kit (>= 56 dp, icon + <= 2-word label + speaker): FarmerButton (M00); PictureCardGrid, BigStepper, NumberPad, StatusBadge, VoicePromptBar, CallFieldOfficerButton, ConfirmScaffold, CloudSyncIndicator, AssistBar, GpsRing, ErrorSheet (M05). Tests and goldens: test/widget/kit_*.
