@@ -1,10 +1,11 @@
 // F03 Farmer home: the next task as one big card, four buttons (Log / Sell / Money / My farm), History (M08, where the
-// 24-hour Undo lives), Call officer, the cloud icon, and the assist bar while a field officer logs for the farmer.
+// 24-hour Undo lives), Call officer and the cloud icon. In assist mode (M10) the same screen is the assisted farmer's home: the app draws the assist bar above it,
+// and it adds the officer's Moisture and End assist buttons; Back ends assist mode too.
 // Requirement: UserFlows §Farmer home screen ("the card at the top always holds the single most useful next step, and
 //   the four buttons cover everything else"), §Design rules (one job, pictures + voice, "Works with no signal": cloud
 //   icon, "Help is a person"), §Field officer flows (assist bar "Logging for: [farmer name]"); FR7 (next event);
-//   CLAUDE.md §6 (assist mode always visible).
-// Callers: app_router.dart route `/home` (the farmer role's home).
+//   CLAUDE.md §6 (assist mode always visible); D-032 (`POST /assist/end` at exit).
+// Callers: app_router.dart routes `/home` (the farmer role's home) and `/assist/:farmerId` (assist mode).
 
 import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
@@ -17,7 +18,6 @@ import '../../core/db/providers.dart';
 import '../../core/l10n/gen/app_localizations.dart';
 import '../../core/theme/farmer_tokens.dart';
 import '../../core/voice/voice_player.dart';
-import '../../core/widgets/assist_bar.dart';
 import '../../core/widgets/call_officer_button.dart';
 import '../../core/widgets/cloud_sync_indicator.dart';
 import '../../core/widgets/farmer_button.dart';
@@ -26,6 +26,8 @@ import '../../core/widgets/voice_prompt_bar.dart';
 import '../event_log/choose_event_screen.dart';
 import '../event_log/event_log_controller.dart';
 import '../event_log/farm_event.dart';
+import '../officer_assist/assist_controller.dart';
+import '../officer_home/officer_button.dart';
 
 /// The farmer's open task due first (Tasks DAO), re-emitted when tasks change; null when there is none.
 ///
@@ -53,8 +55,9 @@ class FarmerHomeScreen extends ConsumerWidget {
   /// Creates the screen.
   const FarmerHomeScreen({super.key});
 
-  /// Builds the app bar (cloud, settings), the assist bar, the task card and the buttons. [context] supplies theme
-  /// and strings; [ref] watches the task and the assist state. Returns the screen; throws nothing.
+  /// Builds the app bar (cloud, settings), the task card and the buttons, plus Moisture and End assist in assist mode.
+  /// [context] supplies theme and strings; [ref] watches the task and the assist state. Returns the screen; throws
+  /// nothing.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -64,50 +67,72 @@ class FarmerHomeScreen extends ConsumerWidget {
     FarmerButton button(IconData icon, String label, String promptId, String path) => FarmerButton(
       icon: icon,
       label: label,
-      onPressed: () => context.push(path),
+      onPressed: () => context.push(farmerPath(ref, path)),
       onSpeak: () => playPrompt(ref, context, promptId),
     );
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.appTitle),
-        actions: [
-          const CloudSyncIndicator(),
-          IconButton(
-            // 56 dp: the farmer minimum (Material's default is 48 dp).
-            style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget)),
-            icon: const Icon(Icons.settings),
-            tooltip: l10n.settingsTitle,
-            onPressed: () => context.push('/settings'),
-          ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (assist != null) AssistBar(farmerName: assist.name),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.all(tokens.gap),
-              children: [
-                _TaskCard(task: ref.watch(nextTaskProvider).value),
-                gap,
-                button(Icons.add_a_photo, l10n.homeLog, 'homeLog', '/log'),
-                gap,
-                button(Icons.qr_code, l10n.homeSell, 'homeSell', '/home/sell'),
-                gap,
-                button(Icons.currency_rupee, l10n.homeMoney, 'homeMoney', '/home/money'),
-                gap,
-                button(Icons.agriculture, l10n.homeMyFarm, 'homeMyFarm', '/home/farm'),
-                gap,
-                button(Icons.history, l10n.homeHistory, 'homeHistory', '/home/history'),
-                gap,
-                const CallFieldOfficerButton(),
-              ],
+    // Leaving the assisted farmer's home by Back ends assist mode, like the End assist button.
+    return PopScope(
+      canPop: assist == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _endAssist(context, ref);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.appTitle),
+          actions: [
+            const CloudSyncIndicator(),
+            IconButton(
+              // 56 dp: the farmer minimum (Material's default is 48 dp).
+              style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget)),
+              icon: const Icon(Icons.settings),
+              tooltip: l10n.settingsTitle,
+              onPressed: () => context.push('/settings'),
             ),
-          ),
-        ],
+          ],
+        ),
+        body: ListView(
+          padding: EdgeInsets.all(tokens.gap),
+          children: [
+            _TaskCard(task: ref.watch(nextTaskProvider).value),
+            gap,
+            button(Icons.add_a_photo, l10n.homeLog, 'homeLog', '/log'),
+            gap,
+            button(Icons.qr_code, l10n.homeSell, 'homeSell', '/home/sell'),
+            gap,
+            button(Icons.currency_rupee, l10n.homeMoney, 'homeMoney', '/home/money'),
+            gap,
+            button(Icons.agriculture, l10n.homeMyFarm, 'homeMyFarm', '/home/farm'),
+            gap,
+            button(Icons.history, l10n.homeHistory, 'homeHistory', '/home/history'),
+            gap,
+            const CallFieldOfficerButton(),
+            if (assist != null) ...[
+              gap,
+              OfficerButton(
+                tonal: true,
+                icon: Icons.water_drop,
+                label: l10n.moistureTitle,
+                onPressed: () => context.push('/assist/${assist.farmerId}/moisture'),
+              ),
+              gap,
+              OfficerButton(
+                tonal: true,
+                icon: Icons.logout,
+                label: l10n.assistEnd,
+                onPressed: () => _endAssist(context, ref),
+              ),
+            ],
+          ],
+        ),
       ),
     );
+  }
+
+  /// Ends assist mode (D-032: `POST /assist/end` in the background) and returns to the officer home. [context]
+  /// navigates; [ref] reads the assist notifier. Throws nothing.
+  void _endAssist(BuildContext context, WidgetRef ref) {
+    ref.read(assistProvider.notifier).end();
+    context.go('/officer');
   }
 }
 
@@ -159,11 +184,13 @@ class _TaskCard extends ConsumerWidget {
               icon: Icons.arrow_forward,
               label: event?.label(l10n) ?? l10n.homeLogEvent,
               // The task's lot rides along (D-043), so a farmer with two fields skips the field picker.
-              onPressed: () => context.push(switch ((event, task?.lotId)) {
-                (null, _) => '/log',
-                (final e?, null) => '/log/${e.wireName}',
-                (final e?, final lot?) => '/log/${e.wireName}?lot=$lot',
-              }),
+              onPressed: () => context.push(
+                farmerPath(ref, switch ((event, task?.lotId)) {
+                  (null, _) => '/log',
+                  (final e?, null) => '/log/${e.wireName}',
+                  (final e?, final lot?) => '/log/${e.wireName}?lot=$lot',
+                }),
+              ),
               onSpeak: () => playPrompt(ref, context, event?.promptId ?? 'homeLogEvent'),
               prominent: true,
             ),

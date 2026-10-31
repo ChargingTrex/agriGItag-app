@@ -47,3 +47,4 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-041 | GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block the gates of a non-GI batch; every other hold still blocks | 2026-10-31 | Accepted | [D-041.md](docs/adr/D-041.md) |
 | D-042 | Per-entry assist context applies only to entries about one farmer's records: lot readings checked, batch entries forbidden, officer-own kinds ignore it | 2026-10-31 | Accepted | [D-042.md](docs/adr/D-042.md) |
 | D-043 | Farmer tap counts start at the chosen event; "Log" is navigation; the next-task card opens its lot | 2026-10-31 | Accepted | [D-043.md](docs/adr/D-043.md) |
+| D-044 | Assist mode is a route scope over the farmer screens (`/assist/:farmerId`, guarded by the running session) with one app-level assist bar | 2026-10-31 | Accepted | [D-044.md](docs/adr/D-044.md) |
