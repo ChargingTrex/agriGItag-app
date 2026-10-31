@@ -90,7 +90,7 @@ def test_hold_reasons_keep_only_holds() -> None:
             subject_id=uuid.uuid4(),
         ),
     ]
-    out = hold_reasons(cast(Any, flags))
+    out = hold_reasons(cast(Any, flags), True)
     assert [r["rule_code"] for r in out] == ["plot_outside_gi_region"]
     assert out[0]["code"] == "open_hold_flag" and out[0]["subject_id"] == str(plot_id)
 

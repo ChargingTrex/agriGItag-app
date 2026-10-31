@@ -7,7 +7,7 @@ Serves: FR3 (structured event fields), FR4 and Arch §Offline-first (sync envelo
 UUIDs), FR25/FR59 (corrections and undo as versions), FR26 (GPS at submission), FR61 (evidence photos),
 FR63 (lot timeline), backend-design.md §3 (binding sync protocol), plan §13 A3, A4, C2 (reference bundles with
 per-part delta), F1, D-005, D-011, D-014, D-016, D-031/D-032 (`farmer` and `assist_session` kinds, per-entry
-assist session).
+assist session), D-040 (`lot_intake` kind), D-042 (assist session per kind).
 Callers: `events.router`, `events.sync_router`, `events.service`, `events.evidence`, `events.bundle_service`,
 `events.pull_service`; tests.
 """
@@ -257,17 +257,26 @@ class SyncEntry(BaseModel):
 
     client_id: uuid.UUID = Field(
         description="Id of the record created (event version, reading, plot, consent, farmer, assist "
-        "session); idempotency key."
+        "session, lot intake); idempotency key."
     )
     kind: Literal[
-        "event_version", "quality_reading", "plot", "consent", "flag_resolution", "farmer", "assist_session"
+        "event_version",
+        "quality_reading",
+        "plot",
+        "consent",
+        "flag_resolution",
+        "farmer",
+        "assist_session",
+        "lot_intake",
     ] = Field(description="What `data` holds.")
     data: dict[str, Any] = Field(
         description="`event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: "
         "`QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: "
         "`FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id); "
         "`farmer`: `FarmerIn` (field officer or FPO admin; stored `pending`, D-031); `assist_session`: "
-        "`AssistStartIn` without `client_id` (field officer only, D-032). "
+        "`AssistStartIn` without `client_id` (field officer only, D-032); `lot_intake`: `IntakeIn` without "
+        "`client_id` (QC officer or FPO admin; receives the lot, `processor_id` optional, corrections FPO "
+        "admin only; its `server_id` is the intake id, D-040). "
         "Otherwise the entry's `client_id` is used as the record's id."
     )
     assist_session_id: uuid.UUID | None = Field(
@@ -275,9 +284,11 @@ class SyncEntry(BaseModel):
         description="Assist session this entry was captured in (D-032): one of the caller's sessions, "
         "open or ended, pushed earlier as an `assist_session` entry or started online. Records assist "
         "mode for this entry only (event version, audit row, consent witness); the entry's farmer must "
-        "be the session's (`forbidden` otherwise); unknown or another officer's → "
-        "`assist_session_invalid`. When absent, the `X-Assist-Session` header applies. Ignored on "
-        "`farmer` entries.",
+        "be the session's (`forbidden` otherwise: consent, plot, lot event, reading on a lot); a batch "
+        "reading or batch event with it → `forbidden` (D-042); unknown or another officer's → "
+        "`assist_session_invalid`. When absent, the `X-Assist-Session` header applies. Ignored (no "
+        "lookup, no assist fields) on `farmer`, `flag_resolution`, `assist_session` and `lot_intake` "
+        "entries.",
     )
 
 

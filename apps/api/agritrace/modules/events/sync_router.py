@@ -3,7 +3,7 @@
 Serves: FR4 (offline-first sync), FR61 (evidence upload confirm), Arch §Offline-first (incl. "Reference data
 travels to the phone"), backend-design.md §3 (binding protocol), plan §13 A3 (client-UUID idempotency), A4
 (≤ 50 entries or 256 KB), B3 (presigned PUT + SHA-256), C2 (bundles, per-part `since`, ETag/304), C3, F1
-(`metrics[]`), D-005, D-011, D-016, D-020.
+(`metrics[]`), D-005, D-011, D-016, D-020, D-040 (`lot_intake` kind), D-042 (assist session per kind).
 Callers: `events.router` includes `router` (module discovery mounts only `router.py`, D-004); the mobile
 app's sync engine (M02) through the generated Dart client.
 """
@@ -96,14 +96,18 @@ def errors(**by_status: str) -> dict[int | str, dict[str, Any]]:
         "Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: "
         "`event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, "
         "`plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`), `farmer` "
-        "(`FarmerIn`, field officer or FPO admin, D-031) and `assist_session` (`AssistStartIn`, field "
-        "officer, D-032); send `farmer`, then `assist_session`, then the entries that use them. An entry's "
-        "`assist_session_id` records assist mode for that entry only (ended sessions accepted). Each "
+        "(`FarmerIn`, field officer or FPO admin, D-031), `assist_session` (`AssistStartIn`, field "
+        "officer, D-032) and `lot_intake` (`IntakeIn` without `client_id`, QC officer or FPO admin: "
+        "receives the lot, D-040); send `farmer`, then `assist_session`, then the entries that use them, "
+        "and a lot's intake reading before its `lot_intake`. An entry's `assist_session_id` records assist "
+        "mode for that entry only (ended sessions accepted): checked against the farmer of a consent, plot, "
+        "lot event or lot reading, refused on batch readings and batch events, ignored on `farmer`, "
+        "`flag_resolution`, `assist_session` and `lot_intake` (D-042). Each "
         "entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` "
         "already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet "
         "uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, "
         "`forbidden`, `not_found`, `reason_required`, `undo_window_closed`, `assist_session_invalid`, "
-        "`farmer_phone_taken`, `conflict`, ...). The response is 200 "
+        "`farmer_phone_taken`, `conflict`, `field_required`, `gate_not_met`, ...). The response is 200 "
         "whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT "
         "(15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then "
         "`POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard."
