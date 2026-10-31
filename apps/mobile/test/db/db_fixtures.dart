@@ -1,8 +1,9 @@
 // Shared fixtures for the Drift store tests: an in-memory database and entry/media companions with sane defaults.
 // Requirement: WP-M01 tests (mobile-design.md §2); keeps each test focused on the behaviour it checks.
-// Callers: test/db/*_test.dart.
+// Callers: test/db/*_test.dart, test/sync/*_test.dart.
 
 import 'package:agritrace/core/db/database.dart';
+import 'package:agritrace/core/router/session.dart' show Role;
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:uuid/uuid.dart';
@@ -65,4 +66,22 @@ MediaCompanion photoOf(String entryId, {String? id, String path = '/tmp/photo.jp
       capturedAt: t0,
       uploadStatus: UploadStatus.pending,
       thumbPath: '$path.thumb.jpg',
+    );
+
+/// Signs [userId] in on [db]: writes the singleton Session row that the sync engine and the D-029 per-user counts
+/// read, with [wifiOnlyPhotos] as the photo setting. Returns when written; throws nothing.
+Future<void> signIn(AppDatabase db, String userId, {bool wifiOnlyPhotos = false}) => db
+    .into(db.sessionTable)
+    .insertOnConflictUpdate(
+      SessionTableCompanion.insert(
+        // `id` is the rowid: left out, SQLite would pick 2 and the CHECK (id = 1) would refuse the second sign-in.
+        id: const Value(1),
+        userId: userId,
+        role: Role.farmer,
+        fpoId: 'fpo-1',
+        deviceId: '0190f0c4-0000-7000-8000-000000000001',
+        accessToken: '',
+        refreshToken: '',
+        wifiOnlyPhotos: Value(wifiOnlyPhotos),
+      ),
     );

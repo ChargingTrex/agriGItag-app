@@ -78,11 +78,13 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.open()
     : this(driftDatabase(name: 'agritrace', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
-  /// Schema version 1 (M01). Bump it, add a step to [migration] and run tool/schema_dump.sh for every schema change.
+  /// Schema version 2 (M02: `Outbox.ownerUserId`, D-029). Bump it, add a step to [migration] and run
+  /// tool/schema_dump.sh for every schema change.
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
-  /// Creates every table, index and trigger on first open; upgrades older files step by step.
+  /// Creates every table, index and trigger on first open; upgrades older files step by step (v1 → v2: Outbox
+  /// rebuilt with `ownerUserId`).
   ///
   /// `beforeOpen` turns on foreign keys (off by default in SQLite) so `Media.entryId` must name an existing entry,
   /// and recursive triggers, so the implicit delete of `INSERT OR REPLACE` fires `entries_no_delete` too.
@@ -91,10 +93,24 @@ class AppDatabase extends _$AppDatabase {
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
       // One `if (from < N)` block per version, oldest first, so a phone several versions behind runs every step.
-      // Steps come from `dart run drift_dev schema steps` once a v2 dump exists, e.g.
-      //   if (from < 2) await m.addColumn(entries, entries.someNewColumn);
       // Never drop or rewrite Entries rows: they are append-only facts that may not have reached the server yet.
-      throw StateError('No migration from schema $from to $to');
+      if (from < 2) {
+        // Rebuilds Outbox (SQLite cannot add a NOT NULL column without a default) and fills the owner from the
+        // entry, or for a media row from its entry, so v1 rows keep sending for the user who saved them (D-029).
+        await m.alterTable(
+          TableMigration(
+            outbox,
+            newColumns: [outbox.ownerUserId],
+            columnTransformer: {
+              outbox.ownerUserId: const CustomExpression<String>(
+                'COALESCE((SELECT e.entered_by_user_id FROM entries e WHERE e.entry_id = outbox.ref_id), '
+                '(SELECT e.entered_by_user_id FROM media m JOIN entries e ON e.entry_id = m.entry_id '
+                "WHERE m.media_id = outbox.ref_id), '')",
+              ),
+            },
+          ),
+        );
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');

@@ -17,6 +17,10 @@ dependencies:
   crypto: ^3.0.8
   # Exact decimals in the grade/yield/moisture previews, matching the server engine's Decimal (D-006, M03).
   decimal: ^3.2.6
+  # Network type for Wi-Fi-only photos and sync metrics; a change triggers the reachability probe (M02).
+  connectivity_plus: ^7.3.1
+  # 15-min background sync: Android WorkManager, iOS BGAppRefresh (lib/core/sync/background_scheduler.dart, M02).
+  workmanager: ^0.10.10
   dio: ^5.11.1
   drift: ^2.31.0
   drift_flutter: ^0.2.8

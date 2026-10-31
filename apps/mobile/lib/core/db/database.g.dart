@@ -483,6 +483,11 @@ class Entry extends DataClass implements Insertable<Entry> {
   final LocationStatus locationStatus;
 
   /// User who entered it (the farmer, or the officer in assist mode). The server takes it from the token.
+  ///
+  /// DECISION D-029: this column is the entry's owner on a shared phone; schema v2 adds no separate
+  ///   `ownerUserId` here (only on Outbox, filled from this column).
+  ///   ADV: one source of truth, already covered by the append-only trigger, no Entries table rebuild.
+  ///   COMPROMISE: "owner" and "author" can never differ; true today because only the signed-in user saves.
   final String enteredByUserId;
 
   /// True when an officer entered it for the farmer (CLAUDE.md §6: assist mode is recorded on every entry).
@@ -4357,6 +4362,15 @@ class $OutboxTable extends Outbox with TableInfo<$OutboxTable, OutboxItem> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _ownerUserIdMeta = const VerificationMeta('ownerUserId');
+  @override
+  late final GeneratedColumn<String> ownerUserId = GeneratedColumn<String>(
+    'owner_user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _idempotencyKeyMeta = const VerificationMeta('idempotencyKey');
   @override
   late final GeneratedColumn<String> idempotencyKey = GeneratedColumn<String>(
@@ -4426,6 +4440,7 @@ class $OutboxTable extends Outbox with TableInfo<$OutboxTable, OutboxItem> {
     seq,
     kind,
     refId,
+    ownerUserId,
     idempotencyKey,
     priority,
     attempts,
@@ -4450,6 +4465,11 @@ class $OutboxTable extends Outbox with TableInfo<$OutboxTable, OutboxItem> {
       context.handle(_refIdMeta, refId.isAcceptableOrUnknown(data['ref_id']!, _refIdMeta));
     } else if (isInserting) {
       context.missing(_refIdMeta);
+    }
+    if (data.containsKey('owner_user_id')) {
+      context.handle(_ownerUserIdMeta, ownerUserId.isAcceptableOrUnknown(data['owner_user_id']!, _ownerUserIdMeta));
+    } else if (isInserting) {
+      context.missing(_ownerUserIdMeta);
     }
     if (data.containsKey('idempotency_key')) {
       context.handle(
@@ -4497,6 +4517,7 @@ class $OutboxTable extends Outbox with TableInfo<$OutboxTable, OutboxItem> {
         attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}kind'])!,
       ),
       refId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}ref_id'])!,
+      ownerUserId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}owner_user_id'])!,
       idempotencyKey: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}idempotency_key'],
@@ -4538,6 +4559,13 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
   /// `Entries.entryId` or `Media.mediaId` of the row to send.
   final String refId;
 
+  /// User who created the row: the entry's `enteredByUserId` (for media, its entry's). Schema v2.
+  ///
+  /// DECISION D-029: the outbox is per user on a shared phone; sync sends and counts only the signed-in user's rows.
+  ///   ADV: sign-out keeps unsent rows without letting the next user's token send them; a simple filter to test.
+  ///   COMPROMISE: rows of a user who never signs in again stay (counted as stranded for the officer, M10).
+  final String ownerUserId;
+
   /// Idempotency key sent with the request; the client UUID of the entry or media (D-005).
   final String idempotencyKey;
 
@@ -4562,6 +4590,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
     required this.seq,
     required this.kind,
     required this.refId,
+    required this.ownerUserId,
     required this.idempotencyKey,
     required this.priority,
     required this.attempts,
@@ -4578,6 +4607,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
       map['kind'] = Variable<String>($OutboxTable.$converterkind.toSql(kind));
     }
     map['ref_id'] = Variable<String>(refId);
+    map['owner_user_id'] = Variable<String>(ownerUserId);
     map['idempotency_key'] = Variable<String>(idempotencyKey);
     map['priority'] = Variable<int>(priority);
     map['attempts'] = Variable<int>(attempts);
@@ -4597,6 +4627,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
       seq: Value(seq),
       kind: Value(kind),
       refId: Value(refId),
+      ownerUserId: Value(ownerUserId),
       idempotencyKey: Value(idempotencyKey),
       priority: Value(priority),
       attempts: Value(attempts),
@@ -4613,6 +4644,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
       seq: serializer.fromJson<int>(json['seq']),
       kind: $OutboxTable.$converterkind.fromJson(serializer.fromJson<String>(json['kind'])),
       refId: serializer.fromJson<String>(json['refId']),
+      ownerUserId: serializer.fromJson<String>(json['ownerUserId']),
       idempotencyKey: serializer.fromJson<String>(json['idempotencyKey']),
       priority: serializer.fromJson<int>(json['priority']),
       attempts: serializer.fromJson<int>(json['attempts']),
@@ -4629,6 +4661,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
       'seq': serializer.toJson<int>(seq),
       'kind': serializer.toJson<String>($OutboxTable.$converterkind.toJson(kind)),
       'refId': serializer.toJson<String>(refId),
+      'ownerUserId': serializer.toJson<String>(ownerUserId),
       'idempotencyKey': serializer.toJson<String>(idempotencyKey),
       'priority': serializer.toJson<int>(priority),
       'attempts': serializer.toJson<int>(attempts),
@@ -4643,6 +4676,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
     int? seq,
     OutboxKind? kind,
     String? refId,
+    String? ownerUserId,
     String? idempotencyKey,
     int? priority,
     int? attempts,
@@ -4654,6 +4688,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
     seq: seq ?? this.seq,
     kind: kind ?? this.kind,
     refId: refId ?? this.refId,
+    ownerUserId: ownerUserId ?? this.ownerUserId,
     idempotencyKey: idempotencyKey ?? this.idempotencyKey,
     priority: priority ?? this.priority,
     attempts: attempts ?? this.attempts,
@@ -4667,6 +4702,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
       seq: data.seq.present ? data.seq.value : this.seq,
       kind: data.kind.present ? data.kind.value : this.kind,
       refId: data.refId.present ? data.refId.value : this.refId,
+      ownerUserId: data.ownerUserId.present ? data.ownerUserId.value : this.ownerUserId,
       idempotencyKey: data.idempotencyKey.present ? data.idempotencyKey.value : this.idempotencyKey,
       priority: data.priority.present ? data.priority.value : this.priority,
       attempts: data.attempts.present ? data.attempts.value : this.attempts,
@@ -4683,6 +4719,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
           ..write('seq: $seq, ')
           ..write('kind: $kind, ')
           ..write('refId: $refId, ')
+          ..write('ownerUserId: $ownerUserId, ')
           ..write('idempotencyKey: $idempotencyKey, ')
           ..write('priority: $priority, ')
           ..write('attempts: $attempts, ')
@@ -4695,8 +4732,19 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(seq, kind, refId, idempotencyKey, priority, attempts, nextAttemptAt, lastError, status, createdAt);
+  int get hashCode => Object.hash(
+    seq,
+    kind,
+    refId,
+    ownerUserId,
+    idempotencyKey,
+    priority,
+    attempts,
+    nextAttemptAt,
+    lastError,
+    status,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4704,6 +4752,7 @@ class OutboxItem extends DataClass implements Insertable<OutboxItem> {
           other.seq == this.seq &&
           other.kind == this.kind &&
           other.refId == this.refId &&
+          other.ownerUserId == this.ownerUserId &&
           other.idempotencyKey == this.idempotencyKey &&
           other.priority == this.priority &&
           other.attempts == this.attempts &&
@@ -4717,6 +4766,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
   final Value<int> seq;
   final Value<OutboxKind> kind;
   final Value<String> refId;
+  final Value<String> ownerUserId;
   final Value<String> idempotencyKey;
   final Value<int> priority;
   final Value<int> attempts;
@@ -4728,6 +4778,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
     this.seq = const Value.absent(),
     this.kind = const Value.absent(),
     this.refId = const Value.absent(),
+    this.ownerUserId = const Value.absent(),
     this.idempotencyKey = const Value.absent(),
     this.priority = const Value.absent(),
     this.attempts = const Value.absent(),
@@ -4740,6 +4791,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
     this.seq = const Value.absent(),
     required OutboxKind kind,
     required String refId,
+    required String ownerUserId,
     required String idempotencyKey,
     required int priority,
     this.attempts = const Value.absent(),
@@ -4749,6 +4801,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
     required DateTime createdAt,
   }) : kind = Value(kind),
        refId = Value(refId),
+       ownerUserId = Value(ownerUserId),
        idempotencyKey = Value(idempotencyKey),
        priority = Value(priority),
        nextAttemptAt = Value(nextAttemptAt),
@@ -4757,6 +4810,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
     Expression<int>? seq,
     Expression<String>? kind,
     Expression<String>? refId,
+    Expression<String>? ownerUserId,
     Expression<String>? idempotencyKey,
     Expression<int>? priority,
     Expression<int>? attempts,
@@ -4769,6 +4823,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
       if (seq != null) 'seq': seq,
       if (kind != null) 'kind': kind,
       if (refId != null) 'ref_id': refId,
+      if (ownerUserId != null) 'owner_user_id': ownerUserId,
       if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
       if (priority != null) 'priority': priority,
       if (attempts != null) 'attempts': attempts,
@@ -4783,6 +4838,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
     Value<int>? seq,
     Value<OutboxKind>? kind,
     Value<String>? refId,
+    Value<String>? ownerUserId,
     Value<String>? idempotencyKey,
     Value<int>? priority,
     Value<int>? attempts,
@@ -4795,6 +4851,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
       seq: seq ?? this.seq,
       kind: kind ?? this.kind,
       refId: refId ?? this.refId,
+      ownerUserId: ownerUserId ?? this.ownerUserId,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
       priority: priority ?? this.priority,
       attempts: attempts ?? this.attempts,
@@ -4816,6 +4873,9 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
     }
     if (refId.present) {
       map['ref_id'] = Variable<String>(refId.value);
+    }
+    if (ownerUserId.present) {
+      map['owner_user_id'] = Variable<String>(ownerUserId.value);
     }
     if (idempotencyKey.present) {
       map['idempotency_key'] = Variable<String>(idempotencyKey.value);
@@ -4847,6 +4907,7 @@ class OutboxCompanion extends UpdateCompanion<OutboxItem> {
           ..write('seq: $seq, ')
           ..write('kind: $kind, ')
           ..write('refId: $refId, ')
+          ..write('ownerUserId: $ownerUserId, ')
           ..write('idempotencyKey: $idempotencyKey, ')
           ..write('priority: $priority, ')
           ..write('attempts: $attempts, ')
@@ -9267,6 +9328,7 @@ typedef $$OutboxTableCreateCompanionBuilder =
       Value<int> seq,
       required OutboxKind kind,
       required String refId,
+      required String ownerUserId,
       required String idempotencyKey,
       required int priority,
       Value<int> attempts,
@@ -9280,6 +9342,7 @@ typedef $$OutboxTableUpdateCompanionBuilder =
       Value<int> seq,
       Value<OutboxKind> kind,
       Value<String> refId,
+      Value<String> ownerUserId,
       Value<String> idempotencyKey,
       Value<int> priority,
       Value<int> attempts,
@@ -9304,6 +9367,9 @@ class $$OutboxTableFilterComposer extends Composer<_$AppDatabase, $OutboxTable> 
 
   ColumnFilters<String> get refId =>
       $composableBuilder(column: $table.refId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get ownerUserId =>
+      $composableBuilder(column: $table.ownerUserId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get idempotencyKey =>
       $composableBuilder(column: $table.idempotencyKey, builder: (column) => ColumnFilters(column));
@@ -9343,6 +9409,9 @@ class $$OutboxTableOrderingComposer extends Composer<_$AppDatabase, $OutboxTable
   ColumnOrderings<String> get refId =>
       $composableBuilder(column: $table.refId, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get ownerUserId =>
+      $composableBuilder(column: $table.ownerUserId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get idempotencyKey =>
       $composableBuilder(column: $table.idempotencyKey, builder: (column) => ColumnOrderings(column));
 
@@ -9379,6 +9448,9 @@ class $$OutboxTableAnnotationComposer extends Composer<_$AppDatabase, $OutboxTab
       $composableBuilder(column: $table.kind, builder: (column) => column);
 
   GeneratedColumn<String> get refId => $composableBuilder(column: $table.refId, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerUserId =>
+      $composableBuilder(column: $table.ownerUserId, builder: (column) => column);
 
   GeneratedColumn<String> get idempotencyKey =>
       $composableBuilder(column: $table.idempotencyKey, builder: (column) => column);
@@ -9426,6 +9498,7 @@ class $$OutboxTableTableManager
                 Value<int> seq = const Value.absent(),
                 Value<OutboxKind> kind = const Value.absent(),
                 Value<String> refId = const Value.absent(),
+                Value<String> ownerUserId = const Value.absent(),
                 Value<String> idempotencyKey = const Value.absent(),
                 Value<int> priority = const Value.absent(),
                 Value<int> attempts = const Value.absent(),
@@ -9437,6 +9510,7 @@ class $$OutboxTableTableManager
                 seq: seq,
                 kind: kind,
                 refId: refId,
+                ownerUserId: ownerUserId,
                 idempotencyKey: idempotencyKey,
                 priority: priority,
                 attempts: attempts,
@@ -9450,6 +9524,7 @@ class $$OutboxTableTableManager
                 Value<int> seq = const Value.absent(),
                 required OutboxKind kind,
                 required String refId,
+                required String ownerUserId,
                 required String idempotencyKey,
                 required int priority,
                 Value<int> attempts = const Value.absent(),
@@ -9461,6 +9536,7 @@ class $$OutboxTableTableManager
                 seq: seq,
                 kind: kind,
                 refId: refId,
+                ownerUserId: ownerUserId,
                 idempotencyKey: idempotencyKey,
                 priority: priority,
                 attempts: attempts,
