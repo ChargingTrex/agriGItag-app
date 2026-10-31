@@ -1,7 +1,8 @@
 /**
  * Route table: public `/login`, everything else behind the auth guard inside the shell layout.
  * Serves: plan §7.3 P00 (placeholder routes for the planned screens, auth guard) and P01 (Members, farmer and
- * plot detail, Processors), P02 (Flags list and detail, lot review), FR13, FR14, FR70.
+ * plot detail, Processors), P02 (Flags list and detail, lot review), P08 (Master data uploads), FR13, FR14,
+ * FR70.
  * Called by: src/main.tsx (inside BrowserRouter), src/test/render.tsx (inside MemoryRouter).
  */
 import { Navigate, Route, Routes } from 'react-router';
@@ -9,6 +10,7 @@ import { LoginPage } from './auth/LoginPage';
 import { RequireAuth } from './auth/RequireAuth';
 import { FlagPage } from './features/flags/FlagPage';
 import { FlagsPage } from './features/flags/FlagsPage';
+import { MasterDataPage } from './features/imports/MasterDataPage';
 import { LotPage } from './features/flags/LotPage';
 import { FarmerPage } from './features/members/FarmerPage';
 import { MembersPage } from './features/members/MembersPage';
@@ -37,15 +39,16 @@ export function AppRoutes() {
           <Route path="/flags" element={<FlagsPage />} />
           <Route path="/flags/:flagId" element={<FlagPage />} />
           <Route path="/lots/:lotId" element={<LotPage />} />
-          {NAV_ITEMS.filter((item) => !['P01', 'P02'].includes(item.wp) && item.path !== '/').map(
-            (item) => (
-              <Route
-                key={item.path}
-                path={item.path}
-                element={<PlaceholderPage title={item.label} wp={item.wp} />}
-              />
-            ),
-          )}
+          <Route path="/uploads" element={<MasterDataPage />} />
+          {NAV_ITEMS.filter(
+            (item) => !['P01', 'P02', 'P08'].includes(item.wp) && item.path !== '/',
+          ).map((item) => (
+            <Route
+              key={item.path}
+              path={item.path}
+              element={<PlaceholderPage title={item.label} wp={item.wp} />}
+            />
+          ))}
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
