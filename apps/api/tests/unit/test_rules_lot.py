@@ -2,7 +2,8 @@
 
 Serves: B08 acceptance (nursery before ploughing → no flag; sowing before nursery → flag; Inorganic with only
 organic inputs → `practice_tag_contradiction`; IPM without pest event → flag; 1,150/1,250/1,350 kg on 1 acre →
-none/warn/hold), FR50, FR55–FR57, FR60, FR68, PRD §12.2 (the reference lots' quantities).
+none/warn/hold), B15 acceptance (D-030 attribution and grading loss cases),
+FR50, FR55–FR57, FR60, FR68, PRD §12.2 (the reference lots' quantities).
 Callers: pytest (`make test-unit`), no Docker.
 """
 
@@ -133,15 +134,60 @@ def test_quantity_chain(chain: dict[str, object], flagged: bool) -> None:
     assert [f.rule_code for f in flags] == (["quantity_mismatch"] if flagged else [])
 
 
-def test_batch_not_attributed_to_shares_is_flagged() -> None:
-    """A 20 kg batch whose shares add up to 320 kg; and a batch with no shares at all."""
-    batch = uuid.uuid4()
-    [flag] = quantity_reconciliation.run(BatchContext(batch, shares_kg=Decimal(320), batch_kg=Decimal(20)))
-    assert flag.rule_code == "batch_quantity_unattributed"
-    assert quantity_reconciliation.run(BatchContext(batch, batch_kg=Decimal(20)))
-    assert (
-        quantity_reconciliation.run(BatchContext(batch, shares_kg=Decimal(320), batch_kg=Decimal(320))) == []
+def _batch_codes(**kg: object) -> list[str]:
+    """Run the batch reconciliation on kilogram values and return the raised codes.
+
+    Args:
+        **kg: `BatchContext` fields; numbers become `Decimal`, `grading_loss_warn_pct` stays an int.
+
+    Returns:
+        The rule codes, in the rule's order.
+    """
+    values = {k: v if k == "grading_loss_warn_pct" else Decimal(str(v)) for k, v in kg.items()}
+    return [f.rule_code for f in quantity_reconciliation.run(BatchContext(uuid.uuid4(), **values))]  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    ("graded", "loss_pct"),
+    [(290, None), (260, "18.75"), (20, "93.75"), (340, "-6.25")],
+)
+def test_grading_loss(graded: int, loss_pct: str | None) -> None:
+    """D-030: received 320, shares 320; graded 290 passes, 260 / 20 (losses) and 340 (gain) warn.
+
+    Args:
+        graded: graded kilograms.
+        loss_pct: expected `loss_pct` detail of `grading_loss_high`, or None for no flag.
+    """
+    ctx = BatchContext(
+        uuid.uuid4(), shares_kg=Decimal(320), batch_kg=Decimal(graded), received_kg=Decimal(320)
     )
+    flags = quantity_reconciliation.run(ctx)
+    assert [(f.rule_code, f.severity, f.details["loss_pct"]) for f in flags] == (
+        [("grading_loss_high", Severity.WARN, loss_pct)] if loss_pct else []
+    )
+
+
+@pytest.mark.parametrize(
+    ("kg", "codes"),
+    [
+        ({"received_kg": 320}, ["batch_quantity_unattributed"]),
+        ({"received_kg": 320, "shares_kg": 300}, ["batch_quantity_unattributed"]),
+        ({"received_kg": 320, "shares_kg": 310}, []),
+        ({"shares_kg": 100, "batch_kg": 20}, []),  # no received kg: nothing to compare
+        (
+            {"received_kg": 320, "shares_kg": 320, "batch_kg": 290, "grading_loss_warn_pct": 5},
+            ["grading_loss_high"],
+        ),
+    ],
+)
+def test_batch_attribution_and_tenant_limit(kg: dict[str, object], codes: list[str]) -> None:
+    """D-030: shares vs received kg at 5 %, missing shares warn, no received kg is silent; a 5 % tenant limit.
+
+    Args:
+        kg: `BatchContext` kilogram fields (and the loss limit).
+        codes: expected rule codes.
+    """
+    assert _batch_codes(**kg) == codes
 
 
 def test_trail_override_reading_and_profile_incomplete() -> None:

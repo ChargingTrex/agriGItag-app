@@ -1574,7 +1574,7 @@ export interface paths {
         put?: never;
         /**
          * Push offline entries
-         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
+         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`), `farmer` (`FarmerIn`, field officer or FPO admin, D-031) and `assist_session` (`AssistStartIn`, field officer, D-032); send `farmer`, then `assist_session`, then the entries that use them. An entry's `assist_session_id` records assist mode for that entry only (ended sessions accepted). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, `assist_session_invalid`, `farmer_phone_taken`, `conflict`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
          */
         post: operations["sync_push_v1_sync_push_post"];
         delete?: never;
@@ -2363,6 +2363,11 @@ export interface components {
             /** @description Structured address (FR53); parts left empty are filled from `village_id`. */
             address?: components["schemas"]["Address"] | null;
             /**
+             * Client Id
+             * @description Farmer id generated on the phone (UUIDv7, D-031); becomes the farmer's `id`. Resending it returns the stored farmer with 201 (no phone check, no second account); an id used by another FPO → 409 `client_id_conflict`. In a sync push `farmer` entry the entry's `client_id` is used.
+             */
+            client_id?: string | null;
+            /**
              * Gi Authorised User No
              * @description Farmer's GI authorised-user registration number (FR62).
              */
@@ -2586,6 +2591,11 @@ export interface components {
              * @description Farmers may sign in with a PIN (not wired on the server).
              */
             farmer_pin_login: boolean;
+            /**
+             * Grading Loss Warn Pct
+             * @description Batch output more than this % below its received kg warns (D-030).
+             */
+            grading_loss_warn_pct: number;
             /**
              * Id Document Capture
              * @description ID document upload endpoint on (consent-gated).
@@ -6782,14 +6792,19 @@ export interface components {
          */
         SyncEntry: {
             /**
+             * Assist Session Id
+             * @description Assist session this entry was captured in (D-032): one of the caller's sessions, open or ended, pushed earlier as an `assist_session` entry or started online. Records assist mode for this entry only (event version, audit row, consent witness); the entry's farmer must be the session's (`forbidden` otherwise); unknown or another officer's → `assist_session_invalid`. When absent, the `X-Assist-Session` header applies. Ignored on `farmer` entries.
+             */
+            assist_session_id?: string | null;
+            /**
              * Client Id
              * Format: uuid
-             * @description Id of the record created (event version, reading, plot, consent); idempotency key.
+             * @description Id of the record created (event version, reading, plot, consent, farmer, assist session); idempotency key.
              */
             client_id: string;
             /**
              * Data
-             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id). Otherwise the entry's `client_id` is used as the record's id.
+             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id); `farmer`: `FarmerIn` (field officer or FPO admin; stored `pending`, D-031); `assist_session`: `AssistStartIn` without `client_id` (field officer only, D-032). Otherwise the entry's `client_id` is used as the record's id.
              */
             data: {
                 [key: string]: unknown;
@@ -6799,7 +6814,7 @@ export interface components {
              * @description What `data` holds.
              * @enum {string}
              */
-            kind: "event_version" | "quality_reading" | "plot" | "consent" | "flag_resolution";
+            kind: "event_version" | "quality_reading" | "plot" | "consent" | "flag_resolution" | "farmer" | "assist_session";
         };
         /**
          * SyncMetricIn

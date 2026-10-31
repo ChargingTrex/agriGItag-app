@@ -13,6 +13,7 @@ part 'features.g.dart';
 /// Properties:
 /// * [boundaryWalk] - Onboarding offers the boundary walk step.
 /// * [farmerPinLogin] - Farmers may sign in with a PIN (not wired on the server).
+/// * [gradingLossWarnPct] - Batch output more than this % below its received kg warns (D-030).
 /// * [idDocumentCapture] - ID document upload endpoint on (consent-gated).
 /// * [otpDailyCap] - Most OTP codes per phone per 24 hours (informative).
 /// * [producerGroups] - Producer group (SHG) endpoints on.
@@ -29,6 +30,10 @@ abstract class Features implements Built<Features, FeaturesBuilder> {
   /// Farmers may sign in with a PIN (not wired on the server).
   @BuiltValueField(wireName: r'farmer_pin_login')
   bool get farmerPinLogin;
+
+  /// Batch output more than this % below its received kg warns (D-030).
+  @BuiltValueField(wireName: r'grading_loss_warn_pct')
+  int get gradingLossWarnPct;
 
   /// ID document upload endpoint on (consent-gated).
   @BuiltValueField(wireName: r'id_document_capture')
@@ -90,6 +95,11 @@ class _$FeaturesSerializer implements PrimitiveSerializer<Features> {
     yield serializers.serialize(
       object.farmerPinLogin,
       specifiedType: const FullType(bool),
+    );
+    yield r'grading_loss_warn_pct';
+    yield serializers.serialize(
+      object.gradingLossWarnPct,
+      specifiedType: const FullType(int),
     );
     yield r'id_document_capture';
     yield serializers.serialize(
@@ -164,6 +174,13 @@ class _$FeaturesSerializer implements PrimitiveSerializer<Features> {
             specifiedType: const FullType(bool),
           ) as bool;
           result.farmerPinLogin = valueDes;
+          break;
+        case r'grading_loss_warn_pct':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.gradingLossWarnPct = valueDes;
           break;
         case r'id_document_capture':
           final valueDes = serializers.deserialize(

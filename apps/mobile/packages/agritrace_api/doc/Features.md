@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **boundaryWalk** | **bool** | Onboarding offers the boundary walk step. | 
 **farmerPinLogin** | **bool** | Farmers may sign in with a PIN (not wired on the server). | 
+**gradingLossWarnPct** | **int** | Batch output more than this % below its received kg warns (D-030). | 
 **idDocumentCapture** | **bool** | ID document upload endpoint on (consent-gated). | 
 **otpDailyCap** | **int** | Most OTP codes per phone per 24 hours (informative). | 
 **producerGroups** | **bool** | Producer group (SHG) endpoints on. | 

@@ -61,6 +61,8 @@ class _$FarmerIn extends FarmerIn {
   @override
   final Address? address;
   @override
+  final String? clientId;
+  @override
   final String? giAuthorisedUserNo;
   @override
   final FarmerInLangEnum? lang;
@@ -82,6 +84,7 @@ class _$FarmerIn extends FarmerIn {
 
   _$FarmerIn._(
       {this.address,
+      this.clientId,
       this.giAuthorisedUserNo,
       this.lang,
       required this.name,
@@ -103,6 +106,7 @@ class _$FarmerIn extends FarmerIn {
     if (identical(other, this)) return true;
     return other is FarmerIn &&
         address == other.address &&
+        clientId == other.clientId &&
         giAuthorisedUserNo == other.giAuthorisedUserNo &&
         lang == other.lang &&
         name == other.name &&
@@ -117,6 +121,7 @@ class _$FarmerIn extends FarmerIn {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, address.hashCode);
+    _$hash = $jc(_$hash, clientId.hashCode);
     _$hash = $jc(_$hash, giAuthorisedUserNo.hashCode);
     _$hash = $jc(_$hash, lang.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
@@ -133,6 +138,7 @@ class _$FarmerIn extends FarmerIn {
   String toString() {
     return (newBuiltValueToStringHelper(r'FarmerIn')
           ..add('address', address)
+          ..add('clientId', clientId)
           ..add('giAuthorisedUserNo', giAuthorisedUserNo)
           ..add('lang', lang)
           ..add('name', name)
@@ -151,6 +157,10 @@ class FarmerInBuilder implements Builder<FarmerIn, FarmerInBuilder> {
   AddressBuilder? _address;
   AddressBuilder get address => _$this._address ??= AddressBuilder();
   set address(AddressBuilder? address) => _$this._address = address;
+
+  String? _clientId;
+  String? get clientId => _$this._clientId;
+  set clientId(String? clientId) => _$this._clientId = clientId;
 
   String? _giAuthorisedUserNo;
   String? get giAuthorisedUserNo => _$this._giAuthorisedUserNo;
@@ -193,6 +203,7 @@ class FarmerInBuilder implements Builder<FarmerIn, FarmerInBuilder> {
     final $v = _$v;
     if ($v != null) {
       _address = $v.address?.toBuilder();
+      _clientId = $v.clientId;
       _giAuthorisedUserNo = $v.giAuthorisedUserNo;
       _lang = $v.lang;
       _name = $v.name;
@@ -225,6 +236,7 @@ class FarmerInBuilder implements Builder<FarmerIn, FarmerInBuilder> {
       _$result = _$v ??
           _$FarmerIn._(
             address: _address?.build(),
+            clientId: clientId,
             giAuthorisedUserNo: giAuthorisedUserNo,
             lang: lang,
             name: BuiltValueNullFieldError.checkNotNull(

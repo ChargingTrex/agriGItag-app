@@ -218,6 +218,12 @@ class FarmerIn(BaseModel):
         False, description="True when the officer always enters data for this farmer (assist mode)."
     )
     photo_key: str | None = Field(None, max_length=300, description="Object key of the profile photo.")
+    client_id: uuid.UUID | None = Field(
+        None,
+        description="Farmer id generated on the phone (UUIDv7, D-031); becomes the farmer's `id`. Resending "
+        "it returns the stored farmer with 201 (no phone check, no second account); an id used by another "
+        "FPO → 409 `client_id_conflict`. In a sync push `farmer` entry the entry's `client_id` is used.",
+    )
 
 
 class FarmerPatch(BaseModel):

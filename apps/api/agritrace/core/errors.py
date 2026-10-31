@@ -398,11 +398,17 @@ class RefreshReusedError(AppError):
 
 
 class AssistSessionInvalidError(AppError):
-    """`X-Assist-Session` names a session that is not the caller's or is already closed."""
+    """The assist session named by `X-Assist-Session` or a sync entry's `assist_session_id` is not usable.
+
+    Not the caller's, or (header only) already closed; a sync entry may name an ended session (D-032).
+    """
 
     code, status, message_key = "assist_session_invalid", 403, "error.assist_session_invalid"
     message = "The assist session is not open for you."
-    fix = "Start a new assist session (`POST /v1/assist/start`) and send its id in `X-Assist-Session`."
+    fix = (
+        "Start a new assist session (`POST /v1/assist/start` or an `assist_session` push entry) and send its "
+        "id in `X-Assist-Session` or the push entry's `assist_session_id`."
+    )
 
 
 class DeviceInUseError(AppError):

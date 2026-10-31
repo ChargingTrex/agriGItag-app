@@ -2,9 +2,10 @@
 
 Covers off-plot events, the reference lot's flag set, yield holds, and resolving over HTTP and sync push.
 
-Serves: B08 acceptance (600 m off plot → `event_off_plot` warn, re-check no dup; 1,150/1,250/1,350 kg →
-none/warn/hold + `gi_eligible=false`), backend-design §5 expected flags (inline fixture until B12 seeds the
-reference batch), D-006 (`gi_check` cases of tests/fixtures/rule_cases.json through `locate_point`), FR70.
+Serves: B15 acceptance (D-030 reference set, old flag closed); B08 acceptance (600 m off plot →
+`event_off_plot` warn, re-check no dup; 1,150/1,250/1,350 kg → none/warn/hold + `gi_eligible=false`),
+backend-design §5 expected flags (inline fixture until B12 seeds the reference batch), D-006 (`gi_check`
+cases of tests/fixtures/rule_cases.json through `locate_point`), FR70.
 Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`).
 """
 
@@ -35,6 +36,7 @@ from agritrace.core.enums import (
     EventSubject,
     EventType,
     FlagStatus,
+    FlagSubject,
     InputCategory,
     LocationStatus,
     OrgKind,
@@ -61,6 +63,7 @@ from agritrace.modules.registry.models import (
 )
 from agritrace.modules.rules_flags import service
 from agritrace.modules.rules_flags.models import Flag
+from agritrace.modules.rules_flags.rules.context import FlagCandidate
 from agritrace.modules.rules_flags.schemas import FlagResolveIn
 
 pytestmark = pytest.mark.integration
@@ -325,7 +328,9 @@ async def test_reference_lot_flag_set(world: World) -> None:
     """Inline stand-in for the B12 seed (backend-design §5): the PRD §12 problems raise exactly their flags.
 
     Nursery before ploughing, organic inputs only, Inorganic + IPM declared without a pest event, packed 69 kg
-    but 100 kg used, no harvest quantity, and a 20 kg batch whose shares say 100 kg.
+    but 100 kg used, no harvest quantity, and a batch of 100 kg received (fully attributed) graded to 20 kg.
+    B15 (D-030): the batch raises `grading_loss_high`, and a `batch_quantity_unattributed` flag stored by the
+    B08 rule before the split is closed `rule_passed` by this check.
 
     Args:
         world: the seeded FPO.
@@ -360,11 +365,15 @@ async def test_reference_lot_flag_set(world: World) -> None:
                 farmer_id=world.farmer,
             )
         )
+        old = FlagCandidate(FlagSubject.BATCH, batch.id, "batch_quantity_unattributed", Severity.WARN)
+        await service.store_flags(s, world.fpo, [old], {batch.id}, {old.rule_code})
         await s.commit()
         flags = await service.run_gate_checks(s, batch_id=batch.id)
         await s.commit()
+        [stale] = await _flags(s, batch.id, "batch_quantity_unattributed")
+        assert (stale.status, stale.resolution_reason_code) == (FlagStatus.FIXED, "rule_passed")
         assert sorted(f.rule_code for f in flags) == [
-            "batch_quantity_unattributed",
+            "grading_loss_high",
             "ipm_without_pest_event",
             "practice_tag_contradiction",
             "quantity_mismatch",

@@ -7,7 +7,7 @@ database; the async functions below apply them to the identity tables.
 Serves: FR1 (OTP sign-in), FR14 (roles), FR24 (tenant scoping), FR41 (consent), Arch §Security and privacy
 (device-bound session, office PIN, consent with witness), UserFlows §Onboarding a farmer steps 1–2,
 UserFlows §Log in once, CLAUDE.md §6 (assist mode recorded), D-005, D-022, D-024; B14 r2 (a farmer rejected
-by the FPO gets `account_inactive` after a correct code).
+by the FPO gets `account_inactive` after a correct code); B15 (assist sessions arriving by sync push, D-032).
 Callers: identity router (B02); other modules may call the names in `__all__` (D-004);
 tests/unit/test_identity_*.py, tests/integration/test_identity.py.
 """
@@ -19,11 +19,12 @@ import math
 import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Literal
+from typing import Any, Literal
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 from geoalchemy2 import WKTElement
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,6 +58,7 @@ from agritrace.core.errors import (
     RateLimitedError,
     RefreshReusedError,
     UnauthorizedError,
+    ValidationFailedError,
 )
 from agritrace.core.ids import uuid7
 from agritrace.core.time import utcnow
@@ -94,6 +96,7 @@ __all__ = [
     "revoke_consent",
     "set_pin",
     "start_assist",
+    "start_assist_from_sync",
     "verify_otp",
     "verify_pin",
 ]
@@ -855,6 +858,40 @@ async def start_assist(session: AsyncSession, caller: CurrentUser, body: AssistS
     elif (row.officer_user_id, row.farmer_id) != (caller.user_id, body.farmer_id):
         raise ConflictError(details={"client_id": str(body.client_id)})
     return AssistSessionOut.model_validate(row, from_attributes=True)
+
+
+async def start_assist_from_sync(
+    session: AsyncSession, caller: CurrentUser, data: dict[str, Any]
+) -> tuple[AssistSessionOut, bool]:
+    """Open an assist session from the raw `data` of a sync push `assist_session` entry (D-032).
+
+    Args:
+        session: database session.
+        caller: the field officer.
+        data: `AssistStartIn` fields with `client_id` = the entry's client id (the session id).
+
+    Returns:
+        (the session, True if stored now / False if it already existed).
+
+    Raises:
+        ForbiddenError: the caller is not a field officer (the same rule as `POST /assist/start`).
+        ValidationFailedError: the data does not match `AssistStartIn` (422).
+        NotFoundError: the farmer is not in the officer's FPO.
+        ConflictError: the id is already used for another officer or farmer.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+
+    Side effects:
+        As `start_assist` (inserts and commits).
+    """
+    if caller.role != Role.FIELD_OFFICER:
+        raise ForbiddenError(details={"reason": "assist sessions are started by a field officer"})
+    try:
+        body = AssistStartIn.model_validate(data)
+    except ValidationError as e:
+        details = [{"loc": err["loc"], "msg": err["msg"], "type": err["type"]} for err in e.errors()]
+        raise ValidationFailedError(details=details) from e
+    created = await session.get(AssistSession, body.client_id) is None
+    return await start_assist(session, caller, body), created
 
 
 async def end_assist(

@@ -12,6 +12,8 @@ class _$Features extends Features {
   @override
   final bool farmerPinLogin;
   @override
+  final int gradingLossWarnPct;
+  @override
   final bool idDocumentCapture;
   @override
   final int otpDailyCap;
@@ -32,6 +34,7 @@ class _$Features extends Features {
   _$Features._(
       {required this.boundaryWalk,
       required this.farmerPinLogin,
+      required this.gradingLossWarnPct,
       required this.idDocumentCapture,
       required this.otpDailyCap,
       required this.producerGroups,
@@ -53,6 +56,7 @@ class _$Features extends Features {
     return other is Features &&
         boundaryWalk == other.boundaryWalk &&
         farmerPinLogin == other.farmerPinLogin &&
+        gradingLossWarnPct == other.gradingLossWarnPct &&
         idDocumentCapture == other.idDocumentCapture &&
         otpDailyCap == other.otpDailyCap &&
         producerGroups == other.producerGroups &&
@@ -67,6 +71,7 @@ class _$Features extends Features {
     var _$hash = 0;
     _$hash = $jc(_$hash, boundaryWalk.hashCode);
     _$hash = $jc(_$hash, farmerPinLogin.hashCode);
+    _$hash = $jc(_$hash, gradingLossWarnPct.hashCode);
     _$hash = $jc(_$hash, idDocumentCapture.hashCode);
     _$hash = $jc(_$hash, otpDailyCap.hashCode);
     _$hash = $jc(_$hash, producerGroups.hashCode);
@@ -83,6 +88,7 @@ class _$Features extends Features {
     return (newBuiltValueToStringHelper(r'Features')
           ..add('boundaryWalk', boundaryWalk)
           ..add('farmerPinLogin', farmerPinLogin)
+          ..add('gradingLossWarnPct', gradingLossWarnPct)
           ..add('idDocumentCapture', idDocumentCapture)
           ..add('otpDailyCap', otpDailyCap)
           ..add('producerGroups', producerGroups)
@@ -105,6 +111,11 @@ class FeaturesBuilder implements Builder<Features, FeaturesBuilder> {
   bool? get farmerPinLogin => _$this._farmerPinLogin;
   set farmerPinLogin(bool? farmerPinLogin) =>
       _$this._farmerPinLogin = farmerPinLogin;
+
+  int? _gradingLossWarnPct;
+  int? get gradingLossWarnPct => _$this._gradingLossWarnPct;
+  set gradingLossWarnPct(int? gradingLossWarnPct) =>
+      _$this._gradingLossWarnPct = gradingLossWarnPct;
 
   bool? _idDocumentCapture;
   bool? get idDocumentCapture => _$this._idDocumentCapture;
@@ -149,6 +160,7 @@ class FeaturesBuilder implements Builder<Features, FeaturesBuilder> {
     if ($v != null) {
       _boundaryWalk = $v.boundaryWalk;
       _farmerPinLogin = $v.farmerPinLogin;
+      _gradingLossWarnPct = $v.gradingLossWarnPct;
       _idDocumentCapture = $v.idDocumentCapture;
       _otpDailyCap = $v.otpDailyCap;
       _producerGroups = $v.producerGroups;
@@ -181,6 +193,8 @@ class FeaturesBuilder implements Builder<Features, FeaturesBuilder> {
               boundaryWalk, r'Features', 'boundaryWalk'),
           farmerPinLogin: BuiltValueNullFieldError.checkNotNull(
               farmerPinLogin, r'Features', 'farmerPinLogin'),
+          gradingLossWarnPct: BuiltValueNullFieldError.checkNotNull(
+              gradingLossWarnPct, r'Features', 'gradingLossWarnPct'),
           idDocumentCapture: BuiltValueNullFieldError.checkNotNull(
               idDocumentCapture, r'Features', 'idDocumentCapture'),
           otpDailyCap: BuiltValueNullFieldError.checkNotNull(

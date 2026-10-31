@@ -1,12 +1,13 @@
-"""Rule `quantity_reconciliation`: harvested ≥ packed ≥ received ≥ used per lot; batch kg vs farmer shares.
+"""Rule `quantity_reconciliation`: harvested ≥ packed ≥ received ≥ used per lot; batch attribution and loss.
 
 Lot: consecutive recorded steps of the chain are compared; a step more than 5 % above the one before breaks
 the chain, and so does one more than 5 % below it, except after harvest (drying and sorting lose weight
 between harvest and packing; between packing, sale and use nothing should go missing) → `quantity_mismatch`.
-Batch: the kilograms in the batch must be attributed back to farmers' shares within 5 % →
-`batch_quantity_unattributed`.
+Batch (D-030): the received kilograms must be attributed to farmers' shares within 5 % →
+`batch_quantity_unattributed`; the output (packed, else graded) must not fall more than
+`grading_loss_warn_pct` below the received kilograms, nor rise more than 5 % above them → `grading_loss_high`.
 Serves: FR11, FR60 (per-lot reconciliation), PRD §12.2 ("Quantities don't reconcile"; "the 20 kg batch is
-never attributed back"), Dataflow Stages 6–8.
+never attributed back"), Dataflow Stages 6–8, D-030.
 Callers: `rules.LOT_RULES` and `rules.BATCH_RULES` (service `check_lot`), tests/unit/test_rules_lot.py.
 """
 
@@ -15,7 +16,7 @@ from decimal import Decimal
 from agritrace.core.enums import FlagSubject, Severity
 from agritrace.modules.rules_flags.rules.context import BatchContext, FlagCandidate, LotContext
 
-CODES = {"quantity_mismatch", "batch_quantity_unattributed"}
+CODES = {"quantity_mismatch", "batch_quantity_unattributed", "grading_loss_high"}
 TOLERANCE = Decimal("0.05")
 
 
@@ -61,26 +62,46 @@ def _lot(ctx: LotContext) -> list[FlagCandidate]:
 
 
 def _batch(ctx: BatchContext) -> list[FlagCandidate]:
-    """Check that the batch's kilograms are attributed to farmer shares.
+    """Check the batch's attribution to farmer shares and its grading loss (D-030).
 
     Args:
-        ctx: the batch with its output kilograms and the sum of its shares.
+        ctx: the batch with its received kilograms, output kilograms, share sum and loss limit.
 
     Returns:
-        One `batch_quantity_unattributed` warn when there are kilograms but no shares, or the two differ by
-        more than 5 %; else nothing.
+        A `batch_quantity_unattributed` warn when there are no shares or their sum differs from the received
+        kilograms by more than 5 %, and a `grading_loss_high` warn when the output is more than
+        `grading_loss_warn_pct` below the received kilograms or more than 5 % above them; nothing when the
+        received kilograms are not recorded.
     """
-    # shortcut: normal grading loss above 5 % also warns here (B08 review P2-4); Architect-Gate ruling
-    #   pending on comparing shares with received kg instead, before B09 lets warns block publish.
-    if not ctx.batch_kg:
+    # DECISION D-030: attribution (shares vs received) and grading loss (output vs received) are two warns.
+    #   ADV: each code means what it says; a normal grading loss no longer warns; the limit is per tenant.
+    #   COMPROMISE: one more code and feature key; loss really depends on the crop (Standards Profile later).
+    received = ctx.received_kg
+    if not received:
         return []
+    flags = []
     shares = ctx.shares_kg or Decimal(0)
-    if shares and abs(ctx.batch_kg - shares) <= shares * TOLERANCE:
-        return []
-    details = {"batch_kg": str(ctx.batch_kg), "shares_kg": str(shares), "unit": "kg"}
-    return [
-        FlagCandidate(FlagSubject.BATCH, ctx.batch_id, "batch_quantity_unattributed", Severity.WARN, details)
-    ]
+    if not shares or abs(shares - received) > received * TOLERANCE:
+        details = {"received_kg": str(received), "shares_kg": str(shares), "unit": "kg"}
+        flags.append(
+            FlagCandidate(
+                FlagSubject.BATCH, ctx.batch_id, "batch_quantity_unattributed", Severity.WARN, details
+            )
+        )
+    output = ctx.batch_kg
+    limit = Decimal(ctx.grading_loss_warn_pct) / 100
+    if output is not None and (output < received * (1 - limit) or output > received * (1 + TOLERANCE)):
+        details = {
+            "received_kg": str(received),
+            "output_kg": str(output),
+            "loss_pct": str(round((1 - output / received) * 100, 2)),
+            "limit_pct": str(ctx.grading_loss_warn_pct),
+            "unit": "kg",
+        }
+        flags.append(
+            FlagCandidate(FlagSubject.BATCH, ctx.batch_id, "grading_loss_high", Severity.WARN, details)
+        )
+    return flags
 
 
 def run(ctx: LotContext | BatchContext) -> list[FlagCandidate]:
