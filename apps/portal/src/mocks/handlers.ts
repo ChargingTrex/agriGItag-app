@@ -3,16 +3,19 @@
  * Serves: plan §7.3 P00 (MSW from spec; login passes with MSW), P01 (identity + registry handlers for the
  * Members screens, Stage 0 approval) and P02 (flags list/detail/resolve, lot events with evidence photos,
  * farmer plots, plot correction; FR70, Dataflow "Review & flags") and P03 (lots, batch create with shares and
- * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60). Called by: src/mocks/browser.ts,
+ * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60) and P04 (batch list, readings, grade,
+ * instruments, standards profile, grading approve, final packing, publish, builds with a simulated worker, rebuild,
+ * qr.png, labels.pdf; FR15, FR48, FR49, FR62). Called by: src/mocks/browser.ts,
  * src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`, `resetMockData`).
  *
  * Every body is typed with the generated `components` schemas, so a contract change breaks
- * `npm run typecheck` here. State (farmers, processors, plots, flags, lots, batches, features, the session's
- * user and roles, the refresh "cookie") is module-level and reset by `resetMockData` after each test.
+ * `npm run typecheck` here. State (farmers, processors, plots, flags, lots, batches, grades, readings, builds,
+ * features, the session's user and roles, the refresh "cookie") is module-level and reset by `resetMockData`
+ * after each test.
  */
 import { http, HttpResponse } from 'msw';
 import type { components } from '../api/generated/schema';
-import { splitShares, toGrams } from '../features/batches/batchModel';
+import { GI_ONLY_HOLD_CODES, splitShares, toGrams } from '../features/batches/batchModel';
 
 type Schemas = components['schemas'];
 type Health = Schemas['Health'];
@@ -30,6 +33,7 @@ type Role = Schemas['Role'];
 type LotOut = Schemas['LotOut'];
 type BatchOut = Schemas['BatchOut'];
 type BatchIn = Schemas['BatchIn'];
+type BuildOut = Schemas['BuildOut'];
 
 /** The SMS code the mock accepts. */
 export const MOCK_OTP = '123456';
@@ -82,6 +86,11 @@ export const MOCK_UNPACKED_LOT_ID = lotId(6);
 /** A lot that is ready for sale but has no intake yet. */
 export const MOCK_WAITING_LOT_ID = lotId(5);
 
+/** The seed instrument (moisture meter) and the chilli standards profile version the mock grades on. */
+export const MOCK_INSTRUMENT_ID = 'd0000000-0000-7000-8000-000000000001';
+export const MOCK_PROFILE_VERSION_ID = 'e1000000-0000-7000-8000-000000000001';
+const MOCK_PROFILE_ID = 'e1000000-0000-7000-8000-000000000000';
+
 /** Mutable mock state. `signedIn` stands in for the httpOnly refresh cookie. */
 export const mockState = {
   signedIn: false,
@@ -93,6 +102,12 @@ export const mockState = {
   flags: seedFlags(),
   lots: seedLots(),
   batches: [] as BatchOut[],
+  /** Latest grade computation per batch id (`GET /v1/batches/{id}/grade`); tests add them. */
+  grades: {} as Record<string, Schemas['GradeOut']>,
+  /** Quality readings on batches; tests add them. */
+  readings: [] as Schemas['QualityReadingOut'][],
+  /** Public page builds; `GET …/builds` turns a queued build into `built` after showing it once (the worker). */
+  builds: [] as BuildOut[],
   userId: MOCK_USER_ID,
   /** `GET /v1/config/features`; tests lower `second_signoff_threshold_kg`. */
   features: seedFeatures(),
@@ -108,6 +123,9 @@ export function resetMockData(): void {
   mockState.flags = seedFlags();
   mockState.lots = seedLots();
   mockState.batches = [];
+  mockState.grades = {};
+  mockState.readings = [];
+  mockState.builds = [];
   mockState.userId = MOCK_USER_ID;
   mockState.features = seedFeatures();
 }
@@ -460,6 +478,70 @@ async function body(request: Request): Promise<Record<string, unknown>> {
 const authed = (request: Request) =>
   request.headers.get('Authorization')?.startsWith(`Bearer ${MOCK_ACCESS_TOKEN}`) === true;
 
+/** A 1×1 transparent PNG, the mock QR image. */
+const PNG_1PX = Uint8Array.from(
+  atob(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+  ),
+  (c) => c.charCodeAt(0),
+);
+
+/**
+ * Adds a queued page build as B09 `publish` / B10 `rebuild` do: `current_build_no` + 1.
+ * @param batch The batch (mutated).
+ * @param trigger `publish` or `rebuild`.
+ * @returns The new build row.
+ */
+function queueBuild(batch: BatchOut, trigger: 'publish' | 'rebuild'): BuildOut {
+  batch.current_build_no += 1;
+  const build: BuildOut = {
+    id: crypto.randomUUID(),
+    batch_id: batch.id,
+    build_no: batch.current_build_no,
+    generation: batch.current_build_no,
+    status: 'queued',
+    trigger,
+    built_at: null,
+    error: null,
+    html_key: null,
+    json_key: null,
+    qr_key: null,
+  };
+  mockState.builds.push(build);
+  return build;
+}
+
+/**
+ * The batch of a `:batchId` route, if the mock has it.
+ * @param id The route parameter.
+ * @returns The batch or undefined.
+ */
+const findBatch = (id: unknown) => mockState.batches.find((b) => b.id === id);
+
+/**
+ * The `open_hold_flag` reasons of B09's gates: active holds on the batch, its lots and their plots; in a non-GI
+ * batch the GI-only codes do not block (D-041, modelled here until B16 merges).
+ * @param batch The batch.
+ * @returns One reason per blocking hold.
+ */
+function holdReasons(batch: BatchOut): Record<string, unknown>[] {
+  const lotIds = batch.shares.map((s) => s.lot_id);
+  const subjects = new Set([
+    batch.id,
+    ...lotIds,
+    ...mockState.lots.filter((l) => lotIds.includes(l.id)).map((l) => l.plot_id),
+  ]);
+  return mockState.flags
+    .filter(
+      (f) =>
+        subjects.has(f.subject_id) &&
+        f.severity === 'hold' &&
+        (f.status === 'open' || f.status === 'escalated') &&
+        (batch.gi_label_requested || !GI_ONLY_HOLD_CODES.includes(f.rule_code)),
+    )
+    .map((f) => ({ code: 'open_hold_flag', rule_code: f.rule_code, flag_id: f.id }));
+}
+
 let issued = 0;
 
 export const handlers = [
@@ -788,6 +870,213 @@ export const handlers = [
     }
     batch.second_signoff_by ??= mockState.userId;
     return HttpResponse.json(batch);
+  }),
+  // Batch detail (B05 grade and readings, B09 gates, B10 builds). Gate answers list every reason (D-033).
+  http.get('/v1/batches', ({ request }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const query = new URL(request.url).searchParams;
+    const status = query.get('status');
+    const start = Number(query.get('cursor') ?? 0);
+    const limit = Number(query.get('limit') ?? 50);
+    const all = mockState.batches.filter((b) => !status || b.status === status);
+    const more = start + limit < all.length;
+    return HttpResponse.json({
+      items: all.slice(start, start + limit),
+      has_more: more,
+      next_cursor: more ? String(start + limit) : null,
+    });
+  }),
+  http.get('/v1/lots/:lotId', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const lot = mockState.lots.find((l) => l.id === params['lotId']);
+    return lot ? HttpResponse.json(lot) : fail(404, 'not_found');
+  }),
+  http.get('/v1/batches/:batchId/readings', ({ request, params }) =>
+    authed(request)
+      ? HttpResponse.json({
+          items: mockState.readings.filter((r) => r.batch_id === params['batchId']),
+          has_more: false,
+          next_cursor: null,
+        })
+      : fail(401, 'unauthorized'),
+  ),
+  http.get('/v1/batches/:batchId/grade', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const grade = mockState.grades[String(params['batchId'])];
+    return grade ? HttpResponse.json(grade) : fail(404, 'not_found');
+  }),
+  http.get('/v1/instruments', () =>
+    HttpResponse.json({
+      items: [
+        {
+          id: MOCK_INSTRUMENT_ID,
+          fpo_id: MOCK_FPO_ID,
+          kind: 'moisture_meter',
+          make_model: 'Draminski GMM',
+          serial_no: 'DR-0042',
+          active: true,
+          calibrated_on: '2026-06-01',
+          calibration_due_on: '2027-06-01',
+          calibration_cert_photo_id: null,
+        },
+      ],
+      has_more: false,
+      next_cursor: null,
+    }),
+  ),
+  http.get('/v1/standards-profiles', () =>
+    HttpResponse.json({
+      items: [
+        {
+          id: MOCK_PROFILE_ID,
+          crop_id: '3d2c1b0a-9f8e-4d7c-8b6a-5f4e3d2c1b0a',
+          name: 'Dry chilli (Agmark)',
+          scheme: 'agmark',
+          standard_ref: 'Agmark Chillies Grading and Marking Rules',
+          published_version_no: 1,
+        },
+      ],
+      has_more: false,
+      next_cursor: null,
+    }),
+  ),
+  http.get('/v1/standards-profiles/:profileId/versions/:versionNo', () =>
+    HttpResponse.json({
+      id: MOCK_PROFILE_VERSION_ID,
+      profile_id: MOCK_PROFILE_ID,
+      version_no: 1,
+      edition: '2005',
+      clause_ref: 'Schedule II',
+      status: 'published',
+      published_at: '2026-06-01T00:00:00Z',
+      rules: {},
+    }),
+  ),
+  http.post('/v1/batches/:batchId/grading/approve', async ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const batch = findBatch(params['batchId']);
+    if (!batch) return fail(404, 'not_found');
+    const input = (await body(request)) as unknown as Schemas['GradingApproveIn'];
+    const grade = mockState.grades[batch.id];
+    const reasons = [
+      ...(batch.status === 'created' ? [] : [{ code: 'batch_status' }]),
+      ...(grade ? [] : [{ code: 'not_graded' }]),
+      ...(grade?.status === 'incomplete' ? [{ code: 'grade_incomplete' }] : []),
+      ...(grade?.status === 'declared_above_computed'
+        ? [
+            {
+              code: 'declared_above_computed',
+              declared: grade.declared_grade,
+              computed: grade.computed_grade,
+            },
+          ]
+        : []),
+      ...holdReasons(batch),
+    ];
+    if (reasons.length > 0 || !grade) return fail(409, 'gate_not_met', { reasons });
+    batch.status = 'graded';
+    batch.graded = { value: String(input.graded.value), unit: 'kg' };
+    batch.computed_grade = grade.computed_grade;
+    batch.standards_profile_version_id = grade.profile_version_id;
+    return HttpResponse.json(batch);
+  }),
+  http.post('/v1/batches/:batchId/final-packing', async ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const batch = findBatch(params['batchId']);
+    if (!batch) return fail(404, 'not_found');
+    const input = (await body(request)) as unknown as Schemas['FinalPackingIn'];
+    const holds = holdReasons(batch);
+    if (batch.status !== 'graded' || holds.length > 0) {
+      return fail(409, 'gate_not_met', {
+        reasons: [
+          ...(batch.status === 'graded' ? [] : [{ code: 'grading_not_approved' }]),
+          ...holds,
+        ],
+      });
+    }
+    if (toGrams(input.packed.value) > toGrams(batch.graded?.value ?? 0)) {
+      return fail(409, 'gate_not_met', {
+        reasons: [{ code: 'packed_above_graded', graded_kg: batch.graded?.value }],
+      });
+    }
+    batch.status = 'packed';
+    batch.packed = { value: String(input.packed.value), unit: 'kg' };
+    batch.pack_date = input.pack_date;
+    batch.best_before_date = input.best_before_date;
+    return HttpResponse.json(batch);
+  }),
+  http.post('/v1/batches/:batchId/publish', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const batch = findBatch(params['batchId']);
+    if (!batch) return fail(404, 'not_found');
+    const reasons = [
+      ...(batch.status === 'published' ? [{ code: 'already_published' }] : []),
+      ...(batch.status === 'created' ? [{ code: 'grading_not_approved' }] : []),
+      ...(batch.status === 'created' || batch.status === 'graded'
+        ? [{ code: 'final_packing_missing' }]
+        : []),
+      ...(batch.second_signoff_required && !batch.second_signoff_by
+        ? [{ code: 'second_signoff_missing' }]
+        : []),
+      ...holdReasons(batch),
+    ];
+    if (reasons.length > 0) return fail(409, 'gate_not_met', { reasons });
+    batch.status = 'published';
+    const build = queueBuild(batch, 'publish');
+    return HttpResponse.json<Schemas['PublishOut']>(
+      {
+        batch_id: batch.id,
+        build_no: build.build_no,
+        code: batch.code,
+        page_build_id: build.id,
+        status: 'queued',
+      },
+      { status: 202 },
+    );
+  }),
+  http.post('/v1/batches/:batchId/rebuild', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const batch = findBatch(params['batchId']);
+    if (!batch) return fail(404, 'not_found');
+    if (batch.status !== 'published') {
+      return fail(409, 'gate_not_met', { reasons: [{ code: 'not_published' }] });
+    }
+    return HttpResponse.json(queueBuild(batch, 'rebuild'), { status: 202 });
+  }),
+  http.get('/v1/batches/:batchId/builds', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const items = mockState.builds.filter((b) => b.batch_id === params['batchId']);
+    const response = HttpResponse.json({
+      items: structuredClone(items),
+      has_more: false,
+      next_cursor: null,
+    });
+    // The worker: a queued build is written right after the page has seen it queued once.
+    for (const b of items) {
+      if (b.status !== 'queued') continue;
+      b.status = 'built';
+      b.built_at = new Date().toISOString();
+      b.html_key = `batches/${b.batch_id}/index.html`;
+    }
+    return response;
+  }),
+  http.get('/v1/batches/:batchId/qr.png', ({ request }) =>
+    authed(request)
+      ? new HttpResponse(PNG_1PX, { headers: { 'Content-Type': 'image/png' } })
+      : fail(401, 'unauthorized'),
+  ),
+  http.get('/v1/batches/:batchId/labels.pdf', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const batch = findBatch(params['batchId']);
+    if (!batch) return fail(404, 'not_found');
+    if (batch.status !== 'packed' && batch.status !== 'published') {
+      return fail(409, 'gate_not_met', { reasons: [{ code: 'final_packing_missing' }] });
+    }
+    return new HttpResponse('%PDF-1.4 mock', { headers: { 'Content-Type': 'application/pdf' } });
   }),
   http.post('/v1/processors', async ({ request }) => {
     if (!authed(request)) return fail(401, 'unauthorized');

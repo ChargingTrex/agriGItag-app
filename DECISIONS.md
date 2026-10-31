@@ -39,3 +39,4 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-032 | Assist context travels per sync entry (`assist_session` push kind + `SyncEntry.assist_session_id`), not only via the request header | 2026-10-31 | Accepted | [D-032.md](docs/adr/D-032.md) |
 | D-033 | Lifecycle gates answer one 409 listing every unmet reason; gate records are append-only | 2026-10-31 | Accepted | [D-033.md](docs/adr/D-033.md) |
 | D-034 | Public page publishing: W01 schema is the allow-list (page-required fields are public in YAML and no tenant may narrow them; tenant YAML hides optional fields only), WebP-only photo copies in public-pages, 60 s / immutable cache policy, Pillow labels | 2026-10-31 | Accepted | [D-034.md](docs/adr/D-034.md) |
+| D-044 | Portal public page origin from `VITE_PUBLIC_BASE_URL`; preview iframe sandboxed, dev proxy in development; QR and labels fetched with the token | 2026-10-31 | Accepted | [D-044.md](docs/adr/D-044.md) |
