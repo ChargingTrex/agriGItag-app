@@ -1,0 +1,39 @@
+{
+  "_about": "Phone-only fixture (M03): bundle part name -> part body, in the shape lib/core/refdata/bundle_repository.dart expects from B07. Inputs mirror the B12 demo seed (PRD §12) plus one chemical input; the crop event schema splits the nursery from the main field (FR55).",
+  "crops": {
+    "crops": [
+      {
+        "id": "crop-chilli",
+        "code": "VIRUDHUNAGAR_SAMBA_VATHAL",
+        "name_en": "Virudhunagar Samba Vathal",
+        "name_local": "விருதுநகர் சம்பா வத்தல்",
+        "event_schema": {
+          "mandatory": ["land_preparation", "nursery", "sowing", "harvest", "drying", "packing"],
+          "tracks": {
+            "nursery": ["nursery", "sowing"],
+            "main_field": ["land_preparation", "sowing", "harvest", "drying", "packing"]
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {
+    "inputs": [
+      { "id": "in-ofg", "name_en": "Organic Fertilizer Gold", "name_local": "கரிம உரத் தங்கம்", "manufacturer": "Amul", "category": "organic_fertilizer", "unit": "kg" },
+      { "id": "in-panjakavya", "name_en": "Panjakavya", "category": "organic_fertilizer", "unit": "l" },
+      { "id": "in-azospirillum", "name_en": "Azospirillum", "category": "bio_fertilizer", "unit": "kg" },
+      { "id": "in-phospho", "name_en": "Phospho Bacteria", "category": "bio_fertilizer", "unit": "kg" },
+      { "id": "in-em", "name_en": "Effective Micro Organism", "category": "bio_fertilizer", "unit": "l" },
+      { "id": "in-urea", "name_en": "Urea", "category": "chemical_fertilizer", "unit": "kg" }
+    ]
+  },
+  "plots": {
+    "plots": [
+      { "id": "plot-1", "farmer_id": "farmer-1", "pin": { "lat": 9.55, "lon": 78.2 }, "declared_area": 1, "area_unit": "acre" },
+      { "id": "plot-2", "farmer_id": "farmer-1", "pin": { "lat": 9.56, "lon": 78.21 }, "declared_area": 150, "area_unit": "cent" }
+    ]
+  },
+  "calendar": {
+    "calendar": [{ "event_type": "harvest", "due_on": "2026-02-14", "prompt_id": "remind_harvest", "lot_id": "lot-1" }]
+  }
+}

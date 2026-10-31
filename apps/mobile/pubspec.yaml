@@ -13,6 +13,8 @@ dependencies:
   # Generated from packages/openapi/openapi.json by tool/gen_api.sh; never edited by hand (D-003).
   agritrace_api:
     path: packages/agritrace_api
+  # Exact decimals in the grade/yield/moisture previews, matching the server engine's Decimal (D-006, M03).
+  decimal: ^3.2.6
   dio: ^5.11.1
   drift: ^2.31.0
   drift_flutter: ^0.2.8
