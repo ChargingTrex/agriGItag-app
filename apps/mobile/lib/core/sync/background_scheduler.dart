@@ -2,7 +2,7 @@
 // decides) that runs one sync in a background isolate.
 // Requirement: PLAN §13 A1 (15-min fallback); mobile-design.md §3 ("WorkManager 15 min (Android), BGAppRefresh
 //   (iOS, best effort)"); Arch §Offline-first "When it syncs"; FR4.
-// Callers: lib/bootstrap.dart calls scheduleBackgroundSync once after start-up (wired at the M06 merge); the OS calls
+// Callers: lib/bootstrap.dart calls scheduleBackgroundSync once after start-up; the OS calls
 //   syncCallbackDispatcher. iOS needs `in.agritrace.sync` in BGTaskSchedulerPermittedIdentifiers
 //   (ios/Runner/Info.plist).
 
