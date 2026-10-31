@@ -709,4 +709,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get moistureValuePrompt => 'மீட்டரில் உள்ள அளவு';
+
+  @override
+  String get flagFixSent => 'திருத்தம் அனுப்பப்பட்டது; மறு சரிபார்ப்புக்குக் காத்திருக்கிறது.';
 }

@@ -9,11 +9,15 @@
 
 import 'package:agritrace/core/capture/gps_fix.dart';
 import 'package:agritrace/core/db/database.dart';
+import 'package:agritrace/core/router/session.dart';
 import 'package:agritrace/features/officer_assist/assist_controller.dart';
 import 'package:agritrace/features/officer_moisture/moisture_screen.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../auth/harness.dart' show apiError, sessionOut;
+import '../../db/db_fixtures.dart' show entryAt;
 import '../harness.dart';
 import 'officer_fixtures.dart';
 
@@ -224,7 +228,8 @@ void main() {
     });
     final resolution = (await queued(h, 'flag_resolution')).single;
     expect(payloadOf(resolution), {'flag_id': warnFlag, 'resolution': 'fixed', 'reason_code': 'field_visit'});
-    expect(await queuedTypes(h), ['harvest', 'flag_resolution']);
+    // The outcome goes first, so the server's rule re-run after the correction cannot close the flag before it.
+    expect(await queuedTypes(h), ['flag_resolution', 'harvest']);
     // The resolved flag leaves the list until the pull brings the server's status.
     expect(find.text('Harvest above the yield limit'), findsNothing);
     expect(find.byType(ListTile), findsNWidgets(2));
@@ -246,6 +251,10 @@ void main() {
     await h.tap(tester, _button('Save'));
     expect(await queuedTypes(h), ['harvest']);
     expect((await queued(h, 'harvest')).single.reasonCode, 'entry_mistake');
+    // The hold stays (the FPO admin clears it), and says the fix is on its way, so it is not corrected twice.
+    h.go('/officer/flags/$holdFlag');
+    await tester.pumpAndSettle();
+    expect(find.text('Fix sent, awaiting the re-check.'), findsOneWidget);
     await h.dispose(tester);
   });
 
@@ -300,6 +309,98 @@ void main() {
     });
     final lot = await (h.db.select(h.db.lots)..where((l) => l.lotId.equals('lot-1'))).getSingle();
     expect(lot.lastMoisture, 10.5);
+    await h.dispose(tester);
+  });
+
+  testWidgets('sign-out ends assist mode: no bar, and the next farmer logs as themselves', (tester) async {
+    final h = FlowHarness();
+    await startOfficer(tester, h);
+    await _assistMurugan(tester, h);
+    h.go('/settings');
+    await tester.pumpAndSettle();
+    expect(find.text(_bar), findsOneWidget);
+    await tester.runAsync(h.container.read(sessionProvider.notifier).signOut);
+    await tester.pumpAndSettle();
+    expect(h.path, '/auth');
+    expect(h.container.read(assistProvider), isNull);
+    expect(find.text(_bar), findsNothing);
+    await tester.runAsync(() => h.container.read(sessionProvider.notifier).openSession(sessionOut()));
+    await tester.pumpAndSettle();
+    expect(h.path, '/home');
+    await h.tap(tester, find.text('Log'));
+    expect(h.path, '/log');
+    expect(find.text(_bar), findsNothing);
+    await h.dispose(tester);
+  });
+
+  testWidgets('a server-ended session (refresh refused) ends assist mode too', (tester) async {
+    final h = FlowHarness();
+    h.api.routes['POST /v1/auth/refresh'] = [(401, apiError('refresh_reused'))];
+    await startOfficer(tester, h);
+    await _assistMurugan(tester, h);
+    await tester.runAsync(h.container.read(sessionProvider.notifier).refreshAccessToken);
+    await tester.pumpAndSettle();
+    expect(h.path, '/auth');
+    expect(h.container.read(assistProvider), isNull);
+    expect(find.text(_bar), findsNothing);
+    await h.dispose(tester);
+  });
+
+  testWidgets('leaving the assist scope without End assist (not-found Home) ends the session', (tester) async {
+    final h = FlowHarness();
+    await startOfficer(tester, h);
+    await _assistMurugan(tester, h);
+    h.go('/officer');
+    await tester.pumpAndSettle();
+    expect(h.container.read(assistProvider), isNull);
+    expect(find.text(_bar), findsNothing);
+    expect(h.api.requests.where((r) => r.path.endsWith('/v1/assist/end')), hasLength(1));
+    await h.dispose(tester);
+  });
+
+  testWidgets('a flag the server reopened shows again once this phone\'s resolution was answered', (tester) async {
+    final h = FlowHarness();
+    await startOfficer(tester, h);
+    await h.seedFlags();
+    // An earlier "Looks fine" on warnFlag, confirmed by the server; the pull then mirrored the flag open again.
+    final e = entryAt(at: flowNow, payload: '{"flag_id":"$warnFlag","resolution":"looks_fine","reason_code":"x"}');
+    await h.db.entriesDao.save(e.copyWith(entryType: const Value('flag_resolution')), const []);
+    await h.db.entriesDao.markConfirmed(e.entryId.value, flowNow);
+    h.go('/officer/flags');
+    await tester.pumpAndSettle();
+    expect(find.text('Harvest above the yield limit'), findsOneWidget);
+    expect(find.byType(ListTile), findsNWidgets(3));
+    await h.dispose(tester);
+  });
+
+  testWidgets('meters deactivated on the server leave the phone when the list is fetched', (tester) async {
+    final h = FlowHarness();
+    h.api.routes['GET /v1/instruments'] = [
+      (
+        200,
+        {
+          'items': [
+            {
+              'id': goodMeter,
+              'fpo_id': 'fpo-1',
+              'kind': 'moisture_meter',
+              'make_model': 'Wile 55',
+              'serial_no': 'A1',
+              'calibration_due_on': '2026-03-01',
+              'active': true,
+            },
+          ],
+          'has_more': false,
+          'next_cursor': null,
+        },
+      ),
+    ];
+    await startOfficer(tester, h);
+    await _assistMurugan(tester, h);
+    await h.tap(tester, find.text('Moisture'));
+    expect(find.text('Wile 55 A1, calibrated to 1 Mar'), findsOneWidget);
+    expect(find.textContaining('Old meter'), findsNothing);
+    expect(await h.db.select(h.db.instruments).get(), hasLength(1));
     await h.dispose(tester);
   });
 

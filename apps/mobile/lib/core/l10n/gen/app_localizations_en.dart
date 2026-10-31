@@ -714,4 +714,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moistureValuePrompt => 'Reading on the meter';
+
+  @override
+  String get flagFixSent => 'Fix sent, awaiting the re-check.';
 }

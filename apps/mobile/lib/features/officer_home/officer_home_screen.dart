@@ -29,7 +29,11 @@ import '../officer_flags/flag_actions.dart';
 import 'officer_button.dart';
 
 /// Every farmer on the phone (the officer's FPO), by village then name, with whether an open task is due by the end
-/// of today ([clockProvider]); re-emitted when farmers or tasks change.
+/// of today ([clockProvider]); re-emitted when farmers or tasks change. The officer home invalidates it when the app
+/// comes back to the foreground, so "today" moves on after midnight.
+///
+/// shortcut: a screen left on, never paused, across midnight keeps yesterday's cut-off until the next resume; add a
+///   midnight timer if officers report it.
 final officerFarmersProvider = StreamProvider<List<({Farmer farmer, bool visitDue})>>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final now = ref.watch(clockProvider)();
@@ -44,8 +48,12 @@ final officerFarmersProvider = StreamProvider<List<({Farmer farmer, bool visitDu
   return query.watch().map((rows) => [for (final r in rows) (farmer: r.readTable(db.farmers), visitDue: r.read(due)!)]);
 });
 
+/// Oldest officer fix still used as a session's `started_gps`; an older one may be from another village.
+const _fixMaxAge = Duration(minutes: 2);
+
 /// The officer home screen. Listens to the GPS while open, so a tap on a farmer starts assist mode at once with the
-/// officer's latest fix as the session's `started_gps`.
+/// officer's latest fix (at most [_fixMaxAge] old) as the session's `started_gps`. Opening it ends any assist session
+/// still running: assist mode is entered with `go`, so the officer home is never under one (review M10-r1 P3-2).
 class OfficerHomeScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
   const OfficerHomeScreen({super.key});
@@ -58,19 +66,31 @@ class OfficerHomeScreen extends ConsumerStatefulWidget {
 class _OfficerHomeScreenState extends ConsumerState<OfficerHomeScreen> {
   StreamSubscription<LocationFix>? _gps;
   LocationFix? _fix;
+  DateTime? _fixAt;
   bool _starting = false;
+  late final AppLifecycleListener _life;
 
-  /// Starts listening to the GPS. Throws nothing; provider errors are ignored (the session then has no GPS).
+  /// Starts listening to the GPS and to app resume, and ends an assist session left running (the not-found Home
+  /// button, a hard-coded `/home…` link). Throws nothing; GPS provider errors are ignored (the session then has no
+  /// GPS). Side effects: may end assist mode (`POST /assist/end` in the background).
   @override
   void initState() {
     super.initState();
-    _gps = ref.read(gpsFixProvider).fixes().listen((fix) => _fix = fix, onError: (Object _) {});
+    _gps = ref.read(gpsFixProvider).fixes().listen((fix) {
+      _fix = fix;
+      _fixAt = ref.read(clockProvider)();
+    }, onError: (Object _) {});
+    _life = AppLifecycleListener(onResume: () => ref.invalidate(officerFarmersProvider));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(assistProvider.notifier).end();
+    });
   }
 
-  /// Stops the GPS. Throws nothing.
+  /// Stops the GPS and the lifecycle listener. Throws nothing.
   @override
   void dispose() {
     _gps?.cancel();
+    _life.dispose();
     super.dispose();
   }
 
@@ -81,7 +101,8 @@ class _OfficerHomeScreenState extends ConsumerState<OfficerHomeScreen> {
     if (_starting) return;
     setState(() => _starting = true);
     try {
-      await ref.read(assistProvider.notifier).start(farmer, gps: _fix);
+      final fresh = _fixAt != null && ref.read(clockProvider)().difference(_fixAt!) <= _fixMaxAge;
+      await ref.read(assistProvider.notifier).start(farmer, gps: fresh ? _fix : null);
       if (mounted) context.go('/assist/${farmer.farmerId}');
     } on Exception {
       // SqliteException (disk full): nothing was written; the officer taps again.

@@ -1019,5 +1019,9 @@
   "moistureValuePrompt": "Reading on the meter",
   "@moistureValuePrompt": {
     "description": "Prompt above the number pad for the moisture value in percent."
+  },
+  "flagFixSent": "Fix sent, awaiting the re-check.",
+  "@flagFixSent": {
+    "description": "Flag detail line when this phone has a correction of the flagged entry that the server has not answered yet."
   }
 }

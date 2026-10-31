@@ -42,7 +42,7 @@ enum SyncKind {
   /// A consent given or revoked.
   consent,
 
-  /// An officer's flag resolution (rejected by the pilot server with `not_implemented_pilot`).
+  /// An officer's flag resolution (B08 `resolve_from_sync`; sent by the M10 flag screens).
   flagResolution,
 }
 

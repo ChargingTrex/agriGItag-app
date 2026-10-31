@@ -12,7 +12,7 @@ import 'dart:convert';
 
 import 'package:agritrace_api/agritrace_api.dart' show InstrumentKind;
 import 'package:dio/dio.dart';
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show BooleanExpressionOperators, Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,8 +54,14 @@ final moistureMetersProvider = FutureProvider.autoDispose<List<Instrument>>((ref
   final db = ref.watch(appDatabaseProvider);
   try {
     final page = await ref.read(apiClientProvider).api.getQualityApi().listInstrumentsV1InstrumentsGet(active: true);
+    final items = page.data!.items;
     await db.batch((b) {
-      for (final i in page.data!.items) {
+      // Meters deactivated (or removed) on the server stop being choices: the server refuses their readings.
+      b.deleteWhere(
+        db.instruments,
+        (i) => i.kind.equals(_moistureMeter) & i.instrumentId.isNotIn([for (final m in items) m.id]),
+      );
+      for (final i in items) {
         final due = i.calibrationDueOn;
         // No due date: the server refuses every reading with it, so it never becomes a choice.
         if (due == null || i.kind != InstrumentKind.moistureMeter) continue;

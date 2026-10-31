@@ -24,6 +24,7 @@ import '../../core/capture/capture_constants.dart';
 import '../../core/capture/gps_fix.dart';
 import '../../core/db/database.dart';
 import '../../core/db/providers.dart';
+import '../../core/router/session.dart';
 import '../event_log/event_log_controller.dart';
 import '../onboarding_farmer/onboarding_notifier.dart' show assistSessionEntryType;
 
@@ -54,9 +55,15 @@ bool enteredRemotely(Plot? plot, LocationFix? fix) =>
 /// The session lives in memory: an app restart ends assist mode on the phone, and the server session stays open
 /// (allowed by D-032: an open session grants nothing an officer could not get by starting a new one).
 class AssistNotifier extends Notifier<AssistSession?> {
-  /// No session until [start]. Returns null; throws nothing.
+  /// No session until [start]; rebuilt (so back to none) whenever the signed-in role changes. Sign-out and a
+  /// server-ended session always pass through "signed out", so the next user of a shared phone never inherits the
+  /// previous officer's farmer, bar or session id (CLAUDE.md §6; review M10-r1 P1-1). The server session stays open
+  /// (D-032 §5). Returns null; throws nothing.
   @override
-  AssistSession? build() => null;
+  AssistSession? build() {
+    ref.watch(sessionProvider.select((s) => s.role));
+    return null;
+  }
 
   /// Starts assist mode for [farmer], ending any session still running first.
   ///

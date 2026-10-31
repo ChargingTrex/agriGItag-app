@@ -54,15 +54,16 @@ bool officerMayResolve(Flag flag) => flag.status == 'open' && flag.severity != '
 const _resolvedFlagId = CustomExpression<String>(r"json_extract(payload_json, '$.flag_id')");
 
 /// Open and escalated flags of the officer's farmers (the mirrored Flags table), holds first, then warnings, then
-/// notes, newest first within each. A flag this phone already resolved (a `flag_resolution` entry that the server has
-/// not rejected) is left out until the pull brings the server's status. Re-emitted when flags, farmers or entries
-/// change.
+/// notes, newest first within each. A flag this phone resolved is left out only while that `flag_resolution` entry
+/// is unsent (saved or sent): once the server answered, the pulled flag status wins, so a flag the server reopens under
+/// the same id (B08 `reopens()`) shows again (review M10-r1 P2-1). Re-emitted when flags, farmers or entries change.
 final officerFlagsProvider = StreamProvider<List<OfficerFlag>>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final resolved = db.selectOnly(db.entries)
     ..addColumns([_resolvedFlagId])
     ..where(
-      db.entries.entryType.equals(flagResolutionEntryType) & db.entries.status.equalsValue(EntryStatus.rejected).not(),
+      db.entries.entryType.equals(flagResolutionEntryType) &
+          db.entries.status.isInValues([EntryStatus.saved, EntryStatus.sent]),
     );
   final query = db.select(db.flags).join([leftOuterJoin(db.farmers, db.farmers.farmerId.equalsExp(db.flags.farmerId))])
     ..where(db.flags.status.isIn(['open', 'escalated']) & db.flags.flagId.isNotInQuery(resolved))
@@ -100,8 +101,9 @@ final flaggedEntryProvider = FutureProvider.autoDispose.family<Entry?, String>((
 /// [FlagAction.fix] writes a correction of [entry] (the flagged event's latest version): version + 1 superseding it,
 /// the same event type, lot, plot, farmer and instance, `reasonCode`, and the payload with [bags] (harvest and
 /// packing: kg = bags × [kBagKg]) when given; the officer is the author and assist mode is off (an officer correction
-/// is the officer's own act, FR6). Then, when [officerMayResolve], a `flag_resolution` entry
-/// `{flag_id, resolution, reason_code}` follows it in the outbox. Returns when written.
+/// is the officer's own act, FR6). When [officerMayResolve], a `flag_resolution` entry `{flag_id, resolution,
+/// reason_code}` is queued before it, so the server records the officer's outcome before its rule re-run can close the
+/// flag. Returns when written.
 /// Throws [StateError] when nobody is signed in, or [action] is fix without [entry]; `SqliteException` when the write
 /// fails (nothing is written then, e.g. the version was taken). Side effects: Entries and Outbox rows.
 Future<void> saveFlagAction(
@@ -116,6 +118,29 @@ Future<void> saveFlagAction(
   final officer = await db.sessionDao.read() ?? (throw StateError('signed out'));
   if (action == FlagAction.fix && entry == null) throw StateError('nothing to fix');
   await db.transaction(() async {
+    // The resolution goes first: the correction makes the server re-run the rules, which may close the flag
+    // (`rule_passed`) before a later resolution arrives and is refused as `flag_not_open` (review M10-r1 P3-3).
+    if (officerMayResolve(flag)) {
+      final id = const Uuid().v7();
+      await db.entriesDao.save(
+        EntriesCompanion.insert(
+          entryId: id,
+          rootId: id,
+          version: 1,
+          entryType: flagResolutionEntryType,
+          farmerId: flag.farmerId,
+          instanceNo: 1,
+          payloadJson: jsonEncode({'flag_id': flag.flagId, 'resolution': action.resolution, 'reason_code': reasonCode}),
+          deviceTime: now,
+          locationStatus: LocationStatus.none,
+          enteredByUserId: officer.userId,
+          status: EntryStatus.saved,
+          undoDeadline: now,
+          createdAt: now,
+        ),
+        const [],
+      );
+    }
     if (entry != null && action == FlagAction.fix) {
       final payload = (jsonDecode(entry.payloadJson) as Map).cast<String, Object?>()
         // An officer correction is not made in assist mode, even when the original was.
@@ -156,25 +181,5 @@ Future<void> saveFlagAction(
         const [],
       );
     }
-    if (!officerMayResolve(flag)) return;
-    final id = const Uuid().v7();
-    await db.entriesDao.save(
-      EntriesCompanion.insert(
-        entryId: id,
-        rootId: id,
-        version: 1,
-        entryType: flagResolutionEntryType,
-        farmerId: flag.farmerId,
-        instanceNo: 1,
-        payloadJson: jsonEncode({'flag_id': flag.flagId, 'resolution': action.resolution, 'reason_code': reasonCode}),
-        deviceTime: now,
-        locationStatus: LocationStatus.none,
-        enteredByUserId: officer.userId,
-        status: EntryStatus.saved,
-        undoDeadline: now,
-        createdAt: now,
-      ),
-      const [],
-    );
   });
 }

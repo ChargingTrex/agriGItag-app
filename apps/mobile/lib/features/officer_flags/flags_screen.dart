@@ -169,6 +169,9 @@ class FlagDetailScreen extends ConsumerWidget {
             onPressed: entry == null ? null : () => context.push('/officer/flags/$flagId/${FlagAction.fix.name}'),
           ),
           if (entry == null) Text(l10n.flagNotOnPhone, style: text.bodyLarge),
+          // A correction from this phone not yet answered: say so, so a hold is not corrected twice (r1 P3-4).
+          if (entry != null && entry.version > 1 && const [EntryStatus.saved, EntryStatus.sent].contains(entry.status))
+            Text(l10n.flagFixSent, style: text.bodyLarge),
           gap,
           if (mayResolve) ...[
             OfficerButton(

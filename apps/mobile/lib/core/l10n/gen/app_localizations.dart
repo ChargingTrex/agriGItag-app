@@ -1341,6 +1341,12 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'மீட்டரில் உள்ள அளவு'**
   String get moistureValuePrompt;
+
+  /// Flag detail line when this phone has a correction of the flagged entry that the server has not answered yet.
+  ///
+  /// In ta, this message translates to:
+  /// **'திருத்தம் அனுப்பப்பட்டது; மறு சரிபார்ப்புக்குக் காத்திருக்கிறது.'**
+  String get flagFixSent;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

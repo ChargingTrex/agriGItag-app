@@ -1019,5 +1019,9 @@
   "moistureValuePrompt": "மீட்டரில் உள்ள அளவு",
   "@moistureValuePrompt": {
     "description": "Prompt above the number pad for the moisture value in percent."
+  },
+  "flagFixSent": "திருத்தம் அனுப்பப்பட்டது; மறு சரிபார்ப்புக்குக் காத்திருக்கிறது.",
+  "@flagFixSent": {
+    "description": "Flag detail line when this phone has a correction of the flagged entry that the server has not answered yet."
   }
 }
