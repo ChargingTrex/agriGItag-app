@@ -117,6 +117,7 @@ void main() {
       ));
       await pullChanges(w.contextFor());
       // M07 packing made the lot ready on the phone (the server keeps `open` until intake).
+      await w.saveEntry('packing', {'bags': 6}, lotId: 'lot-1');
       await w.db.update(w.db.lots).write(const LotsCompanion(status: Value('ready_for_sale')));
       for (final (server, expected) in [
         ('open', 'ready_for_sale'),
@@ -136,6 +137,53 @@ void main() {
       }
     },
   );
+
+  test('a ready lot whose packing was rejected or undone takes the server status `open`', () async {
+    for (final status in [EntryStatus.rejected, EntryStatus.undone]) {
+      // One lot per case: entries are append-only (no delete between cases).
+      final lot = 'lot-${status.name}';
+      final packing = await w.saveEntry('packing', {'bags': 6}, lotId: lot);
+      await (w.db.update(
+        w.db.entries,
+      )..where((e) => e.entryId.equals(packing))).write(EntriesCompanion(status: Value(status)));
+      await w.db
+          .into(w.db.lots)
+          .insertOnConflictUpdate(
+            LotsCompanion.insert(
+              lotId: lot,
+              plotId: 'plot-1',
+              farmerId: 'farmer-1',
+              cropId: 'crop-1',
+              season: '2026-rabi',
+              status: 'ready_for_sale',
+              updatedAt: t0,
+            ),
+          );
+      w.server.pullPages.add((
+        [
+          {
+            'entity': 'lot',
+            'op': 'upsert',
+            'data': {
+              'id': lot,
+              'farmer_id': 'farmer-1',
+              'plot_id': 'plot-1',
+              'crop_id': 'crop-1',
+              'season_label': '2026-rabi',
+              'status': 'open',
+              'harvested_kg': '195.000',
+              'packed_kg': '0',
+            },
+          },
+        ],
+        'c-$status',
+        false,
+      ));
+      await pullChanges(w.contextFor());
+      final row = await (w.db.select(w.db.lots)..where((l) => l.lotId.equals(lot))).getSingle();
+      expect(row.status, 'open', reason: 'packing $status');
+    }
+  });
 
   test('a refused cursor (422) is dropped so the next pull starts over', () async {
     await w.db.syncStateDao.set(pullCursorKey, 'bogus');

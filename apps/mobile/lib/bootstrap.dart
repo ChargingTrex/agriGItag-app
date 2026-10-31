@@ -1,11 +1,13 @@
 // App start-up shared by the three flavor entry points: config from --dart-define, crash hooks, runApp.
-// Requirement: plan §7.2 M00 (flavors dev/staging/prod, crash reporting init placeholder); plan §13 D2
+// Requirement: plan §7.2 M00 (flavors dev/staging/prod, crash reporting init placeholder), M13 (crash hooks log);
+//   plan §13 D2
 //   (cold start < 3 s: only local reads happen here); M06 session restore (UserFlows §Log in once); M02 sync engine
 //   start and 15-min background task (mobile-design.md §3, PLAN §13 A1); M12 local reminders and the push seam (FR7,
 //   UserFlows §Alerts, help and feature phones).
 // Callers: lib/main_dev.dart, lib/main_staging.dart, lib/main_prod.dart.
 
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -82,10 +84,12 @@ Future<void> bootstrap(Flavor flavor) async {
   unawaited(registerPush(container));
 }
 
-/// Installs global error hooks so uncaught errors reach one place.
+/// Installs global error hooks so uncaught errors reach one place: framework errors and every uncaught async error,
+/// including the unawaited futures of [bootstrap] and of the sync engine's timers and listeners (they run in the root
+/// zone, so [PlatformDispatcher.onError] receives them and the app keeps running).
 ///
-/// shortcut: errors only go to the debug console and release builds drop them; no crash vendor is chosen
-/// yet. M13 plugs the vendor (with a LIBRARIES.md row) into [_report]; nothing else needs to change.
+/// shortcut: errors go to the `agritrace.crash` log only (no crash vendor, no upload, so no crash-free rate yet);
+/// plug a vendor (with a LIBRARIES.md row) into [_report] when one is chosen (TODO.md); nothing else needs to change.
 /// Side effects: replaces [FlutterError.onError] and [PlatformDispatcher.onError]. Throws nothing.
 void initCrashReporting() {
   FlutterError.onError = (details) {
@@ -98,9 +102,11 @@ void initCrashReporting() {
   };
 }
 
-/// Sends one uncaught [error] with its [stack] (may be null) to the crash sink. Returns nothing; throws
-/// nothing. Side effect: prints to the debug console in debug builds only, so nothing an exception
-/// message carries reaches logcat on a farmer's phone.
+/// Sends one uncaught [error] with its [stack] (may be null) to the crash sink. Returns nothing; throws nothing.
+/// Side effects: one `agritrace.crash` entry in the developer log (DevTools / IDE in debug and profile builds, the Go
+/// AVD perf runs included; a release build has no log reader), and a console line in debug builds. Nothing goes to
+/// logcat, so nothing an exception message carries is readable on a farmer's phone.
 void _report(Object error, StackTrace? stack) {
   if (kDebugMode) debugPrint('Uncaught: $error\n$stack');
+  developer.log('Uncaught: $error', name: 'agritrace.crash', error: error, stackTrace: stack, level: 1000);
 }

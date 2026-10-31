@@ -65,7 +65,9 @@ Future<void> pullChanges(SyncContext c) async {
 }
 
 /// Applies one change of [entity] with [d] (always an upsert by `id`). `intake` and `notification` have no local
-/// table yet and are ignored. A lot the phone made ready keeps `ready_for_sale` while the server says open/drying. Returns when written; throws [TypeError] when a required key is missing.
+/// table yet and are ignored. A lot the phone made ready keeps `ready_for_sale` while the server says open/drying and
+/// its local packing entry is neither rejected nor undone. Returns when written; throws [TypeError] when a required
+/// key is missing.
 Future<void> _apply(SyncContext c, String entity, Map<String, Object?> d) async {
   final db = c.db;
   switch (entity) {
@@ -75,10 +77,21 @@ Future<void> _apply(SyncContext c, String entity, Map<String, Object?> d) async 
       // The server never sets `ready_for_sale` after a packing (only `POST /v1/lots/{id}/ready`, which no phone calls;
       // it re-runs the moisture gate at intake, Architect-Gate ruling 2026-10-31b §1). So a pull saying `open` or
       // `drying` keeps the phone's ready preview (D-006, M07 packing), else the Sell QR (M08) would vanish; a later
-      // server status (`received`, `batched`, ...) still wins.
+      // server status (`received`, `batched`, ...) still wins. Only while the packing that made it ready stands: once
+      // that entry is rejected or undone the server's status wins too (M08 review of merge f2cfb60).
       if (status == 'open' || status == 'drying') {
         final local = await (db.select(db.lots)..where((l) => l.lotId.equals(lotId))).getSingleOrNull();
-        if (local?.status == 'ready_for_sale') status = 'ready_for_sale';
+        final packing =
+            await (db.select(db.entries)
+                  ..where(
+                    (e) =>
+                        e.lotId.equals(lotId) &
+                        e.entryType.equals('packing') &
+                        e.status.isNotInValues([EntryStatus.rejected, EntryStatus.undone]),
+                  )
+                  ..limit(1))
+                .getSingleOrNull();
+        if (local?.status == 'ready_for_sale' && packing != null) status = 'ready_for_sale';
       }
       // Columns the pull does not carry (last moisture, QR payload) are left as they are.
       await db

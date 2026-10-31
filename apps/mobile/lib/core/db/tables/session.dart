@@ -8,8 +8,8 @@ import '../../router/session.dart' show Role;
 
 /// The signed-in session: a singleton row with [id] = 1 (a CHECK constraint enforces it).
 ///
-/// Tokens are not stored here: they live in the platform keystore (D-027, SessionNotifier). The token and PIN columns
-/// below are v1 leftovers, always written empty or null; the next schema bump drops them.
+/// Tokens are not stored here: they live in the platform keystore (D-027, SessionNotifier). Schema v3 (M13) dropped
+/// the empty v1 token and PIN columns.
 @DataClassName('SessionRow')
 class SessionTable extends Table {
   /// SQL table name `session` (the Dart name avoids a clash with the router's `Session` class).
@@ -31,15 +31,6 @@ class SessionTable extends Table {
 
   /// Stable id of this install (UUID, also kept in the keystore), sent in `POST /v1/auth/otp/verify`.
   TextColumn get deviceId => text()();
-
-  /// Unused since M06 (D-027): always `''`; the access token is in the keystore. Dropped at the next schema bump.
-  TextColumn get accessToken => text()();
-
-  /// Unused since M06 (D-027): always `''`; the refresh token is in the keystore. Dropped at the next schema bump.
-  TextColumn get refreshToken => text()();
-
-  /// Unused (always null): the office PIN is checked by the server only (D-024). Dropped at the next schema bump.
-  TextColumn get pinHash => text().nullable()();
 
   /// UI language code, `ta` (default) or `en` (D-016).
   TextColumn get locale => text().withDefault(const Constant('ta'))();

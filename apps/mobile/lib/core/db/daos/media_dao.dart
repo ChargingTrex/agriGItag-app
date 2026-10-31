@@ -2,7 +2,7 @@
 // Requirement: mobile-design.md §3 ("push media for confirmed entries"; "delete full-size file on confirm; keep
 //   ~10 KB thumbnail"; "Phone is full" purge); Arch §Offline-first "Small first, photos second", "Photos made light".
 // Callers: M02 photo_uploader.dart (pendingUploads, awaitingConfirm, setUploadState, markUploaded, purgeFullSize),
-//   M02 pull_service.dart (setUploadState for `photo_pending`), M07 storage prompt (purgeFullSize).
+//   M02 pull_service.dart (setUploadState for `photo_pending`), M13 core/capture/free_space.dart (purgeConfirmed).
 
 import 'dart:io';
 
@@ -83,5 +83,20 @@ class MediaDao extends DatabaseAccessor<AppDatabase> with _$MediaDaoMixin {
       final file = File(path);
       if (file.existsSync()) await file.delete();
     }
+  }
+
+  /// "Phone is full" (M13): deletes the full-size and thumbnail files of every photo the server has confirmed
+  /// (upload status `done`) and records [now] as `purgedAt`. A photo not yet confirmed is never touched: it is the
+  /// only copy of that evidence. Full-size files are normally gone already (deleted on confirm), so this mostly
+  /// frees thumbnails and files a crash left behind.
+  ///
+  /// Returns the number of media rows swept. Throws [FileSystemException] when a file cannot be deleted. Side
+  /// effect: deletes files on disk.
+  Future<int> purgeConfirmed({required DateTime now}) async {
+    final done = await (select(media)..where((m) => m.uploadStatus.equalsValue(UploadStatus.done))).get();
+    for (final m in done) {
+      await purgeFullSize(m.mediaId, now: now, keepThumb: false);
+    }
+    return done.length;
   }
 }

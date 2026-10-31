@@ -2099,33 +2099,6 @@ class $SessionTableTable extends SessionTable with TableInfo<$SessionTableTable,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _accessTokenMeta = const VerificationMeta('accessToken');
-  @override
-  late final GeneratedColumn<String> accessToken = GeneratedColumn<String>(
-    'access_token',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _refreshTokenMeta = const VerificationMeta('refreshToken');
-  @override
-  late final GeneratedColumn<String> refreshToken = GeneratedColumn<String>(
-    'refresh_token',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _pinHashMeta = const VerificationMeta('pinHash');
-  @override
-  late final GeneratedColumn<String> pinHash = GeneratedColumn<String>(
-    'pin_hash',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _localeMeta = const VerificationMeta('locale');
   @override
   late final GeneratedColumn<String> locale = GeneratedColumn<String>(
@@ -2148,18 +2121,7 @@ class $SessionTableTable extends SessionTable with TableInfo<$SessionTableTable,
     defaultValue: const Constant(false),
   );
   @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    userId,
-    role,
-    fpoId,
-    deviceId,
-    accessToken,
-    refreshToken,
-    pinHash,
-    locale,
-    wifiOnlyPhotos,
-  ];
+  List<GeneratedColumn> get $columns => [id, userId, role, fpoId, deviceId, locale, wifiOnlyPhotos];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2187,19 +2149,6 @@ class $SessionTableTable extends SessionTable with TableInfo<$SessionTableTable,
     } else if (isInserting) {
       context.missing(_deviceIdMeta);
     }
-    if (data.containsKey('access_token')) {
-      context.handle(_accessTokenMeta, accessToken.isAcceptableOrUnknown(data['access_token']!, _accessTokenMeta));
-    } else if (isInserting) {
-      context.missing(_accessTokenMeta);
-    }
-    if (data.containsKey('refresh_token')) {
-      context.handle(_refreshTokenMeta, refreshToken.isAcceptableOrUnknown(data['refresh_token']!, _refreshTokenMeta));
-    } else if (isInserting) {
-      context.missing(_refreshTokenMeta);
-    }
-    if (data.containsKey('pin_hash')) {
-      context.handle(_pinHashMeta, pinHash.isAcceptableOrUnknown(data['pin_hash']!, _pinHashMeta));
-    }
     if (data.containsKey('locale')) {
       context.handle(_localeMeta, locale.isAcceptableOrUnknown(data['locale']!, _localeMeta));
     }
@@ -2225,9 +2174,6 @@ class $SessionTableTable extends SessionTable with TableInfo<$SessionTableTable,
       ),
       fpoId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}fpo_id'])!,
       deviceId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
-      accessToken: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}access_token'])!,
-      refreshToken: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}refresh_token'])!,
-      pinHash: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}pin_hash']),
       locale: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}locale'])!,
       wifiOnlyPhotos: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}wifi_only_photos'])!,
     );
@@ -2257,15 +2203,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   /// Stable id of this install (UUID, also kept in the keystore), sent in `POST /v1/auth/otp/verify`.
   final String deviceId;
 
-  /// Unused since M06 (D-027): always `''`; the access token is in the keystore. Dropped at the next schema bump.
-  final String accessToken;
-
-  /// Unused since M06 (D-027): always `''`; the refresh token is in the keystore. Dropped at the next schema bump.
-  final String refreshToken;
-
-  /// Unused (always null): the office PIN is checked by the server only (D-024). Dropped at the next schema bump.
-  final String? pinHash;
-
   /// UI language code, `ta` (default) or `en` (D-016).
   final String locale;
 
@@ -2277,9 +2214,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     required this.role,
     required this.fpoId,
     required this.deviceId,
-    required this.accessToken,
-    required this.refreshToken,
-    this.pinHash,
     required this.locale,
     required this.wifiOnlyPhotos,
   });
@@ -2293,11 +2227,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     }
     map['fpo_id'] = Variable<String>(fpoId);
     map['device_id'] = Variable<String>(deviceId);
-    map['access_token'] = Variable<String>(accessToken);
-    map['refresh_token'] = Variable<String>(refreshToken);
-    if (!nullToAbsent || pinHash != null) {
-      map['pin_hash'] = Variable<String>(pinHash);
-    }
     map['locale'] = Variable<String>(locale);
     map['wifi_only_photos'] = Variable<bool>(wifiOnlyPhotos);
     return map;
@@ -2310,9 +2239,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       role: Value(role),
       fpoId: Value(fpoId),
       deviceId: Value(deviceId),
-      accessToken: Value(accessToken),
-      refreshToken: Value(refreshToken),
-      pinHash: pinHash == null && nullToAbsent ? const Value.absent() : Value(pinHash),
       locale: Value(locale),
       wifiOnlyPhotos: Value(wifiOnlyPhotos),
     );
@@ -2326,9 +2252,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       role: $SessionTableTable.$converterrole.fromJson(serializer.fromJson<String>(json['role'])),
       fpoId: serializer.fromJson<String>(json['fpoId']),
       deviceId: serializer.fromJson<String>(json['deviceId']),
-      accessToken: serializer.fromJson<String>(json['accessToken']),
-      refreshToken: serializer.fromJson<String>(json['refreshToken']),
-      pinHash: serializer.fromJson<String?>(json['pinHash']),
       locale: serializer.fromJson<String>(json['locale']),
       wifiOnlyPhotos: serializer.fromJson<bool>(json['wifiOnlyPhotos']),
     );
@@ -2342,9 +2265,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       'role': serializer.toJson<String>($SessionTableTable.$converterrole.toJson(role)),
       'fpoId': serializer.toJson<String>(fpoId),
       'deviceId': serializer.toJson<String>(deviceId),
-      'accessToken': serializer.toJson<String>(accessToken),
-      'refreshToken': serializer.toJson<String>(refreshToken),
-      'pinHash': serializer.toJson<String?>(pinHash),
       'locale': serializer.toJson<String>(locale),
       'wifiOnlyPhotos': serializer.toJson<bool>(wifiOnlyPhotos),
     };
@@ -2356,9 +2276,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     Role? role,
     String? fpoId,
     String? deviceId,
-    String? accessToken,
-    String? refreshToken,
-    Value<String?> pinHash = const Value.absent(),
     String? locale,
     bool? wifiOnlyPhotos,
   }) => SessionRow(
@@ -2367,9 +2284,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     role: role ?? this.role,
     fpoId: fpoId ?? this.fpoId,
     deviceId: deviceId ?? this.deviceId,
-    accessToken: accessToken ?? this.accessToken,
-    refreshToken: refreshToken ?? this.refreshToken,
-    pinHash: pinHash.present ? pinHash.value : this.pinHash,
     locale: locale ?? this.locale,
     wifiOnlyPhotos: wifiOnlyPhotos ?? this.wifiOnlyPhotos,
   );
@@ -2380,9 +2294,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       role: data.role.present ? data.role.value : this.role,
       fpoId: data.fpoId.present ? data.fpoId.value : this.fpoId,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
-      accessToken: data.accessToken.present ? data.accessToken.value : this.accessToken,
-      refreshToken: data.refreshToken.present ? data.refreshToken.value : this.refreshToken,
-      pinHash: data.pinHash.present ? data.pinHash.value : this.pinHash,
       locale: data.locale.present ? data.locale.value : this.locale,
       wifiOnlyPhotos: data.wifiOnlyPhotos.present ? data.wifiOnlyPhotos.value : this.wifiOnlyPhotos,
     );
@@ -2396,9 +2307,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ..write('role: $role, ')
           ..write('fpoId: $fpoId, ')
           ..write('deviceId: $deviceId, ')
-          ..write('accessToken: $accessToken, ')
-          ..write('refreshToken: $refreshToken, ')
-          ..write('pinHash: $pinHash, ')
           ..write('locale: $locale, ')
           ..write('wifiOnlyPhotos: $wifiOnlyPhotos')
           ..write(')'))
@@ -2406,8 +2314,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, role, fpoId, deviceId, accessToken, refreshToken, pinHash, locale, wifiOnlyPhotos);
+  int get hashCode => Object.hash(id, userId, role, fpoId, deviceId, locale, wifiOnlyPhotos);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2417,9 +2324,6 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           other.role == this.role &&
           other.fpoId == this.fpoId &&
           other.deviceId == this.deviceId &&
-          other.accessToken == this.accessToken &&
-          other.refreshToken == this.refreshToken &&
-          other.pinHash == this.pinHash &&
           other.locale == this.locale &&
           other.wifiOnlyPhotos == this.wifiOnlyPhotos);
 }
@@ -2430,9 +2334,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionRow> {
   final Value<Role> role;
   final Value<String> fpoId;
   final Value<String> deviceId;
-  final Value<String> accessToken;
-  final Value<String> refreshToken;
-  final Value<String?> pinHash;
   final Value<String> locale;
   final Value<bool> wifiOnlyPhotos;
   const SessionTableCompanion({
@@ -2441,9 +2342,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionRow> {
     this.role = const Value.absent(),
     this.fpoId = const Value.absent(),
     this.deviceId = const Value.absent(),
-    this.accessToken = const Value.absent(),
-    this.refreshToken = const Value.absent(),
-    this.pinHash = const Value.absent(),
     this.locale = const Value.absent(),
     this.wifiOnlyPhotos = const Value.absent(),
   });
@@ -2453,26 +2351,18 @@ class SessionTableCompanion extends UpdateCompanion<SessionRow> {
     required Role role,
     required String fpoId,
     required String deviceId,
-    required String accessToken,
-    required String refreshToken,
-    this.pinHash = const Value.absent(),
     this.locale = const Value.absent(),
     this.wifiOnlyPhotos = const Value.absent(),
   }) : userId = Value(userId),
        role = Value(role),
        fpoId = Value(fpoId),
-       deviceId = Value(deviceId),
-       accessToken = Value(accessToken),
-       refreshToken = Value(refreshToken);
+       deviceId = Value(deviceId);
   static Insertable<SessionRow> custom({
     Expression<int>? id,
     Expression<String>? userId,
     Expression<String>? role,
     Expression<String>? fpoId,
     Expression<String>? deviceId,
-    Expression<String>? accessToken,
-    Expression<String>? refreshToken,
-    Expression<String>? pinHash,
     Expression<String>? locale,
     Expression<bool>? wifiOnlyPhotos,
   }) {
@@ -2482,9 +2372,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionRow> {
       if (role != null) 'role': role,
       if (fpoId != null) 'fpo_id': fpoId,
       if (deviceId != null) 'device_id': deviceId,
-      if (accessToken != null) 'access_token': accessToken,
-      if (refreshToken != null) 'refresh_token': refreshToken,
-      if (pinHash != null) 'pin_hash': pinHash,
       if (locale != null) 'locale': locale,
       if (wifiOnlyPhotos != null) 'wifi_only_photos': wifiOnlyPhotos,
     });
@@ -2496,9 +2383,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionRow> {
     Value<Role>? role,
     Value<String>? fpoId,
     Value<String>? deviceId,
-    Value<String>? accessToken,
-    Value<String>? refreshToken,
-    Value<String?>? pinHash,
     Value<String>? locale,
     Value<bool>? wifiOnlyPhotos,
   }) {
@@ -2508,9 +2392,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionRow> {
       role: role ?? this.role,
       fpoId: fpoId ?? this.fpoId,
       deviceId: deviceId ?? this.deviceId,
-      accessToken: accessToken ?? this.accessToken,
-      refreshToken: refreshToken ?? this.refreshToken,
-      pinHash: pinHash ?? this.pinHash,
       locale: locale ?? this.locale,
       wifiOnlyPhotos: wifiOnlyPhotos ?? this.wifiOnlyPhotos,
     );
@@ -2534,15 +2415,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionRow> {
     if (deviceId.present) {
       map['device_id'] = Variable<String>(deviceId.value);
     }
-    if (accessToken.present) {
-      map['access_token'] = Variable<String>(accessToken.value);
-    }
-    if (refreshToken.present) {
-      map['refresh_token'] = Variable<String>(refreshToken.value);
-    }
-    if (pinHash.present) {
-      map['pin_hash'] = Variable<String>(pinHash.value);
-    }
     if (locale.present) {
       map['locale'] = Variable<String>(locale.value);
     }
@@ -2560,9 +2432,6 @@ class SessionTableCompanion extends UpdateCompanion<SessionRow> {
           ..write('role: $role, ')
           ..write('fpoId: $fpoId, ')
           ..write('deviceId: $deviceId, ')
-          ..write('accessToken: $accessToken, ')
-          ..write('refreshToken: $refreshToken, ')
-          ..write('pinHash: $pinHash, ')
           ..write('locale: $locale, ')
           ..write('wifiOnlyPhotos: $wifiOnlyPhotos')
           ..write(')'))
@@ -8364,9 +8233,6 @@ typedef $$SessionTableTableCreateCompanionBuilder =
       required Role role,
       required String fpoId,
       required String deviceId,
-      required String accessToken,
-      required String refreshToken,
-      Value<String?> pinHash,
       Value<String> locale,
       Value<bool> wifiOnlyPhotos,
     });
@@ -8377,9 +8243,6 @@ typedef $$SessionTableTableUpdateCompanionBuilder =
       Value<Role> role,
       Value<String> fpoId,
       Value<String> deviceId,
-      Value<String> accessToken,
-      Value<String> refreshToken,
-      Value<String?> pinHash,
       Value<String> locale,
       Value<bool> wifiOnlyPhotos,
     });
@@ -8405,15 +8268,6 @@ class $$SessionTableTableFilterComposer extends Composer<_$AppDatabase, $Session
 
   ColumnFilters<String> get deviceId =>
       $composableBuilder(column: $table.deviceId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get accessToken =>
-      $composableBuilder(column: $table.accessToken, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get refreshToken =>
-      $composableBuilder(column: $table.refreshToken, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get pinHash =>
-      $composableBuilder(column: $table.pinHash, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get locale =>
       $composableBuilder(column: $table.locale, builder: (column) => ColumnFilters(column));
@@ -8444,15 +8298,6 @@ class $$SessionTableTableOrderingComposer extends Composer<_$AppDatabase, $Sessi
   ColumnOrderings<String> get deviceId =>
       $composableBuilder(column: $table.deviceId, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get accessToken =>
-      $composableBuilder(column: $table.accessToken, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get refreshToken =>
-      $composableBuilder(column: $table.refreshToken, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get pinHash =>
-      $composableBuilder(column: $table.pinHash, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get locale =>
       $composableBuilder(column: $table.locale, builder: (column) => ColumnOrderings(column));
 
@@ -8478,14 +8323,6 @@ class $$SessionTableTableAnnotationComposer extends Composer<_$AppDatabase, $Ses
   GeneratedColumn<String> get fpoId => $composableBuilder(column: $table.fpoId, builder: (column) => column);
 
   GeneratedColumn<String> get deviceId => $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  GeneratedColumn<String> get accessToken =>
-      $composableBuilder(column: $table.accessToken, builder: (column) => column);
-
-  GeneratedColumn<String> get refreshToken =>
-      $composableBuilder(column: $table.refreshToken, builder: (column) => column);
-
-  GeneratedColumn<String> get pinHash => $composableBuilder(column: $table.pinHash, builder: (column) => column);
 
   GeneratedColumn<String> get locale => $composableBuilder(column: $table.locale, builder: (column) => column);
 
@@ -8523,9 +8360,6 @@ class $$SessionTableTableTableManager
                 Value<Role> role = const Value.absent(),
                 Value<String> fpoId = const Value.absent(),
                 Value<String> deviceId = const Value.absent(),
-                Value<String> accessToken = const Value.absent(),
-                Value<String> refreshToken = const Value.absent(),
-                Value<String?> pinHash = const Value.absent(),
                 Value<String> locale = const Value.absent(),
                 Value<bool> wifiOnlyPhotos = const Value.absent(),
               }) => SessionTableCompanion(
@@ -8534,9 +8368,6 @@ class $$SessionTableTableTableManager
                 role: role,
                 fpoId: fpoId,
                 deviceId: deviceId,
-                accessToken: accessToken,
-                refreshToken: refreshToken,
-                pinHash: pinHash,
                 locale: locale,
                 wifiOnlyPhotos: wifiOnlyPhotos,
               ),
@@ -8547,9 +8378,6 @@ class $$SessionTableTableTableManager
                 required Role role,
                 required String fpoId,
                 required String deviceId,
-                required String accessToken,
-                required String refreshToken,
-                Value<String?> pinHash = const Value.absent(),
                 Value<String> locale = const Value.absent(),
                 Value<bool> wifiOnlyPhotos = const Value.absent(),
               }) => SessionTableCompanion.insert(
@@ -8558,9 +8386,6 @@ class $$SessionTableTableTableManager
                 role: role,
                 fpoId: fpoId,
                 deviceId: deviceId,
-                accessToken: accessToken,
-                refreshToken: refreshToken,
-                pinHash: pinHash,
                 locale: locale,
                 wifiOnlyPhotos: wifiOnlyPhotos,
               ),

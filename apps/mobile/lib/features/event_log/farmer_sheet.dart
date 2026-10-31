@@ -2,12 +2,16 @@
 // fixes it, shown as a bottom sheet over the M05 ErrorSheet. Never an error code.
 // Requirement: UserFlows §When things go wrong (photo not clear, phone full, ...), §Design rules "Pictures and voice
 //   before words"; plan §7.2 M07 (F16 error sheets).
-// Callers: CameraStep, ConfirmScreen, SavedScreen, EventFlowScreen (event_log), VoiceNoteButton (problem_report).
+// Callers: CameraStep, ConfirmScreen, SavedScreen, EventFlowScreen (event_log), VoiceNoteButton (problem_report);
+//   showPhoneFull also FarmerHomeScreen (M13 low storage at app start).
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/gen/app_localizations.dart';
 import '../../core/theme/farmer_tokens.dart';
 import '../../core/widgets/error_sheet.dart';
+import 'event_log_controller.dart';
 
 /// Shows the one-button sheet: [icon] pictures the problem, [sentence] / [promptId] is the spoken line, the button is
 /// [actionIcon] + [actionLabel] (≤ 2 words) / [actionPromptId]. The button closes the sheet, then runs [onAction].
@@ -42,3 +46,21 @@ Future<void> showFarmerSheet(
     ),
   ),
 );
+
+/// Shows "Phone is full. Send your entries now?"; the button starts a send ([afterSaveProvider] read from [ref]).
+///
+/// [context] must sit under the app theme and localizations. Returns when the sheet is closed; throws nothing.
+/// Side effect: pushes a modal route.
+Future<void> showPhoneFull(BuildContext context, WidgetRef ref) {
+  final l10n = AppLocalizations.of(context);
+  return showFarmerSheet(
+    context,
+    icon: Icons.sd_card_alert,
+    sentence: l10n.phoneFull,
+    promptId: 'phoneFull',
+    actionIcon: Icons.cloud_upload,
+    actionLabel: l10n.sendNow,
+    actionPromptId: 'sendNow',
+    onAction: ref.read(afterSaveProvider),
+  );
+}

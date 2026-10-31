@@ -69,6 +69,94 @@ void main() {
     expect(await w.db.syncStateDao.get(syncUserKey), 'user-2');
   });
 
+  test('D-029: a user switch drops the previous user\'s lots, plots, tasks and flags but keeps rows an unsent entry '
+      'names and the farmers', () async {
+    await w.sync.runOnce(); // user-1 owns the sync state now
+    await w.save(); // unsent entry of user-1 on lot-1 / plot-1
+    final db = w.db;
+    for (final lot in ['lot-1', 'lot-a']) {
+      await db
+          .into(db.lots)
+          .insert(
+            LotsCompanion.insert(
+              lotId: lot,
+              plotId: 'plot-1',
+              farmerId: 'farmer-1',
+              cropId: 'crop-1',
+              season: '2026-rabi',
+              status: 'open',
+              updatedAt: t0,
+            ),
+          );
+    }
+    for (final plot in ['plot-1', 'plot-a']) {
+      await db
+          .into(db.plots)
+          .insert(
+            PlotsCompanion.insert(
+              plotId: plot,
+              farmerId: 'farmer-1',
+              pinLat: 9.5,
+              pinLng: 78.1,
+              pinAccuracyM: 5,
+              pinMethod: 'live_gps',
+              declaredArea: 1,
+              areaUnit: 'acre',
+              giStatus: 'inside',
+              locked: false,
+              version: 1,
+            ),
+          );
+    }
+    await db
+        .into(db.tasks)
+        .insert(
+          TasksCompanion.insert(
+            taskId: 't1',
+            farmerId: 'farmer-1',
+            eventType: 'drying',
+            dueDate: t0,
+            promptId: 'taskDryingDone',
+            source: 'local',
+          ),
+        );
+    await db
+        .into(db.flags)
+        .insert(
+          FlagsCompanion.insert(
+            flagId: 'flag-1',
+            farmerId: 'farmer-1',
+            type: 'yield_over_ceiling',
+            severity: 'warn',
+            status: 'open',
+            detailJson: '{}',
+            updatedAt: t0,
+          ),
+        );
+    await db
+        .into(db.farmers)
+        .insert(
+          FarmersCompanion.insert(
+            farmerId: 'farmer-9',
+            fpoId: 'fpo-1',
+            name: 'Offline farmer',
+            village: '',
+            hasSmartphone: false,
+            language: 'ta',
+            status: 'pending',
+            json: '{}',
+          ),
+        );
+
+    await w.init(userId: 'user-2');
+    await w.sync.runOnce();
+    expect((await db.select(db.lots).get()).map((l) => l.lotId), ['lot-1']);
+    expect((await db.select(db.plots).get()).map((p) => p.plotId), ['plot-1']);
+    expect(await db.select(db.tasks).get(), isEmpty);
+    expect(await db.select(db.flags).get(), isEmpty);
+    expect((await db.select(db.farmers).get()).map((f) => f.farmerId), ['farmer-9']);
+  });
+
   test('a row left sending by a quick kill is retried by the next run once 5 min have passed', () async {
     final id = await w.save();
     await w.db.outboxDao.markSending([(await w.outboxOf(id)).seq], w.clock);

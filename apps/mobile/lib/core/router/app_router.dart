@@ -8,7 +8,7 @@
 //   M10 adds the officer home, flags and assist mode (UserFlows §Field officer flows): under `/assist/:farmerId` the
 //   farmer's home and event screens run again for the assisted farmer, only while that farmer's assist session runs.
 //   M08 adds Sell, Money, History (+ entry detail) and the real Settings (UserFlows §Selling to the FPO).
-//   M11 puts the QC home on /qc (UserFlows §Grade a batch).
+//   M11 puts the QC home on /qc (UserFlows §Grade a batch). M13: PLAN §13 D2 cold start (D-053, imports).
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
 //   test/widget/router_test.dart.
 
@@ -31,6 +31,13 @@ import '../../features/farmer_home/farmer_home_screen.dart';
 import '../../features/history/history_screen.dart';
 import '../../features/money/money_screen.dart';
 import '../../features/officer_assist/assist_controller.dart';
+// DECISION D-053: the officer and QC screens below are plain imports, not `deferred as` (PLAN §13 D2 named deferred
+//   imports for the cold start).
+//   ADV: Flutter puts a deferred library in its own .so only with `deferred-components` (Play Feature Delivery);
+//   without it every library stays in libapp.so and `loadLibrary()` does nothing, and Dart AOT runs no library
+//   initialisers at start (globals are lazy), so these imports cost no cold-start time; no async route plumbing.
+//   COMPROMISE: the farmer home is not measurably first in the binary; if the Go AVD trace (Q01) shows a cold start
+//   of 3 s or more, the lever is Play deferred components plus a shrunk first frame, not this import list.
 import '../../features/officer_flags/flag_actions.dart' show FlagAction;
 import '../../features/officer_flags/flags_screen.dart';
 import '../../features/officer_home/officer_home_screen.dart';

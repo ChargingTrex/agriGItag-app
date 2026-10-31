@@ -198,15 +198,17 @@ class SyncService {
     await db.outboxDao.resetStaleSending(now: now());
     final session = await db.select(db.sessionTable).getSingleOrNull();
     if (session == null) return;
-    if (await db.syncStateDao.get(syncUserKey) != session.userId) {
-      // DECISION D-029: the pull cursor and the reference bundles belong to the user who fetched them; another user
-      //   signing in on the same phone starts both from scratch (the server cursor and the per-FPO plots version
-      //   are not bound to a user).
-      //   ADV: user B gets their own changes and plots, never A's.  COMPROMISE: a user switch re-downloads every
-      //   bundle part once.
+    final previousUser = await db.syncStateDao.get(syncUserKey);
+    if (previousUser != session.userId) {
+      // DECISION D-029: the pull cursor, the reference bundles and the pulled rows belong to the user who fetched
+      //   them; another user signing in on the same phone starts from scratch (the server cursor and the per-FPO
+      //   plots version are not bound to a user).
+      //   ADV: user B gets their own changes, plots, lots, flags and reminders, never A's.  COMPROMISE: a user switch
+      //   re-downloads every bundle part once, and A's local drying reminders are gone when A signs in again.
       await db.transaction(() async {
         await (db.delete(db.syncState)..where((s) => s.key.equals(pullCursorKey))).go();
         await db.delete(db.refBundles).go();
+        if (previousUser != null) await _forgetPulledRows();
         await db.syncStateDao.set(syncUserKey, session.userId);
       });
     }
@@ -236,6 +238,23 @@ class SyncService {
       }
     }
     await db.syncStateDao.set('last_sync_at', now().toIso8601String());
+  }
+
+  /// User switch (D-029): deletes the previous user's Lots, Plots, Tasks and Flags; the fresh pull and plots bundle
+  /// of the new user refill theirs. A lot or plot that an entry not yet confirmed (saved, sent or rejected) names is
+  /// kept, so that entry can still be sent and shown. Farmers are kept: only M09's offline registration writes them,
+  /// and nothing pulls them back. Returns when deleted; throws only on database errors. Side effect: M12 reminders
+  /// are rescheduled from the emptied Tasks table.
+  Future<void> _forgetPulledRows() async {
+    final unconfirmed = db.entries.status.isNotInValues([EntryStatus.confirmed, EntryStatus.undone]);
+    // The ids in [column] of unconfirmed entries.
+    BaseSelectStatement<TypedResult> namedBy(GeneratedColumn<String> column) => db.selectOnly(db.entries)
+      ..addColumns([column])
+      ..where(unconfirmed & column.isNotNull());
+    await (db.delete(db.lots)..where((l) => l.lotId.isInQuery(namedBy(db.entries.lotId)).not())).go();
+    await (db.delete(db.plots)..where((p) => p.plotId.isInQuery(namedBy(db.entries.plotId)).not())).go();
+    await db.delete(db.tasks).go();
+    await db.delete(db.flags).go();
   }
 
   /// When started, wakes the engine at the earliest future backoff of the signed-in user (2, 4, 8 … s). Returns

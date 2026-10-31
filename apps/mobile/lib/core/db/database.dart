@@ -80,13 +80,13 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.open()
     : this(driftDatabase(name: 'agritrace', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
-  /// Schema version 2 (M02: `Outbox.ownerUserId`, D-029). Bump it, add a step to [migration] and run
+  /// Schema version 3 (M02 v2: `Outbox.ownerUserId`, D-029; M13 v3: Session without token/PIN columns). Bump it, add a step to [migration] and run
   /// tool/schema_dump.sh for every schema change.
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   /// Creates every table, index and trigger on first open; upgrades older files step by step (v1 → v2: Outbox
-  /// rebuilt with `ownerUserId`).
+  /// rebuilt with `ownerUserId`; v2 → v3: Session rebuilt without the empty token and PIN columns).
   ///
   /// `beforeOpen` turns on foreign keys (off by default in SQLite) so `Media.entryId` must name an existing entry,
   /// and recursive triggers, so the implicit delete of `INSERT OR REPLACE` fires `entries_no_delete` too.
@@ -112,6 +112,10 @@ class AppDatabase extends _$AppDatabase {
             },
           ),
         );
+      }
+      if (from < 3) {
+        // Rebuilds Session with the current columns only; the signed-in row is copied, so nobody is signed out.
+        await m.alterTable(TableMigration(sessionTable));
       }
     },
     beforeOpen: (details) async {

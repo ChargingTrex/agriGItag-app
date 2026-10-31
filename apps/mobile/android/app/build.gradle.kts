@@ -38,6 +38,10 @@ android {
 
     buildTypes {
         release {
+            // M13 size (PLAN §13 D1): R8 minify and resource shrinking are already on for release, set by the Flutter
+            //   Gradle plugin (FlutterPlugin.kt, unless built with --no-shrink); plugins ship their own consumer
+            //   ProGuard rules. The AAB splits per ABI, density and language by default (bundle { abi.enableSplit }).
+            //   Measured by tool/size_check.sh (docs/agents/reports/M13.md).
             // shortcut: release is signed with the debug keys so `flutter run --release` works; M13 adds the
             //   upload keystore from CI secrets before any build leaves the team.
             // Signing with the debug keys for now, so `flutter run --release` works.

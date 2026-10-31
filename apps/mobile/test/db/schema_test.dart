@@ -1,7 +1,8 @@
 // Schema dump test: fails when the Drift tables change without a new schema version and dump.
 // Requirement: mobile-design.md §2 ("Schema dump test from day one"); M01 migrations deliverable.
 // Callers: `flutter test test/db`. After a schema change: bump AppDatabase.schemaVersion, add the onUpgrade step,
-//   run tool/schema_dump.sh, and add a migration test from the previous version here (v1 → v2: Outbox owner, D-029).
+//   run tool/schema_dump.sh, and add a migration test from the previous version here (v1 → v2: Outbox owner, D-029;
+//   v2 → v3: Session without the token/PIN columns, M13).
 
 import 'package:agritrace/core/db/database.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
@@ -44,9 +45,24 @@ void main() {
     );
 
     final db = AppDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, 2);
+    // The app database always migrates to its current version, so this runs (and validates) v1 → v2 → v3.
+    await verifier.migrateAndValidate(db, db.schemaVersion);
     final rows = await db.select(db.outbox).get();
     expect(rows.map((r) => (r.refId, r.ownerUserId)), [('e1', 'user-1'), ('m1', 'user-1')]);
+    await db.close();
+  });
+
+  test('v2 → v3 drops the Session token and PIN columns and keeps the signed-in row', () async {
+    final schema = await verifier.schemaAt(2);
+    schema.rawDatabase.execute(
+      'INSERT INTO session (id, user_id, role, fpo_id, device_id, access_token, refresh_token, locale, '
+      "wifi_only_photos) VALUES (1, 'user-1', 'farmer', 'fpo-1', 'dev-1', '', '', 'en', 1)",
+    );
+
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 3);
+    final row = await db.sessionDao.read();
+    expect((row!.userId, row.locale, row.wifiOnlyPhotos), ('user-1', 'en', true));
     await db.close();
   });
 }
