@@ -12,7 +12,7 @@ Written for: whoever resumes the multi-agent build (human or the Orchestrator se
 | Follow-ups | `TODO.md` (~300 lines, grouped; the decision-number ledger line pre-assigns numbers to in-flight branches) |
 | Agent protocol | `docs/agents/{roles,checkpoint-protocol,qa-rubric}.md`; every review in `docs/agents/reviews/<WP>-r<n>.md`, every worker report in `docs/agents/reports/<WP>.md` |
 | Gates | G0–G4 all unsigned: every gate needs the stack run first (see §2) |
-| Remote | `origin` = https://github.com/ChargingTrex/agriGitag (private, created 2026-10-31 at close); `main` and the three in-flight branches are pushed |
+| Remote | **none yet.** No `origin` is configured and no GitHub repo exists; the Orchestrator's attempt to create a private `ChargingTrex/agriGitag` and push was denied by the permission classifier. Human step: `gh repo create ChargingTrex/agriGitag --private --source . --remote origin --push`, then `git push origin worktree-agent-a0f7bf849398faf5a worktree-agent-af029d14158299b86 worktree-agent-a94b72ad04155d510` |
 | Main | `git log` ~286 commits; backend 617 unit tests / 768 collected; mobile 793 tests; portal 120 Vitest; public page 76 pytest; 49 error codes; migrations 0001–0004 single head; OpenAPI, TS and Dart clients regenerated after the last backend merge |
 
 ### Merged to `main` today (2026-10-31), in order
