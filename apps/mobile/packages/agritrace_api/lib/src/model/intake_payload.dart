@@ -10,28 +10,28 @@ import 'package:built_value/serializer.dart';
 
 part 'intake_payload.g.dart';
 
-/// Stage 7 sale of a lot to the processor, as recorded on the lot's timeline.
+/// Stage 7 sale of a lot to the processor, as a note on the lot's timeline only.  It does not receive the lot: no `lot_intakes` row, no status change (D-040). To receive a lot use push kind `lot_intake` or `POST /v1/intakes`.
 ///
 /// Properties:
-/// * [moistureReadingId] - Client id of the intake moisture reading taken at the gate.
+/// * [moistureReadingId] - Client id of the intake moisture reading taken at the gate (note only).
 /// * [pricePerKg]
-/// * [processorId] - Processor that received the lot.
-/// * [received] - Quantity received, unit `kg`.
+/// * [processorId] - Processor named in the note (the lot is received only by `lot_intake`).
+/// * [received] - Quantity noted, unit `kg` (not used for shares or reconciliation).
 @BuiltValue()
 abstract class IntakePayload
     implements Built<IntakePayload, IntakePayloadBuilder> {
-  /// Client id of the intake moisture reading taken at the gate.
+  /// Client id of the intake moisture reading taken at the gate (note only).
   @BuiltValueField(wireName: r'moisture_reading_id')
   String? get moistureReadingId;
 
   @BuiltValueField(wireName: r'price_per_kg')
   PricePerKg? get pricePerKg;
 
-  /// Processor that received the lot.
+  /// Processor named in the note (the lot is received only by `lot_intake`).
   @BuiltValueField(wireName: r'processor_id')
   String? get processorId;
 
-  /// Quantity received, unit `kg`.
+  /// Quantity noted, unit `kg` (not used for shares or reconciliation).
   @BuiltValueField(wireName: r'received')
   QuantityInput? get received;
 

@@ -5,8 +5,10 @@ non-evidence paths) plus counts (FR63), budgets (plan §13 E1), consent names, l
 W02 canaries (end of file): the built page passes the privacy lint with fixtures/canaries.json, each
 canary planted in the record never reaches the page, and each canary injected into a template copy
 fails the lint (BM-09, "injected phone fails CI").
-Requirements: FR15-FR19, FR51, FR58, FR61-FR63, FR72; BM-09; CLAUDE.md §6.
-Callers: ``uv run pytest`` locally and in the public-page CI job; the W01 and W02 Verifiers.
+W03 (end of file): OG tags without personal data, Tamil strings in lang="ta" with system fonts,
+print CSS, map thumbnail dots, same-day stage order, and the unavailable page and its CLI.
+Requirements: FR15-FR19, FR51, FR58, FR61-FR63, FR72; BM-09; CLAUDE.md §6; W03 acceptance.
+Callers: ``uv run pytest`` locally and in the public-page CI job; the W01-W03 Verifiers.
 """
 
 import copy
@@ -24,7 +26,7 @@ import html5lib
 import pytest
 from pydantic import ValidationError
 
-from agritrace_page import BUDGETS, measure, render
+from agritrace_page import BUDGETS, measure, render, render_unavailable
 from agritrace_page.cli import main
 from agritrace_page.render import day, indian_number
 from agritrace_page.schema import Lot, PublicBatchRecord
@@ -470,3 +472,188 @@ def test_canary_injected_into_template_fails_privacy_lint(tmp_path: Path, canary
     assert done.returncode == 1, done.stdout
     assert f": {canary['rule']}: " in done.stdout and ": canary: <redacted>" in done.stdout
     assert canary["value"] not in done.stdout
+
+
+# --- W03: OG tags, lang attributes, print CSS, unavailable page, map thumbnail ---
+
+TAMIL = re.compile(r"[஀-௿]")
+SVG = "{http://www.w3.org/2000/svg}"
+
+
+def _meta(root: Element) -> dict[str, str]:
+    """Collect ``<meta>`` contents by their ``property`` or ``name``.
+
+    Args:
+        root: A parsed page.
+
+    Returns:
+        {"og:title": ..., "description": ..., ...}.
+    """
+    return {
+        m.get("property") or m.get("name"): m.get("content")
+        for m in root.iterfind(".//meta")
+        if m.get("content") is not None
+    }
+
+
+def test_og_tags_name_crop_gi_and_code(record: dict) -> None:
+    """og:title is crop + GI tag + batch code; og:url and og:image are the public URL and QR."""
+    meta = _meta(parse(render(record).html))
+    assert meta["og:title"] == (
+        "விருதுநகர் சம்பா வத்தல் / Virudhunagar Samba Vathal · GI 883 · FGP8T4033HM7"
+    )
+    assert meta["og:url"] == record["public_url"]
+    assert meta["og:image"] == record["qr_url"]
+    assert meta["og:type"] == "website" and meta["og:description"] == meta["description"]
+
+
+def test_no_personal_data_in_any_meta(record: dict) -> None:
+    """No farmer name, village, block, lot code or number reaches a <meta> (CLAUDE.md §6)."""
+    record["lots"][1]["farmer_name"] = "Murugan Example"
+    meta = _meta(parse(render(record).html))
+    personal = {record["processor"]["name"]}
+    for lot in record["lots"]:
+        personal |= {lot["lot_code"], lot["place"]["village"], lot["place"]["block"]}
+        personal |= {lot["farmer_name"]} - {None}
+    assert "Murugan Example" in personal
+    for key, content in meta.items():
+        assert not any(p in content for p in personal), key
+        assert not MOBILE.search(re.sub(r"[\s-]", "", content)), key
+    assert not re.search(r"\d", meta["og:description"])  # no number of any kind
+
+
+def test_og_url_and_image_are_left_out_without_urls(record: dict) -> None:
+    """A record without public_url/qr_url renders no og:url, og:image, QR or page link."""
+    del record["public_url"], record["qr_url"]
+    root = parse(render(record).html)
+    assert {"og:url", "og:image"}.isdisjoint(_meta(root))
+    assert root.find(".//*[@class='qr']") is None and root.find(".//footer//a") is None
+
+
+@pytest.mark.parametrize(
+    ("field", "url"),
+    [
+        ("public_url", "javascript:alert(1)"),
+        ("qr_url", "javascript:alert(1)"),
+        ("qr_url", "https://x.example/q.png');background:url('https://y.example/t"),
+    ],
+)
+def test_rejects_unsafe_page_urls(record: dict, field: str, url: str) -> None:
+    """public_url and qr_url go into href/meta/CSS url(): only plain http(s) URLs are accepted.
+
+    Args:
+        record: The sample record.
+        field: The URL field under test.
+        url: An unsafe value: another scheme, or a quote that would end the CSS url().
+    """
+    record[field] = url
+    with pytest.raises(ValidationError):
+        render(record)
+
+
+def _assert_tamil_is_tagged(el: Element, lang: str) -> None:
+    """Check that every text run containing Tamil sits inside an element with lang="ta".
+
+    Args:
+        el: Element to check, recursively.
+        lang: The language ``el`` inherits from its ancestors.
+
+    Raises:
+        AssertionError: Naming the first Tamil text found outside a lang="ta" element.
+    """
+    lang = el.get("lang", lang)
+    if TAMIL.search(el.text or ""):
+        assert lang == "ta", el.text
+    for child in el:
+        _assert_tamil_is_tagged(child, lang)
+        if TAMIL.search(child.tail or ""):
+            assert lang == "ta", child.tail
+
+
+def test_tamil_strings_carry_lang_ta_and_use_system_fonts(record: dict) -> None:
+    """Tamil strings sit in lang="ta" elements, paired with English; no webfont is downloaded."""
+    html = render(record).html
+    root = parse(html)
+    assert root.get("lang") == "en"
+    _assert_tamil_is_tagged(root.find("body"), "en")
+    ta = json.loads((ROOT / "agritrace_page" / "i18n" / "ta.json").read_text("utf-8"))
+    for key in ("batch", "gi_verified", "map_caption", "public_link", "last_updated"):
+        assert f'<span lang="ta">{ta[key]}</span>' in html
+    assert "@font-face" not in html and 'rel="stylesheet"' not in html
+    assert '"Noto Sans Tamil"' in html and "system-ui" in html
+
+
+def test_print_css_shows_qr_and_link_hides_extra_photos(record: dict) -> None:
+    """Print: black on white, QR shown, one photo per event, whole lot cards, timelines opened."""
+    html = render(record).html
+    css = html[html.index("@media print{") :]
+    for rule in ("--fg:#000", ".qr{display:block", ".ph~.ph{display:none}", "break-inside:avoid"):
+        assert rule in css, rule
+    assert ".qr{display:none}" in html  # the screen view hides the QR the buyer just scanned
+    assert 'addEventListener("beforeprint"' in html
+    footer = parse(html).find(".//footer")
+    qr = footer.find(".//*[@class='qr']")
+    assert qr.get("style") == f"background-image:url('{record['qr_url']}')"
+    assert qr.get("role") == "img" and qr.get("aria-label")
+    assert footer.find(".//a").get("href") == record["public_url"]
+
+
+def test_map_thumbnail_marks_villages_with_coarse_dots(record: dict) -> None:
+    """One whole-unit dot per distinct lot village inside the outline's box; no coordinates."""
+    record["lots"][1]["map_point"] = dict(record["lots"][0]["map_point"])  # same village twice
+    record["lots"][2]["map_point"] = {"lat": 13.08, "lon": 80.27}  # Chennai: off the map
+    root = parse(render(record).html)
+    svg = root.find(f".//{SVG}svg")
+    w, h = (int(v) for v in svg.get("viewBox").split()[2:])
+    dots = [(c.get("cx"), c.get("cy")) for c in svg.iter(f"{SVG}circle")]
+    assert len(dots) == 1
+    assert all(v.isdigit() for dot in dots for v in dot)  # whole units (~1 km), never a pin
+    assert 0 <= int(dots[0][0]) <= w and 0 <= int(dots[0][1]) <= h
+    assert re.fullmatch(r"M[\d,L]+Z", svg.find(f"{SVG}path").get("d"))
+    assert svg.get("aria-labelledby") == root.find(".//figcaption").get("id")
+
+
+def test_same_day_events_keep_stage_order(record: dict) -> None:
+    """Same-day events of different stages follow the crop cycle, not instance numbers (B10)."""
+    first = record["lots"][0]["events"][0]
+    base = {k: first[k] for k in ("date", "status", "system_generated")}
+    drying = {**base, "stage": "drying", "instance_no": 1}
+    harvest = {**base, "stage": "harvest", "instance_no": 3}
+    lot = Lot.model_validate({**record["lots"][0], "events": [drying, harvest]})
+    assert [e.stage for e in lot.events] == ["harvest", "drying"]
+
+
+@pytest.mark.parametrize("reason", ["unpublished", "withdrawn", "unknown"])
+def test_unavailable_page_variants(reason: str) -> None:
+    """Each reason renders a valid, noindex, bilingual page with the code and no batch data.
+
+    Args:
+        reason: The unavailable reason under test.
+    """
+    html = render_unavailable("FGP8T4033HM7", reason)
+    root = parse(html)
+    assert _meta(root)["robots"] == "noindex"
+    ta = json.loads((ROOT / "agritrace_page" / "i18n" / "ta.json").read_text("utf-8"))
+    assert f'<span lang="ta">{ta["unavailable." + reason]}</span>' in html
+    assert "FGP8T4033HM7" in text(root.find(".//main"))
+    _assert_tamil_is_tagged(root.find("body"), root.get("lang"))
+    assert measure(html)["total"] < BUDGETS["total"] and "<script>" not in html
+
+
+def test_unavailable_page_without_code_and_bad_input() -> None:
+    """The generic 404 page shows no code; a bad reason or a code that is not an id is refused."""
+    assert "<strong>" not in render_unavailable(None, "unknown")
+    with pytest.raises(ValueError):
+        render_unavailable("FGP8T4033HM7", "deleted")  # type: ignore[arg-type]
+    with pytest.raises(ValueError):
+        render_unavailable("<script>", "unknown")
+
+
+def test_cli_unavailable(tmp_path: Path) -> None:
+    """``python -m agritrace_page unavailable`` writes the page the CDN serves for unknown codes.
+
+    Args:
+        tmp_path: Output directory.
+    """
+    assert main(["unavailable", "unknown", str(tmp_path)]) == 0
+    assert 'content="noindex"' in (tmp_path / "index.html").read_text("utf-8")

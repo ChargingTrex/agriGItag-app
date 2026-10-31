@@ -4,31 +4,38 @@
 // Callers: flutter test (CI mobile job).
 
 import 'package:agritrace/app.dart';
+import 'package:agritrace/core/router/app_router.dart';
 import 'package:agritrace/core/router/session.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../auth/harness.dart';
 
-/// Starts in English as a field officer (whose home is still the placeholder with the language button; the farmer home
-/// moved it to Settings in M07), taps the language button, expects Tamil strings.
+/// Starts in English as a field officer, opens Settings (the language button moved there from the role homes in M07 and
+/// M10), taps the language button, expects Tamil strings.
 void main() {
-  testWidgets('language button switches the placeholder screen from English to Tamil', (tester) async {
+  testWidgets('language button switches the app from English to Tamil', (tester) async {
     final container = await signedIn('field_officer');
     container.read(sessionProvider.notifier).setLocale(english);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const AgriTraceApp()));
     await tester.pumpAndSettle();
 
     expect(find.text('Field officer'), findsOneWidget);
-    expect(find.text('AgriTrace'), findsOneWidget);
+    container.read(routerProvider).push('/settings');
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('தமிழ்'));
     await tester.pumpAndSettle();
 
-    expect(find.text('கள அலுவலர்'), findsOneWidget);
-    expect(find.text('அக்ரிட்ரேஸ்'), findsOneWidget);
     expect(find.text('English'), findsOneWidget);
+    container.read(routerProvider).pop();
+    await tester.pumpAndSettle();
+    expect(find.text('கள அலுவலர்'), findsOneWidget);
     expect(find.text('Field officer'), findsNothing);
     expect(container.read(sessionProvider).locale, tamil);
+    // The officer home watches Drift streams; Drift closes a cancelled stream on a zero-length timer (as in M07).
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 1));
   });
 }

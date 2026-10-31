@@ -51,6 +51,7 @@ flutter {
 }
 
 dependencies {
-    // Backports java.time for flutter_local_notifications on API 26+ (docs/LIBRARIES.md, M12).
+    // Backports java.time for flutter_local_notifications on API 26+ (M12). GPL-2.0 with the Classpath Exception,
+    // accepted for this library only by the D-018 amendment of 2026-10-31 (docs/LIBRARIES.md row).
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

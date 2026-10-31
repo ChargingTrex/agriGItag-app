@@ -29,7 +29,7 @@ Method | HTTP request | Description
 
 Approve the batch grading
 
-Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing.
+Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).
 
 ### Example
 ```dart
@@ -125,7 +125,7 @@ Name | Type | Description  | Notes
 
 Receive a lot at the processor (idempotent on client_id)
 
-Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched, send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).
+Stage 7 intake of a lot by a QC officer or FPO admin (D-040; the QC phone sends the same body as push kind `lot_intake`). The lot is `ready_for_sale`, or `open`/`drying` and passes the ready gate here (latest drying-end moisture at or under the limit). Without `processor_id` the FPO's only own processor receives it. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched (FPO admin only), send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).
 
 ### Example
 ```dart
@@ -219,7 +219,7 @@ Name | Type | Description  | Notes
 
 Sign off final packing
 
-Sign off final packing.
+Packed kg may not exceed graded kg. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).
 
 ### Example
 ```dart
@@ -559,7 +559,7 @@ Name | Type | Description  | Notes
 
 Publish the public page (final sign-off)
 
-Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, `publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge.
+Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, `publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).
 
 ### Example
 ```dart

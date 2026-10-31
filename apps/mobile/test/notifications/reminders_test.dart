@@ -11,7 +11,9 @@ import 'dart:convert';
 import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/db/providers.dart';
 import 'package:agritrace/core/l10n/gen/app_localizations.dart';
+import 'package:agritrace/app.dart';
 import 'package:agritrace/core/router/app_router.dart';
+import 'package:agritrace/core/router/session.dart';
 import 'package:agritrace/features/event_log/event_log_controller.dart';
 import 'package:agritrace/features/event_log/farm_event.dart';
 import 'package:agritrace/features/notifications/push.dart';
@@ -23,20 +25,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../auth/harness.dart' show sessionOut;
 import '../db/db_fixtures.dart';
 import '../features/harness.dart';
 
 /// One notification the fake was asked to schedule.
 typedef Scheduled = ({int id, DateTime at, String? title, String? body, String? payload});
 
-/// Notifications plugin fake: records schedules (cleared by cancelAll), permission requests and the tap callback;
+/// Notifications plugin fake: records schedules (cleared by either cancel), permission requests and the tap callback;
 /// answers [launch] as the app's launch details. Never touches a platform channel or the network.
 class FakeNotifications implements FlutterLocalNotificationsPlugin {
   /// Pending notifications, in scheduling order.
   final List<Scheduled> scheduled = [];
 
-  /// Number of cancelAll calls.
+  /// Number of cancel calls (cancelAll and cancelAllPendingNotifications).
   int cancels = 0;
+
+  /// Number of cancelAll calls (these also clear reminders already shown in the tray).
+  int trayClears = 0;
+
+  /// Titles whose zonedSchedule throws, like a platform refusal.
+  Set<String> failTitles = {};
 
   /// Number of platform-implementation lookups (one per platform per permission request).
   int permissionLookups = 0;
@@ -62,6 +71,12 @@ class FakeNotifications implements FlutterLocalNotificationsPlugin {
 
   @override
   Future<void> cancelAll() async {
+    trayClears++;
+    await cancelAllPendingNotifications();
+  }
+
+  @override
+  Future<void> cancelAllPendingNotifications() async {
     cancels++;
     scheduled.clear();
   }
@@ -76,13 +91,16 @@ class FakeNotifications implements FlutterLocalNotificationsPlugin {
     String? body,
     String? payload,
     DateTimeComponents? matchDateTimeComponents,
-  }) async => scheduled.add((
-    id: id,
-    at: DateTime.fromMillisecondsSinceEpoch(scheduledDate.millisecondsSinceEpoch),
-    title: title,
-    body: body,
-    payload: payload,
-  ));
+  }) async {
+    if (failTitles.contains(title)) throw ArgumentError('refused');
+    scheduled.add((
+      id: id,
+      at: DateTime.fromMillisecondsSinceEpoch(scheduledDate.millisecondsSinceEpoch),
+      title: title,
+      body: body,
+      payload: payload,
+    ));
+  }
 
   @override
   T? resolvePlatformSpecificImplementation<T extends FlutterLocalNotificationsPlatform>() {
@@ -115,7 +133,7 @@ class FakePush implements PushProvider {
 /// Phone clock of the unit tests: 14 Feb 2026, 09:30 local.
 final now = DateTime(2026, 2, 14, 9, 30);
 
-/// Seeds farmer-1 ("Murugan", +919876543210 in the JSON) with plot-1/lot-1 and plot-2/lot-2 in [db]. Returns when
+/// Seeds farmer-1 ("Murugan"; phone, ID document and Tamil name in the JSON) with plot-1/lot-1 and plot-2/lot-2 in [db]. Returns when
 /// written.
 Future<void> seedLots(AppDatabase db) async {
   await db
@@ -129,7 +147,7 @@ Future<void> seedLots(AppDatabase db) async {
           hasSmartphone: true,
           language: 'ta',
           status: 'active',
-          json: jsonEncode({'phone': '+919876543210', 'id_document': 'XXXX-1234-5678'}),
+          json: jsonEncode({'phone': '+919876543210', 'id_document': 'XXXX-1234-5678', 'name_local': 'முருகன்'}),
         ),
       );
   for (final i in [1, 2]) {
@@ -233,6 +251,16 @@ void main() {
       await scheduleReminders(plugin, db, locale: const Locale('en'), now: now);
       expect(plugin.scheduled, isEmpty);
       expect(plugin.cancels, 4);
+      expect(plugin.trayClears, 1, reason: 'only switching off clears shown reminders; reschedules keep them');
+    });
+
+    test('a reminder the plugin refuses is skipped and the others are still scheduled', () async {
+      await addTask(db, 't1', 'harvest', DateTime(2026, 2, 16, 8));
+      await addTask(db, 't2', 'packing', DateTime(2026, 2, 17, 8));
+      await addTask(db, 't3', 'drying', DateTime(2026, 2, 18, 8));
+      plugin.failTitles = {'Time to log: Packing'};
+      expect(await scheduleReminders(plugin, db, locale: const Locale('en'), now: now), 2);
+      expect([for (final s in plugin.scheduled) s.title], ['Time to log: Harvest', 'Time to log: Drying']);
     });
 
     test('no scheduled text or payload carries a phone number, a name, a farmer id or an ID document', () async {
@@ -245,7 +273,7 @@ void main() {
         for (final s in plugin.scheduled) {
           final text = '${s.title} ${s.body} ${s.payload}';
           expect(text, isNot(matches(RegExp(r'\d{6,}'))), reason: 'digits that could be a phone or ID: $text');
-          for (final secret in ['Murugan', 'farmer-1', '9876543210', '1234', 'Sattur']) {
+          for (final secret in ['Murugan', 'முருகன்', 'farmer-1', '9876543210', '1234', 'Sattur']) {
             expect(text, isNot(contains(secret)), reason: text);
           }
           expect(s.payload, matches(RegExp(r'^/log/[a-z_]+(\?lot=lot-\d)?$')));
@@ -349,15 +377,44 @@ void main() {
       await h.dispose(tester);
     });
 
-    testWidgets('No is remembered and the phone is never asked', (tester) async {
+    testWidgets('No turns Reminders off (nothing rings on any Android); turning it on asks the phone', (tester) async {
       final (h, plugin) = await startApp(tester);
       await addTask(h.db, 't1', 'harvest', DateTime(2026, 2, 16, 8), lot: 'lot-1');
       await settle(tester);
       await tester.tap(find.text('No'));
       await settle(tester);
       expect(await h.db.syncStateDao.get(permissionAskedKey), 'no');
+      expect(await h.db.syncStateDao.get(remindersKey), 'off');
       expect(plugin.permissionLookups, 0);
-      expect(plugin.scheduled, hasLength(1), reason: 'scheduled anyway; the phone decides whether it shows');
+      expect(
+        plugin.scheduled,
+        isEmpty,
+        reason: 'Android 8-12 needs no permission, so the app itself must not schedule',
+      );
+
+      h.go('/settings');
+      await tester.pumpAndSettle();
+      final toggle = find.widgetWithText(SwitchListTile, 'Reminders');
+      expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+      await tester.tap(toggle);
+      await settle(tester);
+      expect(plugin.permissionLookups, 2, reason: 'Android 13+ and iOS prompts requested');
+      expect(await h.db.syncStateDao.get(permissionAskedKey), 'yes');
+      expect(plugin.scheduled, hasLength(1));
+      await h.dispose(tester);
+    });
+
+    testWidgets('sign-out cancels every reminder, shown ones too (shared phone)', (tester) async {
+      final (h, plugin) = await startApp(tester);
+      await h.db.syncStateDao.set(permissionAskedKey, 'yes');
+      await addTask(h.db, 't1', 'harvest', DateTime(2026, 2, 16, 8), lot: 'lot-1');
+      await settle(tester);
+      expect(plugin.scheduled, hasLength(1));
+      // The sign-out's logout call goes through dio: let it run on the real event loop.
+      await tester.runAsync(() => h.container.read(sessionProvider.notifier).signOut());
+      await settle(tester);
+      expect(plugin.scheduled, isEmpty);
+      expect(plugin.trayClears, greaterThan(0));
       await h.dispose(tester);
     });
 
@@ -381,19 +438,35 @@ void main() {
       await h.dispose(tester);
     });
 
-    testWidgets('cold start: the reminder that launched the app opens the harvest flow on its lot', (tester) async {
-      final (h, _) = await startApp(
-        tester,
-        launch: const NotificationAppLaunchDetails(
+    testWidgets('cold start: the reminder that launched the app opens the harvest flow on its lot, home underneath', (
+      tester,
+    ) async {
+      final plugin = FakeNotifications()
+        ..launch = const NotificationAppLaunchDetails(
           true,
           notificationResponse: NotificationResponse(
             notificationResponseType: NotificationResponseType.selectedNotification,
             payload: '/log/harvest?lot=lot-1',
           ),
-        ),
+        );
+      final h = FlowHarness(overrides: [notificationsPluginProvider.overrideWithValue(plugin)]);
+      tester.view
+        ..physicalSize = const Size(412, 915)
+        ..devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      // As bootstrap: session restored and the farm on the phone, then runApp and startReminders before any frame.
+      await h.container.read(sessionProvider.notifier).openSession(sessionOut());
+      h.container.read(sessionProvider.notifier).setLocale(english);
+      await h.seedFarm(lots: 2);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: h.container, child: const AgriTraceApp()),
+        phase: EnginePhase.build,
       );
+      await startReminders(h.container);
+      await tester.pumpAndSettle();
       expect(h.path, '/log/harvest');
       expect(h.container.read(eventLogProvider).lot?.lotId, 'lot-1');
+      expect(h.container.read(routerProvider).canPop(), isTrue, reason: 'Back returns to the farmer home');
       await h.dispose(tester);
     });
 

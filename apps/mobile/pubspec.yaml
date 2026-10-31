@@ -49,6 +49,8 @@ dependencies:
   flutter_local_notifications: ^22.3.3
   # Absolute time for flutter_local_notifications.zonedSchedule; already in the tree through it (M12).
   timezone: ^0.11.2
+  # Reads the lot QR at the QC intake (lib/features/qc_intake/scan_screen.dart, M11).
+  mobile_scanner: ^7.4.3
 
 dev_dependencies:
   flutter_test:

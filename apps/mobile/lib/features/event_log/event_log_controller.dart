@@ -4,8 +4,10 @@
 //   wrong (weak GPS saved with its accuracy; wrong entry → Undo for 24 hours); FR3, FR6 (undo before sale), FR55–FR58;
 //   Dataflow Stages 1–6 (Stage 5/6: lot ready only at or under the moisture limit); Arch §Offline-first (three clocks,
 //   save on the phone first); D-005, D-006, D-014, D-017, D-029.
+//   M10 assist mode: UserFlows §Field officer flows (assisted entries carry the session, FR69 "entered remotely"), D-032.
 // Callers: event_log screens (EventFlowScreen, CameraStep, ConfirmScreen, SavedScreen), problem_report
-//   (VoiceNoteButton), farmer_home (assistFarmerProvider), app_router (route guards); tests override the seams below.
+//   (VoiceNoteButton), farmer_home (assistFarmerProvider, farmerPath), app.dart (assist bar), app_router (route guards),
+//   officer_moisture (activeLots); tests override the seams below.
 
 import 'dart:convert';
 import 'dart:io';
@@ -31,6 +33,8 @@ import '../../core/refdata/models/standards.dart';
 import '../../core/rules/event_order.dart';
 import '../../core/rules/moisture_limit.dart';
 import '../../core/rules/yield_check.dart';
+import '../officer_assist/assist_controller.dart';
+import '../onboarding_farmer/onboarding_notifier.dart' show assistSessionKey;
 import 'farm_event.dart';
 import 'field_rules.dart';
 
@@ -63,10 +67,21 @@ final bundleRepositoryProvider = Provider<BundleRepository>(
 /// The farmer an officer is logging for (assist mode), or null when the farmer uses their own phone.
 typedef AssistFarmer = ({String farmerId, String name});
 
-/// The assisted farmer, read by the home screen (assist bar) and the save (assist flag, farmer id).
-///
-/// shortcut: always null until M10 overrides it from `Session.assistFarmerId` under `/assist/:farmerId`.
-final assistFarmerProvider = Provider<AssistFarmer?>((ref) => null);
+/// The assisted farmer of the running assist session (M10 [assistProvider]), read by the assist bar, the home screen,
+/// [farmerPath] and the save (assist flag, farmer id); null when the farmer uses their own phone.
+final assistFarmerProvider = Provider<AssistFarmer?>((ref) {
+  final session = ref.watch(assistProvider);
+  return session == null ? null : (farmerId: session.farmerId, name: session.name);
+});
+
+/// Where the farmer screen [path] (`/home…` or `/log…`) lives for whoever uses the app: unchanged for the farmer, and
+/// under `/assist/<farmerId>` while an officer assists (`/home/saved` → `/assist/F/saved`, `/log/harvest` →
+/// `/assist/F/log/harvest`), so every assisted screen stays inside the assist scope. [ref] reads the assist state.
+/// Returns the path; throws nothing.
+String farmerPath(WidgetRef ref, String path) {
+  final assist = ref.read(assistFarmerProvider);
+  return assist == null ? path : '/assist/${assist.farmerId}${path.replaceFirst(RegExp('^/home'), '')}';
+}
 
 /// Called after every save and undo to start a send: M02's debounced kick (`SyncService.afterSave`, 500 ms, only when
 /// the API is reachable; mobile-design.md §3). Tests replace it with a no-op.
@@ -469,7 +484,8 @@ class EventLogNotifier extends Notifier<EventDraft> {
       farmerId: lot.farmerId,
       // Latest versions of this type still standing; an undone event ends in an `undo` row and is not counted.
       instanceNo: d.history.where((e) => e.entryType == event.wireName).length + 1,
-      payloadJson: jsonEncode(payload()),
+      // D-032: the assist session travels in the payload; M02 lifts it onto the push entry.
+      payloadJson: jsonEncode({...payload(), assistSessionKey: ?ref.read(assistProvider)?.sessionId}),
       deviceTime: now,
       gpsTime: Value(fix?.gpsTime),
       lat: Value(fix?.lat),
@@ -477,8 +493,9 @@ class EventLogNotifier extends Notifier<EventDraft> {
       accuracyM: Value(fix?.accuracyM),
       locationStatus: d.locationStatus,
       enteredByUserId: session.userId,
-      // CLAUDE.md §6: assist mode is recorded on every entry it creates. M10 sets enteredRemotely (3 km rule).
+      // CLAUDE.md §6: assist mode is recorded on every entry it creates; FR69 preview from the officer's fix.
       assistMode: Value(assist != null),
+      enteredRemotely: Value(assist != null && enteredRemotely(d.plot, fix)),
       status: EntryStatus.saved,
       undoDeadline: now.add(const Duration(hours: 24)),
       createdAt: now,

@@ -37,7 +37,22 @@
       "historyEmpty",
       "undoClosed",
       "wifiOnlyPhotos",
-      "unsentOld"
+      "unsentOld",
+      "qcHomePrompt",
+      "qcReceiveLot",
+      "qcGradeBatch",
+      "qcScanPrompt",
+      "qcPickLot",
+      "qcPickLotPrompt",
+      "qcIntakePrompt",
+      "qcSave",
+      "qcSaved",
+      "qcDone",
+      "qcBatchesPrompt",
+      "qcRetry",
+      "qcGradingPrompt",
+      "qcPack",
+      "qcPackingPrompt"
     ],
     "en": [
       "callOfficer",
@@ -74,7 +89,22 @@
       "historyEmpty",
       "undoClosed",
       "wifiOnlyPhotos",
-      "unsentOld"
+      "unsentOld",
+      "qcHomePrompt",
+      "qcReceiveLot",
+      "qcGradeBatch",
+      "qcScanPrompt",
+      "qcPickLot",
+      "qcPickLotPrompt",
+      "qcIntakePrompt",
+      "qcSave",
+      "qcSaved",
+      "qcDone",
+      "qcBatchesPrompt",
+      "qcRetry",
+      "qcGradingPrompt",
+      "qcPack",
+      "qcPackingPrompt"
     ]
   },
   "clips": {
@@ -113,7 +143,22 @@
       "historyEmpty",
       "undoClosed",
       "wifiOnlyPhotos",
-      "unsentOld"
+      "unsentOld",
+      "qcHomePrompt",
+      "qcReceiveLot",
+      "qcGradeBatch",
+      "qcScanPrompt",
+      "qcPickLot",
+      "qcPickLotPrompt",
+      "qcIntakePrompt",
+      "qcSave",
+      "qcSaved",
+      "qcDone",
+      "qcBatchesPrompt",
+      "qcRetry",
+      "qcGradingPrompt",
+      "qcPack",
+      "qcPackingPrompt"
     ],
     "en": [
       "callOfficer",
@@ -150,7 +195,22 @@
       "historyEmpty",
       "undoClosed",
       "wifiOnlyPhotos",
-      "unsentOld"
+      "unsentOld",
+      "qcHomePrompt",
+      "qcReceiveLot",
+      "qcGradeBatch",
+      "qcScanPrompt",
+      "qcPickLot",
+      "qcPickLotPrompt",
+      "qcIntakePrompt",
+      "qcSave",
+      "qcSaved",
+      "qcDone",
+      "qcBatchesPrompt",
+      "qcRetry",
+      "qcGradingPrompt",
+      "qcPack",
+      "qcPackingPrompt"
     ]
   }
 }

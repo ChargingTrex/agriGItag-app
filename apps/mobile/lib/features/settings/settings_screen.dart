@@ -22,7 +22,7 @@ import '../../core/widgets/farmer_button.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/voice_prompt_bar.dart';
 import '../event_log/event_log_controller.dart' show afterSaveProvider, clockProvider;
-import '../notifications/reminders.dart' show remindersOnProvider;
+import '../notifications/reminders.dart' show notificationsPluginProvider, remindersKey, setRemindersOn;
 
 /// How long entries may wait unsent before Settings shows the red "needs attention" warning (mobile-design.md §3).
 const unsentWarnAfter = Duration(days: 7);
@@ -47,6 +47,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   /// When the oldest of them was queued (null when none).
   late final Stream<DateTime?> _oldest = ref.read(appDatabaseProvider).outboxDao.oldestPending();
+
+  /// Whether the Reminders switch shows: only a farmer gets reminders (startReminders); other roles would see a switch
+  /// that does nothing. Read once: the role only changes at sign-out, when this screen leaves (and re-reading it then
+  /// would drop the switch's stream a frame early).
+  late final bool _farmer = ref.read(sessionProvider).role == Role.farmer;
+
+  /// The stored Reminders switch (`off` when off; null = never set = on).
+  late final Stream<String?> _reminders = ref.read(appDatabaseProvider).syncStateDao.watch(remindersKey);
 
   /// The session row (for the Wi-Fi-only switch).
   late final Stream<SessionRow?> _session = ref.read(appDatabaseProvider).sessionDao.watch();
@@ -119,19 +127,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           gap,
-          SwitchListTile(
-            title: Text(l10n.remindersToggle),
-            // FR7: on by default; turning it off cancels every scheduled reminder (startReminders reschedules).
-            value: ref.watch(remindersOnProvider).value ?? true,
-            onChanged: (on) => ref.read(remindersOnProvider.notifier).set(on),
-            secondary: IconButton(
-              style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget)),
-              tooltip: l10n.playVoice,
-              icon: const Icon(Icons.volume_up),
-              onPressed: () => playPrompt(ref, context, 'remindersToggle'),
+          if (_farmer) ...[
+            StreamBuilder<String?>(
+              stream: _reminders,
+              builder: (context, stored) => SwitchListTile(
+                title: Text(l10n.remindersToggle),
+                // FR7: on by default; turning it off cancels every scheduled reminder (startReminders reschedules).
+                value: stored.data != 'off',
+                onChanged: (on) =>
+                    setRemindersOn(ref.read(appDatabaseProvider), ref.read(notificationsPluginProvider), on),
+                secondary: IconButton(
+                  style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget)),
+                  tooltip: l10n.playVoice,
+                  icon: const Icon(Icons.volume_up),
+                  onPressed: () => playPrompt(ref, context, 'remindersToggle'),
+                ),
+              ),
             ),
-          ),
-          gap,
+            gap,
+          ],
           FarmerButton(
             icon: Icons.record_voice_over,
             label: l10n.onboardVoiceTour,

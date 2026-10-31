@@ -2,7 +2,7 @@
  * Route table: public `/login`, everything else behind the auth guard inside the shell layout.
  * Serves: plan §7.3 P00 (placeholder routes for the planned screens, auth guard) and P01 (Members, farmer and
  * plot detail, Processors), P02 (Flags list and detail, lot review), P03 (Ready lots, the created batch with its
- * second sign-off), FR9, FR13, FR14, FR60, FR70.
+ * second sign-off), P08 (Master data uploads), FR9, FR13, FR14, FR60, FR70.
  * Called by: src/main.tsx (inside BrowserRouter), src/test/render.tsx (inside MemoryRouter).
  */
 import { Navigate, Route, Routes } from 'react-router';
@@ -13,6 +13,7 @@ import { ReadyLotsPage } from './features/batches/ReadyLotsPage';
 import { FlagPage } from './features/flags/FlagPage';
 import { FlagsPage } from './features/flags/FlagsPage';
 import { LotPage } from './features/flags/LotPage';
+import { MasterDataPage } from './features/imports/MasterDataPage';
 import { FarmerPage } from './features/members/FarmerPage';
 import { MembersPage } from './features/members/MembersPage';
 import { PlotPage } from './features/members/PlotPage';
@@ -42,8 +43,9 @@ export function AppRoutes() {
           <Route path="/lots/:lotId" element={<LotPage />} />
           <Route path="/ready-lots" element={<ReadyLotsPage />} />
           <Route path="/batches/:batchId" element={<BatchPage />} />
+          <Route path="/uploads" element={<MasterDataPage />} />
           {NAV_ITEMS.filter(
-            (item) => !['P01', 'P02', 'P03'].includes(item.wp) && item.path !== '/',
+            (item) => !['P01', 'P02', 'P03', 'P08'].includes(item.wp) && item.path !== '/',
           ).map((item) => (
             <Route
               key={item.path}

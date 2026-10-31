@@ -3,8 +3,9 @@
 Serves: PRD §6.8 FR42–FR50 (structured readings, profiles, computed vs declared grade, plausibility and
 calibration at entry), FR51 (lab-certified, public note), FR68 (yield parameters), Dataflow Stage 5
 (drying-end moisture, ready-for-sale gate), Stage 7 (intake moisture), Stage 8 (grading), D-005 (client id
-idempotency), D-015 (profile JSON + one engine), backend-design.md §1 quality row, §3 (sync
-`kind=quality_reading` entries call `create_reading`), §4.
+idempotency), D-015 (profile JSON + one engine), D-042 (assist mode on readings: the lot's farmer only, never
+a batch), backend-design.md §1 quality row, §3 (sync `kind=quality_reading` entries call `create_reading`),
+§4.
 Callers: `quality.router`; `quality.profiles.loader` (seed, B12); other modules through `__all__` only
 (D-004): events sync push (B06) `create_reading`; rules_flags (B08) `yield_params_for_crop`,
 `yield_outcome_for_crop`; lots_batches (B09) `lot_gate_passes`, `compute_grade_for_batch`; events bundle and
@@ -744,7 +745,8 @@ async def create_reading(
 
     Raises:
         ValidationFailedError: malformed data, inactive instrument or unknown photo id (`validation_error`).
-        ForbiddenError: viewers, and farmers on batches (403).
+        ForbiddenError: viewers, farmers on batches, and in assist mode (`on_behalf_of_farmer_id` set) a
+            reading on another farmer's lot or any batch reading (403, D-042).
         NotFoundError: lot, batch or instrument not in the caller's FPO (404).
         ClientIdConflictError: the client id belongs to someone else's reading (409).
         NoPublishedProfileError: the crop has no published profile (422).
@@ -766,10 +768,21 @@ async def create_reading(
     if existing is not None:
         return _same_owner(existing, current_user), False
 
+    # DECISION D-042: a reading in assist mode is attributed to the session's farmer, so it must be on that
+    #   farmer's lot; a batch belongs to many farmers and is refused.
+    #   ADV: an assisted drying-end reading is recorded on behalf of the right farmer (CLAUDE.md §6); the
+    #     header path (`X-Assist-Session`) gets the same check.
+    #   COMPROMISE: an officer who assists one farmer must leave assist mode before a batch reading.
+    on_behalf = current_user.on_behalf_of_farmer_id
     if data.lot_id is not None:
-        crop_id = (await _load_lot(session, current_user, data.lot_id)).crop_id
+        lot = await _load_lot(session, current_user, data.lot_id)
+        if on_behalf not in (None, lot.farmer_id):
+            raise ForbiddenError("The assist session is for another farmer.")
+        crop_id = lot.crop_id
     else:
         assert data.batch_id is not None  # QualityReadingIn guarantees exactly one subject
+        if on_behalf is not None:
+            raise ForbiddenError("A batch reading cannot be recorded in assist mode.")
         crop_id = (await _load_batch(session, current_user, data.batch_id)).crop_id
     version, rules = await _required_rules(session, crop_id)
 
