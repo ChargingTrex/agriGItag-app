@@ -8,7 +8,7 @@
 #   COMPROMISE: the network is Lighthouse's own 3G preset (constants.throttling.mobileRegular3G: 300 ms RTT,
 #   700 kbit/s, 4x CPU), not the DevTools "Slow 3G" values (400 ms, 400 kbit/s). Under those, a 1 KB page
 #   with one <h1> has a median LCP of 2006 ms on the W02 machine (this page: 2007 ms), so LCP <= 2 s
-#   would test the profile, not the page. Evidence and the open question: docs/agents/reports/W02.md.
+#   would test the profile, not the page. Evidence and the resolved by DECISION D-025 (Lighthouse built-in 3G preset)
 ci:
   collect:
     staticDistDir: ./out/site

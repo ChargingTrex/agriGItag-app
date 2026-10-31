@@ -36,4 +36,67 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get playVoice => 'குரல் கேள்';
+
+  @override
+  String get statusDone => 'முடிந்தது';
+
+  @override
+  String get statusTodo => 'செய்ய வேண்டும்';
+
+  @override
+  String get statusAttention => 'கவனம் தேவை';
+
+  @override
+  String get stepperLess => 'குறை';
+
+  @override
+  String get stepperMore => 'கூட்டு';
+
+  @override
+  String get numberPadDelete => 'அழி';
+
+  @override
+  String get numberPadPoint => 'புள்ளி';
+
+  @override
+  String get voiceMissing => 'குரல் இல்லை';
+
+  @override
+  String get callOfficer => 'அலுவலரை அழை';
+
+  @override
+  String get confirmCorrect => 'சரி';
+
+  @override
+  String get retake => 'மீண்டும் எடு';
+
+  @override
+  String cloudPending(int count) {
+    return '$count அனுப்பக் காத்திருக்கிறது';
+  }
+
+  @override
+  String get cloudAllSent => 'அனைத்தும் அனுப்பப்பட்டது';
+
+  @override
+  String loggingFor(String name) {
+    return 'இவருக்காகப் பதிவு: $name';
+  }
+
+  @override
+  String get gpsHold => 'தொலைபேசியை உயர்த்திப் பிடியுங்கள், உங்கள் இடத்தைத் தேடுகிறது';
+
+  @override
+  String get gpsFound => 'இடம் கிடைத்தது';
+
+  @override
+  String gpsAccuracy(int metres) {
+    return '± $metres மீ';
+  }
+
+  @override
+  String get saveAnyway => 'இப்படியே சேமி';
+
+  @override
+  String get photoNotClear => 'புகைப்படம் தெளிவாக இல்லை. மீண்டும் எடுக்கவா?';
 }

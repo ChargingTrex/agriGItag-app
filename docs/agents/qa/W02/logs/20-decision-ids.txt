@@ -1,0 +1,25 @@
+$ grep -rn "DECISION D-[0-9]*" apps/public-page infra/scripts/privacy-lint.py (excluding node_modules/.venv/out)
+apps/public-page/.htmlvalidate.mjs:8:DECISION D-007
+apps/public-page/.htmlvalidate.mjs:12:DECISION D-018
+apps/public-page/lighthouserc.3g.yml:6:DECISION D-025
+apps/public-page/agritrace_page/render.py:43:DECISION D-018
+apps/public-page/agritrace_page/render.py:144:DECISION D-007
+apps/public-page/agritrace_page/schema.py:28:DECISION D-017
+apps/public-page/agritrace_page/schema.py:180:DECISION D-017
+apps/public-page/agritrace_page/schema.py:309:DECISION D-017
+# each cited id checked against DECISIONS.md index and docs/adr/
+D-007 index=1 adr=yes
+D-017 index=1 adr=yes
+D-018 index=1 adr=yes
+D-025 index=1 adr=yes
+$ grep -n "DECISION D-025" apps/public-page/lighthouserc.3g.yml
+6:# DECISION D-025: measure the built static file as the CDN serves it, against "sub-2-second loads".
+$ uv run --no-project python infra/scripts/doc-coverage.py
+Check              Target            Result  Detail
+python docstrings  apps/api          PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+python docstrings  apps/public-page  PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+dart doc comments  apps/mobile       PASS    No issues found! (ran in 8.8s)
+ts jsdoc           apps/portal       PASS    
+DECISION ids       DECISIONS.md      PASS    62 comment(s) in apps, packages, infra, qa; 0 unknown
+file headers       apps/             PASS    221 file(s); 0 without header
+exit=0

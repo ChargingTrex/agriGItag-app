@@ -36,4 +36,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playVoice => 'Play voice';
+
+  @override
+  String get statusDone => 'Done';
+
+  @override
+  String get statusTodo => 'To do';
+
+  @override
+  String get statusAttention => 'Needs attention';
+
+  @override
+  String get stepperLess => 'Less';
+
+  @override
+  String get stepperMore => 'More';
+
+  @override
+  String get numberPadDelete => 'Delete';
+
+  @override
+  String get numberPadPoint => 'Point';
+
+  @override
+  String get voiceMissing => 'No voice';
+
+  @override
+  String get callOfficer => 'Call officer';
+
+  @override
+  String get confirmCorrect => 'Correct';
+
+  @override
+  String get retake => 'Retake';
+
+  @override
+  String cloudPending(int count) {
+    return '$count waiting to send';
+  }
+
+  @override
+  String get cloudAllSent => 'All sent';
+
+  @override
+  String loggingFor(String name) {
+    return 'Logging for: $name';
+  }
+
+  @override
+  String get gpsHold => 'Hold the phone up, finding your location';
+
+  @override
+  String get gpsFound => 'Location found';
+
+  @override
+  String gpsAccuracy(int metres) {
+    return '± $metres m';
+  }
+
+  @override
+  String get saveAnyway => 'Save anyway';
+
+  @override
+  String get photoNotClear => 'Photo is not clear. Take again?';
 }

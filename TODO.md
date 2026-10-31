@@ -31,9 +31,11 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B03 `registry/service.py` `create_farmer`: farmer code is `F` + 6 random hex per FPO (a collision is a 500 on UNIQUE(fpo_id, code)); switch to a per-FPO sequence before an FPO passes ~1,000 farmers.
 - [ ] B03 `registry/service.py` `_check_region`: plots do not store their GI tag; a request without `gi_tag_id` uses the only GI tag that has a region. Add `plots.gi_tag_id` (B13 migration) before a second GI crop is onboarded.
 
+- [ ] B04 `notifications/service.py` `deliver`: no error column, so a failure reason is stored in `provider_ref` as `error:<reason>`; add `notifications.error` with the first real provider.
+
 ## 4. Reviewer and worker follow-ups
 - [ ] B02: integration tests `apps/api/tests/integration/test_identity.py` and migration 0002 under `alembic check` not yet run on PostGIS (Docker down); run before merge to main is final.
-- [ ] B02: `notifications.send` kwargs contract for B11: `user_id`, `template_key="otp"`, `channel="sms"`, `lang`, `payload={"code"}`; the task must resolve the phone from `user_id` and never log `payload.code`.
+- [x] B02: `notifications.send` kwargs contract for B11: `user_id`, `template_key="otp"`, `channel="sms"`, `lang`, `payload={"code"}`; the task must resolve the phone from `user_id` and never log `payload.code`. Done in B04 (`notifications/tasks.py`).
 - [ ] B02: multi-FPO users sign in to their oldest membership; add an FPO switch when needed (D-024 Revisit).
 - [ ] B02: refresh tokens have no idle expiry and office roles get no PIN prompt on app open; SEC review to decide (D-024 Revisit).
 - [ ] B02/B03: farmers and their users/memberships are created by registry (B03); identity only signs existing users in.
@@ -42,7 +44,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B02 (B02-r1 P2-6, accepted for the pilot): admin-issued initial PIN for office users (B03/P01); today the first OTP sets the PIN.
 - [ ] B02 (B02-r1 P3-7): security event log lines (OTP lock, PIN lock, refresh reuse, `device_in_use`) with no codes or tokens, when observability lands.
 - [ ] B02 (B02-r1 P3-8): idle expiry for refresh tokens (e.g. `last_seen_at > now - 90 d`); Orchestrator to decide before the pilot.
-- [ ] B02 (B02-r1 P3-11) for B11: no Celery `result_extended` and no task kwargs in failure logs (the OTP code travels in `payload.code`).
+- [x] B02 (B02-r1 P3-11) for B11: no Celery `result_extended` and no task kwargs in failure logs (the OTP code travels in `payload.code`). Done in B04 (`worker.MaskTaskArguments`, no result backend).
 - [ ] B02 (B02-r1 P3-2, P3-5, P3-13): unknown-phone timing on `otp/request` (enqueue after the response), maximum age for assist sessions, escalating PIN lock.
 - [ ] W01: a native Tamil speaker should review `apps/public-page/agritrace_page/i18n/ta.json`.
 - [ ] W03: the print stylesheet must open or expand the `<details>` timelines so printed pages are complete.
@@ -53,7 +55,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Q00: privacy-lint is line-based regex, biased to false positives; minified JSON hits report as line 1.
 - [ ] D-018 wording: libraries-check rejects LGPL as copyleft (psycopg replaced by pg8000 in qa). Orchestrator to decide whether DECISIONS.md should name LGPL explicitly.
 - [x] B00: healthz error text trimmed to exception class names (round 3).
-- [ ] B00/B01: Celery tasks run `asyncio.run` per task; the first DB task must dispose the engine or use NullPool (see DECISION D-009 comment in worker).
+- [x] B00/B01: Celery tasks run `asyncio.run` per task; the first DB task must dispose the engine or use NullPool (see DECISION D-009 comment in worker). Done in B04 (`worker.run_db_task`, NullPool engine per run).
 - [ ] W01: opted-out farmer names are a consent decision the schema cannot see; B10 must set `farmer_name` from consent and never change it afterwards.
 - [ ] W01: 3-decimal pin rounding and "Farmer N" numbering currently cite D-017; write a small ADR (D-021 privacy rendering rules) when the product sign-off on rounding arrives.
 - [ ] B10: map `agritrace_page` `ValidationError` to a registered AppError (`public_record_invalid`, 409) so privacy rejections are visible, never silent.
@@ -62,7 +64,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Q00/W02 (P2, do first in W02): OSM map links with 6-dp coordinates slip the linter (`?mlat=…&mlon=…`, `#map=17/lat/lon`), issue docs/agents/qa/issues/Q00-1-privacy-lint-osm-map-coordinates.md (one-token fix: drop the `\b` before lat/lon and add the slash form). Also degree-sign, DMS and bare space-separated pairs outside WKT (Q00-r2 P2-3).
 - [ ] Q00: gate-readiness is silent for a WP with no Robot tests at all; a survey number under a neutral JSON key (e.g. `land_record_ref`) passes the linter; `hw.keyboard=yes` on the Go AVD still open.
 - [ ] B00 (before B02 merges): fail-open dev defaults for OTP code and JWT secret are being removed in B00 round 3; B02 must not reintroduce them.
-- [ ] B00: Celery `acks_late` and the per-process engine disposal are owned by B04 (first module with real tasks).
+- [x] B00: Celery `acks_late` and the per-process engine disposal are owned by B04 (first module with real tasks). Done in B04.
 - [ ] Orchestration deviation record: Q00 received a third review round (two-round rule) because the round-2 reviewer supplied exact regex fixes for two regressions; B00 received a third worker round before verification to clear six security-relevant P2s. Both noted in docs/agents/gates/G0.md when signed.
 - [ ] G1 readiness: W01 merged with 6 Robot placeholder tests (public/page.robot ×5, BM-16); W02/Q03 must write them before G1 is signed (gate-readiness.py G1 enforces).
 - [ ] B00 (before first prod deploy): pass S3 keys only when set so an IAM role can be used (review B00-r1 P3-5); enforce a router tag per module (P3-6); let `AppError` carry headers so 429 can send `Retry-After`.
@@ -120,9 +122,35 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [x] B01 r2 / B03 (F8): the shared `Address` schema needs a `taluk` field for FR53's taluk check.
 - [ ] W03 (from W02 review P2-1): coordinate forms `9.559806 N, 78.133521 E`, `N 9.559806 E 78.133521`, `9.559806;78.133521` and the `geo.position` meta tag slip the linter; two-line fix tested by the reviewer in /tmp/w02rev/pl_cand.py (re-derive from the review file W02-r1.md).
 - [ ] W02 P3s: `check_output.sh` silently drops canaries if canaries.json is unreadable under newer bash (pytest guards it); stale `<details>` comment in .htmlvalidate.mjs; favicon 404; a Robot SKIP on Chrome-tagged tests is not BM-03 evidence; 3G perf median 0.94 is close to the 0.90 line — re-check after W03.
-- [ ] Orchestrator deviation: W02 merged on the reviewer's executed acceptance (review W02-r1 has the evidence); a formal Verifier pass is still owed before G1.
+- [x] Orchestrator deviation: W02 merged on the reviewer's executed acceptance; formal Verifier PASS delivered 2026-10-31 (docs/agents/qa/W02.md).
 - [ ] B02 P3s from r2 (review B02-r2): `signed_in_at` check compares whole seconds and ignores the 30 s leeway (stamp from DB clock, subtract leeway); per-phone OTP daily cap lets an attacker lock a victim out for 24 h (add per-IP limits, D-024); OTP verify description still says pin_required is for office roles only (super-admins too).
 - [ ] M06/M07: mobile needs an explicit "sign out" action because a device active for another user now returns 409 `device_in_use` (shared family phones, User Flows §Who uses what).
+- [ ] M05 P3s (review M05-r1): goldens render Latin text and digits as boxes (load Roboto from the SDK cache in the golden harness); PictureCardGrid has no ≤ 2-word label assert and its speaker is optional; M07: a double tap on the confirm tick fires `onConfirm` twice, callers must be idempotent; real voice clips still placeholders; iOS cannot play `.ogg` (CAF/AAC copies needed).
+- [ ] M05 r2 leftovers: load Roboto in the golden harness (Q01); ≤ 2-word assert on `PictureChoice.label` and consider making `promptId` required; the interrupted-load branch has no test (needs real just_audio platform).
+- [ ] Prod start-up now requires a real `SMS_PROVIDER` (B04 r2): add the gateway name to the `sms_provider` Literal at the `TODO(provider)` mark when the provider is chosen (TODO §2 open question).
+- [ ] B04 P3s (review B04-r1): a real SMS gateway must map transport errors to `ProviderRefused` (anything else leaves the row `queued`); deploy note: never run the Celery worker at DEBUG in prod and deploy the worker before the API (two unreachable code-printing paths); B02 should pass `expires=` equal to the OTP lifetime when enqueueing `notifications.send` so a redelivered task cannot send an expired code; `reject_on_worker_lost` re-queues a task that crashes its own process; amend D-009 text to describe the NullPool-per-task pattern; add an allow-list to gen-error-codes.py if a second internal exception like `ProviderRefused` appears; consolidate keyset/base64 cursor helpers into core at the third list endpoint; Tamil templates are 92–114 chars (two SMS each) and India's DLT template registration must be handled with the gateway.
+- [ ] B06 (from M04): voice notes arrive as `audio/ogg` (Android 10+) or `audio/mp4` (iOS, Android 8–9); the push photo/media schema must accept both content types.
+- [ ] M07 (from M04): delete the camera original after `PhotoCompressor` saves; show progress while the pure-Dart decoder runs (unmeasured on Android Go); confirm action must be idempotent (M05 double-tap).
+- [ ] Q01 (from M04): measure compressor PSS on a 2 GB phone; calibrate blur/brightness thresholds (`shortcut:` in capture_constants.dart) on pilot phones; real camera/GPS/microphone smoke; iOS pod install and minimum versions of camera/record/geolocator.
+- [ ] Localisation: Tamil text for the iOS/Android permission prompts (camera, location, microphone).
+- [ ] B06/B08: Android "GPS time" may follow the phone clock on fused fixes; treat gps_time as advisory in the clock-skew rule.
+- [x] M04 decision (Orchestrator): camera preset `veryHigh` (1080p) accepted — the plugin's `medium`/`high` presets are below the 1600 px long-edge requirement; documented as DECISION D-002 in camera_capture.dart.
+- [ ] B10 (from B06, privacy): `jpeg_url` points at the original evidence JPEG, which keeps the phone's exact GPS in EXIF; the public page must link only the WebP variants (or a stripped copy), never the original. Add to the public-page schema/validator and the privacy canaries.
+- [ ] Infra (from B06): the 256 KB push cap is measured after the body is read; production needs a request-size cap at the ALB/CloudFront.
+- [ ] B07: `/sync/pull`, bundles and per-part `since` (B06 left them); photos attached to quality readings have no upload path yet; identity needs a dict-accepting consent entry (`TODO(B02)` in events); lot timeline has no `?fields=`; EXIF tolerances, plot radius/buffer and skew limit are constants until B13's config; explicit audit rows carry no `request_id`.
+- [ ] B06 Verifier watch-list: asyncpg `INSERT … ON CONFLICT DO NOTHING` + re-read, bulk photo insert with geography, the version row lock, LocalStack accepting WebP writes on the object-locked bucket.
+- [ ] B06/B13 reconcile at merge: the `event_*.yaml` field names (`bags`, `quantity`, `photo` …) are B13's proposal; B06's payload schemas must match before events enforce field config (one of the two adapts; Orchestrator checks at merge).
+- [ ] B13 skipped: field-config checks on `PATCH /farmers` and plot correction; 7 of 9 feature flags are declared but not read yet (`farmer_pin_login`, `boundary_walk`, `second_signoff_threshold_kg`, `wifi_only_photos_default`, `sync_push_max_*`, `otp_daily_cap`); `id-docs` bucket encryption not verified; Tamil field labels need native review.
+- [x] B03 shortcut (farmer code collision → 500) closed by B13: codes are redrawn on collision.
+- [x] B07 decision (after M03): the `standards` bundle part carries the full profile rules JSON, not a trimmed subset; shapes for all parts are in docs/agents/reports/M03.md "Contract for B07".
+- [ ] B08: port event_order, practice_tags and gi_check behaviour from the Dart rules (apps/mobile/lib/core/rules/) and add a shared fixture for them (like grade_cases.json) so phone and server stay equal (D-006).
+- [ ] M02: plots are read from the `plots` bundle, not the M01 `Plots` table; keep both in step on pull, or drop one (decide in M02).
+- [ ] M03 note: GI distance on the phone is spherical, PostGIS is spheroidal; pins within ~1 m of the buffer line can differ; server answer is final (D-006).
+- [ ] B06 P3s (review B06-r1): variant URLs are unsigned links into the private `evidence` bucket — B07/B10 must presign GETs (or serve variants from a public-read prefix) for portal and phone; with the broker down each push entry waits on its enqueue in turn and a full push can pass the phone's 30 s timeout (enqueue after the loop or make enqueue non-blocking); REST undo trusts body clocks.
+- [ ] M06 hand-offs: switch the sign-in keypad to M05's NumberPad once it supports leading zeros, ungrouped digits and a masked mode (two `shortcut:` marks in auth_step.dart); drop the empty token columns from the Drift Session table in a schema v2 (M02/M13); officer change-PIN screen (M08); send `app_version` on OTP verify; history pull on a new phone (M02 hook); signing out with no signal leaves the device signed in server-side and `device_in_use` recovery mints a new device id (orphan device rows) — B02/M13 to add a reconcile.
+- [ ] M04 P3s (review M04-r1): D-002 ADR text does not mention the camera preset/memory reason (amend); M01's perf test flakes under parallel load locally (`-x perf` when running the whole suite; already skipped on CI).
+- [ ] B11 (from B13 review): CSV exports must escape cells starting with `=`, `+`, `-`, `@` (formula injection).
+- [ ] Ops (from B13 review): time a 5,000-farmer import against the proxy timeout before the first bulk load.
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 - [ ] B03 → Architect-Gate (D-019 wording): the Datameet maps repo has no sub-district layer (only Census 2011 districts) and Datameet village boundaries skip Tamil Nadu; open Census-2011 taluk files found are CC BY-NC-SA (rejected) or restricted. `infra/scripts/gi_boundary/README.md` therefore recommends geoBoundaries gbOpen IND ADM3 + ADM2 (ODbL-1.0, LGD-derived, commit 9469f09); measured v0 40.7 KB / v1 33.1 KB, reference point inside both. Amend D-019's source sentence, and decide the ODbL attribution line on the public page (B10).
 - [ ] B03 → B06: the sync push `plot` entry kind should reuse `registry.service.create_plot` + `enqueue_plot_check` (after the per-entry commit); `create_plot` takes the registry `PlotIn` schema, which other modules may not import (D-004), so B06 needs a service entry that accepts the entry's dict (add it to `service.__all__` then).
@@ -150,3 +178,9 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B05: B08 must turn `grade_computations.per_parameter[*].outcome == "profile_incomplete"` into the info flag `profile_incomplete`, handle `rules.check_lot` kwargs `{lot_id, batch_id, reading_id, hint: "moisture_trail_override"}`, and sweep readings with `reason_code` in case an enqueue was lost.
 - [ ] B05: coffee-style `exception_flags` (e.g. `monsooned`) are supported by the engine but no API field sets them on a batch yet.
 - [ ] B05: the AGMARK chilli profile allows only instrument/lab moisture, so visual moisture is rejected at entry (`source_not_allowed`) even though the profile caps visual at Standard; confirm the intended policy with compliance.
+- [ ] B04: integration tests `apps/api/tests/integration/test_notifications.py` written, not run (Docker down).
+- [ ] B04: a native Tamil speaker should review the six templates in `apps/api/agritrace/modules/notifications/templates.py`.
+- [ ] B04: `task_acks_late` can run `notifications.send` twice after a worker crash (duplicate SMS); make it idempotent on the Celery task id when a real gateway charges per message.
+- [ ] B04: Celery task events stay off (`worker_send_task_events` default); events and `celery inspect` carry `kwargsrepr` unmasked, so set `kwargsrepr` at publish before enabling Flower or events.
+- [ ] B04: `GET /v1/notifications` has no `?fields=` (conventions.md); no list endpoint implements it yet.
+- [ ] B04: real SMS gateway (TODO(provider) in `notifications/providers.py`, `SMS_SENDER_ID`, DLT template ids), FCM push and WhatsApp providers; until then `sms`/`push`/`whatsapp` rows fail `provider_not_configured` unless `SMS_PROVIDER=console` (sms only).

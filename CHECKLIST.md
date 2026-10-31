@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 17 % (10/59 items)
+Completion: 22 % (13/59 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -32,13 +32,13 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [ ] B02 — Identity — wave 2 — worker: Opus (2 rounds) — reviewer: SEC FAIL r1 / PASS-PENDING-STACK r2 — verifier: PENDING (merged conditionally; integration tests deferred)
 - [ ] B03 — Registry + PostGIS geo — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; PostGIS tests deferred)
-- [ ] B04 — Notifications — wave 2 — worker: — reviewer: — verifier:
+- [ ] B04 — Notifications — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
 - [ ] B05 — Quality + grade engine — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
-- [ ] M01 — Drift store + DAOs + migrations + schema test — wave 2 — worker: — reviewer: — verifier:
+- [x] M01 — Drift store + DAOs + migrations + schema test — wave 2 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 + r2 confirm — verifier: Orchestrator-run db suite PASS; Go-AVD timing → Q01
 - [ ] M04 — Capture kit: camera (no gallery), compress to long edge 1600 px at JPEG q≈80 stepping down — wave 2 — worker: — reviewer: — verifier:
-- [ ] M05 — Farmer widget kit: FarmerButton, PictureCardGrid, BigStepper, NumberPad, StatusBadge, Voic — wave 2 — worker: — reviewer: — verifier:
+- [x] M05 — Farmer widget kit: FarmerButton, PictureCardGrid, BigStepper, NumberPad, StatusBadge, Voic — wave 2 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 confirm — verifier: Orchestrator-run suite PASS (198); device checks → Q01
 - [ ] M06 — Auth & session: OTP auto-read, device binding, PIN for officer/QC, role routing, restore o — wave 2 — worker: — reviewer: — verifier:
-- [ ] W02 — `privacy_lint.py` (canary strings + regexes for phone/Aadhaar/survey/polygon/coordinate pr — wave 2 — worker: Opus — reviewer: WEB PASS r1 (executed acceptance) — verifier: PENDING (merged conditionally)
+- [x] W02 — `privacy_lint.py` (canary strings + regexes for phone/Aadhaar/survey/polygon/coordinate pr — wave 2 — worker: Opus — reviewer: WEB PASS r1 — verifier: PASS (docs/agents/qa/W02.md; BM-03 LCP 1530 ms, BM-16 565 ms)
 - [ ] B06 — Events + sync push + evidence — wave 3 — worker: — reviewer: — verifier:
 - [ ] B13 — Config-driven fields/features + masters + bulk import (from the gap analysis) — wave 3 — worker: — reviewer: — verifier:
 - [ ] M02 — Sync engine (outbox, triggers incl. reachability probe, timeouts 10 s/30 s, retry only on  — wave 3 — worker: — reviewer: — verifier:

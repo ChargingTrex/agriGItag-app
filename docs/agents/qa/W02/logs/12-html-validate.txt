@@ -1,0 +1,26 @@
+$ npx html-validate --config .htmlvalidate.mjs /tmp/w02v/out/index.html
+exit=0
+$ uv run python -m agritrace_page build fixtures/batch_sample.json out/site   # the folder lhci serves
+exit=0
+$ cmp /tmp/w02v/out/index.html out/site/index.html
+identical
+$ npx html-validate out/site   (npm run validate; project config found by directory lookup)
+exit=0
+$ npx html-validate --formatter text out/site/index.html | wc -l
+       0
+# negative control: copy with one alt removed and a stray </p>
+$ npx html-validate out/broken/index.html
+
+/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/broken/index.html
+   50:108  error  Stray end tag '</p>'                                 close-order
+  113:2    error  Anchor link must have a text describing its purpose  wcag/h30
+  113:264  error  <img> is missing required "alt" attribute            wcag/h37
+
+✖ 3 problems (3 errors, 0 warnings)
+
+More information:
+  https://html-validate.org/rules/close-order.html
+  https://html-validate.org/rules/wcag/h30.html
+  https://html-validate.org/rules/wcag/h37.html
+
+exit=1

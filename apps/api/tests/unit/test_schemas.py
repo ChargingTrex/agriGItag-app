@@ -103,7 +103,9 @@ def test_prod_guard(monkeypatch: pytest.MonkeyPatch) -> None:
         Settings(_env_file=None, env="prod", jwt_secret="x" * 31)
     with pytest.raises(ValidationError, match="OTP_DEV_CODE"):
         Settings(_env_file=None, env="prod", jwt_secret="x" * 32, otp_dev_code="123456")
-    assert Settings(_env_file=None, env="prod", jwt_secret="x" * 32).env == "prod"
+    # Secret and OTP checks pass; the next guard wants a real SMS gateway, none exists yet (B04-r1 P2-1).
+    with pytest.raises(ValidationError, match="SMS_PROVIDER"):
+        Settings(_env_file=None, env="prod", jwt_secret="x" * 32)
     # Outside prod a short secret and the OTP bypass are allowed (local stack, tests).
     dev = Settings(_env_file=None, env="dev", jwt_secret="short", otp_dev_code="123456")
     assert dev.otp_dev_code == "123456"
@@ -112,7 +114,8 @@ def test_prod_guard(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_empty_otp_is_off_and_secrets_stay_hidden() -> None:
     """`OTP_DEV_CODE=""` becomes None (one meaning of "off"), and validation errors never echo inputs."""
     assert Settings(_env_file=None, jwt_secret="x", otp_dev_code="").otp_dev_code is None
-    assert Settings(_env_file=None, env="prod", jwt_secret="x" * 32, otp_dev_code="").env == "prod"
+    with pytest.raises(ValidationError, match="SMS_PROVIDER"):  # empty OTP passed the OTP guard (it is off)
+        Settings(_env_file=None, env="prod", jwt_secret="x" * 32, otp_dev_code="")
     with pytest.raises(ValidationError) as err:
         Settings(_env_file=None, env="prod", jwt_secret="topsecret-but-short")
     assert "topsecret-but-short" not in str(err.value)

@@ -1,0 +1,4 @@
+$ uv run pytest -q --junitxml=../../docs/agents/qa/W02/junit-page.xml
+.............................................................            [100%]
+61 passed in 13.33s
+exit=0

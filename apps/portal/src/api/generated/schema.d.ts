@@ -723,6 +723,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my notifications
+         * @description Messages sent to the caller (any role), newest first; secrets in payloads appear as `***`.
+         */
+        get: operations["list_my_notifications_v1_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/plots": {
         parameters: {
             query?: never;
@@ -2045,6 +2065,57 @@ export interface components {
             type: "MultiPolygon";
         };
         /**
+         * NotificationChannel
+         * @description Delivery channel of a notification (FR7).
+         * @enum {string}
+         */
+        NotificationChannel: "push" | "sms" | "whatsapp" | "console";
+        /**
+         * NotificationOut
+         * @description One message sent (or attempted) to the caller.
+         */
+        NotificationOut: {
+            /** @description push, sms, whatsapp or console. */
+            channel: components["schemas"]["NotificationChannel"];
+            /**
+             * Created At
+             * Format: date-time
+             * @description When the message was queued, ISO 8601 UTC.
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Notification id (UUIDv7, so newer ids sort later).
+             */
+            id: string;
+            /**
+             * Lang
+             * @description Language the message was rendered in: `ta` or `en`.
+             */
+            lang: string;
+            /**
+             * Payload
+             * @description Template variables; secrets (the OTP code) appear as `***`.
+             */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** @description queued, sent or failed. */
+            status: components["schemas"]["NotificationStatus"];
+            /**
+             * Template Key
+             * @description Template, e.g. `harvest_reminder`; the app may show its own text.
+             */
+            template_key: string;
+        };
+        /**
+         * NotificationStatus
+         * @description Delivery state of a notification (FR7).
+         * @enum {string}
+         */
+        NotificationStatus: "queued" | "sent" | "failed";
+        /**
          * OrgKind
          * @description Legal form of an FPO or processor (PRD §5 Processor / FPO entity).
          * @enum {string}
@@ -2142,6 +2213,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["InstrumentOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[NotificationOut] */
+        Page_NotificationOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["NotificationOut"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -4962,6 +5051,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_my_notifications_v1_notifications_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_NotificationOut_"];
+                };
+            };
+            /** @description `unauthorized`: no valid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */
