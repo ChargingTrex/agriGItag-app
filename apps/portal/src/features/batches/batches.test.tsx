@@ -278,10 +278,12 @@ describe('Ready lots page', () => {
     mockState.userId = 'a0000000-0000-7000-8000-000000000002';
     document.body.innerHTML = '';
     renderApp(`/batches/${id}`, true);
-    const signOff = await screen.findByRole('button', { name: 'Sign off' });
+    // Greyed as "Sign off: Checking who you are…" until `/v1/me` answers ("Sign off final packing" is another button).
+    const signOff = await screen.findByRole('button', { name: /^Sign off(:|$)/ });
     await waitFor(() => {
-      expect(signOff).toBeEnabled();
+      expect(signOff).toHaveAccessibleName('Sign off');
     });
+    expect(signOff).toBeEnabled();
     await user.click(signOff);
     expect(await screen.findByText('Second sign-off recorded.')).toBeInTheDocument();
     expect(mockState.batches[0]?.second_signoff_by).toBe(mockState.userId);
@@ -301,10 +303,12 @@ describe('Ready lots page', () => {
     mockState.userId = 'a0000000-0000-7000-8000-000000000002';
     const user = userEvent.setup();
     renderApp('/batches/b0000000-0000-7000-8000-000000000009', true);
-    const signOff = await screen.findByRole('button', { name: 'Sign off' });
+    // Greyed as "Sign off: Checking who you are…" until `/v1/me` answers ("Sign off final packing" is another button).
+    const signOff = await screen.findByRole('button', { name: /^Sign off(:|$)/ });
     await waitFor(() => {
-      expect(signOff).toBeEnabled();
+      expect(signOff).toHaveAccessibleName('Sign off');
     });
+    expect(signOff).toBeEnabled();
     mockState.userId = MOCK_USER_ID;
     await user.click(signOff);
     expect(

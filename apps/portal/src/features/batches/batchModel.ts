@@ -179,6 +179,7 @@ export interface GateReason {
  */
 const GATE_LABELS: Readonly<Record<string, (r: GateReason) => string>> = {
   fpo_admin_only: () => 'Only an FPO admin can do this.',
+  checking_holds: () => 'Checking hold flags…',
   not_graded: () =>
     'Not graded yet: the QC officer records the readings and the declared grade first.',
   grade_incomplete: (r) =>

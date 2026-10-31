@@ -29,6 +29,7 @@ import {
   type BatchOut,
   type GradeOut,
 } from './batchModel';
+import { pageUrls } from './PublishSection';
 
 const BATCH_ID = 'b0000000-0000-7000-8000-000000000001';
 const CODE = 'FGP8T4033HM7';
@@ -300,7 +301,7 @@ describe('Batch detail', () => {
     const approve = await approveButton();
     await waitFor(() => {
       expect(approve).toHaveAccessibleName(
-        'Approve grading: Only an FPO admin can do this. Not graded yet: the QC officer records the readings and the declared grade first. Open hold flag: Yield above the ceiling',
+        'Approve grading: Only an FPO admin can do this.; Not graded yet: the QC officer records the readings and the declared grade first.; Open hold flag: Yield above the ceiling',
       );
     });
     expect(approve).toBeDisabled();
@@ -312,7 +313,7 @@ describe('Batch detail', () => {
     const publish = await screen.findByRole('button', { name: /^Publish/ });
     expect(publish).toBeDisabled();
     expect(publish).toHaveAccessibleName(
-      'Publish: The grading has not been approved. Final packing has not been signed off. A second FPO admin must sign off this batch.',
+      'Publish: The grading has not been approved.; Final packing has not been signed off.; A second FPO admin must sign off this batch.',
     );
     expect(
       screen.getByRole('button', {
@@ -474,6 +475,49 @@ describe('Batch detail', () => {
   });
 });
 
+describe('Builds that never leave the queue (B10 broker or S3 failure)', () => {
+  it('a stuck build says so and leaves Rebuild enabled; Rebuild queues and polls a new build', async () => {
+    mockState.holdBuilds = true;
+    mockState.batches.push(batch({ status: 'published', current_build_no: 1 }));
+    mockState.builds.push({
+      id: 'p0000000-0000-7000-8000-000000000002',
+      batch_id: BATCH_ID,
+      build_no: 1,
+      generation: 1,
+      status: 'queued',
+      trigger: 'publish',
+      built_at: null,
+      error: null,
+      html_key: null,
+      json_key: null,
+      qr_key: null,
+    });
+    const user = userEvent.setup();
+    renderApp(`/batches/${BATCH_ID}`, true);
+    expect(
+      await screen.findByText(
+        'Build 1 is taking longer than expected. Press Rebuild to try again.',
+      ),
+    ).toBeInTheDocument();
+    const rebuild = screen.getByRole('button', { name: 'Rebuild' });
+    expect(rebuild).toBeEnabled();
+    await user.click(rebuild);
+    expect(await screen.findByText('Building the public page (build 2)…')).toBeInTheDocument();
+    expect(mockState.builds.map((b) => b.trigger)).toEqual(['publish', 'rebuild']);
+  });
+
+  it('production builds link and preview the public origin, not the dev proxy', () => {
+    vi.stubEnv('DEV', false);
+    vi.stubEnv('VITE_PUBLIC_BASE_URL', 'https://trace.example');
+    expect(pageUrls(CODE)).toEqual({
+      url: `https://trace.example/b/${CODE}`,
+      preview: `https://trace.example/b/${CODE}`,
+    });
+    vi.unstubAllEnvs();
+    expect(pageUrls(CODE).preview).toBe(`/v1/public/batches/${CODE}`);
+  });
+});
+
 describe('Non-GI batch vs GI-only holds (D-041)', () => {
   /**
    * A batch of the out-of-GI lot (plot hold `plot_outside_gi_region`) and the held lot (`yield_over_ceiling`).
@@ -530,7 +574,7 @@ describe('Non-GI batch vs GI-only holds (D-041)', () => {
     const publish = await screen.findByRole('button', { name: /^Publish/ });
     await waitFor(() => {
       expect(publish).toHaveAccessibleName(
-        'Publish: Open hold flag: Yield above the ceiling Open hold flag: Plot outside the GI region',
+        'Publish: Open hold flag: Yield above the ceiling; Open hold flag: Plot outside the GI region',
       );
     });
     expect(publish).toBeDisabled();
@@ -580,6 +624,11 @@ describe('Batches list', () => {
     });
     expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
     await expectNoAxeViolations(container);
+  });
+
+  it('says which status is empty when filtered', async () => {
+    renderApp('/batches?status=graded', true);
+    expect(await screen.findByText('No graded batch.')).toBeInTheDocument();
   });
 
   it('points to Ready lots when there is no batch', async () => {

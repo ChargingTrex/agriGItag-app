@@ -71,7 +71,12 @@ export function BatchesPage() {
         ))}
       </TextField>
       {list.isError && <Alert severity="error">{errorMessage(list.error)}</Alert>}
-      {list.isSuccess && list.items.length === 0 && (
+      {list.isSuccess && list.items.length === 0 && status && (
+        <Typography color="text.secondary">
+          No {BATCH_STATUS[status].toLowerCase()} batch.
+        </Typography>
+      )}
+      {list.isSuccess && list.items.length === 0 && !status && (
         <Typography color="text.secondary">
           No batch yet. Create one from{' '}
           <Link component={RouterLink} to="/ready-lots">

@@ -108,6 +108,8 @@ export const mockState = {
   readings: [] as Schemas['QualityReadingOut'][],
   /** Public page builds; `GET …/builds` turns a queued build into `built` after showing it once (the worker). */
   builds: [] as BuildOut[],
+  /** True: the mock worker never runs, so builds stay `queued` (B10 after a broker or S3 failure). */
+  holdBuilds: false,
   userId: MOCK_USER_ID,
   /** `GET /v1/config/features`; tests lower `second_signoff_threshold_kg`. */
   features: seedFeatures(),
@@ -126,6 +128,7 @@ export function resetMockData(): void {
   mockState.grades = {};
   mockState.readings = [];
   mockState.builds = [];
+  mockState.holdBuilds = false;
   mockState.userId = MOCK_USER_ID;
   mockState.features = seedFeatures();
 }
@@ -1057,7 +1060,7 @@ export const handlers = [
     });
     // The worker: a queued build is written right after the page has seen it queued once.
     for (const b of items) {
-      if (b.status !== 'queued') continue;
+      if (b.status !== 'queued' || mockState.holdBuilds) continue;
       b.status = 'built';
       b.built_at = new Date().toISOString();
       b.html_key = `batches/${b.batch_id}/index.html`;

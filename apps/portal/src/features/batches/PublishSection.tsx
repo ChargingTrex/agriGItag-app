@@ -34,6 +34,8 @@ import { GatedButton, GateReasons } from './ReadyLotsPage';
 
 /** How often the builds list is re-read while a build is queued (a build takes seconds). */
 const BUILD_POLL_MS = 2000;
+/** How long after Publish or Rebuild the page keeps polling a queued build before it suggests Rebuild. */
+const BUILD_WAIT_MS = 120_000;
 
 const BUILD_STATUS: Readonly<Record<string, string>> = {
   queued: 'Building',
@@ -47,7 +49,7 @@ const BUILD_STATUS: Readonly<Record<string, string>> = {
  * @param code Batch code.
  * @returns `url`: `{public origin}/b/<code>`; `preview`: the API's dev proxy in development, else the URL.
  */
-function pageUrls(code: string): { url: string; preview: string } {
+export function pageUrls(code: string): { url: string; preview: string } {
   // DECISION D-050: the public origin comes from `VITE_PUBLIC_BASE_URL` (same origin when unset); the dev
   //   preview reads the API's dev proxy because `/b/<code>` needs the CDN rewrite.
   //   ADV: no contract change; the preview works locally without a CDN; one build-time setting per environment.
@@ -97,9 +99,10 @@ function LivePage({ batch, build }: { batch: BatchOut; build: BuildOut }) {
       a.href = href;
       a.download = `labels-${batch.code}.pdf`;
       a.click();
+      // Some browsers start the download after the click handler returns; FileSaver.js waits 40 s too.
       setTimeout(() => {
         URL.revokeObjectURL(href);
-      }, 0);
+      }, 40_000);
     },
   });
   return (
@@ -177,20 +180,6 @@ export function PublishSection(props: { batch: BatchOut; isAdmin: boolean; holds
   const queryClient = useQueryClient();
   const path = { batch_id: batch.id };
   const published = batch.status === 'published';
-  const builds = useQuery({
-    queryKey: ['batches', batch.id, 'builds'],
-    enabled: published,
-    // shortcut: one page of 200 builds (one per publish or rebuild); page through if a batch ever has more.
-    queryFn: ({ signal }) =>
-      unwrap(
-        api.GET('/v1/batches/{batch_id}/builds', {
-          params: { path, query: { limit: 200 } },
-          signal,
-        }),
-      ),
-    refetchInterval: (query) =>
-      query.state.data?.items.some((b) => b.status === 'queued') ? BUILD_POLL_MS : false,
-  });
   /**
    * Re-reads the batch and everything under its key (builds, grade) after a publish or rebuild.
    * @returns The invalidation promise.
@@ -203,6 +192,33 @@ export function PublishSection(props: { batch: BatchOut; isAdmin: boolean; holds
   const rebuild = useMutation({
     mutationFn: () => unwrap(api.POST('/v1/batches/{batch_id}/rebuild', { params: { path } })),
     onSuccess: refresh,
+  });
+  // B10 can leave a build queued for good (broker down, S3 retries spent): poll the newest build for two
+  // minutes after this page's Publish or Rebuild, then point the admin at Rebuild (B10 supersedes the old row).
+  const since = Math.max(publish.submittedAt, rebuild.submittedAt);
+  /**
+   * Whether the newest build is still worth polling.
+   * @param newest The newest build, if any.
+   * @param readAt When the builds list was last read (`dataUpdatedAt`, ms), so the check stays pure.
+   * @returns True while it is queued and the wait since this page's last Publish or Rebuild is not over.
+   */
+  const waiting = (newest: BuildOut | undefined, readAt: number) =>
+    newest?.status === 'queued' && since > 0 && readAt - since < BUILD_WAIT_MS;
+  const builds = useQuery({
+    queryKey: ['batches', batch.id, 'builds'],
+    enabled: published,
+    // shortcut: one page of 200 builds (one per publish or rebuild); page through if a batch ever has more.
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET('/v1/batches/{batch_id}/builds', {
+          params: { path, query: { limit: 200 } },
+          signal,
+        }),
+      ),
+    refetchInterval: (query) =>
+      waiting(query.state.data?.items.at(-1), query.state.dataUpdatedAt) ? BUILD_POLL_MS : false,
+    // Every poll re-renders (an unchanged list too), so the page notices when the wait is over.
+    notifyOnChangeProps: ['data', 'error', 'status', 'dataUpdatedAt'],
   });
   const items = builds.data?.items ?? [];
   const latest = items.at(-1);
@@ -227,12 +243,17 @@ export function PublishSection(props: { batch: BatchOut; isAdmin: boolean; holds
           )}
           {publish.isError && <GateReasons error={publish.error} />}
           {builds.isError && <Alert severity="error">{errorMessage(builds.error)}</Alert>}
-          {latest?.status === 'queued' && (
-            <Stack spacing={1}>
-              <Typography>Building the public page (build {latest.build_no})…</Typography>
-              <LinearProgress aria-label="Building the public page" />
-            </Stack>
-          )}
+          {latest?.status === 'queued' &&
+            (waiting(latest, builds.dataUpdatedAt) ? (
+              <Stack spacing={1}>
+                <Typography>Building the public page (build {latest.build_no})…</Typography>
+                <LinearProgress aria-label="Building the public page" />
+              </Stack>
+            ) : (
+              <Alert severity="warning">
+                Build {latest.build_no} is taking longer than expected. Press Rebuild to try again.
+              </Alert>
+            ))}
           {latest?.status === 'failed' && <BuildError build={latest} />}
           {live && <LivePage batch={batch} build={live} />}
         </Stack>
@@ -268,12 +289,7 @@ export function PublishSection(props: { batch: BatchOut; isAdmin: boolean; holds
             {rebuild.isError && <GateReasons error={rebuild.error} />}
             <GatedButton
               label="Rebuild"
-              reasons={[
-                ...(isAdmin ? [] : [gateReasonText({ code: 'fpo_admin_only' })]),
-                ...(latest?.status === 'queued'
-                  ? ['A build is running; wait until it finishes.']
-                  : []),
-              ]}
+              reasons={isAdmin ? [] : [gateReasonText({ code: 'fpo_admin_only' })]}
               busy={rebuild.isPending}
               onClick={() => {
                 rebuild.mutate();

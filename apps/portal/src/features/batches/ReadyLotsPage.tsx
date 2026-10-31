@@ -143,7 +143,7 @@ export function GatedButton(props: {
       <Button
         variant="contained"
         disabled={blocked || busy}
-        aria-label={blocked ? `${label}: ${reasons.join(' ')}` : undefined}
+        aria-label={blocked ? `${label}: ${reasons.join('; ')}` : undefined}
         onClick={onClick}
       >
         {label}

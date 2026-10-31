@@ -463,10 +463,15 @@ export function BatchPage() {
     ...b.shares.map((s) => s.lot_id),
     ...lots.flatMap((q) => (q.data ? [q.data.plot_id] : [])),
   ]);
-  const { blocking: holds, allowed } = batchHolds(
+  const { blocking, allowed } = batchHolds(
     (holdFlags.data?.flags ?? []).filter((f) => mine.has(f.subject_id)),
     b.gi_label_requested,
   );
+  // Fail closed while the holds are unknown (an empty list does not prove the batch is free, as in P02).
+  const holds =
+    holdFlags.isPending || lots.some((q) => q.isPending)
+      ? [...blocking, { code: 'checking_holds' }]
+      : blocking;
   const processor = processors.data?.find((p) => p.id === b.processor_id);
 
   return (
@@ -497,6 +502,13 @@ export function BatchPage() {
               <li key={`${r.reason}-${String(i)}`}>{giReasonText(r)}</li>
             ))}
           </ul>
+        </Alert>
+      )}
+      {holdFlags.data?.complete === false && (
+        // Not a greyed reason: with more than 200 open holds it would never clear; the server re-checks.
+        <Alert severity="info">
+          Not every hold flag was loaded; the server re-checks the holds when you approve, pack or
+          publish.
         </Alert>
       )}
       {allowed.length > 0 && (
