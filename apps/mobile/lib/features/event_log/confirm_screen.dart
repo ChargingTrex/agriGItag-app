@@ -56,7 +56,8 @@ class ConfirmScreen extends ConsumerWidget {
           if (d.event == FarmEvent.problem) ...[const SizedBox(height: 8), const VoiceNoteButton()],
         ],
       ),
-      onConfirm: n.missingRequired.isEmpty ? () => _confirm(context, ref) : null,
+      // Off while a required field is empty (D-017) or the voice note is still recording.
+      onConfirm: n.missingRequired.isEmpty && !d.recording ? () => _confirm(context, ref) : null,
       onRetake: () {
         n.discardPhoto();
         context.pop();

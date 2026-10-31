@@ -24,7 +24,22 @@ import 'extra_choice.dart';
 import 'farm_event.dart';
 
 /// Where the flow screen is.
-enum _Step { loading, noLot, pickLot, extra, camera }
+enum _Step {
+  /// Lots, draft and out-of-order question loading.
+  loading,
+
+  /// The farmer has no active lot.
+  noLot,
+
+  /// More than one active lot: the field picker.
+  pickLot,
+
+  /// The event's extra choice (F05).
+  extra,
+
+  /// The camera (F06).
+  camera,
+}
 
 /// The flow screen for [event].
 class EventFlowScreen extends ConsumerStatefulWidget {
@@ -39,8 +54,12 @@ class EventFlowScreen extends ConsumerStatefulWidget {
   ConsumerState<EventFlowScreen> createState() => _EventFlowScreenState();
 }
 
+/// State of [EventFlowScreen]: which step is on screen and the lots to pick from.
 class _EventFlowScreenState extends ConsumerState<EventFlowScreen> {
+  /// The step on screen.
   _Step _step = _Step.loading;
+
+  /// The farmer's active lots, for the field picker.
   List<Lot> _lots = const [];
 
   /// Loads the farmer's active lots and starts the draft. Side effect: replaces the draft. Throws nothing.
@@ -63,7 +82,7 @@ class _EventFlowScreenState extends ConsumerState<EventFlowScreen> {
   }
 
   /// Starts the draft on [lot], asks the out-of-order question once when needed, then shows the extra choice or the
-  /// camera. Side effects: draft, maybe a local `order_gap` flag. Throws nothing beyond database errors.
+  /// camera. Side effects: draft, maybe the phone-only "already asked" marker. Throws nothing beyond database errors.
   Future<void> _begin(Lot lot) async {
     final n = ref.read(eventLogProvider.notifier);
     setState(() => _step = _Step.loading);
@@ -87,32 +106,36 @@ class _EventFlowScreenState extends ConsumerState<EventFlowScreen> {
       enableDrag: false,
       // Scroll-controlled and scrollable: at 1.5x text on a small phone the sheet is taller than half the screen.
       isScrollControlled: true,
-      builder: (sheet) => SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(tokens.gap),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              eventPicture(missing),
-              SizedBox(height: tokens.gap),
-              VoicePromptBar(promptId: missing.askPromptId, text: missing.askedAlready(l10n)),
-              SizedBox(height: tokens.gap),
-              FarmerButton(
-                icon: Icons.check,
-                label: l10n.yes,
-                onPressed: () => Navigator.of(sheet).pop(true),
-                onSpeak: () => playPrompt(ref, sheet, 'yes'),
-                prominent: true,
-              ),
-              SizedBox(height: tokens.gap),
-              FarmerButton(
-                icon: Icons.close,
-                label: l10n.no,
-                onPressed: () => Navigator.of(sheet).pop(false),
-                onSpeak: () => playPrompt(ref, sheet, 'no'),
-              ),
-            ],
+      // PopScope: Android Back must not close the sheet with no answer and record it as "No".
+      builder: (sheet) => PopScope(
+        canPop: false,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(tokens.gap),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                eventPicture(missing),
+                SizedBox(height: tokens.gap),
+                VoicePromptBar(promptId: missing.askPromptId, text: missing.askedAlready(l10n)),
+                SizedBox(height: tokens.gap),
+                FarmerButton(
+                  icon: Icons.check,
+                  label: l10n.yes,
+                  onPressed: () => Navigator.of(sheet).pop(true),
+                  onSpeak: () => playPrompt(ref, sheet, 'yes'),
+                  prominent: true,
+                ),
+                SizedBox(height: tokens.gap),
+                FarmerButton(
+                  icon: Icons.close,
+                  label: l10n.no,
+                  onPressed: () => Navigator.of(sheet).pop(false),
+                  onSpeak: () => playPrompt(ref, sheet, 'no'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

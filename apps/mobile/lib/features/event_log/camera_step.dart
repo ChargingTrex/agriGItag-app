@@ -43,10 +43,18 @@ class CameraStep extends ConsumerStatefulWidget {
   ConsumerState<CameraStep> createState() => _CameraStepState();
 }
 
+/// State of [CameraStep]: the camera session, the GPS subscription and the step's phase.
 class _CameraStepState extends ConsumerState<CameraStep> {
+  /// The camera session of this screen (M04).
   late final CameraCapture _camera = ref.read(cameraFactoryProvider)();
+
+  /// GPS fixes while the screen is open.
   StreamSubscription<LocationFix>? _gps;
+
+  /// The most accurate fix seen so far (saved with the entry).
   LocationFix? _best;
+
+  /// The latest fix (drives the ring).
   LocationFix? _latest;
 
   /// Null while the camera opens, true when ready, false when refused or broken.

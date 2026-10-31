@@ -31,7 +31,9 @@ class SavedScreen extends ConsumerStatefulWidget {
   ConsumerState<SavedScreen> createState() => _SavedScreenState();
 }
 
+/// State of [SavedScreen]: the undo in progress and the one-time keep-drying sheet.
 class _SavedScreenState extends ConsumerState<SavedScreen> {
+  /// True while the undo runs (the Undo button is off, so it cannot run twice).
   bool _undoing = false;
 
   /// After the first frame, tells the farmer to keep drying when the packing save left the lot not ready.

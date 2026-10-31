@@ -78,8 +78,9 @@ const _activeLotStatuses = ['open', 'drying', 'ready_for_sale'];
 /// Lot status the packing save sets when the moisture gate passes (server `LotStatus.READY_FOR_SALE`).
 const readyForSale = 'ready_for_sale';
 
-/// Flag type written when the farmer answers the out-of-order question (server rule code `order_gap`).
-const orderGapFlag = 'order_gap';
+/// SyncState key prefix of the phone-only "already asked" marker of the out-of-order question, one key per lot
+/// (`order_asked:<lotId>`). A local marker, not a server code: the server raises its own `event_out_of_order` flag.
+const orderAskedKey = 'order_asked:';
 
 /// The event being captured. Mutable on purpose: the notifier changes a field and calls `ref.notifyListeners()`,
 /// instead of a copyWith for every one of its many optional fields.
@@ -149,6 +150,9 @@ class EventDraft {
   /// Problem-report voice note.
   VoiceNote? voice;
 
+  /// True while the voice note is recording; the confirm tick waits for it.
+  bool recording = false;
+
   /// Entry id once saved; null before.
   String? savedEntryId;
 
@@ -183,14 +187,17 @@ class EventDraft {
 
 /// Drives one farm-event log from the event choice to the saved screen. One flow at a time.
 class EventLogNotifier extends Notifier<EventDraft> {
+  /// The running or finished save of this draft; a second tap gets the same future (D-005).
   Future<String>? _saving;
 
   /// Starts with an empty draft. Returns it; throws nothing.
   @override
   EventDraft build() => EventDraft();
 
+  /// The app database. Throws nothing.
   AppDatabase get _db => ref.read(appDatabaseProvider);
 
+  /// The phone clock now ([clockProvider]). Throws nothing.
   DateTime _now() => ref.read(clockProvider)();
 
   /// Active lots of the farmer (or of the assisted farmer), ordered by plot. Returns an empty list when the farmer has
@@ -261,10 +268,10 @@ class EventLogNotifier extends Notifier<EventDraft> {
   /// The earlier steps missing before this event (Stage order, FR55) that the farmer was not asked about yet, and the
   /// one to ask: the nearest missing step ("Did you already sow?" before a harvest).
   ///
-  /// DECISION D-006: the phone only asks and records the farmer's answer; the server re-runs `event_order` and owns
-  ///   the officer flag.
+  /// DECISION D-006: the phone only asks and remembers the farmer's answer; the server re-runs `event_order` and owns
+  ///   the officer flag (`event_out_of_order`).
   ///   ADV: the farmer is asked once, offline, at the moment they remember best.
-  ///   COMPROMISE: the local `order_gap` row may be replaced when M02 pulls the server's flags.
+  ///   COMPROMISE: the Yes/No answer stays on the phone (SyncState marker) until M02/B06 ship it with the entry.
   /// Returns null when the order is fine, the crop is unknown or every gap was already asked about. Throws nothing
   /// beyond database and bundle parsing errors.
   Future<({FarmEvent ask, List<String> gaps})?> orderQuestion() async {
@@ -276,13 +283,7 @@ class EventLogNotifier extends Notifier<EventDraft> {
       for (final e in d.history)
         if (e.entryType != undoEntryType) (type: e.entryType, on: e.deviceTime),
     ];
-    final asked = {
-      for (final f in await (_db.select(
-        _db.flags,
-      )..where((f) => f.farmerId.equals(lot.farmerId) & f.type.equals(orderGapFlag))).get())
-        if ((jsonDecode(f.detailJson) as Map<String, dynamic>)['lot_id'] == lot.lotId)
-          ...((jsonDecode(f.detailJson) as Map<String, dynamic>)['missing'] as List<dynamic>).cast<String>(),
-    };
+    final asked = {for (final a in await _answers(lot.lotId)) ...(a['missing'] as List<dynamic>).cast<String>()};
     final gaps = [
       for (final g in orderGaps(crop.eventSchema, recorded, d.event!.wireName, _now()))
         if (!asked.contains(g)) g,
@@ -291,31 +292,25 @@ class EventLogNotifier extends Notifier<EventDraft> {
     return ask == null ? null : (ask: ask, gaps: gaps);
   }
 
-  /// Records the farmer's answer to the out-of-order question as a local `order_gap` flag for the officer, so the
-  /// question is never asked again for these [gaps] on this lot. [didIt] is the Yes/No answer.
+  /// Records the farmer's answer to the out-of-order question in the lot's phone-only SyncState marker
+  /// ([orderAskedKey]), which no pull touches, so the question is never asked again for these [gaps] on this lot.
+  /// [didIt] is the Yes/No answer.
   ///
-  /// Returns when written. Throws nothing beyond database errors. Side effect: inserts a Flags row.
-  Future<void> answerOrder(List<String> gaps, {required bool didIt}) {
+  /// Returns when written. Throws nothing beyond database errors. Side effect: writes a SyncState row.
+  Future<void> answerOrder(List<String> gaps, {required bool didIt}) async {
     final d = state;
-    return _db
-        .into(_db.flags)
-        .insert(
-          FlagsCompanion.insert(
-            flagId: const Uuid().v7(),
-            farmerId: d.lot!.farmerId,
-            plotId: Value(d.lot!.plotId),
-            type: orderGapFlag,
-            severity: 'info',
-            status: 'open',
-            detailJson: jsonEncode({
-              'lot_id': d.lot!.lotId,
-              'event_type': d.event!.wireName,
-              'missing': gaps,
-              'farmer_says_done': didIt,
-            }),
-            updatedAt: _now(),
-          ),
-        );
+    final answers = [
+      ...await _answers(d.lot!.lotId),
+      {'event_type': d.event!.wireName, 'missing': gaps, 'farmer_says_done': didIt},
+    ];
+    await _db.syncStateDao.set('$orderAskedKey${d.lot!.lotId}', jsonEncode(answers));
+  }
+
+  /// The out-of-order answers stored for [lotId], oldest first (`{event_type, missing, farmer_says_done}`); empty
+  /// when none. Throws [FormatException] when the stored marker is not JSON.
+  Future<List<Map<String, dynamic>>> _answers(String lotId) async {
+    final raw = await _db.syncStateDao.get('$orderAskedKey$lotId');
+    return raw == null ? [] : (jsonDecode(raw) as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
   /// Yield preview of this harvest (FR57, FR68): `pass`, `warn` or `hold` for the lot's harvested kilograms plus the
@@ -353,13 +348,21 @@ class EventLogNotifier extends Notifier<EventDraft> {
     return moisture != null && moistureVerdict(s, moisture) == MoistureVerdict.ready;
   }
 
-  /// Stores the accepted [photo] with its [clocks] and the [photoFix] written into it. Throws nothing.
-  void setPhoto(CompressedPhoto photo, Clocks clocks, LocationFix? photoFix) => update((d) {
-    d
-      ..photo = photo
-      ..clocks = clocks
-      ..photoFix = photoFix;
-  });
+  /// Stores the accepted [photo] with its [clocks] and the [photoFix] written into it, deleting the files of a photo it
+  /// replaces (Back from Confirm, then a new shot). Throws nothing. Side effect: deletes files.
+  void setPhoto(CompressedPhoto photo, Clocks clocks, LocationFix? photoFix) {
+    final old = state.photo;
+    if (old != null && old.path != photo.path) {
+      deleteQuietly(old.path);
+      deleteQuietly(old.thumbPath);
+    }
+    update((d) {
+      d
+        ..photo = photo
+        ..clocks = clocks
+        ..photoFix = photoFix;
+    });
+  }
 
   /// Stores the entry's GPS [fix] and its [status] (`ok`, `lowAccuracy` after "Save anyway", `none`). Throws nothing.
   void setLocation(LocationFix? fix, LocationStatus status) => update((d) {
@@ -379,7 +382,12 @@ class EventLogNotifier extends Notifier<EventDraft> {
     final photo = state.photo;
     deleteQuietly(photo?.path);
     deleteQuietly(photo?.thumbPath);
-    update((d) => d.photo = null);
+    update((d) {
+      d
+        ..photo = null
+        // Retake while recording: the button's result handler discards that note.
+        ..recording = false;
+    });
   }
 
   /// The payload JSON of the draft in B06's schema (`apps/api/agritrace/modules/events/payloads/farm.py`): field

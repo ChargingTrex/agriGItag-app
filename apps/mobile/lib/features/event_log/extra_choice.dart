@@ -28,7 +28,7 @@ class ExtraChoice extends ConsumerWidget {
   final VoidCallback onDone;
 
   /// Builds the event's choice widgets. [context] supplies theme and strings; [ref] reads and updates the draft.
-  /// Returns a list of widgets for the flow screen's scroll view; throws nothing.
+  /// Returns a [Column] for the flow screen's scroll view; throws nothing.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final d = ref.watch(eventLogProvider);
@@ -84,7 +84,7 @@ class ExtraChoice extends ConsumerWidget {
         VoicePromptBar(promptId: 'inputPrompt', text: l10n.inputPrompt),
         if (d.rules.enabled('quantity')) ...[gap, stepper],
         gap,
-        if (d.rules.enabled('input_id')) _Products(onPicked: onDone) else next,
+        if (d.rules.enabled('input_id')) _Products(onPicked: onDone, next: next) else next,
       ],
       FarmEvent.harvest || FarmEvent.packing => [
         VoicePromptBar(promptId: 'bagsPrompt', text: l10n.bagsPrompt),
@@ -118,15 +118,10 @@ class ExtraChoice extends ConsumerWidget {
           selected: null,
           onSelected: (v) => pick((d) => d.problemType = v),
           choices: [
-            for (final (type, icon) in [
-              ('pest', Icons.bug_report),
-              ('disease', Icons.coronavirus),
-              ('weather', Icons.thunderstorm),
-              ('other', Icons.help),
-            ])
+            for (final type in kProblemTypes)
               PictureChoice(
                 value: type,
-                picture: Icon(icon, size: 56),
+                picture: Icon(_problemIcons[type], size: 56),
                 label: problemLabel(l10n, type),
                 promptId: problemPromptId(type),
               ),
@@ -161,24 +156,38 @@ class ExtraChoice extends ConsumerWidget {
   }
 }
 
-/// The input master as picture cards (FR56); a tap takes the product with the stepper's bags and moves on.
+/// Picture of each problem kind of [kProblemTypes].
+const _problemIcons = {
+  'pest': Icons.bug_report,
+  'disease': Icons.coronavirus,
+  'weather': Icons.thunderstorm,
+  'other': Icons.help,
+};
+
+/// The input master as picture cards (FR56); a tap takes the product with the stepper's bags and moves on. With no
+/// products downloaded yet it shows [next], so the farmer still logs the bags (saved as `{bags, "bag"}`).
 class _Products extends ConsumerStatefulWidget {
-  /// Creates the grid; [onPicked] runs after a product is stored in the draft.
-  const _Products({required this.onPicked});
+  /// Creates the grid; [onPicked] runs after a product is stored in the draft; [next] replaces an empty grid.
+  const _Products({required this.onPicked, required this.next});
 
   /// Moves on to the camera.
   final VoidCallback onPicked;
+
+  /// The "Next" button shown when the input master is empty (before the first pull, or no list imported).
+  final Widget next;
 
   /// Creates the state holding the loaded master. Returns it; throws nothing.
   @override
   ConsumerState<_Products> createState() => _ProductsState();
 }
 
+/// State of [_Products]: the master loaded once.
 class _ProductsState extends ConsumerState<_Products> {
+  /// The input master with pack sizes, loaded once.
   late final Future<List<(InputItem, num?)>> _items = ref.read(eventLogProvider.notifier).inputs();
 
-  /// Builds the grid once the master is loaded (a spinner before). [context] supplies the locale. Returns the
-  /// widget; throws nothing (a broken bundle shows no cards; the officer re-syncs it).
+  /// Builds the grid once the master is loaded (nothing before), or [_Products.next] when it is empty. [context]
+  /// supplies the locale. Returns the widget; throws nothing (a broken bundle shows no cards; the officer re-syncs it).
   @override
   Widget build(BuildContext context) {
     final ta = Localizations.localeOf(context).languageCode == 'ta';
@@ -187,6 +196,7 @@ class _ProductsState extends ConsumerState<_Products> {
       builder: (context, snap) {
         // The master is local; nothing to show for the few milliseconds it loads.
         if (!snap.hasData) return const SizedBox.shrink();
+        if (snap.data!.isEmpty) return widget.next;
         return PictureCardGrid<(InputItem, num?)>(
           selected: null,
           onSelected: (item) {

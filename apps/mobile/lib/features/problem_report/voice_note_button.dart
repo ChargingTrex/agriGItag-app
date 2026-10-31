@@ -4,6 +4,8 @@
 //   alert to the field officer"), §When things go wrong (one sentence + one button, never an error code); FR3.
 // Callers: ConfirmScreen (event_log/confirm_screen.dart) for the problem event.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -25,23 +27,32 @@ class VoiceNoteButton extends ConsumerStatefulWidget {
   ConsumerState<VoiceNoteButton> createState() => _VoiceNoteButtonState();
 }
 
+/// State of [VoiceNoteButton]: the recorder and the flow it reports to.
 class _VoiceNoteButtonState extends ConsumerState<VoiceNoteButton> {
+  /// The recorder, made on the first tap and kept for re-recording.
   VoiceNoteRecorder? _recorder;
-  bool _recording = false;
 
-  /// Releases the microphone. Throws nothing.
+  /// The flow's notifier, kept so the recording result can still reach it after this widget is gone.
+  late final EventLogNotifier _flow = ref.read(eventLogProvider.notifier);
+
+  /// Stops a running recording (its result is then discarded, see [_toggle]) and releases the microphone.
+  /// Side effect: the recorded file of an unfinished note is deleted. Throws nothing.
   @override
   void dispose() {
-    _recorder?.dispose();
+    final recorder = _recorder;
+    if (recorder != null) {
+      unawaited(recorder.stop().then((_) {}, onError: (Object _) {}).whenComplete(recorder.dispose));
+    }
     super.dispose();
   }
 
-  /// Starts recording, or stops a running one. A refused microphone or a failed recording opens its one-button
+  /// Starts recording, or stops a running one. While it records, the draft's `recording` flag keeps the confirm tick
+  /// off, so a note is never dropped by an early tick. A refused microphone or a failed recording opens its one-button
   /// sheet. Side effects: microphone, a file in the media folder, the draft's voice note. Throws nothing.
   Future<void> _toggle() async {
     final l10n = AppLocalizations.of(context);
     final recorder = _recorder ??= ref.read(voiceRecorderFactoryProvider)();
-    if (_recording) {
+    if (ref.read(eventLogProvider).recording) {
       // The result listener below stores the note; a failed stop reaches it as RecorderFailed.
       await recorder.stop().then((_) {}, onError: (Object _) {});
       return;
@@ -60,15 +71,18 @@ class _VoiceNoteButtonState extends ConsumerState<VoiceNoteButton> {
         actionPromptId: 'okay',
       );
     }
-    setState(() => _recording = true);
+    _flow.update((d) => d.recording = true);
     recorder.result.then(
       (note) {
-        ref.read(eventLogProvider.notifier).setVoice(note);
-        if (mounted) setState(() => _recording = false);
+        // Screen left while recording (Retake): the note belongs to no photo any more.
+        if (!mounted) return deleteQuietly(note.file.path);
+        _flow
+          ..setVoice(note)
+          ..update((d) => d.recording = false);
       },
       onError: (Object _) {
         if (!mounted) return;
-        setState(() => _recording = false);
+        _flow.update((d) => d.recording = false);
         showFarmerSheet(
           context,
           icon: Icons.mic_off,
@@ -88,7 +102,8 @@ class _VoiceNoteButtonState extends ConsumerState<VoiceNoteButton> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final hasNote = ref.watch(eventLogProvider.select((d) => d.voice != null));
-    final (icon, label, prompt) = _recording
+    final recording = ref.watch(eventLogProvider.select((d) => d.recording));
+    final (icon, label, prompt) = recording
         ? (Icons.stop, l10n.voiceStop, 'voiceStop')
         : hasNote
         ? (Icons.check_circle, l10n.voiceAdded, 'voiceAdded')

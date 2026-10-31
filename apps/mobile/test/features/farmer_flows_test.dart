@@ -174,10 +174,14 @@ void main() {
     await h.dispose(tester);
   });
 
-  testWidgets('"Did you already sow?" is asked once, flags the gap, never blocks', (tester) async {
+  testWidgets('"Did you already sow?" is asked once, kept in a local marker, never blocks', (tester) async {
     final h = FlowHarness();
     await h.start(tester, location: '/log', withHistory: false);
     await h.tap(tester, find.text('Harvest'));
+    expect(find.text('Did you already sow?'), findsOneWidget);
+    // Android Back neither closes the sheet nor records an answer.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
     expect(find.text('Did you already sow?'), findsOneWidget);
     await h.tap(tester, find.text('Yes'));
     await h.tap(tester, find.text('Next'));
@@ -185,14 +189,15 @@ void main() {
     await h.tap(tester, find.text('Correct'));
     expect(h.path, '/home/saved');
 
-    final flag = (await h.db.select(h.db.flags).get()).single;
-    expect(flag.type, 'order_gap');
-    expect(jsonDecode(flag.detailJson), {
-      'lot_id': 'lot-1',
-      'event_type': 'harvest',
-      'missing': ['land_preparation', 'sowing'],
-      'farmer_says_done': true,
-    });
+    // Phone-only marker in SyncState (no pull touches it); nothing is written into the server-mirror Flags table.
+    expect(jsonDecode((await h.db.syncStateDao.get('order_asked:lot-1'))!), [
+      {
+        'event_type': 'harvest',
+        'missing': ['land_preparation', 'sowing'],
+        'farmer_says_done': true,
+      },
+    ]);
+    expect(await h.db.select(h.db.flags).get(), isEmpty);
 
     // Second harvest on the same lot: no question.
     h.go('/log');
@@ -200,7 +205,7 @@ void main() {
     await h.tap(tester, find.text('Harvest'));
     expect(find.text('Did you already sow?'), findsNothing);
     expect(find.text('Next'), findsOneWidget);
-    expect(await h.db.select(h.db.flags).get(), hasLength(1));
+    expect(jsonDecode((await h.db.syncStateDao.get('order_asked:lot-1'))!), hasLength(1));
     await h.dispose(tester);
   });
 
@@ -216,6 +221,19 @@ void main() {
     await h.tap(tester, find.text('Correct'));
     final entry = (await h.saved('sowing')).single;
     expect((await h.mediaOf(entry.entryId)).single.localPath, endsWith('photo_2_1600.jpg'));
+    await h.dispose(tester);
+  });
+
+  testWidgets('Back from Confirm and a new shot deletes the first photo files', (tester) async {
+    final h = FlowHarness();
+    await h.start(tester, location: '/log/sowing');
+    await h.tap(tester, find.text('Take photo'));
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await h.tap(tester, find.text('Take photo'));
+    expect(File('${h.media.path}/photo_1_1600.jpg').existsSync(), isFalse);
+    expect(File('${h.media.path}/photo_1_thumb.jpg').existsSync(), isFalse);
+    expect(File('${h.media.path}/photo_2_1600.jpg').existsSync(), isTrue);
     await h.dispose(tester);
   });
 
@@ -265,6 +283,9 @@ void main() {
     await h.tap(tester, find.text('Disease'));
     await h.tap(tester, find.text('Take photo'));
     await h.tap(tester, find.text('Voice note'));
+    // The tick waits while the note records, so an early tick cannot drop it.
+    final tick = find.ancestor(of: find.text('Correct'), matching: find.bySubtype<FilledButton>());
+    expect(tester.widget<FilledButton>(tick).onPressed, isNull);
     await h.tap(tester, find.text('Stop'));
     expect(find.text('Voice added'), findsOneWidget);
     await h.tap(tester, find.text('Correct'));

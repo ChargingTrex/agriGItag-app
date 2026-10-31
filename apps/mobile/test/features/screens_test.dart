@@ -4,6 +4,8 @@
 // Requirement: plan §7.2 M07; UserFlows §Farmer home screen, §Each farm event, §When things go wrong; D-017.
 // Callers: flutter test (CI mobile job).
 
+import 'dart:convert';
+
 import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/features/event_log/choose_event_screen.dart';
 import 'package:agritrace/features/event_log/event_log_controller.dart';
@@ -31,6 +33,7 @@ void main() {
           ),
         );
     await h.start(tester);
+    h.taps = 0;
     expect(find.text('Next: Harvest, by 14 Feb'), findsOneWidget);
     expect(find.text('To do'), findsOneWidget);
     for (final label in ['Log', 'Sell', 'Money', 'My farm', 'Call officer']) {
@@ -44,6 +47,8 @@ void main() {
     await h.tap(tester, find.text('Next'));
     await h.tap(tester, find.text('Take photo'));
     await h.tap(tester, find.text('Correct'));
+    expect(h.path, '/home/saved');
+    expect(h.taps, 4, reason: 'from home: task card, Next (the +1 extra choice), shutter, tick');
     await h.tap(tester, find.text('Home'));
     expect(find.text('Nothing due now. Log what you did today.'), findsOneWidget);
     await h.dispose(tester);
@@ -202,6 +207,44 @@ void main() {
     await h.tap(tester, find.text('Take photo'));
     await h.tap(tester, find.text('Correct'));
     expect([for (final e in await h.saved('sowing')) e.instanceNo], [2, 3]);
+    await h.dispose(tester);
+  });
+
+  testWidgets('from home through Log → grid: 4 taps (+1 extra), one more than the task card', (tester) async {
+    final h = FlowHarness();
+    await h.start(tester);
+    h.taps = 0;
+    await h.tap(tester, find.text('Log'));
+    await h.tap(tester, find.text('Sowing'));
+    await h.tap(tester, find.text('Take photo'));
+    await h.tap(tester, find.text('Correct'));
+    expect(h.path, '/home/saved');
+    expect(h.taps, 4, reason: 'Log, event card, shutter, tick (sowing has no extra choice)');
+    await h.dispose(tester);
+  });
+
+  testWidgets('fertiliser with an empty input list: Next, saved as bags', (tester) async {
+    final h = FlowHarness();
+    await h.start(tester, location: '/home');
+    await h.db.refBundlesDao.upsert(
+      RefBundlesCompanion.insert(
+        bundleType: 'inputs',
+        version: 2,
+        etag: 'e2',
+        fetchedAt: flowNow,
+        bodyJson: '{"inputs": []}',
+      ),
+    );
+    h.go('/log/input_application');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+    await h.tap(tester, find.text('Next'));
+    await h.tap(tester, find.text('Take photo'));
+    await h.tap(tester, find.text('Correct'));
+    expect(jsonDecode((await h.saved('input_application')).single.payloadJson), {
+      'quantity': {'value': 2, 'unit': 'bag'},
+    });
     await h.dispose(tester);
   });
 }
