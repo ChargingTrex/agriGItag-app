@@ -200,6 +200,17 @@
         "title": "AssistStartIn",
         "type": "object"
       },
+      "ChangeKind": {
+        "description": "Why an event version exists (FR25 corrections with reason, FR59 system entries).",
+        "enum": [
+          "create",
+          "correct",
+          "undo",
+          "system"
+        ],
+        "title": "ChangeKind",
+        "type": "string"
+      },
       "ConsentIn": {
         "description": "Record a farmer's consent; resending the same `client_id` returns the stored record (D-005).",
         "properties": {
@@ -348,6 +359,78 @@
         "title": "ConsentType",
         "type": "string"
       },
+      "CorrectionIn": {
+        "description": "A correction of an event: the same shape as a sync `event_version` entry (FR25).",
+        "properties": {
+          "client_id": {
+            "description": "Client id of the new version (idempotency key, D-005).",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "data": {
+            "description": "The full corrected version; `change_kind` must be `correct`.",
+            "discriminator": {
+              "mapping": {
+                "drying": "#/components/schemas/DryingVersion",
+                "final_packing": "#/components/schemas/FinalPackingVersion",
+                "grading": "#/components/schemas/GradingVersion",
+                "harvest": "#/components/schemas/HarvestVersion",
+                "input_application": "#/components/schemas/InputApplicationVersion",
+                "intake": "#/components/schemas/IntakeVersion",
+                "land_preparation": "#/components/schemas/LandPreparationVersion",
+                "nursery": "#/components/schemas/NurseryVersion",
+                "packing": "#/components/schemas/PackingVersion",
+                "problem": "#/components/schemas/ProblemVersion",
+                "sowing": "#/components/schemas/SowingVersion"
+              },
+              "propertyName": "event_type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LandPreparationVersion"
+              },
+              {
+                "$ref": "#/components/schemas/NurseryVersion"
+              },
+              {
+                "$ref": "#/components/schemas/SowingVersion"
+              },
+              {
+                "$ref": "#/components/schemas/InputApplicationVersion"
+              },
+              {
+                "$ref": "#/components/schemas/HarvestVersion"
+              },
+              {
+                "$ref": "#/components/schemas/DryingVersion"
+              },
+              {
+                "$ref": "#/components/schemas/PackingVersion"
+              },
+              {
+                "$ref": "#/components/schemas/ProblemVersion"
+              },
+              {
+                "$ref": "#/components/schemas/IntakeVersion"
+              },
+              {
+                "$ref": "#/components/schemas/GradingVersion"
+              },
+              {
+                "$ref": "#/components/schemas/FinalPackingVersion"
+              }
+            ],
+            "title": "Data"
+          }
+        },
+        "required": [
+          "client_id",
+          "data"
+        ],
+        "title": "CorrectionIn",
+        "type": "object"
+      },
       "CropOut": {
         "description": "A crop farmers can grow, with its GI tag and event schema (FR22, FR55).",
         "properties": {
@@ -471,6 +554,223 @@
         "title": "DeviceOut",
         "type": "object"
       },
+      "DryingPayload": {
+        "additionalProperties": false,
+        "description": "Stage 5 drying on the farm; several drying runs allowed.\n\n`start` is recorded when drying begins, `end` when it ends; one entry may carry the whole span\n(`occurred_on` = start, `occurred_end_on` = end). The end-of-drying moisture is a quality reading.",
+        "properties": {
+          "moisture_reading_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Client id of the end-of-drying moisture reading (kind `quality_reading`).",
+            "title": "Moisture Reading Id"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "enum": [
+                  "start",
+                  "end"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Which moment this entry records; omit when it carries the whole span.",
+            "title": "Phase"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantity spread for drying, unit `kg`."
+          }
+        },
+        "title": "DryingPayload",
+        "type": "object"
+      },
+      "DryingVersion": {
+        "additionalProperties": false,
+        "description": "Version of a drying start, end or span (Stage 5).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "drying",
+            "description": "Always `drying` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/DryingPayload",
+            "description": "Drying fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "DryingVersion",
+        "type": "object"
+      },
       "ErrorBody": {
         "description": "Inner object of the error envelope.",
         "properties": {
@@ -509,6 +809,199 @@
         ],
         "title": "ErrorEnvelope",
         "type": "object"
+      },
+      "EventOut": {
+        "description": "One event with its latest version, lean for 2G timelines (FR63).",
+        "properties": {
+          "change_kind": {
+            "$ref": "#/components/schemas/ChangeKind",
+            "description": "How the latest version came about."
+          },
+          "entered_by_user_id": {
+            "description": "Who entered the latest version.",
+            "format": "uuid",
+            "title": "Entered By User Id",
+            "type": "string"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/EventType",
+            "description": "Event type."
+          },
+          "id": {
+            "description": "Event id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "instance_no": {
+            "description": "Instance of this type on the lot.",
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "is_system_generated": {
+            "description": "True for platform entries (FR59).",
+            "title": "Is System Generated",
+            "type": "boolean"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date for spans.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date of the latest version.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "on_behalf_of_farmer_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Farmer assisted, in assist mode.",
+            "title": "On Behalf Of Farmer Id"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "description": "Typed payload of the latest version (D-014).",
+            "title": "Payload",
+            "type": "object"
+          },
+          "photos": {
+            "description": "Photos of the latest version.",
+            "items": {
+              "$ref": "#/components/schemas/EventPhotoOut"
+            },
+            "title": "Photos",
+            "type": "array"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Reason of a correction or undo.",
+            "title": "Reason Code"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus",
+            "description": "submitted, undone, ... (FR59)."
+          },
+          "version_no": {
+            "description": "Number of the latest version.",
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "event_type",
+          "instance_no",
+          "status",
+          "occurred_on",
+          "occurred_end_on",
+          "version_no",
+          "change_kind",
+          "payload",
+          "entered_by_user_id",
+          "on_behalf_of_farmer_id",
+          "is_system_generated",
+          "reason_code",
+          "photos"
+        ],
+        "title": "EventOut",
+        "type": "object"
+      },
+      "EventPhotoOut": {
+        "description": "An evidence photo on the timeline.",
+        "properties": {
+          "id": {
+            "description": "Photo id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PhotoStatus",
+            "description": "Upload and verification state."
+          },
+          "variants": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "{thumb_url, medium_url, jpeg_url, width, height} once variants exist.",
+            "title": "Variants"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "title": "EventPhotoOut",
+        "type": "object"
+      },
+      "EventStatus": {
+        "description": "Lifecycle of an event (FR25, FR59).",
+        "enum": [
+          "draft",
+          "submitted",
+          "undone",
+          "superseded",
+          "locked"
+        ],
+        "title": "EventStatus",
+        "type": "string"
+      },
+      "EventSubject": {
+        "description": "What a farm or processing event is recorded against (PRD \u00a75).",
+        "enum": [
+          "lot",
+          "batch"
+        ],
+        "title": "EventSubject",
+        "type": "string"
+      },
+      "EventType": {
+        "description": "Event types sharing the one event_versions table (D-014; Stages 1\u20139; FR3, FR55).",
+        "enum": [
+          "land_preparation",
+          "nursery",
+          "sowing",
+          "input_application",
+          "harvest",
+          "drying",
+          "packing",
+          "problem",
+          "intake",
+          "grading",
+          "final_packing"
+        ],
+        "title": "EventType",
+        "type": "string"
       },
       "FarmerIn": {
         "description": "A farmer onboarded by a field officer or admin (Stage 0, UserFlows \u00a7Onboarding a farmer).",
@@ -893,6 +1386,234 @@
         ],
         "title": "FarmingType",
         "type": "string"
+      },
+      "FinalPackingPayload": {
+        "additionalProperties": false,
+        "description": "Stage 9 final (retail) packing of a batch.",
+        "properties": {
+          "avg_sale_price_per_kg": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Average sale price, INR per kg.",
+            "title": "Avg Sale Price Per Kg"
+          },
+          "pack_size": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Size of one retail pack, e.g. `{value: 250, unit: g}`."
+          },
+          "packs": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Number of packs filled.",
+            "title": "Packs"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Packed quantity, unit `kg`."
+          }
+        },
+        "title": "FinalPackingPayload",
+        "type": "object"
+      },
+      "FinalPackingVersion": {
+        "additionalProperties": false,
+        "description": "Version of a batch final packing event (Stage 9).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "final_packing",
+            "description": "Always `final_packing` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/FinalPackingPayload",
+            "description": "Final packing fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "FinalPackingVersion",
+        "type": "object"
       },
       "FpoIn": {
         "description": "A new FPO (tenant); created by a super-admin.",
@@ -1421,6 +2142,408 @@
         "title": "GradingIn",
         "type": "object"
       },
+      "GradingPayload": {
+        "additionalProperties": false,
+        "description": "Stage 8 grading / sorting of a batch; readings and the computed grade live in quality.",
+        "properties": {
+          "declared_grade": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Grade declared by the QC officer.",
+            "title": "Declared Grade"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Graded quantity, unit `kg` (ceiling for packing)."
+          }
+        },
+        "title": "GradingPayload",
+        "type": "object"
+      },
+      "GradingVersion": {
+        "additionalProperties": false,
+        "description": "Version of a batch grading event (Stage 8).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "grading",
+            "description": "Always `grading` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/GradingPayload",
+            "description": "Grading fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "GradingVersion",
+        "type": "object"
+      },
+      "HarvestPayload": {
+        "additionalProperties": false,
+        "description": "Stage 4 harvest round; several rounds per lot (FR3, FR57).",
+        "properties": {
+          "bags": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Number of bags filled.",
+            "title": "Bags"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Harvested quantity, unit `kg` (FR57 yield check)."
+          }
+        },
+        "title": "HarvestPayload",
+        "type": "object"
+      },
+      "HarvestVersion": {
+        "additionalProperties": false,
+        "description": "Version of a harvest round (Stage 4).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "harvest",
+            "description": "Always `harvest` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/HarvestPayload",
+            "description": "Harvest fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "HarvestVersion",
+        "type": "object"
+      },
       "Health": {
         "description": "Status of each dependency: `ok` or `error: <ExceptionClass>` (details go to the server log only).",
         "properties": {
@@ -1446,6 +2569,220 @@
           "s3"
         ],
         "title": "Health",
+        "type": "object"
+      },
+      "InputApplicationPayload": {
+        "additionalProperties": false,
+        "description": "Stage 3 fertiliser or pesticide application, many instances per season (FR56).",
+        "properties": {
+          "input_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Input from the master list (`GET /v1/inputs`); practice tags derive from it.",
+            "title": "Input Id"
+          },
+          "input_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Name as written by the farmer when the input is not in the list.",
+            "title": "Input Name"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Amount applied, e.g. `{value: 25, unit: kg}`."
+          }
+        },
+        "title": "InputApplicationPayload",
+        "type": "object"
+      },
+      "InputApplicationVersion": {
+        "additionalProperties": false,
+        "description": "Version of a fertiliser or pesticide application (Stage 3).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "input_application",
+            "description": "Always `input_application` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/InputApplicationPayload",
+            "description": "Input application fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "InputApplicationVersion",
         "type": "object"
       },
       "InputCategory": {
@@ -1832,6 +3169,236 @@
         "title": "InstrumentOut",
         "type": "object"
       },
+      "IntakePayload": {
+        "additionalProperties": false,
+        "description": "Stage 7 sale of a lot to the processor, as recorded on the lot's timeline.",
+        "properties": {
+          "moisture_reading_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Client id of the intake moisture reading taken at the gate.",
+            "title": "Moisture Reading Id"
+          },
+          "price_per_kg": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Price paid in INR per kg (optional).",
+            "title": "Price Per Kg"
+          },
+          "processor_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Processor that received the lot.",
+            "title": "Processor Id"
+          },
+          "received": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantity received, unit `kg`."
+          }
+        },
+        "title": "IntakePayload",
+        "type": "object"
+      },
+      "IntakeVersion": {
+        "additionalProperties": false,
+        "description": "Version of a sale-to-processor intake on the lot timeline (Stage 7).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "intake",
+            "description": "Always `intake` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/IntakePayload",
+            "description": "Intake fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "IntakeVersion",
+        "type": "object"
+      },
       "IrrigationSource": {
         "description": "Water source of an irrigated plot (FR54).",
         "enum": [
@@ -1861,6 +3428,207 @@
           }
         },
         "title": "LabCertifiedRequires",
+        "type": "object"
+      },
+      "LandPreparationPayload": {
+        "additionalProperties": false,
+        "description": "Stage 1 land preparation: cultivated area and the last ploughing date.",
+        "properties": {
+          "cultivated_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Area prepared, unit `acre` (flagged when above the plot's declared size)."
+          },
+          "last_ploughed_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Last date of ploughing, YYYY-MM-DD.",
+            "title": "Last Ploughed On"
+          }
+        },
+        "title": "LandPreparationPayload",
+        "type": "object"
+      },
+      "LandPreparationVersion": {
+        "additionalProperties": false,
+        "description": "Version of a land preparation event (Stage 1).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "land_preparation",
+            "description": "Always `land_preparation` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/LandPreparationPayload",
+            "description": "Land preparation fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "LandPreparationVersion",
         "type": "object"
       },
       "LocationStatus": {
@@ -2061,6 +3829,207 @@
         "title": "MultiPolygonGeoJSON",
         "type": "object"
       },
+      "NurseryPayload": {
+        "additionalProperties": false,
+        "description": "Nursery preparation, split from main-field sowing (FR55); seeding date is `occurred_on`.",
+        "properties": {
+          "nursery_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Nursery bed area, e.g. unit `cent`."
+          },
+          "seed_variety": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Seed variety, e.g. `K2`.",
+            "title": "Seed Variety"
+          }
+        },
+        "title": "NurseryPayload",
+        "type": "object"
+      },
+      "NurseryVersion": {
+        "additionalProperties": false,
+        "description": "Version of a nursery preparation event (FR55).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "nursery",
+            "description": "Always `nursery` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/NurseryPayload",
+            "description": "Nursery fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "NurseryVersion",
+        "type": "object"
+      },
       "OrgKind": {
         "description": "Legal form of an FPO or processor (PRD \u00a75 Processor / FPO entity).",
         "enum": [
@@ -2141,6 +4110,207 @@
         "title": "OtpVerifyIn",
         "type": "object"
       },
+      "PackingPayload": {
+        "additionalProperties": false,
+        "description": "Stage 6 on-farm packing.",
+        "properties": {
+          "bags": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Number of bags packed.",
+            "title": "Bags"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Packed quantity, unit `kg` (FR58)."
+          }
+        },
+        "title": "PackingPayload",
+        "type": "object"
+      },
+      "PackingVersion": {
+        "additionalProperties": false,
+        "description": "Version of on-farm packing (Stage 6).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "packing",
+            "description": "Always `packing` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PackingPayload",
+            "description": "Packing fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "PackingVersion",
+        "type": "object"
+      },
       "Page_ConsentOut_": {
         "properties": {
           "has_more": {
@@ -2174,6 +4344,41 @@
           "has_more"
         ],
         "title": "Page[ConsentOut]",
+        "type": "object"
+      },
+      "Page_EventOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[EventOut]",
         "type": "object"
       },
       "Page_FarmerOut_": {
@@ -2788,6 +4993,188 @@
           "outcome"
         ],
         "title": "ParameterResult",
+        "type": "object"
+      },
+      "PhotoConfirmOut": {
+        "description": "Whether storage holds the photo.",
+        "properties": {
+          "client_id": {
+            "description": "The photo's client id.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "status": {
+            "description": "received: stored and queued for verification; missing: upload again, then confirm.",
+            "enum": [
+              "received",
+              "missing"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "status"
+        ],
+        "title": "PhotoConfirmOut",
+        "type": "object"
+      },
+      "PhotoIn": {
+        "additionalProperties": false,
+        "description": "An evidence photo announced with its entry; the bytes follow by presigned PUT (D-011).",
+        "properties": {
+          "client_id": {
+            "description": "UUIDv7 generated on the phone; the photo's id (D-005).",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "content_type": {
+            "const": "image/jpeg",
+            "default": "image/jpeg",
+            "description": "MIME type; the phone always uploads JPEG (M04).",
+            "title": "Content Type",
+            "type": "string"
+          },
+          "exif_gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GPS position the phone wrote into EXIF, if any."
+          },
+          "exif_taken_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Capture time the phone wrote into EXIF, with offset; re-read by the server.",
+            "title": "Exif Taken At"
+          },
+          "sha256": {
+            "description": "Lower-case hex SHA-256 of the JPEG; bound into the PUT.",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          },
+          "size_bytes": {
+            "description": "File size in bytes.",
+            "exclusiveMinimum": 0.0,
+            "maximum": 5000000.0,
+            "title": "Size Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "client_id",
+          "sha256",
+          "size_bytes"
+        ],
+        "title": "PhotoIn",
+        "type": "object"
+      },
+      "PhotoRef": {
+        "description": "A photo the phone has uploaded.",
+        "properties": {
+          "client_id": {
+            "description": "The photo's client id.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id"
+        ],
+        "title": "PhotoRef",
+        "type": "object"
+      },
+      "PhotoStatus": {
+        "description": "Upload and verification state of an evidence photo (FR61, D-011).",
+        "enum": [
+          "pending_upload",
+          "uploaded",
+          "verified",
+          "checksum_mismatch",
+          "exif_mismatch"
+        ],
+        "title": "PhotoStatus",
+        "type": "string"
+      },
+      "PhotoUpload": {
+        "description": "How to upload one photo: a single presigned PUT (D-011).",
+        "properties": {
+          "expires_at": {
+            "description": "When the URL stops working (15 minutes).",
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers to send exactly: `Content-Type` and `x-amz-checksum-sha256` (base64).",
+            "title": "Headers",
+            "type": "object"
+          },
+          "method": {
+            "const": "PUT",
+            "default": "PUT",
+            "description": "HTTP method to use.",
+            "title": "Method",
+            "type": "string"
+          },
+          "photo_client_id": {
+            "description": "The photo's client id.",
+            "format": "uuid",
+            "title": "Photo Client Id",
+            "type": "string"
+          },
+          "url": {
+            "description": "Presigned URL on the public storage endpoint.",
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "photo_client_id",
+          "url",
+          "headers",
+          "expires_at"
+        ],
+        "title": "PhotoUpload",
+        "type": "object"
+      },
+      "PhotosConfirmIn": {
+        "description": "Photos the phone believes are uploaded.",
+        "properties": {
+          "photos": {
+            "description": "Photos to confirm.",
+            "items": {
+              "$ref": "#/components/schemas/PhotoRef"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Photos",
+            "type": "array"
+          }
+        },
+        "required": [
+          "photos"
+        ],
+        "title": "PhotosConfirmIn",
         "type": "object"
       },
       "PinChangeIn": {
@@ -3457,6 +5844,225 @@
           "coordinates"
         ],
         "title": "PolygonGeoJSON",
+        "type": "object"
+      },
+      "ProblemPayload": {
+        "additionalProperties": false,
+        "description": "A problem seen in the field (pest, disease, weather), reported with a photo.",
+        "properties": {
+          "affected_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Area affected, unit `acre` or `cent`."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What was seen, in the farmer's words.",
+            "title": "Description"
+          },
+          "problem_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pest",
+                  "disease",
+                  "weather",
+                  "other"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Kind of problem.",
+            "title": "Problem Type"
+          }
+        },
+        "title": "ProblemPayload",
+        "type": "object"
+      },
+      "ProblemVersion": {
+        "additionalProperties": false,
+        "description": "Version of a field problem report.",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "problem",
+            "description": "Always `problem` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ProblemPayload",
+            "description": "Problem fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "ProblemVersion",
         "type": "object"
       },
       "ProcessorIn": {
@@ -4448,6 +7054,223 @@
         "title": "SignedQuantity",
         "type": "object"
       },
+      "SowingPayload": {
+        "additionalProperties": false,
+        "description": "Stage 2 sowing or transplanting in the main field, one entry per instance (FR3, FR55).",
+        "properties": {
+          "method": {
+            "anyOf": [
+              {
+                "enum": [
+                  "direct_seeding",
+                  "transplanting"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Direct seeding, or transplanting nursery seedlings.",
+            "title": "Method"
+          },
+          "seed_variety": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Seed variety sown or transplanted.",
+            "title": "Seed Variety"
+          },
+          "sown_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Area sown, unit `acre`."
+          }
+        },
+        "title": "SowingPayload",
+        "type": "object"
+      },
+      "SowingVersion": {
+        "additionalProperties": false,
+        "description": "Version of a sowing / transplanting event (Stage 2).",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Batch of a processing event.",
+            "title": "Batch Id"
+          },
+          "change_kind": {
+            "default": "create",
+            "description": "`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.",
+            "enum": [
+              "create",
+              "correct",
+              "undo"
+            ],
+            "title": "Change Kind",
+            "type": "string"
+          },
+          "clocks": {
+            "$ref": "#/components/schemas/ThreeClocks",
+            "description": "Device and GPS clocks at capture; the server adds its own."
+          },
+          "event_id": {
+            "description": "Client id of the event, stable across its versions (D-005).",
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "const": "sowing",
+            "description": "Always `sowing` for this variant (discriminator).",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "gps": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Device position at submission (FR26)."
+          },
+          "instance_no": {
+            "default": 1,
+            "description": "1-based instance of this type on the subject (FR3).",
+            "minimum": 1.0,
+            "title": "Instance No",
+            "type": "integer"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot of a farm event; exactly one of lot/batch.",
+            "title": "Lot Id"
+          },
+          "occurred_end_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End date of a span such as drying.",
+            "title": "Occurred End On"
+          },
+          "occurred_on": {
+            "description": "Date the activity happened (or started), YYYY-MM-DD.",
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/SowingPayload",
+            "description": "Sowing fields."
+          },
+          "photos": {
+            "description": "Evidence photos (FR3, FR61).",
+            "items": {
+              "$ref": "#/components/schemas/PhotoIn"
+            },
+            "maxItems": 10,
+            "title": "Photos",
+            "type": "array"
+          },
+          "plot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Plot where a farm event happened (FR69 GPS check).",
+            "title": "Plot Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason; required for `correct` (422 `reason_required`).",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text reason or comment (FR59).",
+            "title": "Reason Text"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/EventSubject",
+            "description": "`lot` for farm events, `batch` for processing events."
+          },
+          "version_no": {
+            "description": "1 for a new event; each later version must be max + 1.",
+            "minimum": 1.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "version_no",
+          "subject_type",
+          "occurred_on",
+          "clocks",
+          "event_type",
+          "payload"
+        ],
+        "title": "SowingVersion",
+        "type": "object"
+      },
       "StandardRef": {
         "additionalProperties": false,
         "description": "The published standard a profile version cites (FR47, FR51: shown on the public page with edition).",
@@ -4753,6 +7576,286 @@
         "title": "StandardsScheme",
         "type": "string"
       },
+      "SyncEntry": {
+        "description": "One offline entry; `data` is validated per entry, so one bad entry never rejects the batch.",
+        "properties": {
+          "client_id": {
+            "description": "Id of the record created (event version, reading, plot, consent); idempotency key.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "data": {
+            "additionalProperties": true,
+            "description": "`event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: not in the pilot. The entry's `client_id` is used as the record's id.",
+            "title": "Data",
+            "type": "object"
+          },
+          "kind": {
+            "description": "What `data` holds.",
+            "enum": [
+              "event_version",
+              "quality_reading",
+              "plot",
+              "consent",
+              "flag_resolution"
+            ],
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "kind",
+          "data"
+        ],
+        "title": "SyncEntry",
+        "type": "object"
+      },
+      "SyncMetricIn": {
+        "description": "Per-entry sync telemetry measured on the phone (plan \u00a713 F1).",
+        "properties": {
+          "acked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the server acknowledged it, if known.",
+            "title": "Acked At"
+          },
+          "entry_client_id": {
+            "description": "Client id of the entry measured.",
+            "format": "uuid",
+            "title": "Entry Client Id",
+            "type": "string"
+          },
+          "failures": {
+            "default": 0,
+            "description": "Failed send attempts before success.",
+            "minimum": 0.0,
+            "title": "Failures",
+            "type": "integer"
+          },
+          "network_type": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Network at send time: 2g, 3g, lte, wifi.",
+            "title": "Network Type"
+          },
+          "photo_upload_ms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Total photo upload time in milliseconds.",
+            "title": "Photo Upload Ms"
+          },
+          "saved_at": {
+            "description": "When the entry was saved on the phone.",
+            "format": "date-time",
+            "title": "Saved At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry_client_id",
+          "saved_at"
+        ],
+        "title": "SyncMetricIn",
+        "type": "object"
+      },
+      "SyncPushIn": {
+        "description": "Sync push envelope: at most 50 entries and 256 KB (backend-design.md \u00a73, plan \u00a713 A4).",
+        "properties": {
+          "app_version": {
+            "description": "App version, e.g. `1.0.3`.",
+            "maxLength": 32,
+            "title": "App Version",
+            "type": "string"
+          },
+          "device_id": {
+            "description": "Device id of the app; the token's device is what is stored.",
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "device_time": {
+            "description": "Phone clock when the push was sent.",
+            "format": "date-time",
+            "title": "Device Time",
+            "type": "string"
+          },
+          "entries": {
+            "description": "Entries in capture order; each one is its own transaction.",
+            "items": {
+              "$ref": "#/components/schemas/SyncEntry"
+            },
+            "maxItems": 50,
+            "title": "Entries",
+            "type": "array"
+          },
+          "metrics": {
+            "description": "Telemetry rows to store in `sync_metrics`.",
+            "items": {
+              "$ref": "#/components/schemas/SyncMetricIn"
+            },
+            "maxItems": 200,
+            "title": "Metrics",
+            "type": "array"
+          }
+        },
+        "required": [
+          "device_id",
+          "app_version",
+          "device_time",
+          "entries"
+        ],
+        "title": "SyncPushIn",
+        "type": "object"
+      },
+      "SyncPushOut": {
+        "description": "Per-entry results, in the order sent.",
+        "properties": {
+          "results": {
+            "description": "One result per entry, same order.",
+            "items": {
+              "$ref": "#/components/schemas/SyncResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "server_time": {
+            "description": "Server clock (UTC), for the phone's skew display.",
+            "format": "date-time",
+            "title": "Server Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "server_time",
+          "results"
+        ],
+        "title": "SyncPushOut",
+        "type": "object"
+      },
+      "SyncResult": {
+        "description": "Outcome of one entry (or of a REST correction / undo).",
+        "properties": {
+          "client_id": {
+            "description": "The entry's client id.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorBody"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the entry was rejected."
+          },
+          "photo_uploads": {
+            "description": "Uploads still owed; on a duplicate only photos not yet uploaded.",
+            "items": {
+              "$ref": "#/components/schemas/PhotoUpload"
+            },
+            "title": "Photo Uploads",
+            "type": "array"
+          },
+          "server_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Id of the stored record (equals client_id).",
+            "title": "Server Id"
+          },
+          "status": {
+            "description": "accepted: stored now; duplicate: already stored by you; rejected: see `error`.",
+            "enum": [
+              "accepted",
+              "duplicate",
+              "rejected"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "status"
+        ],
+        "title": "SyncResult",
+        "type": "object"
+      },
+      "ThreeClocks": {
+        "description": "The three timestamps kept for every offline capture (device, GPS, server).",
+        "properties": {
+          "device_time": {
+            "description": "Phone clock at capture, ISO 8601 with offset.",
+            "format": "date-time",
+            "title": "Device Time",
+            "type": "string"
+          },
+          "gps_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GPS fix time at capture, if a fix was taken.",
+            "title": "Gps Time"
+          },
+          "server_received_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set by the server when the entry arrives; clients leave it empty.",
+            "title": "Server Received At"
+          }
+        },
+        "required": [
+          "device_time"
+        ],
+        "title": "ThreeClocks",
+        "type": "object"
+      },
       "TrailRule-Input": {
         "additionalProperties": false,
         "description": "How a parameter may change from one capture stage to the next (FR50: moisture must not rise).",
@@ -4849,6 +7952,67 @@
           "rule"
         ],
         "title": "TrailRule",
+        "type": "object"
+      },
+      "UndoIn": {
+        "additionalProperties": false,
+        "description": "A farmer's undo of an own entry within 24 hours (FR6, FR25).",
+        "properties": {
+          "client_id": {
+            "description": "Client id of the undo version (idempotency key, D-005).",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "clocks": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThreeClocks"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Phone clocks at the undo; omitted means server now."
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Coded reason, e.g. `entered_by_mistake`.",
+            "title": "Reason Code"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text comment.",
+            "title": "Reason Text"
+          },
+          "version_no": {
+            "description": "Current max version + 1.",
+            "minimum": 2.0,
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "client_id",
+          "version_no"
+        ],
+        "title": "UndoIn",
         "type": "object"
       },
       "UserOut": {
@@ -6296,6 +9460,274 @@
         ]
       }
     },
+    "/v1/events/{event_id}/undo": {
+      "post": {
+        "description": "A farmer undoes an event they entered, within 24 hours of its capture (device time); later \u2192 409 `undo_window_closed` (ask the field officer for a correction). Adds a version with `change_kind=undo`; the event's status becomes `undone`. `version_no` must be the current max + 1.",
+        "operationId": "undo_event_v1_events__event_id__undo_post",
+        "parameters": [
+          {
+            "description": "Event id (the client id it was created with).",
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "description": "Event id (the client id it was created with).",
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UndoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: not a farmer, or not your entry."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: event not in your FPO."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`undo_window_closed`, `stale_version`, `client_id_conflict`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Undo an own entry",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/v1/events/{event_id}/versions": {
+      "post": {
+        "description": "Adds a correction version (field officer or FPO admin only; farmers get 403 `forbidden`). The body is a sync `event_version` entry: `data.change_kind` must be `correct`, `data.version_no` the current max + 1 (else 409 `stale_version`), `data.reason_code` is required (422 `reason_required`). The earlier version stays stored (append-only, FR25). Resending the same `client_id` answers `duplicate`.",
+        "operationId": "correct_event_v1_events__event_id__versions_post",
+        "parameters": [
+          {
+            "description": "Event id (the client id it was created with).",
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "description": "Event id (the client id it was created with).",
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: not a field officer or FPO admin."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: event, lot, batch or plot not in your FPO."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`stale_version`, `client_id_conflict`."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`, `reason_required`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Correct an event",
+        "tags": [
+          "events"
+        ]
+      }
+    },
     "/v1/farmers": {
       "get": {
         "description": "List farmers of the caller's FPO (a farmer sees only themself).",
@@ -7693,6 +11125,105 @@
         ]
       }
     },
+    "/v1/lots/{lot_id}/events": {
+      "get": {
+        "description": "Every event of the lot with its latest version, ordered by `occurred_on`, then `instance_no` (FR63). Undone events stay listed with status `undone`. A lot has a few dozen events at most, so the whole list is one page (`has_more` false).",
+        "operationId": "list_lot_events_v1_lots__lot_id__events_get",
+        "parameters": [
+          {
+            "description": "Lot id.",
+            "in": "path",
+            "name": "lot_id",
+            "required": true,
+            "schema": {
+              "description": "Lot id.",
+              "format": "uuid",
+              "title": "Lot Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_EventOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: lot not in your FPO (farmers: not your lot)."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List a lot's events",
+        "tags": [
+          "events"
+        ]
+      }
+    },
     "/v1/lots/{lot_id}/readings": {
       "get": {
         "description": "Drying-end and intake readings of a lot (its moisture trail, Dataflow Stages 5 and 7).",
@@ -8856,6 +12387,206 @@
         "summary": "Get one Standards Profile version",
         "tags": [
           "quality"
+        ]
+      }
+    },
+    "/v1/sync/photos/confirm": {
+      "post": {
+        "description": "Call after each presigned PUT succeeded. For each photo the server checks storage: `received` means the object is there (its version id is stored and verification of SHA-256 and EXIF time/GPS is queued), `missing` means upload again (ask for fresh URLs by resending the entry) and confirm again. Unknown ids and other FPOs' photos also answer `missing`.",
+        "operationId": "sync_photos_confirm_v1_sync_photos_confirm_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotosConfirmIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PhotoConfirmOut"
+                  },
+                  "title": "Response Sync Photos Confirm V1 Sync Photos Confirm Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Confirm uploaded photos",
+        "tags": [
+          "events",
+          "events"
+        ]
+      }
+    },
+    "/v1/sync/push": {
+      "post": {
+        "description": "Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`; `flag_resolution` is rejected with `not_implemented_pilot` in the pilot. Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.",
+        "operationId": "sync_push_v1_sync_push_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncPushIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncPushOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`payload_too_large`: body over 256 KB."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`: the envelope does not parse, or more than 50 entries."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Push offline entries",
+        "tags": [
+          "events",
+          "events"
         ]
       }
     },

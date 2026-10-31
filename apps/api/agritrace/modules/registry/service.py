@@ -21,13 +21,14 @@ import json
 import logging
 import secrets
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
 from geoalchemy2 import WKBElement, WKTElement
 from geoalchemy2.shape import to_shape
+from pydantic import ValidationError
 from shapely.geometry import Point
 from sqlalchemy import func, inspect, or_, select, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -96,6 +97,7 @@ from agritrace.modules.registry.schemas import (
 __all__ = [
     "GeoResult",
     "area_gap",
+    "create_plot_from_sync",
     "enqueue_plot_check",
     "event_within_plot",
     "format_address",
@@ -886,6 +888,34 @@ async def create_plot(session: AsyncSession, user: CurrentUser, body: PlotIn) ->
     await session.flush()
     await session.refresh(plot)
     return _plot_out(plot, check), True
+
+
+async def create_plot_from_sync(
+    session: AsyncSession, current_user: CurrentUser, data: Mapping[str, Any]
+) -> tuple[PlotOut, bool]:
+    """Register a plot from the raw `data` of a sync push `plot` entry (B06; events may not import schemas).
+
+    Args:
+        session: open database session.
+        current_user: the caller.
+        data: the entry data, shaped like `PlotIn` (with `client_id`).
+
+    Returns:
+        Same as `create_plot`.
+
+    Raises:
+        ValidationFailedError: the data does not match `PlotIn` (`validation_error`, 422).
+        AppError: every error of `create_plot`.
+
+    Side effects:
+        Same as `create_plot`; the caller commits and enqueues `rules.check_plot`.
+    """
+    try:
+        body = PlotIn.model_validate(data)
+    except ValidationError as e:
+        details = [{"loc": err["loc"], "msg": err["msg"], "type": err["type"]} for err in e.errors()]
+        raise ValidationFailedError(details=details) from e
+    return await create_plot(session, current_user, body)
 
 
 async def get_plot(session: AsyncSession, user: CurrentUser, plot_id: uuid.UUID) -> PlotOut:
