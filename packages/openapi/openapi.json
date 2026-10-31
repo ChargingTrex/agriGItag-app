@@ -200,6 +200,51 @@
         "title": "AssistStartIn",
         "type": "object"
       },
+      "Body_import_farmers_v1_imports_farmers_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "description": "CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_farmers_v1_imports_farmers_post",
+        "type": "object"
+      },
+      "Body_import_inputs_v1_imports_inputs_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "description": "CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_inputs_v1_imports_inputs_post",
+        "type": "object"
+      },
+      "Body_import_villages_v1_imports_villages_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "description": "CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_villages_v1_imports_villages_post",
+        "type": "object"
+      },
       "ConsentIn": {
         "description": "Record a farmer's consent; resending the same `client_id` returns the stored record (D-005).",
         "properties": {
@@ -894,6 +939,164 @@
         "title": "FarmingType",
         "type": "string"
       },
+      "Features": {
+        "additionalProperties": false,
+        "description": "Feature flags and limits (`features.yaml`, tenant overrides applied). Readers named in the YAML.",
+        "properties": {
+          "boundary_walk": {
+            "description": "Onboarding offers the boundary walk step.",
+            "title": "Boundary Walk",
+            "type": "boolean"
+          },
+          "farmer_pin_login": {
+            "description": "Farmers may sign in with a PIN (not wired on the server).",
+            "title": "Farmer Pin Login",
+            "type": "boolean"
+          },
+          "id_document_capture": {
+            "description": "ID document upload endpoint on (consent-gated).",
+            "title": "Id Document Capture",
+            "type": "boolean"
+          },
+          "otp_daily_cap": {
+            "description": "Most OTP codes per phone per 24 hours (informative).",
+            "minimum": 1.0,
+            "title": "Otp Daily Cap",
+            "type": "integer"
+          },
+          "producer_groups": {
+            "description": "Producer group (SHG) endpoints on.",
+            "title": "Producer Groups",
+            "type": "boolean"
+          },
+          "second_signoff_threshold_kg": {
+            "description": "Batches above this weight need 2 sign-offs.",
+            "minimum": 0.0,
+            "title": "Second Signoff Threshold Kg",
+            "type": "integer"
+          },
+          "sync_push_max_bytes": {
+            "description": "Largest sync push body, in bytes.",
+            "minimum": 1.0,
+            "title": "Sync Push Max Bytes",
+            "type": "integer"
+          },
+          "sync_push_max_entries": {
+            "description": "Most entries in one sync push.",
+            "minimum": 1.0,
+            "title": "Sync Push Max Entries",
+            "type": "integer"
+          },
+          "wifi_only_photos_default": {
+            "description": "Phones upload photos on Wi-Fi only by default.",
+            "title": "Wifi Only Photos Default",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id_document_capture",
+          "farmer_pin_login",
+          "producer_groups",
+          "boundary_walk",
+          "second_signoff_threshold_kg",
+          "wifi_only_photos_default",
+          "sync_push_max_entries",
+          "sync_push_max_bytes",
+          "otp_daily_cap"
+        ],
+        "title": "Features",
+        "type": "object"
+      },
+      "FieldSpec": {
+        "additionalProperties": false,
+        "description": "One configurable field of an entity, after tenant overrides (D-017).",
+        "properties": {
+          "core": {
+            "default": false,
+            "description": "True: the database needs it, so tenants may not disable it or make it optional.",
+            "title": "Core",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "False: hidden from clients and dropped from payloads; never required.",
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "label": {
+            "$ref": "#/components/schemas/Labels",
+            "description": "Labels shown in the apps, English and Tamil."
+          },
+          "name": {
+            "description": "Payload key / CSV column, snake_case.",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "title": "Name",
+            "type": "string"
+          },
+          "required": {
+            "description": "True: a payload without a value is refused (`field_required`).",
+            "title": "Required",
+            "type": "boolean"
+          },
+          "stage": {
+            "description": "Capture stage the field belongs to.",
+            "enum": [
+              "onboarding",
+              "cultivation",
+              "harvest",
+              "drying",
+              "packing",
+              "intake",
+              "grading",
+              "master_data"
+            ],
+            "title": "Stage",
+            "type": "string"
+          },
+          "type": {
+            "description": "Value kind; clients pick the input widget from it.",
+            "enum": [
+              "text",
+              "number",
+              "integer",
+              "boolean",
+              "date",
+              "datetime",
+              "phone",
+              "choice",
+              "id",
+              "address",
+              "photo",
+              "audio",
+              "point",
+              "polygon",
+              "quantity"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "visibility": {
+            "description": "Who may see the value: public (consumer page), partner (partner API) or internal.",
+            "enum": [
+              "public",
+              "partner",
+              "internal"
+            ],
+            "title": "Visibility",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "required",
+          "enabled",
+          "visibility",
+          "label",
+          "stage"
+        ],
+        "title": "FieldSpec",
+        "type": "object"
+      },
       "FpoIn": {
         "description": "A new FPO (tenant); created by a super-admin.",
         "properties": {
@@ -1448,6 +1651,156 @@
         "title": "Health",
         "type": "object"
       },
+      "IdDocumentIn": {
+        "description": "Request to upload one identity document image (flag `id_document_capture`, consent-gated).",
+        "properties": {
+          "consent_record_id": {
+            "description": "The farmer's unrevoked `data_collection` consent under which it is captured.",
+            "format": "uuid",
+            "title": "Consent Record Id",
+            "type": "string"
+          },
+          "content_type": {
+            "description": "MIME type of the image to upload.",
+            "enum": [
+              "image/jpeg",
+              "image/webp"
+            ],
+            "title": "Content Type",
+            "type": "string"
+          },
+          "doc_type": {
+            "description": "Document type code, e.g. `aadhaar`.",
+            "maxLength": 32,
+            "minLength": 1,
+            "pattern": "^[a-z_]+$",
+            "title": "Doc Type",
+            "type": "string"
+          },
+          "sha256": {
+            "description": "Hex SHA-256 of the image (device).",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "doc_type",
+          "consent_record_id",
+          "content_type",
+          "sha256"
+        ],
+        "title": "IdDocumentIn",
+        "type": "object"
+      },
+      "IdDocumentUpload": {
+        "description": "Where to PUT the ID document image; the URL accepts only bytes matching `sha256`.",
+        "properties": {
+          "expires_at": {
+            "description": "When the URL stops working.",
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers to send: `Content-Type` and `x-amz-checksum-sha256` (base64 digest).",
+            "title": "Headers",
+            "type": "object"
+          },
+          "id": {
+            "description": "ID document id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "method": {
+            "const": "PUT",
+            "description": "Always PUT.",
+            "title": "Method",
+            "type": "string"
+          },
+          "url": {
+            "description": "Presigned URL into the private id-docs bucket (15 minutes).",
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "method",
+          "url",
+          "headers",
+          "expires_at"
+        ],
+        "title": "IdDocumentUpload",
+        "type": "object"
+      },
+      "ImportReport": {
+        "description": "Row-level outcome of a CSV import (dry run or commit).",
+        "properties": {
+          "accepted": {
+            "description": "Rows imported (or importable, on a dry run).",
+            "title": "Accepted",
+            "type": "integer"
+          },
+          "dry_run": {
+            "description": "True: nothing was written; the counts are what a commit would do.",
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "rejected": {
+            "description": "Rows not imported, in file order.",
+            "items": {
+              "$ref": "#/components/schemas/ImportRowError"
+            },
+            "title": "Rejected",
+            "type": "array"
+          }
+        },
+        "required": [
+          "dry_run",
+          "accepted",
+          "rejected"
+        ],
+        "title": "ImportReport",
+        "type": "object"
+      },
+      "ImportRowError": {
+        "description": "Why one CSV row was not imported.",
+        "properties": {
+          "code": {
+            "description": "Registered error code (docs/api/error-codes.md), e.g. `field_required`.",
+            "title": "Code",
+            "type": "string"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Column the problem is in, when known.",
+            "title": "Field"
+          },
+          "row": {
+            "description": "Line number in the file; the header is line 1, the first data row 2.",
+            "title": "Row",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "row",
+          "code"
+        ],
+        "title": "ImportRowError",
+        "type": "object"
+      },
       "InputCategory": {
         "description": "Category of a farm input; practice tags are derived from it (FR56).",
         "enum": [
@@ -1861,6 +2214,30 @@
           }
         },
         "title": "LabCertifiedRequires",
+        "type": "object"
+      },
+      "Labels": {
+        "additionalProperties": false,
+        "description": "Field label in each app language (FR5).",
+        "properties": {
+          "en": {
+            "description": "English label.",
+            "minLength": 1,
+            "title": "En",
+            "type": "string"
+          },
+          "ta": {
+            "description": "Tamil label.",
+            "minLength": 1,
+            "title": "Ta",
+            "type": "string"
+          }
+        },
+        "required": [
+          "en",
+          "ta"
+        ],
+        "title": "Labels",
         "type": "object"
       },
       "LocationStatus": {
@@ -3244,6 +3621,19 @@
             "title": "Fpo Id",
             "type": "string"
           },
+          "gi_tag_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GI tag stored at onboarding or correction; null when none was sent (fallback).",
+            "title": "Gi Tag Id"
+          },
           "id": {
             "description": "Plot id (client-generated, D-005).",
             "format": "uuid",
@@ -3602,6 +3992,71 @@
           "address_line"
         ],
         "title": "ProcessorOut",
+        "type": "object"
+      },
+      "ProducerGroupIn": {
+        "description": "A new producer group (SHG) in the caller's FPO (flag `producer_groups`).",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ProducerGroupKind",
+            "default": "shg",
+            "description": "shg or other."
+          },
+          "name": {
+            "description": "Group name.",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProducerGroupIn",
+        "type": "object"
+      },
+      "ProducerGroupKind": {
+        "description": "Kind of producer group (flag `producer_groups`, D-017).",
+        "enum": [
+          "shg",
+          "other"
+        ],
+        "title": "ProducerGroupKind",
+        "type": "string"
+      },
+      "ProducerGroupOut": {
+        "description": "A producer group.",
+        "properties": {
+          "fpo_id": {
+            "description": "Owning FPO.",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "id": {
+            "description": "Group id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ProducerGroupKind",
+            "description": "shg or other."
+          },
+          "name": {
+            "description": "Group name.",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fpo_id",
+          "name",
+          "kind"
+        ],
+        "title": "ProducerGroupOut",
         "type": "object"
       },
       "ProfileVersionIn": {
@@ -6041,6 +6496,192 @@
         ]
       }
     },
+    "/v1/config/features": {
+      "get": {
+        "description": "Return the feature flags and limits with the caller's tenant overrides.",
+        "operationId": "get_features_v1_config_features_get",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Features"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Unchanged since the ETag sent in `If-None-Match`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Feature flags in force for the caller's FPO",
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/v1/config/fields": {
+      "get": {
+        "description": "Return the enabled fields per entity with the caller's tenant overrides; disabled fields are absent.",
+        "operationId": "get_fields_v1_config_fields_get",
+        "parameters": [
+          {
+            "description": "One entity, e.g. `farmer`, `plot`, `event_harvest`.",
+            "in": "query",
+            "name": "entity",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "One entity, e.g. `farmer`, `plot`, `event_harvest`.",
+              "title": "Entity"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "$ref": "#/components/schemas/FieldSpec"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response Get Fields V1 Config Fields Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "Unchanged since the ETag sent in `If-None-Match`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Fields captured by the caller's FPO, by entity",
+        "tags": [
+          "config"
+        ]
+      }
+    },
     "/v1/consents": {
       "post": {
         "description": "Record a farmer's consent (the farmer, or an officer in assist mode); idempotent by `client_id`.\n\nArgs:\n    body: the consent.\n    user: the caller.\n    session: database session.\n\nReturns:\n    The stored consent.\n\nRaises:\n    ForbiddenError: an officer outside assist mode for this farmer.\n    NotFoundError: the farmer is outside the caller's scope.\n    ConsentConflictError: the client id holds a different consent.",
@@ -6870,6 +7511,105 @@
         ]
       }
     },
+    "/v1/farmers/{farmer_id}/id-documents": {
+      "post": {
+        "description": "Record an ID document under the farmer's consent and get a presigned PUT into the id-docs bucket.\n\n404 `feature_disabled` while the FPO's `id_document_capture` flag is off.",
+        "operationId": "create_id_document_v1_farmers__farmer_id__id_documents_post",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdDocumentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdDocumentUpload"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Start an ID document upload (flag id_document_capture)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
     "/v1/fpos": {
       "get": {
         "description": "List FPOs visible to the caller.",
@@ -7291,6 +8031,392 @@
         "summary": "Reachable",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/v1/imports/farmers": {
+      "post": {
+        "description": "Import farmers (FPO admin): pending approval, same rules as onboarding; one transaction per file.",
+        "operationId": "import_farmers_v1_imports_farmers_post",
+        "parameters": [
+          {
+            "description": "True: validate and report only; nothing is written.",
+            "in": "query",
+            "name": "dry_run",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "True: validate and report only; nothing is written.",
+              "title": "Dry Run",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_farmers_v1_imports_farmers_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Import farmers from CSV",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/imports/inputs": {
+      "post": {
+        "description": "Import inputs into the FPO's list (FPO admin); key name + manufacturer; one transaction per file.",
+        "operationId": "import_inputs_v1_imports_inputs_post",
+        "parameters": [
+          {
+            "description": "True: validate and report only; nothing is written.",
+            "in": "query",
+            "name": "dry_run",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "True: validate and report only; nothing is written.",
+              "title": "Dry Run",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_inputs_v1_imports_inputs_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Import inputs from CSV",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/imports/villages": {
+      "post": {
+        "description": "Import villages into the global directory (super-admin); key `lgd_code`; one transaction per file.",
+        "operationId": "import_villages_v1_imports_villages_post",
+        "parameters": [
+          {
+            "description": "True: validate and report only; nothing is written.",
+            "in": "query",
+            "name": "dry_run",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "True: validate and report only; nothing is written.",
+              "title": "Dry Run",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_villages_v1_imports_villages_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Import villages from CSV (super-admin)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/imports/{kind}/template.csv": {
+      "get": {
+        "description": "Download the import template: the tenant's enabled CSV columns from /v1/config/fields (D-017).",
+        "operationId": "import_template_v1_imports__kind__template_csv_get",
+        "parameters": [
+          {
+            "description": "farmers, villages or inputs.",
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "description": "farmers, villages or inputs.",
+              "enum": [
+                "farmers",
+                "villages",
+                "inputs"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "One header line from the field config."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "CSV template for an import",
+        "tags": [
+          "registry"
         ]
       }
     },
@@ -8353,6 +9479,172 @@
         ]
       }
     },
+    "/v1/producer-groups": {
+      "get": {
+        "description": "List the FPO's producer groups; 404 `feature_disabled` while the flag is off.",
+        "operationId": "list_producer_groups_v1_producer_groups_get",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProducerGroupOut"
+                  },
+                  "title": "Response List Producer Groups V1 Producer Groups Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List producer groups (flag producer_groups)",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "description": "Create a producer group (FPO admin); 404 `feature_disabled` while the flag is off.",
+        "operationId": "create_producer_group_v1_producer_groups_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProducerGroupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProducerGroupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Create a producer group (flag producer_groups)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
     "/v1/quality-readings": {
       "post": {
         "description": "Stores one measured parameter of a lot or batch (FR42). Checked at entry against the crop's published profile (FR50): `unknown_parameter`, `unit_mismatch`, `implausible_value`, `source_not_allowed`, `instrument_calibration_expired`, `moisture_trail_violation` (accepted and flagged when `reason_code` is given). `client_id` is the idempotency key: resending it returns the stored reading with 200.",
@@ -9074,6 +10366,10 @@
     {
       "description": "Dashboards and exports.",
       "name": "reporting"
+    },
+    {
+      "description": "Field and feature configuration per FPO (D-017).",
+      "name": "config"
     }
   ]
 }

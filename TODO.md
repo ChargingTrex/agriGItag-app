@@ -97,8 +97,8 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [x] Compliance (B05): moisture profile allows only instrument/lab sources, so a visual moisture reading is rejected at entry (correct: moisture is not visual); the `max_grade_for_source: visual → Standard` cap is for colour/visual parameters. Confirm with the compliance owner when the full AGMARK schedule is loaded.
 - [ ] B08: sweep readings carrying a `reason_code` (trail overrides) in case the broker was down when the override was accepted (B05 `shortcut:`), and turn `per_parameter` entries with `outcome == "profile_incomplete"` into the info flag.
 - [ ] B06: reuse the registered `client_id_conflict` error code (registering it twice raises).
-- [ ] B13 migration 0003: add `plots.gi_tag_id` (B03 shortcut: when a request omits it, the only GI tag with a region is used; breaks with a second GI crop).
-- [ ] B03 shortcut: farmer codes are random 6-hex per FPO; a collision surfaces as 500 — add a retry or sequence before scale.
+- [x] B13 migration 0003: add `plots.gi_tag_id` (B13 done: stored on create/correct and preferred by `_check_region`; the single-GI fallback stays for plots without one). Run the backfill SQL in `0003_masters.py` on the pilot DB before a second GI crop.
+- [x] B03 shortcut: farmer codes are random 6-hex per FPO; a collision surfaces as 500 — B13: re-drawn on collision inside the transaction (bulk import safe); concurrent requests can still race (rare 500); per-FPO sequence past ~10,000 farmers.
 - [ ] B02/B03 reconcile: B03 reads `users.is_super_admin` per call because `CurrentUser` has no super-admin flag; B02's `require_role` honours "super_admin" — one mechanism should win (prefer a claim in the access token, D-024).
 - [ ] B08: GPS accuracy threshold flag, taluk check against GI registration (FR53), raising the walked-vs-declared gap flag (B03 computes, B08 flags).
 - [ ] B06: dict-accepting plot entry for sync push (`registry.service.create_plot_from_sync`).
@@ -131,6 +131,12 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B03 → B02: `CurrentUser` carries no super-admin flag, so the registry reads `users.is_super_admin` per super-admin call; if B02 adds it to the token, switch `registry.service._is_super_admin` to it.
 - [ ] B03: the plot API does not return the walked outline (internal only) and a correction cannot remove a walked boundary; concurrent first inserts of one plot `client_id` surface as 500 (IntegrityError) instead of a duplicate (rare; sync retries are sequential per device).
 - [ ] B03: integration tests `apps/api/tests/integration/test_registry.py` were written but not run (Docker daemon down); the Verifier runs them with `make test`.
+- [ ] B13 follow-ups (D-017 wiring): events (B06) call `fieldconfig.validate_payload("event_<type>", ...)` and align payload keys with `config/fields/event_*.yaml`; lots_batches (B09) for `lot`, quality (B05) for `quality_reading`; B07 serves `fieldconfig.bundle_part` as bundle part `fields`; B10 shows only `fieldconfig.public_fields`; B06/B09/M02 read `sync_push_max_*`, `second_signoff_threshold_kg`, `wifi_only_photos_default` from `features_for` (declared, not wired). `PATCH /v1/farmers` and `POST /v1/plots/{id}/correct` are not field-config checked yet.
+- [ ] B13 shortcut: multipart uploads are spooled by Starlette before the 2 MB check; cap the body at the proxy (e.g. nginx `client_max_body_size 3m`) in production.
+- [ ] B13 shortcut: farmers without a phone have no import key, so re-importing them duplicates; conventions.md says re-upload only fixed rows. Add a key column if FPOs need full re-runs.
+- [ ] B13 shortcut: `id_documents` row is written before the upload and has no confirm step (abandoned upload leaves a row without object); add HEAD + sha256 confirm like evidence photos. Confirm the `id-docs` bucket has default encryption in infra (s3-init / AWS).
+- [ ] B13: acceptance line says `farmers.soil_type`; soil type is a plot field (PLAN M09 says `plots.soil_type`), so the demo tenant disables `fields.plot.soil_type`. A tenant file naming `farmers` is refused at start-up (unknown entity). Orchestrator to correct the acceptance wording.
+- [ ] B13: Tamil labels in `apps/api/config/fields/*.yaml` were written by the worker; get a native speaker review before the pilot. Sample villages fixture uses fake `SAMPLE000n` LGD codes and no PIN codes; load the real LGD list via `POST /v1/imports/villages`.
 
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).

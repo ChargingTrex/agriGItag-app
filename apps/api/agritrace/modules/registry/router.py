@@ -1,24 +1,29 @@
 """HTTP routes of the registry: FPOs, processors, villages, farmers, plots, crops, GI regions, inputs.
 
+Also (B13) master data CSV imports with dry run and templates, and the flag-gated ID document and producer
+group routes (404 `feature_disabled` while the tenant's flag is off, D-017).
 Each route checks the role, calls one service function, commits, and (for plots) enqueues the plot rules.
 
 Serves: Stage 0 (onboarding), FR14 (roles), FR24 (tenant scoping), FR27–FR32, FR53–FR56, FR64–FR72,
-backend-design.md §1 registry row, D-020 (`/v1`, additive).
+backend-design.md §1 registry row, D-020 (`/v1`, additive), PLAN "Gap analysis" (Master data uploads,
+ID capture, SHG groups), D-017.
 Callers: `agritrace.main.create_app` mounts `router` under `/v1` by discovery (D-004); the mobile app and
 portal through the generated clients.
 """
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Path, Query, Response, status
+from fastapi import APIRouter, Depends, File, Path, Query, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from agritrace.core.auth import CurrentUser, require_role
+from agritrace.core import fieldconfig
+from agritrace.core.auth import SUPER_ADMIN, CurrentUser, get_current_user, require_role
 from agritrace.core.db import get_session
 from agritrace.core.enums import FarmerStatus, Role
+from agritrace.core.errors import FeatureDisabledError
 from agritrace.core.schemas import Page
-from agritrace.modules.registry import service
+from agritrace.modules.registry import imports, service
 from agritrace.modules.registry.schemas import (
     CropOut,
     FarmerIn,
@@ -29,6 +34,9 @@ from agritrace.modules.registry.schemas import (
     GiRegionOut,
     GiRegionVersionIn,
     GiRegionVersionOut,
+    IdDocumentIn,
+    IdDocumentUpload,
+    ImportReport,
     InputIn,
     InputOut,
     PlotCorrection,
@@ -36,6 +44,8 @@ from agritrace.modules.registry.schemas import (
     PlotOut,
     ProcessorIn,
     ProcessorOut,
+    ProducerGroupIn,
+    ProducerGroupOut,
     VillageOut,
 )
 
@@ -51,6 +61,60 @@ Limit = Annotated[int, Query(ge=1, le=200, description="Page size (1–200).")]
 FarmerId = Annotated[uuid.UUID, Path(description="Farmer id.")]
 PlotId = Annotated[uuid.UUID, Path(description="Plot id (client-generated, D-005).")]
 GiTagId = Annotated[uuid.UUID, Path(description="GI tag id.")]
+SuperAdmin = Annotated[CurrentUser, Depends(require_role(SUPER_ADMIN))]
+DryRun = Annotated[bool, Query(description="True: validate and report only; nothing is written.")]
+CsvFile = Annotated[
+    UploadFile, File(description="CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.")
+]
+
+
+def _feature(flag: str) -> Any:
+    """Build a route dependency that hides the route while a feature flag is off for the caller's FPO.
+
+    Args:
+        flag: a `Features` field name, e.g. `id_document_capture`.
+
+    Returns:
+        `Depends(gate)`, for a route's `dependencies=[...]` (resolved before the role check and the body).
+    """
+
+    async def gate(session: Session, user: Annotated[CurrentUser, Depends(get_current_user)]) -> None:
+        """Check the flag.
+
+        Args:
+            session: database session.
+            user: the caller.
+
+        Raises:
+            FeatureDisabledError: the flag is off for the caller's FPO (404 `feature_disabled`).
+        """
+        # DECISION D-017: a switched-off feature answers 404, as if the route did not exist.
+        #   ADV: clients and scanners learn nothing about features the FPO does not use.
+        #   COMPROMISE: one FPO-code read per call; the flag is per FPO, not per user.
+        if not getattr(fieldconfig.features_for(await service.fpo_code(session, user.fpo_id)), flag):
+            raise FeatureDisabledError(details={"feature": flag})
+
+    return Depends(gate)
+
+
+async def _finish(session: AsyncSession, report: ImportReport) -> ImportReport:
+    """End an import: commit the whole file, or roll everything back for a dry run.
+
+    Args:
+        session: database session holding the imported rows.
+        report: the row-level report.
+
+    Returns:
+        The report unchanged.
+
+    Side effects:
+        COMMIT or ROLLBACK of the request's transaction.
+    """
+    if report.dry_run:
+        await session.rollback()
+    else:
+        await session.commit()
+    return report
 
 
 @router.get("/fpos", response_model=list[FpoOut], summary="List FPOs (super-admin: all; others: own)")
@@ -460,5 +524,196 @@ async def create_input(body: InputIn, session: Session, user: AnyRole) -> InputO
         ForbiddenError: global entry by a non-super-admin.
     """
     out = await service.create_input(session, user, body)
+    await session.commit()
+    return out
+
+
+# --- B13: master data imports (PLAN "Gap analysis": Master data uploads) --------------------------------
+
+
+@router.post("/imports/farmers", response_model=ImportReport, summary="Import farmers from CSV")
+async def import_farmers(
+    file: CsvFile, session: Session, user: Admin, dry_run: DryRun = False
+) -> ImportReport:
+    """Import farmers (FPO admin): pending approval, same rules as onboarding; one transaction per file.
+
+    \f
+    Args:
+        file: the CSV.
+        session: database session.
+        user: the caller.
+        dry_run: report only.
+
+    Returns:
+        Accepted count and rejected rows `{row, code, field}`.
+
+    Raises:
+        ImportTooLargeError: over 2 MB or 5,000 rows.
+        ValidationFailedError: unreadable CSV.
+    """
+    report = await imports.import_farmers(session, user, await file.read(imports.MAX_BYTES + 1), dry_run)
+    return await _finish(session, report)
+
+
+@router.post(
+    "/imports/villages", response_model=ImportReport, summary="Import villages from CSV (super-admin)"
+)
+async def import_villages(
+    file: CsvFile, session: Session, _user: SuperAdmin, dry_run: DryRun = False
+) -> ImportReport:
+    """Import villages into the global directory (super-admin); key `lgd_code`; one transaction per file.
+
+    \f
+    Args:
+        file: the CSV.
+        session: database session.
+        _user: the caller (super-admin).
+        dry_run: report only.
+
+    Returns:
+        Accepted count and rejected rows `{row, code, field}`.
+
+    Raises:
+        ImportTooLargeError: over 2 MB or 5,000 rows.
+        ValidationFailedError: unreadable CSV.
+    """
+    report = await imports.import_villages(session, await file.read(imports.MAX_BYTES + 1), dry_run)
+    return await _finish(session, report)
+
+
+@router.post("/imports/inputs", response_model=ImportReport, summary="Import inputs from CSV")
+async def import_inputs(
+    file: CsvFile, session: Session, user: Admin, dry_run: DryRun = False
+) -> ImportReport:
+    """Import inputs into the FPO's list (FPO admin); key name + manufacturer; one transaction per file.
+
+    \f
+    Args:
+        file: the CSV.
+        session: database session.
+        user: the caller.
+        dry_run: report only.
+
+    Returns:
+        Accepted count and rejected rows `{row, code, field}`.
+
+    Raises:
+        ImportTooLargeError: over 2 MB or 5,000 rows.
+        ValidationFailedError: unreadable CSV.
+    """
+    report = await imports.import_inputs(session, user, await file.read(imports.MAX_BYTES + 1), dry_run)
+    return await _finish(session, report)
+
+
+@router.get(
+    "/imports/{kind}/template.csv",
+    response_class=Response,
+    summary="CSV template for an import",
+    responses={200: {"content": {"text/csv": {}}, "description": "One header line from the field config."}},
+)
+async def import_template(
+    kind: Annotated[imports.Kind, Path(description="farmers, villages or inputs.")],
+    session: Session,
+    user: AnyRole,
+) -> Response:
+    """Download the import template: the tenant's enabled CSV columns from /v1/config/fields (D-017).
+
+    \f
+    Args:
+        kind: farmers, villages or inputs.
+        session: database session.
+        user: the caller.
+
+    Returns:
+        `text/csv` attachment `<kind>-template.csv`.
+    """
+    body = imports.template_csv(kind, await service.fpo_code(session, user.fpo_id))
+    headers = {"Content-Disposition": f'attachment; filename="{kind}-template.csv"'}
+    return Response(body, media_type="text/csv; charset=utf-8", headers=headers)
+
+
+# --- B13: flag-gated routes (D-017) --------------------------------------------------------------------
+
+
+@router.post(
+    "/farmers/{farmer_id}/id-documents",
+    response_model=IdDocumentUpload,
+    status_code=status.HTTP_201_CREATED,
+    summary="Start an ID document upload (flag id_document_capture)",
+    dependencies=[_feature("id_document_capture")],
+)
+async def create_id_document(
+    farmer_id: FarmerId, body: IdDocumentIn, session: Session, user: Staff
+) -> IdDocumentUpload:
+    """Record an ID document under the farmer's consent and get a presigned PUT into the id-docs bucket.
+
+    404 `feature_disabled` while the FPO's `id_document_capture` flag is off.
+
+    \f
+    Args:
+        farmer_id: farmer id.
+        body: document type, consent, image type and SHA-256.
+        session: database session.
+        user: the caller (field officer or FPO admin).
+
+    Returns:
+        Document id and upload instructions.
+
+    Raises:
+        FeatureDisabledError: flag off.
+        NotFoundError: farmer missing or out of scope.
+        ValidationFailedError: no active data_collection consent of this farmer.
+    """
+    out = await service.create_id_document(session, user, farmer_id, body)
+    await session.commit()
+    return out
+
+
+@router.get(
+    "/producer-groups",
+    response_model=list[ProducerGroupOut],
+    summary="List producer groups (flag producer_groups)",
+    dependencies=[_feature("producer_groups")],
+)
+async def list_producer_groups(session: Session, user: AnyRole) -> list[ProducerGroupOut]:
+    """List the FPO's producer groups; 404 `feature_disabled` while the flag is off.
+
+    \f
+    Args:
+        session: database session.
+        user: the caller.
+
+    Returns:
+        Groups by name.
+
+    Raises:
+        FeatureDisabledError: flag off.
+    """
+    return await service.list_producer_groups(session, user)
+
+
+@router.post(
+    "/producer-groups",
+    response_model=ProducerGroupOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a producer group (flag producer_groups)",
+    dependencies=[_feature("producer_groups")],
+)
+async def create_producer_group(body: ProducerGroupIn, session: Session, user: Admin) -> ProducerGroupOut:
+    """Create a producer group (FPO admin); 404 `feature_disabled` while the flag is off.
+
+    \f
+    Args:
+        body: the group.
+        session: database session.
+        user: the caller.
+
+    Returns:
+        The stored group.
+
+    Raises:
+        FeatureDisabledError: flag off.
+    """
+    out = await service.create_producer_group(session, user, body)
     await session.commit()
     return out

@@ -6,7 +6,8 @@ Serves: Stage 0 (Farmer & Farm Onboarding), UserFlows §Onboarding a farmer, FR2
 FR27–FR32 (GI region, super-admin only), FR53 (structured address), FR56 (input master), FR64–FR67
 (pin, declared size, walked boundary, automatic region check), FR70–FR72 (review, corrections with
 revisions, location label), Architect-Gate F7 (a `users` row for every farmer with a phone), D-005, D-017,
-D-019.
+D-019; B13: field-config hooks on farmer and plot creation, plots.gi_tag_id, flag-gated ID documents
+and producer groups (PLAN "Gap analysis").
 Callers: registry router; other modules through `__all__` only (D-004): events sync push (B06, plots
 captured offline), rules_flags (B08, `event_within_plot`, `locate_point`), lots_batches (B09, GI
 re-check), publishing (B10, `format_address`), events bundle (B07, `simplify_region`).
@@ -22,7 +23,7 @@ import logging
 import secrets
 import uuid
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -32,9 +33,10 @@ from shapely.geometry import Point
 from sqlalchemy import func, inspect, or_, select, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from agritrace.core import task_names
+from agritrace.core import fieldconfig, storage, task_names
 from agritrace.core.auth import CurrentUser
-from agritrace.core.enums import FarmerStatus, LocationStatus, PinMethod, Role
+from agritrace.core.config import get_settings
+from agritrace.core.enums import ConsentType, FarmerStatus, LocationStatus, PinMethod, Role
 from agritrace.core.errors import (
     ClientIdConflictError,
     ConflictError,
@@ -50,7 +52,7 @@ from agritrace.core.errors import (
 from agritrace.core.ids import uuid7
 from agritrace.core.schemas import Address, GeoPoint, Page, Quantity
 from agritrace.core.time import utcnow
-from agritrace.modules.identity.models import Membership, User
+from agritrace.modules.identity.models import ConsentRecord, Membership, User
 from agritrace.modules.registry import geo
 from agritrace.modules.registry.geo import (
     GeoResult,
@@ -65,10 +67,12 @@ from agritrace.modules.registry.models import (
     Fpo,
     GiRegionVersion,
     GiTag,
+    IdDocument,
     InputMaster,
     Plot,
     PlotRevision,
     Processor,
+    ProducerGroup,
     Village,
 )
 from agritrace.modules.registry.schemas import (
@@ -81,6 +85,8 @@ from agritrace.modules.registry.schemas import (
     GiRegionOut,
     GiRegionVersionIn,
     GiRegionVersionOut,
+    IdDocumentIn,
+    IdDocumentUpload,
     InputIn,
     InputOut,
     PlotCorrection,
@@ -88,6 +94,8 @@ from agritrace.modules.registry.schemas import (
     PlotOut,
     ProcessorIn,
     ProcessorOut,
+    ProducerGroupIn,
+    ProducerGroupOut,
     RegionCheckOut,
     VillageOut,
     format_address,
@@ -99,6 +107,7 @@ __all__ = [
     "enqueue_plot_check",
     "event_within_plot",
     "format_address",
+    "fpo_code",
     "locate_point",
     "location_status",
     "simplify_region",
@@ -305,6 +314,7 @@ def _plot_out(plot: Plot, check: GeoResult | None = None) -> PlotOut:
         fpo_id=plot.fpo_id,
         farmer_id=plot.farmer_id,
         code=plot.code,
+        gi_tag_id=plot.gi_tag_id,
         pin=_pin(plot),
         pin_method=plot.pin_method,
         pin_device_time=plot.pin_device_time,
@@ -411,6 +421,42 @@ async def _plot_in_scope(session: AsyncSession, user: CurrentUser, plot_id: uuid
     if user.role == Role.FARMER:
         await _farmer_in_scope(session, user, plot.farmer_id)
     return plot
+
+
+async def fpo_code(session: AsyncSession, fpo_id: uuid.UUID) -> str | None:
+    """Read an FPO's code, the key of its tenant configuration file (D-017).
+
+    Args:
+        session: open database session.
+        fpo_id: the FPO (usually the caller's, from the token).
+
+    Returns:
+        The code, or None when the FPO row is missing (the default configuration then applies).
+    """
+    code: str | None = await session.scalar(select(Fpo.code).where(Fpo.id == fpo_id))
+    return code
+
+
+async def _new_farmer_code(session: AsyncSession, fpo_id: uuid.UUID) -> str:
+    """Pick a farmer code not yet used in the FPO.
+
+    Args:
+        session: open database session.
+        fpo_id: the FPO.
+
+    Returns:
+        `F` + 6 upper-case hex characters, unused in this FPO at the time of the check.
+
+    Side effects:
+        One indexed read per attempt; rows flushed earlier in the transaction (bulk import) are seen.
+    """
+    # shortcut: random 24-bit code re-drawn on collision inside this transaction (bulk imports of 5,000
+    #   farmers would otherwise hit UNIQUE(fpo_id, code) about half the time); two concurrent requests can
+    #   still race to the same code (500, retry works). Switch to a per-FPO sequence past ~10,000 farmers.
+    while True:
+        code = "F" + secrets.token_hex(3).upper()
+        if not await session.scalar(select(Farmer.id).where(Farmer.fpo_id == fpo_id, Farmer.code == code)):
+            return code
 
 
 # --- FPOs, processors, villages ------------------------------------------------------------------------
@@ -661,10 +707,16 @@ async def create_farmer(session: AsyncSession, user: CurrentUser, body: FarmerIn
     Raises:
         FarmerPhoneTakenError: another farmer of this FPO already has this phone.
         ValidationFailedError: unknown `village_id`.
+        FieldRequiredError: a field the tenant's configuration requires is missing (`field_required`).
 
     Side effects:
         Inserts `farmers` and possibly `users` and `memberships` rows (all audited).
     """
+    # DECISION D-017: the tenant's fields/farmer.yaml decides which fields are captured and required.
+    #   ADV: no requiredness hard-coded; a disabled field is dropped (stored as its schema default).
+    #   COMPROMISE: one extra read (the FPO code) per onboarding; PATCH /farmers is not checked yet.
+    data = fieldconfig.validate_payload("farmer", await fpo_code(session, user.fpo_id), body.model_dump())
+    body = FarmerIn.model_validate(data)
     user_id = None
     if body.phone:
         account = await session.scalar(select(User).where(User.phone == body.phone))
@@ -685,9 +737,7 @@ async def create_farmer(session: AsyncSession, user: CurrentUser, body: FarmerIn
     farmer = Farmer(
         fpo_id=user.fpo_id,
         user_id=user_id,
-        # shortcut: random 24-bit code per FPO (collision ~0.03 % at 100 farmers, then a 500 on the
-        #   UNIQUE(fpo_id, code)); switch to a per-FPO sequence before an FPO passes ~1,000 farmers.
-        code="F" + secrets.token_hex(3).upper(),
+        code=await _new_farmer_code(session, user.fpo_id),
         name=body.name,
         name_local=body.name_local,
         photo_key=body.photo_key,
@@ -783,7 +833,8 @@ async def _check_region(
     Args:
         session: open database session.
         point: the pin.
-        gi_tag_id: GI tag from the request; None picks the only GI tag that has a region, if exactly one.
+        gi_tag_id: the plot's stored GI tag (`plots.gi_tag_id`); None picks the only GI tag that has a
+            region, if exactly one.
 
     Returns:
         The check, or None when no tag can be chosen or the tag has no region (plot then needs review).
@@ -792,8 +843,8 @@ async def _check_region(
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     if gi_tag_id is None:
-        # shortcut: plots do not store their GI tag, so without one in the request the pilot's single
-        #   GI tag is assumed; add `plots.gi_tag_id` (B13 migration) when a second GI crop is onboarded.
+        # shortcut: a plot without a stored GI tag (onboarded before migration 0003, or sent without one)
+        #   uses the pilot's single GI tag; run the backfill in 0003_masters before a second GI crop.
         tags = (await session.scalars(select(GiRegionVersion.gi_tag_id).distinct().limit(2))).all()
         if len(tags) != 1:
             return None
@@ -802,6 +853,20 @@ async def _check_region(
         return await locate_point(session, point, gi_tag_id)
     except GiRegionMissingError:
         return None
+
+
+async def _check_gi_tag(session: AsyncSession, gi_tag_id: uuid.UUID | None) -> None:
+    """Refuse a GI tag id that does not exist (plots.gi_tag_id is a foreign key since migration 0003).
+
+    Args:
+        session: open database session.
+        gi_tag_id: the GI tag sent, or None.
+
+    Raises:
+        ValidationFailedError: unknown GI tag (`validation_error`).
+    """
+    if gi_tag_id is not None and await session.get(GiTag, gi_tag_id) is None:
+        raise ValidationFailedError(details={"gi_tag_id": "unknown GI tag"})
 
 
 def _label(plot: Plot) -> str:
@@ -833,8 +898,9 @@ async def create_plot(session: AsyncSession, user: CurrentUser, body: PlotIn) ->
         NotFoundError: the farmer is missing, another FPO's, or (farmer caller) someone else.
         ClientIdConflictError: the id belongs to another FPO's or another farmer's plot.
         PlotLockedError: the id exists with a different pin or size (corrections go through an admin).
-        ValidationFailedError: declared size unit not acre/cent, or zero.
+        ValidationFailedError: declared size unit not acre/cent, or zero; unknown `gi_tag_id`.
         InvalidGeometryError: walked boundary malformed.
+        FieldRequiredError: a field the tenant's configuration requires is missing (`field_required`).
 
     Side effects:
         Inserts a `plots` row (audited; the reference-version trigger bumps the `plots` bundle part).
@@ -856,6 +922,12 @@ async def create_plot(session: AsyncSession, user: CurrentUser, body: PlotIn) ->
             raise PlotLockedError(details={"plot_id": str(existing.id)})
         return _plot_out(existing), False
 
+    # DECISION D-017: the tenant's fields/plot.yaml decides which plot fields are captured and required.
+    #   ADV: e.g. soil type off for one FPO without a deploy; a disabled field is dropped, never stored.
+    #   COMPROMISE: applied after the resend check, so a stored plot is returned even if the config changed.
+    data = fieldconfig.validate_payload("plot", await fpo_code(session, user.fpo_id), body.model_dump())
+    body = PlotIn.model_validate(data)
+    await _check_gi_tag(session, body.gi_tag_id)
     farmer = await _farmer_in_scope(session, user, body.farmer_id)
     walked = body.walked_boundary.model_dump() if body.walked_boundary else None
     count = await session.scalar(select(func.count()).select_from(Plot).where(Plot.farmer_id == farmer.id))
@@ -864,6 +936,7 @@ async def create_plot(session: AsyncSession, user: CurrentUser, body: PlotIn) ->
         fpo_id=user.fpo_id,
         farmer_id=farmer.id,
         code=body.code or f"P-{(count or 0) + 1:02d}",
+        gi_tag_id=body.gi_tag_id,
         pin=_point_wkt(body.pin),
         pin_accuracy_m=body.pin.accuracy_m,
         pin_method=body.pin_method,
@@ -879,7 +952,7 @@ async def create_plot(session: AsyncSession, user: CurrentUser, body: PlotIn) ->
         soil_type=body.soil_type,
         revision_no=1,
     )
-    check = await _check_region(session, body.pin, body.gi_tag_id)
+    check = await _check_region(session, body.pin, plot.gi_tag_id)
     plot.location_status = location_status(check, body.pin_method, review_outcome=None)
     plot.location_method_label = _label(plot)
     session.add(plot)
@@ -922,7 +995,7 @@ async def correct_plot(
     Raises:
         ReasonRequiredError: no `reason_code`.
         NotFoundError: missing or another FPO's.
-        ValidationFailedError: declared size unit not acre/cent, or zero.
+        ValidationFailedError: declared size unit not acre/cent, or zero; unknown `gi_tag_id`.
         InvalidGeometryError: walked boundary malformed.
 
     Side effects:
@@ -945,6 +1018,9 @@ async def correct_plot(
         )
     )
     sent = body.model_fields_set
+    if body.gi_tag_id is not None:
+        await _check_gi_tag(session, body.gi_tag_id)
+        plot.gi_tag_id = body.gi_tag_id
     if body.pin is not None:
         plot.pin = _point_wkt(body.pin)
         plot.pin_accuracy_m = body.pin.accuracy_m
@@ -969,7 +1045,7 @@ async def correct_plot(
         plot.reviewed_at = plot.review_method = plot.review_outcome = None
     plot.revision_no += 1
     pin = body.pin or _pin(plot)
-    check = await _check_region(session, pin, body.gi_tag_id)
+    check = await _check_region(session, pin, plot.gi_tag_id)
     plot.location_status = location_status(check, plot.pin_method, plot.review_outcome)
     plot.location_method_label = _label(plot)
     await session.flush()
@@ -1148,5 +1224,104 @@ async def create_input(session: AsyncSession, user: CurrentUser, body: InputIn) 
     return InputOut.model_validate(item)
 
 
-# TODO(B13): `id_documents` (flag `id_document_capture`) and `producer_groups` (flag `producer_groups`)
-#   get no endpoints here; B13 adds them behind the feature flags (D-017).
+# --- flag-gated: producer groups, ID documents (B13, D-017; the router checks the flags) ---------------
+
+ID_DOC_URL_TTL_S = 900
+
+
+async def list_producer_groups(session: AsyncSession, user: CurrentUser) -> list[ProducerGroupOut]:
+    """List the producer groups (SHGs) of the caller's FPO.
+
+    Args:
+        session: open database session.
+        user: the caller.
+
+    Returns:
+        Groups ordered by name.
+    """
+    query = select(ProducerGroup).where(ProducerGroup.fpo_id == user.fpo_id).order_by(ProducerGroup.name)
+    return [ProducerGroupOut.model_validate(g) for g in (await session.scalars(query)).all()]
+
+
+async def create_producer_group(
+    session: AsyncSession, user: CurrentUser, body: ProducerGroupIn
+) -> ProducerGroupOut:
+    """Create a producer group in the caller's FPO.
+
+    Args:
+        session: open database session.
+        user: the caller (FPO admin).
+        body: the group.
+
+    Returns:
+        The stored group.
+
+    Side effects:
+        Inserts a `producer_groups` row.
+    """
+    group = ProducerGroup(fpo_id=user.fpo_id, name=body.name, kind=body.kind)
+    session.add(group)
+    await session.flush()
+    await session.refresh(group)
+    return ProducerGroupOut.model_validate(group)
+
+
+async def create_id_document(
+    session: AsyncSession, user: CurrentUser, farmer_id: uuid.UUID, body: IdDocumentIn
+) -> IdDocumentUpload:
+    """Record an identity document and presign its upload into the private id-docs bucket (Stage 0).
+
+    Args:
+        session: open database session.
+        user: the caller (field officer or FPO admin).
+        farmer_id: the document's owner.
+        body: document type, consent and the image's type and SHA-256.
+
+    Returns:
+        The document id and a single presigned PUT that accepts only bytes matching `sha256`.
+
+    Raises:
+        NotFoundError: the farmer is missing or another FPO's.
+        ValidationFailedError: the consent is not this farmer's unrevoked `data_collection` consent.
+
+    Side effects:
+        Inserts an `id_documents` row; signs a URL (no network call).
+    """
+    farmer = await _farmer_in_scope(session, user, farmer_id)
+    consent = await session.get(ConsentRecord, body.consent_record_id)
+    if (
+        consent is None
+        or consent.farmer_id != farmer.id
+        or consent.consent_type != ConsentType.DATA_COLLECTION
+        or consent.revoked_at is not None
+    ):
+        raise ValidationFailedError(details={"consent_record_id": "no active data_collection consent"})
+    doc_id = uuid7()
+    key = f"{farmer.fpo_id}/{farmer.id}/{doc_id}.{body.content_type.removeprefix('image/')}"
+    # shortcut: the row is written before the upload and there is no confirm step, so an abandoned upload
+    #   leaves a row without an object; add a confirm (HEAD + sha256) like evidence photos if it matters.
+    session.add(
+        IdDocument(
+            id=doc_id,
+            farmer_id=farmer.id,
+            doc_type=body.doc_type,
+            object_key=key,
+            captured_by=user.user_id,
+            captured_at=utcnow(),
+            consent_record_id=consent.id,
+        )
+    )
+    await session.flush()
+    url = storage.presign_put(
+        key, body.content_type, body.sha256, ID_DOC_URL_TTL_S, bucket=get_settings().s3_bucket_iddocs
+    )
+    return IdDocumentUpload(
+        id=doc_id,
+        method="PUT",
+        url=url,
+        headers={
+            "Content-Type": body.content_type,
+            "x-amz-checksum-sha256": base64.b64encode(bytes.fromhex(body.sha256)).decode(),
+        },
+        expires_at=utcnow() + timedelta(seconds=ID_DOC_URL_TTL_S),
+    )

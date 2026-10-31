@@ -188,6 +188,57 @@ class FarmerPhoneTakenError(AppError):
     fix = "Open the existing farmer instead, or check the number with the farmer."
 
 
+# --- field configuration and imports (B13, D-017) ------------------------------------------------------
+
+
+class FieldRequiredError(AppError):
+    """A field the tenant's configuration marks required is missing or blank (D-017)."""
+
+    code, status, message_key = "field_required", 422, "error.field_required"
+    message = "A required field is missing."
+    fix = "Fill in the field named in `details.field` (see GET /v1/config/fields) and send again."
+
+
+class FieldUnknownError(AppError):
+    """A payload key is not in the entity's field configuration and the entity forbids extras (D-017)."""
+
+    code, status, message_key = "field_unknown", 422, "error.field_unknown"
+    message = "The request has a field this form does not know."
+    fix = "Remove the field named in `details.field`, or check its spelling against GET /v1/config/fields."
+
+
+class FeatureDisabledError(AppError):
+    """The endpoint belongs to a feature switched off for the caller's FPO; answered as 404 (D-017)."""
+
+    code, status, message_key = "feature_disabled", 404, "error.feature_disabled"
+    message = "This feature is not switched on for your FPO."
+    fix = "Ask the platform team to enable the flag in the FPO's tenant file (GET /v1/config/features)."
+
+
+class ImportTooLargeError(AppError):
+    """A CSV import is over 2 MB or 5,000 data rows."""
+
+    code, status, message_key = "import_too_large", 413, "error.import_too_large"
+    message = "The file is too large to import."
+    fix = "Split the file into parts of at most 5,000 rows and 2 MB, and import each part."
+
+
+class ImportRowInvalidError(AppError):
+    """A CSV row has a value of the wrong kind (bad number, unknown category, bad phone format)."""
+
+    code, status, message_key = "import_row_invalid", 422, "error.import_row_invalid"
+    message = "A value in this row is not valid."
+    fix = "Correct the column named in `field` for that row (see the template) and import the row again."
+
+
+class ImportRowExistsError(AppError):
+    """A CSV row describes a record that already exists (same LGD code, or same input name and maker)."""
+
+    code, status, message_key = "import_row_exists", 409, "error.import_row_exists"
+    message = "This record already exists."
+    fix = "No action needed if it was imported before; otherwise change the key column named in `field`."
+
+
 class RateLimitedError(AppError):
     """Too many requests from this caller."""
 
@@ -218,7 +269,6 @@ class NotImplementedPilotError(AppError):
     code, status, message_key = "not_implemented_pilot", 501, "error.not_implemented_pilot"
     message = "This feature is not available in the pilot."
     fix = "No client action; the feature is planned after the pilot."
-
 
 
 # Quality readings and grading (B05; PRD §6.8 FR47–FR50). Plausibility codes equal the grade engine's
@@ -295,6 +345,8 @@ class ProfileIncompleteNotAllowedError(AppError):
     code, status, message_key = "profile_incomplete_not_allowed", 422, "error.profile_incomplete_not_allowed"
     message = "Some grading parameters have no limits yet (load_from_standard)."
     fix = "Enter the limits from the standard, or publish with `allow_incomplete: true` (public note shown)."
+
+
 # Identity (B02, FR1, D-024). Wrong codes and PINs get their own codes, never a bare 401 (P00 contract).
 class OtpInvalidError(AppError):
     """The one-time code is wrong, or the phone cannot sign in (indistinguishable on purpose)."""

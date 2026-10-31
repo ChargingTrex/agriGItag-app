@@ -3,7 +3,8 @@
 Serves: D-008 (local S3 stand-in; `evidence` write-once, `public-pages` anonymous read),
 D-011 (single presigned PUT per photo with SHA-256), D-007 (static public pages in object storage).
 Callers: events service (presign, head, read photos; B06), publishing service (put_public; B10),
-`agritrace.main` health check (`client`), tests/integration/test_storage.py.
+`agritrace.main` health check (`client`), registry ID documents (presign into id-docs; B13),
+tests/integration/test_storage.py.
 """
 
 import base64
@@ -59,8 +60,10 @@ def client() -> Any:
     return _client_for(get_settings().s3_endpoint)
 
 
-def presign_put(key: str, content_type: str, sha256: str, expires: int = 900) -> str:
-    """Presign a single PUT of an evidence photo that S3 accepts only if the bytes match `sha256`.
+def presign_put(
+    key: str, content_type: str, sha256: str, expires: int = 900, bucket: str | None = None
+) -> str:
+    """Presign a single PUT of a file that S3 accepts only if the bytes match `sha256`.
 
     The client must send headers `Content-Type: <content_type>` and
     `x-amz-checksum-sha256: <base64 of the digest>`; S3 rejects the upload on a mismatch.
@@ -70,6 +73,7 @@ def presign_put(key: str, content_type: str, sha256: str, expires: int = 900) ->
         content_type: MIME type the client will send, e.g. `image/jpeg`.
         sha256: hex SHA-256 of the file, as computed on the phone.
         expires: URL lifetime in seconds.
+        bucket: target bucket; default the evidence bucket (ID documents pass `S3_BUCKET_IDDOCS`).
 
     Returns:
         The presigned URL on `S3_PUBLIC_ENDPOINT`, the host the phone can reach (signing needs no network).
@@ -84,7 +88,7 @@ def presign_put(key: str, content_type: str, sha256: str, expires: int = 900) ->
     url: str = _client_for(get_settings().s3_public_endpoint).generate_presigned_url(
         "put_object",
         Params={
-            "Bucket": get_settings().s3_bucket_evidence,
+            "Bucket": bucket or get_settings().s3_bucket_evidence,
             "Key": key,
             "ContentType": content_type,
             "ChecksumSHA256": checksum,

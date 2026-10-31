@@ -1,7 +1,8 @@
 """FastAPI application factory: OpenAPI metadata, compression, error envelope, `/v1` routes, health check.
 
 Serves: Arch §Backend services, D-001 (OpenAPI 3.1 from Pydantic), D-020 (`/v1` prefix),
-plan §13 C1 (brotli/gzip responses), B00 acceptance (`GET /v1/healthz` reports db, redis, s3).
+plan §13 C1 (brotli/gzip responses), B00 acceptance (`GET /v1/healthz` reports db, redis, s3), D-017
+(refuse to start on invalid field/feature YAML).
 Callers: uvicorn (`agritrace.main:app`, see infra/docker-compose.yml), `agritrace.export_openapi`, tests.
 """
 
@@ -21,7 +22,7 @@ from redis.asyncio import Redis
 from sqlalchemy import text
 
 import agritrace.modules
-from agritrace.core import storage
+from agritrace.core import fieldconfig, storage
 from agritrace.core.config import get_settings
 from agritrace.core.db import get_engine
 from agritrace.core.errors import install_handlers
@@ -47,6 +48,7 @@ TAGS = [
     {"name": "notifications", "description": "Notifications to farmers and FPO staff."},
     {"name": "partner_api", "description": "Partner API (pilot stub, 501)."},
     {"name": "reporting", "description": "Dashboards and exports."},
+    {"name": "config", "description": "Field and feature configuration per FPO (D-017)."},
 ]
 
 
@@ -144,7 +146,7 @@ async def reachable() -> Response:
 
 @asynccontextmanager
 async def _validate_config_at_boot(_: FastAPI) -> AsyncIterator[None]:
-    """Build the settings before serving, so a bad config stops the process instead of serving errors.
+    """Build the settings and load the field/feature YAML before serving, so a bad config stops the process.
 
     Without this, a missing `JWT_SECRET` (or a prod OTP code) would only fail on first use, and the HEAD
     reachability probe would still answer 200 to every phone.
@@ -157,8 +159,11 @@ async def _validate_config_at_boot(_: FastAPI) -> AsyncIterator[None]:
 
     Raises:
         pydantic.ValidationError: missing `JWT_SECRET` or an invalid setting; uvicorn then exits.
+        ConfigInvalid: a file under apps/api/config fails its schema (D-017); the message names the
+            file and key, and uvicorn exits.
     """
     get_settings()
+    fieldconfig.load()
     yield
 
 

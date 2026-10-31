@@ -1,0 +1,10 @@
+# Payload fields of the `drying` event (Drying).
+# Serves: D-017, FR22 (crop event schema), FR23 (configurable capture), UserFlows §Logging an event.
+# Read by: agritrace/core/fieldconfig.py; served to clients (M07, M10, M11). Not enforced by a server
+# hook yet: events (B06) calls fieldconfig.validate_payload("event_drying", ...) when it wires it.
+# extra: allow keeps payload keys not listed here (B06 owns the payload shape). Keys: see farmer.yaml.
+entity: event_drying
+extra: allow
+fields:
+  - {name: phase, type: choice, required: true, enabled: true, visibility: internal, stage: drying, label: {en: Start or done, ta: தொடக்கம் அல்லது முடிவு}}
+  - {name: photo, type: photo, required: false, enabled: true, visibility: public, stage: drying, label: {en: Photo, ta: புகைப்படம்}}

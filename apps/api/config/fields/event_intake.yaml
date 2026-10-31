@@ -1,0 +1,10 @@
+# Payload fields of the `intake` event (Intake at the processor).
+# Serves: D-017, FR22 (crop event schema), FR23 (configurable capture), UserFlows §Logging an event.
+# Read by: agritrace/core/fieldconfig.py; served to clients (M07, M10, M11). Not enforced by a server
+# hook yet: events (B06) calls fieldconfig.validate_payload("event_intake", ...) when it wires it.
+# extra: allow keeps payload keys not listed here (B06 owns the payload shape). Keys: see farmer.yaml.
+entity: event_intake
+extra: allow
+fields:
+  - {name: quantity, type: quantity, required: true, enabled: true, visibility: partner, stage: intake, label: {en: Received weight, ta: பெற்ற எடை}}
+  - {name: price_per_kg, type: number, required: false, enabled: true, visibility: internal, stage: intake, label: {en: Price per kg, ta: கிலோ விலை}}

@@ -1,0 +1,23 @@
+# Feature flags and limits: defaults for every FPO; tenants/<FPO_CODE>.yaml may override any key.
+# Serves: D-017, PLAN "Gap analysis" (ID capture, PIN login, SHG groups), plan §13 (sync limits), FR1.
+# Read by: agritrace/core/fieldconfig.py (schema `Features`, validated at start-up); served by
+# GET /v1/config/features and the sync bundle part `fields`. "Not wired yet" = declared only; no server
+# module reads it today. Field files: fields/<entity>.yaml; how to edit: docs/api/conventions.md §Config.
+
+# Read by the registry router: POST /v1/farmers/{id}/id-documents answers 404 when false.
+id_document_capture: false
+# Not wired yet: identity (B02) keeps farmers OTP-only; clients read it from /v1/config/features.
+farmer_pin_login: false
+# Read by the registry router: GET/POST /v1/producer-groups answer 404 when false.
+producer_groups: false
+# Not wired yet on the server: the onboarding wizard (M09) shows the boundary-walk step when true.
+boundary_walk: true
+# Not wired yet: batch creation (B09/P03) asks for a second sign-off above this many kilograms.
+second_signoff_threshold_kg: 1000
+# Not wired yet: phones (M02) start with "photos on Wi-Fi only" set to this.
+wifi_only_photos_default: false
+# Not wired yet: sync push limits (B06); the phone (M02) batches to these.
+sync_push_max_entries: 50
+sync_push_max_bytes: 262144
+# Not wired yet: identity reads OTP_DAILY_CAP from the environment (core/config.py); listed for clients.
+otp_daily_cap: 10

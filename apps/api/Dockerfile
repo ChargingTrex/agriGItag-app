@@ -13,6 +13,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY agritrace ./agritrace
 COPY alembic ./alembic
 COPY alembic.ini ./
+COPY config ./config
 RUN uv sync --frozen --no-dev
 
 RUN useradd --create-home --uid 10001 app

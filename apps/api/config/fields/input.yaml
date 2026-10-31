@@ -1,0 +1,13 @@
+# Input master fields (fertilisers, pesticides) for POST /v1/inputs and POST /v1/imports/inputs.
+# Serves: D-017, FR56 (category drives practice tags), PLAN "Gap analysis" (Master data uploads).
+# Read by: agritrace/core/fieldconfig.py; registry imports (template, required). Keys: see farmer.yaml.
+entity: input
+extra: forbid
+fields:
+  - {name: name_en, type: text, required: true, enabled: true, core: true, visibility: public, stage: master_data, label: {en: Product name, ta: பொருளின் பெயர் (ஆங்கிலம்)}}
+  - {name: name_local, type: text, required: false, enabled: true, visibility: public, stage: master_data, label: {en: Product name in Tamil, ta: பொருளின் பெயர்}}
+  - {name: manufacturer, type: text, required: false, enabled: true, visibility: public, stage: master_data, label: {en: Manufacturer, ta: தயாரிப்பாளர்}}
+  - {name: category, type: choice, required: true, enabled: true, core: true, visibility: public, stage: master_data, label: {en: Category, ta: வகை}}
+  - {name: unit, type: text, required: true, enabled: true, core: true, visibility: public, stage: master_data, label: {en: Unit, ta: அலகு}}
+  - {name: pack_size, type: number, required: false, enabled: true, visibility: internal, stage: master_data, label: {en: Pack size, ta: பை அளவு}}
+  - {name: photo_key, type: photo, required: false, enabled: true, visibility: internal, stage: master_data, label: {en: Product photo, ta: பொருளின் படம்}}

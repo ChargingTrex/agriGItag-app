@@ -156,6 +156,10 @@ class Plot(Audited, IdTimestamps, TenantScoped, Base):
 
     farmer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farmers.id"), index=True, comment="Owner.")
     code: Mapped[str] = mapped_column(comment="Plot code shown to people, e.g. P-01.")
+    gi_tag_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("gi_tags.id"),
+        comment="GI tag of the crop picked at onboarding; null = pilot single-GI fallback.",
+    )
     pin: Mapped[SpatialValue] = mapped_column(
         Geography("POINT", 4326), comment="Plot pin dropped on the plot (WGS84), FR64."
     )

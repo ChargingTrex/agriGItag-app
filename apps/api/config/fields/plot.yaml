@@ -1,0 +1,21 @@
+# Plot fields captured at onboarding (POST /v1/plots, sync push plots).
+# Serves: D-017, Stage 0, FR54 (farming type, irrigation), FR64–FR66 (pin, declared size, walked boundary).
+# Read by: agritrace/core/fieldconfig.py; registry.create_plot (required/enabled); onboarding wizard (M09).
+# Exact location, boundary and land record are internal only (CLAUDE.md §6). Keys: see farmer.yaml.
+entity: plot
+extra: forbid
+fields:
+  - {name: client_id, type: id, required: true, enabled: true, core: true, visibility: internal, stage: onboarding, label: {en: Plot id, ta: நில அடையாள எண்}}
+  - {name: farmer_id, type: id, required: true, enabled: true, core: true, visibility: internal, stage: onboarding, label: {en: Farmer, ta: விவசாயி}}
+  - {name: code, type: text, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: Plot code, ta: நிலக் குறியீடு}}
+  - {name: gi_tag_id, type: id, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: GI crop, ta: புவிசார் குறியீடு பயிர்}}
+  - {name: pin, type: point, required: true, enabled: true, core: true, visibility: internal, stage: onboarding, label: {en: Plot location, ta: நில இருப்பிடம்}}
+  - {name: pin_method, type: choice, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: How the location was taken, ta: இருப்பிடம் எடுத்த முறை}}
+  - {name: device_time, type: datetime, required: true, enabled: true, core: true, visibility: internal, stage: onboarding, label: {en: Phone time, ta: கைபேசி நேரம்}}
+  - {name: gps_time, type: datetime, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: GPS time, ta: ஜிபிஎஸ் நேரம்}}
+  - {name: declared_area, type: quantity, required: true, enabled: true, core: true, visibility: partner, stage: onboarding, label: {en: Land size, ta: நில அளவு}}
+  - {name: land_record_ref, type: text, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: Survey / patta number, ta: சர்வே / பட்டா எண்}}
+  - {name: walked_boundary, type: polygon, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: Walked boundary, ta: நடந்து அளந்த எல்லை}}
+  - {name: farming_type, type: choice, required: false, enabled: true, visibility: public, stage: onboarding, label: {en: Irrigated or rainfed, ta: பாசனம் அல்லது மானாவாரி}}
+  - {name: irrigation_source, type: choice, required: false, enabled: true, visibility: public, stage: onboarding, label: {en: Water source, ta: நீர் ஆதாரம்}}
+  - {name: soil_type, type: text, required: false, enabled: true, visibility: public, stage: onboarding, label: {en: Soil type, ta: மண் வகை}}
