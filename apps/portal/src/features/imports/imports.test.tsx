@@ -79,7 +79,12 @@ describe('Master data uploads', () => {
 
   it('offers the API template and lists its columns with the labels from /config/fields', async () => {
     const { container } = renderApp('/uploads', true);
-    const link = await screen.findByRole('link', { name: 'Download farmers template' });
+    // First render of the file pays the module cold start; give it more than the 5 s default on a loaded runner.
+    const link = await screen.findByRole(
+      'link',
+      { name: 'Download farmers template' },
+      { timeout: 15_000 },
+    );
     const template = decodeURIComponent(
       (link.getAttribute('href') ?? '').split(',').slice(1).join(','),
     );

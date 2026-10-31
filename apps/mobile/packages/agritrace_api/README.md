@@ -112,10 +112,16 @@ Class | Method | HTTP request | Description
 [*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**getLotV1LotsLotIdGet**](doc/LotsBatchesApi.md#getlotv1lotslotidget) | **GET** /v1/lots/{lot_id} | Read a lot
 [*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**listBatchesV1BatchesGet**](doc/LotsBatchesApi.md#listbatchesv1batchesget) | **GET** /v1/batches | List batches
 [*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**listLotsV1LotsGet**](doc/LotsBatchesApi.md#listlotsv1lotsget) | **GET** /v1/lots | List lots
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**lotQrV1LotsLotIdQrGet**](doc/LotsBatchesApi.md#lotqrv1lotslotidqrget) | **GET** /v1/lots/{lot_id}/qr | QR code of a lot
 [*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**markReadyV1LotsLotIdReadyPost**](doc/LotsBatchesApi.md#markreadyv1lotslotidreadypost) | **POST** /v1/lots/{lot_id}/ready | Mark a lot ready for sale (moisture gate)
 [*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**publishV1BatchesBatchIdPublishPost**](doc/LotsBatchesApi.md#publishv1batchesbatchidpublishpost) | **POST** /v1/batches/{batch_id}/publish | Publish the public page (final sign-off)
 [*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**secondSignoffV1BatchesBatchIdSecondSignoffPost**](doc/LotsBatchesApi.md#secondsignoffv1batchesbatchidsecondsignoffpost) | **POST** /v1/batches/{batch_id}/second-signoff | Second admin sign-off of a large batch
 [*NotificationsApi*](doc/NotificationsApi.md) | [**listMyNotificationsV1NotificationsGet**](doc/NotificationsApi.md#listmynotificationsv1notificationsget) | **GET** /v1/notifications | List my notifications
+[*PublishingApi*](doc/PublishingApi.md) | [**batchLabelsV1BatchesBatchIdLabelsPdfGet**](doc/PublishingApi.md#batchlabelsv1batchesbatchidlabelspdfget) | **GET** /v1/batches/{batch_id}/labels.pdf | Printable pack labels of a packed batch
+[*PublishingApi*](doc/PublishingApi.md) | [**batchQrV1BatchesBatchIdQrPngGet**](doc/PublishingApi.md#batchqrv1batchesbatchidqrpngget) | **GET** /v1/batches/{batch_id}/qr.png | QR code of the batch&#39;s public page
+[*PublishingApi*](doc/PublishingApi.md) | [**listBuildsV1BatchesBatchIdBuildsGet**](doc/PublishingApi.md#listbuildsv1batchesbatchidbuildsget) | **GET** /v1/batches/{batch_id}/builds | List the public page builds of a batch
+[*PublishingApi*](doc/PublishingApi.md) | [**publicPageV1PublicBatchesCodeGet**](doc/PublishingApi.md#publicpagev1publicbatchescodeget) | **GET** /v1/public/batches/{code} | Latest public page of a batch (development proxy)
+[*PublishingApi*](doc/PublishingApi.md) | [**rebuildV1BatchesBatchIdRebuildPost**](doc/PublishingApi.md#rebuildv1batchesbatchidrebuildpost) | **POST** /v1/batches/{batch_id}/rebuild | Rebuild the public page of a published batch
 [*QualityApi*](doc/QualityApi.md) | [**createInstrumentV1InstrumentsPost**](doc/QualityApi.md#createinstrumentv1instrumentspost) | **POST** /v1/instruments | Register an instrument
 [*QualityApi*](doc/QualityApi.md) | [**createQualityReadingV1QualityReadingsPost**](doc/QualityApi.md#createqualityreadingv1qualityreadingspost) | **POST** /v1/quality-readings | Record a quality reading
 [*QualityApi*](doc/QualityApi.md) | [**createStandardsProfileVersionV1StandardsProfilesProfileIdVersionsPost**](doc/QualityApi.md#createstandardsprofileversionv1standardsprofilesprofileidversionspost) | **POST** /v1/standards-profiles/{profile_id}/versions | Create a Standards Profile version (super-admin)
@@ -167,6 +173,7 @@ Class | Method | HTTP request | Description
  - [BatchIn](doc/BatchIn.md)
  - [BatchOut](doc/BatchOut.md)
  - [BatchStatus](doc/BatchStatus.md)
+ - [BuildOut](doc/BuildOut.md)
  - [BundleManifest](doc/BundleManifest.md)
  - [BundlePart](doc/BundlePart.md)
  - [CeilingKgPerAcre](doc/CeilingKgPerAcre.md)
@@ -265,6 +272,7 @@ Class | Method | HTTP request | Description
  - [PackingPayload](doc/PackingPayload.md)
  - [PackingVersion](doc/PackingVersion.md)
  - [PageBatchOut](doc/PageBatchOut.md)
+ - [PageBuildOut](doc/PageBuildOut.md)
  - [PageConsentOut](doc/PageConsentOut.md)
  - [PageEventOut](doc/PageEventOut.md)
  - [PageFarmerOut](doc/PageFarmerOut.md)

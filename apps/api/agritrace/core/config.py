@@ -1,7 +1,7 @@
 """Process settings read from environment variables (and `apps/api/.env` when present).
 
 Serves: Arch §Backend services (twelve-factor config), D-008 (bucket names), D-009 (Redis broker URL),
-D-024 (JWT secret, OTP dev code and daily cap), FR7 (SMS provider, B04).
+D-024 (JWT secret, OTP dev code and daily cap), FR7 (SMS provider, B04), plan §13 E3 (CDN, B10).
 Callers: `core.db`, `core.storage`, `core.auth`, identity service (B02), notifications providers (B04),
 `agritrace.main`, `agritrace.worker`, `alembic/env.py`, tests.
 Every variable is documented in `apps/api/.env.example`.
@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     s3_bucket_iddocs: str = Field("id-docs", description="Private bucket for farmer identity documents.")
     public_base_url: str = Field(
         "http://localhost:4566/public-pages", description="Base URL consumers open for a public batch page."
+    )
+    cloudfront_distribution_id: str | None = Field(
+        None,
+        description="CDN in front of public-pages; a build invalidates `/b/<code>*` there (plan §13 E3). "
+        "Unset locally: no invalidation.",
     )
     jwt_secret: str = Field(description="HMAC secret for access tokens; required, at least 32 bytes in prod.")
     otp_dev_code: str | None = Field(
