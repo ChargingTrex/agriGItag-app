@@ -2,13 +2,13 @@
  * Batch detail: batch ID and code, status, processor, received kg, GI state with reasons, each farmer's share,
  * the second sign-off, grading (readings with source and instrument, computed grade with the standard's
  * edition, declared grade, Approve), final packing (packed kg ≤ graded kg) and the public page (Publish,
- * builds, QR, labels, preview: PublishSection.tsx). Every greyed button says why, from the server's gate
- * answer or a dry read of the stored batch and grade computation.
+ * builds, QR, preview: PublishSection.tsx), then labels and exports (features/exports/BatchExports.tsx, P05). Every
+ * greyed button says why, from the server's gate answer or a dry read of the stored batch and grade computation.
  * Serves: User Flows §"Create a batch" step 4 and §"Approve and publish", FR9, FR29 (GI verified or the reasons
  * it is not), FR48/FR49 (declared above computed blocks approval), FR60 (shares), FR62 (packing, labels), FR15
- * (publish), Dataflow §4 gate 2 (second sign-off above `second_signoff_threshold_kg`) and Stages 8–10, plan
- * §7.3 P03 and P04 (declared Special/computed Standard → Approve disabled with reason; missing reading →
- * disabled; happy path → published + URL).
+ * (publish), FR58/FR21 (CSV exports with units), Dataflow §4 gate 2 (second sign-off above
+ * `second_signoff_threshold_kg`) and Stages 8–10, plan §7.3 P03, P04 (declared Special/computed Standard → Approve disabled with reason; missing reading →
+ * disabled; happy path → published + URL) and P05 (labels, CSV exports).
  * Called by: src/AppRoutes.tsx (`/batches/:batchId`); ReadyLotsPage.tsx navigates here after Create;
  * BatchesPage.tsx links here.
  */
@@ -47,6 +47,7 @@ import {
   type BatchOut,
   type GateReason,
 } from './batchModel';
+import { BatchExports } from '../exports/BatchExports';
 import { PublishSection } from './PublishSection';
 import { GatedButton, GateReasons, useFarmerNames } from './ReadyLotsPage';
 
@@ -425,8 +426,8 @@ function PackingSection(props: { batch: BatchOut; isAdmin: boolean; holds: GateR
 
 /**
  * The batch page for the `:batchId` route parameter.
- * @returns Header, GI state, sign-off, batch ID, shares, grading, packing and the public page; a progress bar
- *   or the error.
+ * @returns Header, GI state, sign-off, batch ID, shares, grading, packing, the public page, labels and exports; a
+ *   progress bar or the error.
  */
 export function BatchPage() {
   const { batchId = '' } = useParams();
@@ -564,6 +565,12 @@ export function BatchPage() {
       <GradingSection batch={b} isAdmin={isAdmin} holds={holds} />
       <PackingSection batch={b} isAdmin={isAdmin} holds={holds} />
       <PublishSection batch={b} isAdmin={isAdmin} holds={holds} />
+      <BatchExports
+        batch={b}
+        lots={lots.flatMap((q) => (q.data ? [q.data] : []))}
+        lotsLoading={lots.some((q) => q.isPending)}
+        farmerName={farmerName}
+      />
     </Stack>
   );
 }

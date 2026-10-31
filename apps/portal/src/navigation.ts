@@ -22,7 +22,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { path: '/flags', label: 'Flags', wp: 'P02' },
   { path: '/ready-lots', label: 'Ready lots', wp: 'P03' },
   { path: '/batches', label: 'Batches', wp: 'P04' },
-  { path: '/labels', label: 'Labels & exports', wp: 'P05' },
+  { path: '/exports', label: 'Labels & exports', wp: 'P05' },
   { path: '/uploads', label: 'Master data uploads', wp: 'P08' },
   { path: '/settings', label: 'Settings', wp: 'P06' },
 ];
