@@ -366,6 +366,14 @@
   "@onboardAreaMismatch": {
     "description": "Mismatch note when walked and declared areas differ by more than 20 % (FR66)."
   },
+  "onboardBoundaryCrosses": "The shape crosses itself, so it will not be saved. Walk again or tap Next.",
+  "@onboardBoundaryCrosses": {
+    "description": "Boundary step: the walked shape crosses itself (GPS jitter), so the boundary is left out of the plot (M09 review P1-1)."
+  },
+  "onboardLocationOff": "No location. Turn on location and tap again.",
+  "@onboardLocationOff": {
+    "description": "Location step: GPS permission refused or location off; the 'In field' button is back for a retry (M09 review P2-3)."
+  },
   "onboardTooFewPoints": "Too few points. Walk the whole edge.",
   "@onboardTooFewPoints": {
     "description": "Shown after Stop when fewer than 3 GPS points were recorded."
@@ -480,7 +488,7 @@
   "@onboardDone": {
     "description": "Closes the onboarding wizard and returns to the officer home."
   },
-  "onboardSummary": "{name}: {count} fields saved",
+  "onboardSummary": "{name}: {count, plural, =1{1 field saved} other{{count} fields saved}}",
   "@onboardSummary": {
     "description": "Farmer summary after saving; count is the number of plots saved for this farmer.",
     "placeholders": {

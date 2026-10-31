@@ -42,6 +42,17 @@ void main() {
     expect(areaMismatch(1, null), isFalse);
   });
 
+  test('a square is a simple ring; a figure 8, a spike and too few points are not', () {
+    expect(ringIsSimple(square(100)), isTrue);
+    expect(ringIsSimple([...square(100), square(100).first]), isTrue, reason: 'closed ring');
+    final [a, b, c, d] = square(100);
+    expect(ringIsSimple([a, a, b, b, c, d]), isTrue, reason: 'repeated fixes while standing still are ignored');
+    expect(ringIsSimple([a, c, b, d]), isFalse, reason: 'bow tie: the diagonals cross');
+    final mid = ((a.$1 + b.$1) / 2, a.$2);
+    expect(ringIsSimple([a, b, mid, c, d]), isFalse, reason: 'walking back over the last edge is a spike');
+    expect(ringIsSimple([a, b]), isFalse);
+  });
+
   test('field rules: absent or disabled fields are off, required is read, no config means all on', () {
     final rules = FieldRules(
       plot: FieldRules.parse('[{"name":"pin","required":true},{"name":"soil_type","enabled":false}]'),

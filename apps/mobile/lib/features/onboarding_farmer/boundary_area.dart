@@ -2,7 +2,7 @@
 // Requirement: FR66 (walked boundary: "computes the walked area and flags a gap with the declared size above a set
 //   tolerance"), FR65 (declared size in acres; 100 cents = 1 acre), UserFlows §Onboarding a farmer steps 5-6,
 //   Dataflow Stage 0 (System Action: "computes its area and flags a mismatch with declared size").
-// Callers: onboarding_notifier.dart (OnboardingDraft.walkedAcres, declaredAcres), boundary_step.dart;
+// Callers: onboarding_notifier.dart (OnboardingDraft.walkedAcres, walkCrosses, declaredAcres), boundary_step.dart;
 //   test/features/onboarding/boundary_area_test.dart.
 
 import 'dart:math';
@@ -39,6 +39,50 @@ double geodesicAreaM2(List<LonLat> points) {
     sum += (rad(lon2) - rad(lon1)) * (2 + sin(rad(lat1)) + sin(rad(lat2)));
   }
   return (sum * _earthRadiusM * _earthRadiusM / 2).abs();
+}
+
+/// Whether the ring [points] (lon/lat degrees, open or closed) is a simple polygon: no two edges cross or touch
+/// except neighbours at their shared corner, and no edge doubles back over the previous one.
+///
+/// The server refuses a polygon that is not valid (registry/geo.py `_checked`) and with it the whole plot entry,
+/// so the wizard leaves such a walk out. Repeated identical fixes are ignored. Checks every pair of edges in plain
+/// lon/lat: O(n²), fine for walks of a few hundred points. Returns false for fewer than 3 distinct points.
+/// Throws nothing.
+bool ringIsSimple(List<LonLat> points) {
+  final p = <LonLat>[];
+  for (final q in points) {
+    if (p.isEmpty || p.last != q) p.add(q);
+  }
+  if (p.length > 1 && p.first == p.last) p.removeLast();
+  final n = p.length;
+  if (n < 3) return false;
+  for (var i = 0; i < n; i++) {
+    final (a, b, c) = (p[i], p[(i + 1) % n], p[(i + 2) % n]);
+    // Neighbouring edges a-b and b-c: invalid only when c turns straight back over a-b (a spike).
+    if (_cross(a, b, c) == 0 && (a.$1 - b.$1) * (c.$1 - b.$1) + (a.$2 - b.$2) * (c.$2 - b.$2) > 0) return false;
+    for (var j = i + 2; j < n; j++) {
+      if (i == 0 && j == n - 1) continue; // the closing edge neighbours the first one
+      if (_segmentsMeet(a, b, p[j], p[(j + 1) % n])) return false;
+    }
+  }
+  return true;
+}
+
+/// Cross product of o→a and o→b: > 0 left turn, < 0 right turn, 0 collinear. Throws nothing.
+double _cross(LonLat o, LonLat a, LonLat b) => (a.$1 - o.$1) * (b.$2 - o.$2) - (a.$2 - o.$2) * (b.$1 - o.$1);
+
+/// Whether the collinear point [q] lies within the bounding box of segment [a]-[b]. Throws nothing.
+bool _within(LonLat a, LonLat b, LonLat q) =>
+    min(a.$1, b.$1) <= q.$1 && q.$1 <= max(a.$1, b.$1) && min(a.$2, b.$2) <= q.$2 && q.$2 <= max(a.$2, b.$2);
+
+/// Whether segments [a]-[b] and [c]-[d] cross or touch (endpoints included). Throws nothing.
+bool _segmentsMeet(LonLat a, LonLat b, LonLat c, LonLat d) {
+  final d1 = _cross(c, d, a), d2 = _cross(c, d, b), d3 = _cross(a, b, c), d4 = _cross(a, b, d);
+  if (d1 * d2 < 0 && d3 * d4 < 0) return true;
+  return (d1 == 0 && _within(c, d, a)) ||
+      (d2 == 0 && _within(c, d, b)) ||
+      (d3 == 0 && _within(a, b, c)) ||
+      (d4 == 0 && _within(a, b, d));
 }
 
 /// Whether the walked area differs from the declared size by more than [areaGapLimit] (FR66).

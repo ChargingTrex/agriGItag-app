@@ -14,10 +14,11 @@ import 'package:just_audio/just_audio.dart';
 
 import 'prompt_catalog.dart';
 
-/// Starts playing the bundled asset at the given path; completes once playback has started.
+/// Starts playing the bundled asset at the given path; completes once playback has started, and calls the second
+/// argument once the clip stops (it ended, or a newer clip replaced it).
 ///
 /// The only seam to the audio package, so tests can record calls instead of opening a platform player.
-typedef ClipPlayer = Future<void> Function(String assetPath);
+typedef ClipPlayer = Future<void> Function(String assetPath, void Function() onEnd);
 
 /// Plays bundled voice prompts and counts the ones that could not be played.
 class VoicePlayer {
@@ -39,20 +40,22 @@ class VoicePlayer {
 
   /// Plays [promptId] in [locale]'s language, replacing whatever is playing.
   ///
-  /// Returns true when the clip started, false when it is not bundled or the player failed (the caller then
-  /// shows text only); every false increments [missingClips]. Throws what [PromptCatalog.load] throws when
-  /// the manifest itself is broken (a packaging bug).
-  Future<bool> play(String promptId, Locale locale) async {
+  /// [onEnd] is called once the clip stops, or at once when there is nothing to play (M09: "I agree" waits for the
+  /// consent message). Returns true when the clip started, false when it is not bundled or the player failed (the
+  /// caller then shows text only); every false increments [missingClips]. Throws what [PromptCatalog.load] throws
+  /// when the manifest itself is broken (a packaging bug).
+  Future<bool> play(String promptId, Locale locale, {void Function()? onEnd}) async {
     final path = (await _catalog).assetFor(promptId, locale);
     if (path != null) {
       try {
-        await _playClip(path);
+        await _playClip(path, onEnd ?? () {});
         return true;
       } on Exception {
         // A corrupt or undecodable clip must not break the screen: fall through to text only.
       }
     }
     _missingClips++;
+    onEnd?.call();
     return false;
   }
 }
@@ -68,15 +71,16 @@ final voicePlayerProvider = Provider<VoicePlayer>((ref) {
   ref.onDispose(audio.dispose);
   return VoicePlayer(
     bundle: rootBundle,
-    playClip: (path) async {
+    playClip: (path, onEnd) async {
       try {
         await audio.setAsset(path);
       } on PlayerInterruptedException {
         // A newer prompt replaced this one while it loaded: interrupted, not missing.
+        onEnd();
         return;
       }
-      // play() completes when the clip ends; the screen must not wait for that.
-      unawaited(audio.play());
+      // play() completes when the clip ends (or is replaced); the screen must not wait for that.
+      unawaited(audio.play().whenComplete(onEnd));
     },
   );
 });

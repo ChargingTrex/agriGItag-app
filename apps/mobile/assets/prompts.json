@@ -17,7 +17,9 @@
       "onboardWaterPrompt",
       "onboardSoilPrompt",
       "onboardCropPrompt",
-      "onboardHandoffPrompt"
+      "onboardHandoffPrompt",
+      "onboardBoundaryCrosses",
+      "onboardLocationOff"
     ],
     "en": [
       "callOfficer",
@@ -34,7 +36,9 @@
       "onboardWaterPrompt",
       "onboardSoilPrompt",
       "onboardCropPrompt",
-      "onboardHandoffPrompt"
+      "onboardHandoffPrompt",
+      "onboardBoundaryCrosses",
+      "onboardLocationOff"
     ]
   },
   "clips": {
@@ -53,7 +57,9 @@
       "onboardWaterPrompt",
       "onboardSoilPrompt",
       "onboardCropPrompt",
-      "onboardHandoffPrompt"
+      "onboardHandoffPrompt",
+      "onboardBoundaryCrosses",
+      "onboardLocationOff"
     ],
     "en": [
       "callOfficer",
@@ -70,7 +76,9 @@
       "onboardWaterPrompt",
       "onboardSoilPrompt",
       "onboardCropPrompt",
-      "onboardHandoffPrompt"
+      "onboardHandoffPrompt",
+      "onboardBoundaryCrosses",
+      "onboardLocationOff"
     ]
   }
 }

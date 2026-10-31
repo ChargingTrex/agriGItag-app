@@ -366,6 +366,14 @@
   "@onboardAreaMismatch": {
     "description": "Mismatch note when walked and declared areas differ by more than 20 % (FR66)."
   },
+  "onboardBoundaryCrosses": "வடிவம் தன்னைத்தானே வெட்டுகிறது, அதனால் சேமிக்கப்படாது. மீண்டும் நடக்கவும் அல்லது அடுத்து அழுத்தவும்.",
+  "@onboardBoundaryCrosses": {
+    "description": "Boundary step: the walked shape crosses itself (GPS jitter), so the boundary is left out of the plot (M09 review P1-1)."
+  },
+  "onboardLocationOff": "இருப்பிடம் இல்லை. இருப்பிடத்தை இயக்கி மீண்டும் அழுத்தவும்.",
+  "@onboardLocationOff": {
+    "description": "Location step: GPS permission refused or location off; the 'In field' button is back for a retry (M09 review P2-3)."
+  },
   "onboardTooFewPoints": "புள்ளிகள் போதவில்லை. முழு எல்லையிலும் நடக்கவும்.",
   "@onboardTooFewPoints": {
     "description": "Shown after Stop when fewer than 3 GPS points were recorded."

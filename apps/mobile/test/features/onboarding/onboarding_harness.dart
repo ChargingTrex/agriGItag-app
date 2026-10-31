@@ -68,7 +68,8 @@ class WizardFixture {
 /// [tester] is the running test; [locale], [size] and [textScale] set the screen; [fieldConfig] maps an entity
 /// (`farmer`, `plot`, `features`) to its FieldConfig JSON value (omitted entities were never pulled); [creator] is
 /// the farmer API (default: no signal); [crops] and [region] store the crops and GI-outline bundles; [pushed] shows
-/// the wizard as a pushed route (route chrome measured by the accessibility sweep). Side effects: changes the test
+/// the wizard as a pushed route (route chrome measured by the accessibility sweep); [gpsSource] replaces the GPS feed
+/// (e.g. `Stream.empty` for location off). Side effects: changes the test
 /// view (reset at tear-down); the database is closed at tear-down. Returns after the draft loaded.
 Future<WizardFixture> pumpWizard(
   WidgetTester tester, {
@@ -80,6 +81,7 @@ Future<WizardFixture> pumpWizard(
   bool crops = true,
   bool region = true,
   bool pushed = false,
+  Stream<LocationFix> Function()? gpsSource,
 }) async {
   tester.view
     ..physicalSize = size
@@ -134,9 +136,9 @@ Future<WizardFixture> pumpWizard(
       voicePlayerProvider.overrideWithValue(player),
       pendingSendCountProvider.overrideWith((ref) => Stream.value(0)),
       fieldOfficerPhoneProvider.overrideWithValue(null),
-      gpsFixProvider.overrideWithValue(GpsFix(source: () => gps.stream)),
+      gpsFixProvider.overrideWithValue(GpsFix(source: gpsSource ?? () => gps.stream)),
       farmerPhotoProvider.overrideWithValue((_) async => fakePhotoPath),
-      farmerCreatorProvider.overrideWithValue(creator ?? (_) async => null),
+      farmerCreatorProvider.overrideWithValue(creator ?? (_, _) async => null),
     ],
   );
   addTearDown(() async {

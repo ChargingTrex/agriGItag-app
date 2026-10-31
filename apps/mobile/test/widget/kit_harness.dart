@@ -56,7 +56,12 @@ class RecordingVoicePlayer extends VoicePlayer {
   RecordingVoicePlayer._(this.played, {required bool failPlayback})
     : super(
         bundle: _FileAssetBundle(),
-        playClip: (path) async => failPlayback ? throw Exception('cannot decode $path') : played.add(path),
+        // The clip "ends" as soon as it starts, so screens waiting for the end (M09 consent) go on at once.
+        playClip: (path, onEnd) async {
+          if (failPlayback) throw Exception('cannot decode $path');
+          played.add(path);
+          onEnd();
+        },
       );
 
   /// Creates a player with an empty [played] list; [failPlayback] makes every clip fail. Returns it; throws

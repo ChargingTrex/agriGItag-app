@@ -123,9 +123,6 @@ class OnboardingDraft {
   /// When the farmer tapped "I agree"; null before.
   DateTime? consentGivenAt;
 
-  /// Language code of the consent clip played (`ta`/`en`), recorded with the consent.
-  String consentLang = 'ta';
-
   /// Local path of the farmer's photo, or null when none was taken.
   String? photoPath;
 
@@ -138,11 +135,20 @@ class OnboardingDraft {
   /// Null until the officer leaves the crop step; false after "No smartphone".
   bool? hasSmartphone;
 
-  /// Farmer id once known: the server id (online) or a phone UUIDv7 (offline, D-005).
-  String? farmerId;
+  /// Farmer id: a phone UUIDv7 minted when the wizard opens and kept across retries (D-005, D-031), replaced by the
+  /// server's id when the online call answers with a different one (before B15 adds `FarmerIn.client_id`).
+  String farmerId = const Uuid().v7();
 
-  /// True when [farmerId] was made on the phone because there was no signal (the farmer is queued offline).
-  bool farmerOffline = false;
+  /// Assist session of this wizard (D-032): minted when the wizard opens, queued once as an `assist_session` entry
+  /// and named in every consent and plot payload, "Another plot" included.
+  final String assistSessionId = const Uuid().v7();
+
+  /// Phone clock when the wizard opened: the assist session's `started_at`.
+  final DateTime startedAt = DateTime.now();
+
+  /// Null until the farmer was created; then true when there was no signal (the farmer is queued as an entry) and
+  /// false when `POST /v1/farmers` answered.
+  bool? farmerOffline;
 
   /// Whether the farmer row and consent are on the phone (only plots are saved after this).
   bool farmerSaved = false;
@@ -195,8 +201,13 @@ class OnboardingDraft {
   /// Declared size in acres. Throws nothing.
   double get declaredAcres => areaUnit == 'cent' ? areaValue / centsPerAcre : areaValue.toDouble();
 
-  /// Walked area in acres, or null with fewer than 3 points. Throws nothing.
-  double? get walkedAcres => walked.length < 3 ? null : geodesicAreaM2(walked) / squareMetresPerAcre;
+  /// Whether the walk has a shape that crosses itself (GPS jitter while standing at Start or Stop): the server
+  /// refuses such a polygon and with it the whole plot, so the boundary is then left out. Throws nothing.
+  bool get walkCrosses => walked.length >= 3 && !ringIsSimple(walked);
+
+  /// Walked area in acres; null with fewer than 3 points or a crossing shape (no boundary is sent then).
+  /// Throws nothing.
+  double? get walkedAcres => walked.length < 3 || walkCrosses ? null : geodesicAreaM2(walked) / squareMetresPerAcre;
 
   /// Steps that apply now, in order. Returns the list; throws nothing.
   List<OnboardingStep> get steps => OnboardingStep.values.where(applies).toList();
@@ -216,7 +227,8 @@ class OnboardingDraft {
     OnboardingStep.boundary => rules.boundaryWalk && rules.enabled('plot', 'walked_boundary'),
     OnboardingStep.water => rules.enabled('plot', 'farming_type') || rules.enabled('plot', 'irrigation_source'),
     OnboardingStep.soil => rules.enabled('plot', 'soil_type'),
-    OnboardingStep.handoff => hasSmartphone == true && phone != null,
+    // The handoff is done once, after the first plot; "Another plot" goes straight back to the summary.
+    OnboardingStep.handoff => hasSmartphone == true && phone != null && plotsSaved <= 1,
   };
 
   /// Whether the officer may leave [s] with Next: every required field of the step is filled.
@@ -300,15 +312,18 @@ class OnboardingDraft {
   }
 }
 
-/// Creates a farmer through `POST /v1/farmers` from a `FarmerIn` JSON map.
+/// Creates a farmer through `POST /v1/farmers` from a `FarmerIn` JSON map; the first argument is the phone's
+/// UUIDv7 for the farmer (`client_id`).
 ///
 /// Returns the server farmer id, or null when there is no signal (the wizard then queues the farmer offline).
 /// Throws [DioException] for an answer from the server (`farmer_phone_taken`, `field_required`, ...).
-typedef FarmerCreator = Future<String?> Function(Map<String, Object?> farmerIn);
+typedef FarmerCreator = Future<String?> Function(String clientId, Map<String, Object?> farmerIn);
 
-/// The REST farmer creation; tests override it (offline: `(_) async => null`).
+/// The REST farmer creation; tests override it (offline: `(_, _) async => null`).
 final farmerCreatorProvider = Provider<FarmerCreator>(
-  (ref) => (farmerIn) async {
+  (ref) => (clientId, farmerIn) async {
+    // TODO(B15): send `clientId` as `FarmerIn.client_id`, so a call that committed but timed out and its queued copy
+    //   are one farmer. Not sent yet: FarmerIn forbids unknown fields until B15 (Architect-Gate ruling 2026-10-31).
     try {
       final response = await ref
           .read(apiClientProvider)
@@ -342,12 +357,22 @@ final onboardingGiRegionProvider = FutureProvider.autoDispose<GiRegion?>(
   (ref) => BundleRepository(ref.read(appDatabaseProvider).refBundlesDao).giRegion(),
 );
 
-/// Entry types the wizard writes; the sync engine maps `plot` and `consent` straight to the push kinds of the same
-/// name (B06) and must turn `farmer` into `POST /v1/farmers` (see [OnboardingNotifier.save]).
+/// Entry types the wizard writes; the sync engine maps each straight to the push kind of the same name (B06 `plot`,
+/// `consent`; B15 `farmer`, `assist_session`, D-031/D-032).
 const plotEntryType = 'plot', consentEntryType = 'consent', farmerEntryType = 'farmer';
+
+/// Entry type of the wizard's assist session (D-032: `data` = AssistStartIn without `client_id`).
+const assistSessionEntryType = 'assist_session';
+
+/// Payload key carrying the assist session on consent and plot entries; M02 lifts it onto the push entry (D-032).
+const assistSessionKey = 'assist_session_id';
 
 /// Version of the recorded consent text (identity `ConsentIn.consent_version`), suffixed with the clip language.
 const consentTextVersion = 'v1';
+
+/// Language of the consent clip: always Tamil (UserFlows §Onboarding step 2 "a short recorded message in Tamil"),
+/// whatever the officer's screen language; the speaker replays it.
+const consentClipLang = 'ta';
 
 /// The wizard: one draft, the step machine and the save.
 ///
@@ -403,13 +428,9 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
     d.step = steps[max(steps.indexOf(d.step) - 1, 0)];
   });
 
-  /// Records the farmer's "I agree" at [now] for the clip played in [lang], and moves on. Throws [StateError]
-  /// before the draft is loaded.
-  void agree(DateTime now, String lang) {
-    edit((d) {
-      d.consentGivenAt = now;
-      d.consentLang = lang;
-    });
+  /// Records the farmer's "I agree" at [now] and moves on. Throws [StateError] before the draft is loaded.
+  void agree(DateTime now) {
+    edit((d) => d.consentGivenAt = now);
     next();
   }
 
@@ -424,9 +445,11 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
   /// Saves the draft when the officer leaves the crop step: the farmer (first plot only) and the plot.
   ///
   /// [hasSmartphone] is false after "No smartphone" and true after "Farmer's phone"; it is ignored for later
-  /// plots. First plot: the farmer goes to `POST /v1/farmers` when online (server id), else gets a UUIDv7 and an
-  /// offline `farmer` entry; then, in one transaction, the local Farmers row, that entry, the `consent` entry and
-  /// the `plot` entry are written and queued (EntriesDao.save). A server refusal (e.g. `farmer_phone_taken`) or a
+  /// plots. First plot: the farmer gets a UUIDv7 and goes to `POST /v1/farmers` when online, else becomes an
+  /// offline `farmer` entry with that id; then, in one transaction and in this order, the local Farmers row, that
+  /// entry, the `assist_session` entry, the `consent` entry and the `plot` entry are written and queued
+  /// (EntriesDao.save; consent and plot carry `assist_session_id`, D-032). Later plots write only a `plot` entry with
+  /// the same session. A server refusal (e.g. `farmer_phone_taken`) or a
   /// database failure keeps the draft and sets [OnboardingDraft.error] so the officer can fix it and tap again.
   /// Returns when done; throws [StateError] before the draft is loaded. Side effects: network call, Drift writes,
   /// outbox rows, then moves to the handoff or the summary.
@@ -442,7 +465,7 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
       final db = ref.read(appDatabaseProvider);
       final officer = await db.sessionDao.read();
       if (officer == null) throw StateError('signed out');
-      if (d.farmerId == null) await _createFarmer(d);
+      if (d.farmerOffline == null) await _createFarmer(d);
       final now = DateTime.now();
       await db.transaction(() async {
         if (!d.farmerSaved) {
@@ -450,7 +473,7 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
               .into(db.farmers)
               .insert(
                 FarmersCompanion.insert(
-                  farmerId: d.farmerId!,
+                  farmerId: d.farmerId,
                   fpoId: officer.fpoId,
                   name: d.name.trim(),
                   // shortcut: no village picker in the 9 binding steps; the admin sets it on approval (FR53).
@@ -462,10 +485,27 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
                   json: jsonEncode({if (d.phone != null) 'phone': d.phone}),
                 ),
               );
-          // TODO(M02): the push has no `farmer` kind. Send this entry as POST /v1/farmers before this farmer's other
-          //   entries and substitute the returned id for `farmer_id` when building their push bodies (the payload
-          //   is append-only). Cleaner fix: a `client_id` on FarmerIn (D-005), see TODO.md.
-          if (d.farmerOffline) await _saveEntry(db, d, officer.userId, farmerEntryType, d.farmerIn(), now, now);
+          // TODO(M02): send this entry as push kind `farmer` (B15), ahead of this farmer's consent and plot entries.
+          //   Its entry id is the farmer id, so the server stores the same id (Architect-Gate ruling 2026-10-31).
+          if (d.farmerOffline!) {
+            await _saveEntry(db, d, officer.userId, farmerEntryType, d.farmerIn(), now, now, id: d.farmerId);
+          }
+          // D-032: the session goes right after the farmer and before the entries that name it; queued online too.
+          final gps = d.pin;
+          await _saveEntry(
+            db,
+            d,
+            officer.userId,
+            assistSessionEntryType,
+            {
+              'farmer_id': d.farmerId,
+              'started_at': d.startedAt.toUtc().toIso8601String(),
+              if (gps != null) 'started_gps': {'lat': gps.lat, 'lon': gps.lng, 'accuracy_m': gps.accuracyM},
+            },
+            d.startedAt,
+            now,
+            id: d.assistSessionId,
+          );
           await _saveEntry(
             db,
             d,
@@ -474,10 +514,12 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
             {
               'farmer_id': d.farmerId,
               'consent_type': 'data_collection',
-              'consent_version': '$consentTextVersion-${d.consentLang}',
-              // The clip played is bundled in the app; the server records the officer as witness from the token.
-              'recording_ref': 'assets/audio/${d.consentLang}/onboardConsentMessage.ogg',
+              'consent_version': '$consentTextVersion-$consentClipLang',
+              // The clip played is bundled in the app (asset path, not an object key: TODO.md M09 follow-ups).
+              // Witness: the officer of the assist session named below (D-032); not the bare token.
+              'recording_ref': 'assets/audio/$consentClipLang/onboardConsentMessage.ogg',
               'given_at': d.consentGivenAt!.toUtc().toIso8601String(),
+              assistSessionKey: d.assistSessionId,
             },
             d.consentGivenAt!,
             now,
@@ -489,7 +531,7 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
           d,
           officer.userId,
           plotEntryType,
-          d.plotIn(d.farmerId!),
+          {...d.plotIn(d.farmerId), assistSessionKey: d.assistSessionId},
           d.pinClocks!.deviceTime,
           now,
           id: plotId,
@@ -513,17 +555,20 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
     }
   }
 
-  /// Creates the farmer of [d] through [farmerCreatorProvider] and stores its id in the draft.
+  /// Creates the farmer of [d] through [farmerCreatorProvider], online when there is signal.
   ///
-  /// Without signal the id is a UUIDv7 made here and [OnboardingDraft.farmerOffline] is set. Returns when done.
-  /// Throws [DioException] when the server refused the farmer. Side effect: network call; sets
-  /// [OnboardingDraft.farmerId] so a retry after a later failure never creates the farmer twice.
+  /// The farmer's UUIDv7 was minted when the wizard opened and is kept in the draft, so every retry and the queued offline copy
+  /// carry the same id. Sets [OnboardingDraft.farmerOffline] (true without signal). Returns when done. Throws
+  /// [DioException] when the server refused the farmer (the draft keeps the id for the retry). Side effect: network
+  /// call.
   Future<void> _createFarmer(OnboardingDraft d) async {
-    final serverId = await ref.read(farmerCreatorProvider)(d.farmerIn());
-    // DECISION D-005: offline, the farmer id is a phone UUIDv7, so the consent and plot entries can name it at once.
-    //   ADV: the whole onboarding works with no signal and is queued in order.
-    //   COMPROMISE: FarmerIn has no client_id yet, so the sync engine must map this id to the server's (TODO(M02)).
-    d.farmerId = serverId ?? const Uuid().v7();
+    // DECISION D-005: the farmer id is a phone UUIDv7 minted when the wizard opens (D-031), so the consent and plot entries
+    //   can name it offline and a retried or queued create is the same farmer.
+    //   ADV: the whole onboarding works with no signal and is queued in order; no id mapping (with B15's client_id).
+    //   COMPROMISE: until B15 accepts `client_id`, an online create gets a server id instead, and a call that
+    //   committed but lost its answer can still produce a second farmer from the queued copy (TODO(B15) above).
+    final serverId = await ref.read(farmerCreatorProvider)(d.farmerId, d.farmerIn());
+    if (serverId != null) d.farmerId = serverId;
     d.farmerOffline = serverId == null;
   }
 
@@ -554,7 +599,7 @@ class OnboardingNotifier extends AsyncNotifier<OnboardingDraft> {
         version: 1,
         entryType: type,
         plotId: Value(type == plotEntryType ? entryId : null),
-        farmerId: d.farmerId!,
+        farmerId: d.farmerId,
         instanceNo: 1,
         payloadJson: jsonEncode(payload),
         deviceTime: deviceTime,

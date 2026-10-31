@@ -2,7 +2,7 @@
 //   step's spoken prompt, the step body) and the Next button the steps share.
 // Requirement: UserFlows §Onboarding a farmer (the officer drives the screens; the farmer listens, agrees and stands
 //   in the field), §Design rules (one job per screen, voice before words, big targets, works with no signal),
-//   mobile-design.md §4 Officer O03a-i, PLAN §7.2 M09; officer-only controls >= 48 dp, farmer taps >= 56 dp.
+//   mobile-design.md §4 Officer O03a-i, PLAN §7.2 M09; every control >= 56 dp (farmer taps, and officer-only controls held to the same size).
 // Callers: app_router.dart (/officer/onboard); test/features/onboarding/*.
 
 import 'package:flutter/material.dart';

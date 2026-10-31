@@ -18,6 +18,7 @@ import '../../core/refdata/models/reference.dart' show LonLat;
 import '../../core/theme/farmer_tokens.dart';
 import '../../core/voice/voice_player.dart';
 import '../../core/widgets/farmer_button.dart';
+import '../../core/widgets/voice_prompt_bar.dart';
 import 'boundary_area.dart';
 import 'onboarding_notifier.dart';
 import 'onboarding_wizard.dart';
@@ -44,7 +45,9 @@ class _BoundaryStepState extends ConsumerState<BoundaryStep> {
 
   /// Clears earlier points and records every new fix as a boundary point. Side effect: GPS on. Throws nothing.
   ///
-  /// shortcut: every fix is kept, with no accuracy filter or thinning; Q01 tunes this on real walks.
+  /// shortcut: every fix is kept, with no accuracy filter or thinning; a walk whose shape crosses itself (GPS jitter
+  ///   while standing at Start or Stop) is not repaired: the boundary is left out of the plot (pin and size are kept)
+  ///   and the officer is asked to walk again. Q01 tunes thinning on real walks.
   void _startWalking() {
     final notifier = ref.read(onboardingProvider.notifier);
     notifier.edit((d) => d.walked = []);
@@ -95,7 +98,10 @@ class _BoundaryStepState extends ConsumerState<BoundaryStep> {
           onPressed: _startWalking,
           onSpeak: () => playPrompt(ref, context, d.walked.isEmpty ? 'onboardStartWalking' : 'onboardWalkAgain'),
         ),
-        if (d.walked.isNotEmpty && walked == null) Text(l10n.onboardTooFewPoints, style: theme.textTheme.titleMedium),
+        if (d.walkCrosses)
+          VoicePromptBar(promptId: 'onboardBoundaryCrosses', text: l10n.onboardBoundaryCrosses)
+        else if (d.walked.isNotEmpty && walked == null)
+          Text(l10n.onboardTooFewPoints, style: theme.textTheme.titleMedium),
         if (walked != null) ...[
           Text(l10n.onboardDeclared(acres(d.declaredAcres)), style: theme.textTheme.titleLarge),
           Text(l10n.onboardWalked(acres(walked)), style: theme.textTheme.titleLarge),

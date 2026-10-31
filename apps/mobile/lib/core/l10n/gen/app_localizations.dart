@@ -538,6 +538,18 @@ abstract class AppLocalizations {
   /// **'நடந்த பரப்பும் சொன்ன அளவும் 20 %-க்கு மேல் வேறுபடுகின்றன. அலுவலகம் சரிபார்க்கும்.'**
   String get onboardAreaMismatch;
 
+  /// Boundary step: the walked shape crosses itself (GPS jitter), so the boundary is left out of the plot (M09 review P1-1).
+  ///
+  /// In ta, this message translates to:
+  /// **'வடிவம் தன்னைத்தானே வெட்டுகிறது, அதனால் சேமிக்கப்படாது. மீண்டும் நடக்கவும் அல்லது அடுத்து அழுத்தவும்.'**
+  String get onboardBoundaryCrosses;
+
+  /// Location step: GPS permission refused or location off; the 'In field' button is back for a retry (M09 review P2-3).
+  ///
+  /// In ta, this message translates to:
+  /// **'இருப்பிடம் இல்லை. இருப்பிடத்தை இயக்கி மீண்டும் அழுத்தவும்.'**
+  String get onboardLocationOff;
+
   /// Shown after Stop when fewer than 3 GPS points were recorded.
   ///
   /// In ta, this message translates to:

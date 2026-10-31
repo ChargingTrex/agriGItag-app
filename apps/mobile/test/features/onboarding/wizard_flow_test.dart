@@ -7,9 +7,11 @@
 
 import 'dart:math';
 
+import 'package:agritrace/core/capture/gps_fix.dart' show LocationFix;
 import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/features/onboarding_farmer/onboarding_notifier.dart';
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -60,7 +62,8 @@ void main() {
     }
     await _tap(tester, 'a start', button('Next'));
     // Step 2: the consent clip plays by itself; the farmer taps "I agree".
-    expect(f.player.played, contains('assets/audio/en/onboardConsentMessage.ogg'));
+    // The consent clip plays in Tamil on an English screen (UserFlows step 2); "I agree" waited for its end.
+    expect(f.player.played, contains('assets/audio/ta/onboardConsentMessage.ogg'));
     await _tap(tester, 'b consent', button('I agree'));
     // Step 3: photo, name (the only text box), language.
     expect(enabled(tester, 'Next'), isFalse, reason: 'name is core: Next waits for it');
@@ -101,10 +104,11 @@ void main() {
     await _tap(tester, 'h crop', button("Farmer's phone"));
     // Step 9: QR with the number only, voice tour.
     expect(f.draft.step, OnboardingStep.handoff);
+    expect(find.byKey(const ValueKey('agritrace://auth?phone=%2B919876543210')), findsOneWidget);
     await _tap(tester, 'i handoff', button('Voice tour'));
     expect(f.player.played.last, 'assets/audio/en/onboardTour.ogg');
     await _tap(tester, 'i handoff', button('Next'));
-    expect(find.text('Murugan: 1 fields saved'), findsOneWidget);
+    expect(find.text('Murugan: 1 field saved'), findsOneWidget);
 
     final farmers = await f.db.select(f.db.farmers).get();
     expect(farmers, hasLength(1));
@@ -112,8 +116,9 @@ void main() {
     expect(farmers.single.language, 'ta');
     expect(farmers.single.photoPath, fakePhotoPath);
     final entries = await savedEntries(f.db);
-    expect(entries.keys, unorderedEquals(['farmer', 'consent', 'plot']));
+    expect(entries.keys, unorderedEquals(['farmer', 'assist_session', 'consent', 'plot']));
     final farmerId = farmers.single.farmerId;
+    expect(entries['farmer']!.single.entryId, farmerId, reason: 'D-031: the farmer entry id is the farmer id');
     expect(entries.values.expand((e) => e).every((e) => e.farmerId == farmerId && e.assistMode), isTrue);
     expect(payloadOf(entries['farmer']!.single), {
       'name': 'Murugan',
@@ -123,8 +128,15 @@ void main() {
     });
     final consent = payloadOf(entries['consent']!.single);
     expect(consent['consent_type'], 'data_collection');
-    expect(consent['consent_version'], 'v1-en');
+    expect(consent['consent_version'], 'v1-ta');
     expect(consent['farmer_id'], farmerId);
+    // D-032: one assist session, named by the consent and the plot.
+    final session = entries['assist_session']!.single;
+    expect(payloadOf(session)['farmer_id'], farmerId);
+    expect(payloadOf(session)['started_gps'], {'lat': insideGi.lat, 'lon': insideGi.lng, 'accuracy_m': 12.0});
+    expect(consent['assist_session_id'], session.entryId);
+    expect(payloadOf(entries['plot']!.single)['assist_session_id'], session.entryId);
+    expect(payloadOf(entries['farmer']!.single).containsKey('assist_session_id'), isFalse);
     final plot = entries['plot']!.single;
     expect(plot.plotId, plot.entryId, reason: 'D-005: the entry id is the plot client_id');
     expect((plot.lat, plot.accuracyM, plot.locationStatus), (insideGi.lat, 12.0, LocationStatus.ok));
@@ -140,9 +152,14 @@ void main() {
       (data['farming_type'], data['irrigation_source'], data['soil_type'], data['gi_tag_id']),
       ('irrigated', 'borewell', 'red', 'gi-883'),
     );
-    final outbox = await f.db.select(f.db.outbox).get();
+    final outbox = await (f.db.select(f.db.outbox)..orderBy([(o) => OrderingTerm(expression: o.seq)])).get();
     expect(outbox.map((o) => o.kind).toSet(), {OutboxKind.entry});
-    expect(outbox.map((o) => o.refId).toSet(), entries.values.expand((e) => e).map((e) => e.entryId).toSet());
+    final typeOf = {for (final e in entries.values.expand((e) => e)) e.entryId: e.entryType};
+    expect(
+      [for (final o in outbox) typeOf[o.refId]],
+      ['farmer', 'assist_session', 'consent', 'plot'],
+      reason: 'D-032 order: farmer (offline) -> assist_session -> the entries that name it',
+    );
 
     debugPrint('M09 taps per step: $_taps');
   });
@@ -236,8 +253,8 @@ void main() {
     final sent = <Map<String, Object?>>[];
     final f = await pumpWizard(
       tester,
-      creator: (body) async {
-        sent.add(body);
+      creator: (clientId, body) async {
+        sent.add({...body, 'minted': clientId});
         return 'srv-farmer-1';
       },
     );
@@ -245,8 +262,11 @@ void main() {
     await tester.pumpAndSettle();
     await tapOn(tester, button("Farmer's phone"));
     expect(sent.single['phone'], '+919876543210');
+    expect(sent.single.containsKey('client_id'), isFalse, reason: 'TODO(B15): FarmerIn forbids it until B15');
+    expect(sent.single['minted'], isNotNull, reason: 'D-031: the id is minted before the online try');
     final entries = await savedEntries(f.db);
-    expect(entries.keys, unorderedEquals(['consent', 'plot']));
+    expect(entries.keys, unorderedEquals(['assist_session', 'consent', 'plot']));
+    expect(payloadOf(entries['assist_session']!.single)['farmer_id'], 'srv-farmer-1');
     expect(payloadOf(entries['plot']!.single)['farmer_id'], 'srv-farmer-1');
     expect((await f.db.select(f.db.farmers).getSingle()).farmerId, 'srv-farmer-1');
   });
@@ -254,7 +274,7 @@ void main() {
   testWidgets('a server refusal keeps the draft, says why and writes nothing', (tester) async {
     final f = await pumpWizard(
       tester,
-      creator: (_) async => throw DioException(
+      creator: (_, _) async => throw DioException(
         requestOptions: RequestOptions(path: '/v1/farmers'),
         response: Response(
           requestOptions: RequestOptions(path: '/v1/farmers'),
@@ -296,8 +316,66 @@ void main() {
     expect(entries['plot'], hasLength(2));
     expect(entries['farmer'], hasLength(1));
     expect(entries['consent'], hasLength(1));
+    expect(entries['assist_session'], hasLength(1));
     final second = entries['plot']!.firstWhere((e) => e.locationStatus == LocationStatus.lowAccuracy);
     expect(payloadOf(second)['declared_area'], {'value': 50, 'unit': 'cent'});
+    expect(payloadOf(second)['assist_session_id'], entries['assist_session']!.single.entryId, reason: 'same session');
+  });
+
+  testWidgets('after "Farmer\'s phone", a second plot goes to the summary, not to the handoff again', (tester) async {
+    final f = await pumpWizard(tester);
+    _fillToCrop(f);
+    await tester.pumpAndSettle();
+    await tapOn(tester, button("Farmer's phone"));
+    expect(f.draft.step, OnboardingStep.handoff);
+    await tapOn(tester, button('Next'));
+    await tapOn(tester, button('Another plot'));
+    f.notifier.savePin(fixAt(insideGi.lat, insideGi.lng, 9), lowAccuracy: false);
+    f.notifier.edit((d) => d.step = OnboardingStep.crop);
+    await tester.pumpAndSettle();
+    await tapOn(tester, button('Save'));
+    expect(f.draft.step, OnboardingStep.summary);
+  });
+
+  testWidgets('a walk whose shape crosses itself is left out: pin and size are kept, "Walk again" is offered', (
+    tester,
+  ) async {
+    final f = await pumpWizard(tester);
+    _fillToCrop(f);
+    f.notifier.edit((d) => d.step = OnboardingStep.boundary);
+    await tester.pumpAndSettle();
+    await tapOn(tester, button('Start walking'));
+    // A figure 8: two loops joined where the path crosses itself.
+    const m = 1 / 111320.0;
+    for (final (dx, dy) in [(0, 0), (60, 60), (120, 0), (120, 60), (60, 0), (0, 60)]) {
+      f.gps.add(fixAt(insideGi.lat + dy * m, insideGi.lng + dx * m, 5));
+      await tester.pump();
+    }
+    await tapOn(tester, button('Stop'));
+    expect(find.textContaining('crosses itself'), findsOneWidget);
+    expect(button('Walk again'), findsOneWidget);
+    expect(f.player.played.last, 'assets/audio/en/onboardBoundaryCrosses.ogg');
+    expect(f.draft.walkedAcres, isNull);
+    f.notifier.edit((d) => d.step = OnboardingStep.crop);
+    await tester.pumpAndSettle();
+    await tapOn(tester, button('No smartphone'));
+    final data = payloadOf((await savedEntries(f.db))['plot']!.single);
+    expect(data.containsKey('walked_boundary'), isFalse);
+    expect(data['pin'], isNotNull);
+    expect(data['declared_area'], {'value': 1, 'unit': 'acre'});
+  });
+
+  testWidgets('location off or refused: the GPS stream ends, "In field" comes back with "Turn on location"', (
+    tester,
+  ) async {
+    // What GpsFix yields when permission is refused or location is off: a stream that ends with no fix.
+    final f = await pumpWizard(tester, gpsSource: () => const Stream<LocationFix>.empty());
+    f.notifier.edit((d) => d.step = OnboardingStep.location);
+    await tester.pumpAndSettle();
+    await tapOn(tester, button('In field'));
+    expect(button('In field'), findsOneWidget);
+    expect(find.text('No location. Turn on location and tap again.'), findsOneWidget);
+    expect(f.player.played.last, 'assets/audio/en/onboardLocationOff.ogg');
   });
 
   testWidgets('back from "Another plot" returns to the summary, never to the saved steps', (tester) async {

@@ -257,6 +257,13 @@ class AppLocalizationsTa extends AppLocalizations {
   String get onboardAreaMismatch => 'நடந்த பரப்பும் சொன்ன அளவும் 20 %-க்கு மேல் வேறுபடுகின்றன. அலுவலகம் சரிபார்க்கும்.';
 
   @override
+  String get onboardBoundaryCrosses =>
+      'வடிவம் தன்னைத்தானே வெட்டுகிறது, அதனால் சேமிக்கப்படாது. மீண்டும் நடக்கவும் அல்லது அடுத்து அழுத்தவும்.';
+
+  @override
+  String get onboardLocationOff => 'இருப்பிடம் இல்லை. இருப்பிடத்தை இயக்கி மீண்டும் அழுத்தவும்.';
+
+  @override
   String get onboardTooFewPoints => 'புள்ளிகள் போதவில்லை. முழு எல்லையிலும் நடக்கவும்.';
 
   @override

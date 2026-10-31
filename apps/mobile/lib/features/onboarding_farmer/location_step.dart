@@ -2,7 +2,8 @@
 //   saves by itself once it is green (<= 20 m). After 60 s a weak fix can be saved anyway. No map, no typing.
 // Requirement: UserFlows §Onboarding a farmer step 4, §When things go wrong (Weak GPS: filling circle, "Save
 //   anyway" after 60 s, saved with its accuracy and flagged), FR64 (live-GPS pin with accuracy, time and device),
-//   Arch §Offline-first "Three clocks" (Clocks.stamp in OnboardingNotifier.savePin).
+//   Arch §Offline-first "Three clocks" (Clocks.stamp in OnboardingNotifier.savePin); location off or refused ->
+//   "Turn on location and tap again" with the button back (M09 review P2-3).
 // Callers: onboarding_wizard.dart (OnboardingStep.location).
 
 import 'dart:async';
@@ -17,6 +18,7 @@ import '../../core/theme/farmer_tokens.dart';
 import '../../core/voice/voice_player.dart';
 import '../../core/widgets/farmer_button.dart';
 import '../../core/widgets/gps_ring.dart';
+import '../../core/widgets/voice_prompt_bar.dart';
 import 'onboarding_notifier.dart';
 import 'onboarding_wizard.dart';
 
@@ -35,6 +37,9 @@ class _LocationStepState extends ConsumerState<LocationStep> {
   LocationFix? _latest, _best;
   bool _noFix = false;
 
+  /// True after the GPS stream ended with no fix (permission refused or location off): "In field" comes back.
+  bool _off = false;
+
   /// Stops listening to the GPS. Throws nothing.
   @override
   void dispose() {
@@ -43,14 +48,32 @@ class _LocationStepState extends ConsumerState<LocationStep> {
   }
 
   /// Starts listening to fixes; the first one at or below 20 m is saved as the pin. Side effect: GPS on.
-  /// Throws nothing (provider errors end the stream; the ring then offers "Save anyway").
+  /// Throws nothing: a stream that ends or fails before any fix (permission refused, location off) brings back the
+  /// "In field" button with "Turn on location"; after a fix, the ring offers "Save anyway" as usual.
   void _start() {
-    _sub = ref.read(gpsFixProvider).fixes().listen((fix) {
-      if (_best == null || fix.accuracyM < _best!.accuracyM) _best = fix;
-      setState(() => _latest = fix);
-      if (fix.accuracyM <= kGpsGoodAccuracyM) _save(fix, lowAccuracy: false);
-    }, onError: (Object _) {});
-    setState(() {});
+    _sub = ref
+        .read(gpsFixProvider)
+        .fixes()
+        .listen(
+          (fix) {
+            if (_best == null || fix.accuracyM < _best!.accuracyM) _best = fix;
+            setState(() => _latest = fix);
+            if (fix.accuracyM <= kGpsGoodAccuracyM) _save(fix, lowAccuracy: false);
+          },
+          onError: (Object _) => _ended(),
+          onDone: _ended,
+        );
+    setState(() => _off = _noFix = false);
+  }
+
+  /// Handles the end of the GPS stream: with no fix at all, stops waiting and shows the retry. Throws nothing.
+  void _ended() {
+    if (!mounted || _best != null) return;
+    _sub?.cancel();
+    setState(() {
+      _sub = null;
+      _off = true;
+    });
   }
 
   /// Saves [fix] as the pin and stops the GPS; [lowAccuracy] marks "Save anyway". Throws nothing.
@@ -84,13 +107,16 @@ class _LocationStepState extends ConsumerState<LocationStep> {
       ]);
     }
     if (_sub == null) {
-      return FarmerButton(
-        icon: Icons.my_location,
-        label: l10n.onboardInField,
-        onPressed: _start,
-        onSpeak: () => playPrompt(ref, context, 'onboardInField'),
-        prominent: true,
-      );
+      return stepColumn(context, [
+        if (_off) VoicePromptBar(promptId: 'onboardLocationOff', text: l10n.onboardLocationOff),
+        FarmerButton(
+          icon: Icons.my_location,
+          label: l10n.onboardInField,
+          onPressed: _start,
+          onSpeak: () => playPrompt(ref, context, 'onboardInField'),
+          prominent: true,
+        ),
+      ]);
     }
     return stepColumn(context, [
       GpsRing(

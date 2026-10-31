@@ -36,6 +36,8 @@ class HandoffStep extends ConsumerWidget {
     return stepColumn(context, [
       Center(
         child: QrImageView(
+          // Keyed by its content so a test can assert that the code holds the number only (SEC, CLAUDE.md §6).
+          key: ValueKey(signInLink(phone)),
           data: signInLink(phone),
           size: 220,
           backgroundColor: Colors.white,

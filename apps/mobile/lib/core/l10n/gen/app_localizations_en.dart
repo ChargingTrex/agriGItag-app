@@ -258,6 +258,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'The walked area and the declared size differ by more than 20 %. The office will check it.';
 
   @override
+  String get onboardBoundaryCrosses => 'The shape crosses itself, so it will not be saved. Walk again or tap Next.';
+
+  @override
+  String get onboardLocationOff => 'No location. Turn on location and tap again.';
+
+  @override
   String get onboardTooFewPoints => 'Too few points. Walk the whole edge.';
 
   @override
@@ -344,7 +350,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String onboardSummary(String name, int count) {
-    return '$name: $count fields saved';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fields saved',
+      one: '1 field saved',
+    );
+    return '$name: $_temp0';
   }
 
   @override
