@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 19 % (11/59 items)
+Completion: 20 % (12/59 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
