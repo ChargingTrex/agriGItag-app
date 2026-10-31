@@ -5,7 +5,8 @@
  * Serves: FR68/FR70 (a hold keeps the lot out of GI batches until an FPO admin clears it), FR61 (evidence
  * photos), Dataflow "Review & flags", plan §7.3 P02 acceptance "review held lot → cleared → tickable in P03".
  * Called by: src/AppRoutes.tsx (`/lots/:lotId`); `useLotHold`, `LotHoldState` and `EvidencePhotos` also by
- * FlagPage.tsx (and P03 later). Flags of lots link here through `SubjectLink`.
+ * FlagPage.tsx; `useLotHold` by src/features/batches/ReadyLotsPage.tsx (hold hint per lot row). Flags of lots
+ * link here through `SubjectLink`.
  */
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';

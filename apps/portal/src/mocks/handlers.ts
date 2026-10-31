@@ -2,15 +2,17 @@
  * MSW request handlers: a mock of the API for tests, `npm run dev:mock` and the Playwright mock-mode specs.
  * Serves: plan §7.3 P00 (MSW from spec; login passes with MSW), P01 (identity + registry handlers for the
  * Members screens, Stage 0 approval) and P02 (flags list/detail/resolve, lot events with evidence photos,
- * farmer plots, plot correction; FR70, Dataflow "Review & flags"). Called by: src/mocks/browser.ts,
+ * farmer plots, plot correction; FR70, Dataflow "Review & flags") and P03 (lots, batch create with shares and
+ * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60). Called by: src/mocks/browser.ts,
  * src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`, `resetMockData`).
  *
  * Every body is typed with the generated `components` schemas, so a contract change breaks
- * `npm run typecheck` here. State (farmers, processors, plots, flags, the session's roles, the refresh
- * "cookie") is module-level and reset by `resetMockData` after each test.
+ * `npm run typecheck` here. State (farmers, processors, plots, flags, lots, batches, features, the session's
+ * user and roles, the refresh "cookie") is module-level and reset by `resetMockData` after each test.
  */
 import { http, HttpResponse } from 'msw';
 import type { components } from '../api/generated/schema';
+import { splitShares, toGrams } from '../features/batches/batchModel';
 
 type Schemas = components['schemas'];
 type Health = Schemas['Health'];
@@ -25,6 +27,9 @@ type PinRequiredOut = Schemas['PinRequiredOut'];
 type FlagOut = Schemas['FlagOut'];
 type EventOut = Schemas['EventOut'];
 type Role = Schemas['Role'];
+type LotOut = Schemas['LotOut'];
+type BatchOut = Schemas['BatchOut'];
+type BatchIn = Schemas['BatchIn'];
 
 /** The SMS code the mock accepts. */
 export const MOCK_OTP = '123456';
@@ -62,6 +67,14 @@ export const MOCK_PENDING_FARMER_ID = farmerId(1);
 export const MOCK_ACTIVE_FARMER_ID = farmerId(10);
 /** Farmers in the seed: 2 pending, 1 suspended, the rest active. More than one page of 50. */
 export const MOCK_FARMER_COUNT = 57;
+/** User id of the signed-in office user (`GET /v1/me`); tests switch it to act as a second admin. */
+export const MOCK_USER_ID = 'a0000000-0000-7000-8000-000000000001';
+/** The PRD §12 reference lots, received, GI eligible: 100, 200 and 20 kg. */
+export const MOCK_REF_LOT_IDS = [lotId(1), lotId(2), lotId(3)] as const;
+/** A received lot whose plot is outside the GI region (B09 reason on the lot). */
+export const MOCK_OUT_OF_GI_LOT_ID = lotId(4);
+/** A lot that is ready for sale but has no intake yet. */
+export const MOCK_WAITING_LOT_ID = lotId(5);
 
 /** Mutable mock state. `signedIn` stands in for the httpOnly refresh cookie. */
 export const mockState = {
@@ -72,6 +85,11 @@ export const mockState = {
   processors: [] as ProcessorOut[],
   plots: seedPlots(),
   flags: seedFlags(),
+  lots: seedLots(),
+  batches: [] as BatchOut[],
+  userId: MOCK_USER_ID,
+  /** `GET /v1/config/features`; tests lower `second_signoff_threshold_kg`. */
+  features: seedFeatures(),
 };
 
 /** Restores the seed state (called after every test). */
@@ -82,6 +100,84 @@ export function resetMockData(): void {
   mockState.processors = [];
   mockState.plots = seedPlots();
   mockState.flags = seedFlags();
+  mockState.lots = seedLots();
+  mockState.batches = [];
+  mockState.userId = MOCK_USER_ID;
+  mockState.features = seedFeatures();
+}
+
+/**
+ * A deterministic lot UUID.
+ * @param n Sequence number, 1 upwards.
+ * @returns The UUID.
+ */
+function lotId(n: number): string {
+  return `10000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+}
+
+/**
+ * The FPO's feature flags as `features.yaml` ships them.
+ * @returns A `Features` body.
+ */
+function seedFeatures(): Schemas['Features'] {
+  return {
+    boundary_walk: true,
+    farmer_pin_login: false,
+    grading_loss_warn_pct: 40,
+    id_document_capture: false,
+    otp_daily_cap: 10,
+    producer_groups: false,
+    second_signoff_threshold_kg: 5000,
+    sync_push_max_bytes: 1048576,
+    sync_push_max_entries: 500,
+    wifi_only_photos_default: true,
+  };
+}
+
+/**
+ * Builds the seed lots: the reference trio, the held lot (MOCK_LOT_ID), an out-of-GI lot and one without
+ * intake.
+ * @returns Six lots of MOCK_FPO_ID.
+ */
+function seedLots(): LotOut[] {
+  /**
+   * One lot.
+   * @param id Lot id.
+   * @param n Farmer sequence number.
+   * @param kg Packed kg.
+   * @param extra Overrides.
+   * @returns The lot.
+   */
+  const lot = (id: string, n: number, kg: string, extra: Partial<LotOut> = {}): LotOut => ({
+    id,
+    code: `VSV-${String(n).padStart(4, '0')}-L1`,
+    crop_id: '3d2c1b0a-9f8e-4d7c-8b6a-5f4e3d2c1b0a',
+    farmer_id: farmerId(n),
+    plot_id: MOCK_PLOT_ID,
+    season_label: '2026',
+    status: 'received',
+    harvested: { value: kg, unit: 'kg' },
+    packed: { value: kg, unit: 'kg' },
+    ready_at: '2026-02-14T06:00:00Z',
+    gi_eligible: true,
+    gi_hold_reason: null,
+    ...extra,
+  });
+  return [
+    lot(MOCK_REF_LOT_IDS[0], 1, '100'),
+    lot(MOCK_REF_LOT_IDS[1], 4, '200'),
+    lot(MOCK_REF_LOT_IDS[2], 5, '20'),
+    lot(MOCK_LOT_ID, 10, '272.6', {
+      code: 'VSV-0010-L2',
+      gi_eligible: false,
+      gi_hold_reason: 'flags: yield_over_ceiling',
+    }),
+    lot(MOCK_OUT_OF_GI_LOT_ID, 6, '50', {
+      gi_eligible: false,
+      gi_hold_reason: 'plot outside the GI region',
+    }),
+    lot(MOCK_WAITING_LOT_ID, 7, '80', { status: 'ready_for_sale' }),
+  ];
 }
 
 /**
@@ -561,6 +657,108 @@ export const handlers = [
   http.get('/v1/processors', ({ request }) =>
     authed(request) ? HttpResponse.json(mockState.processors) : fail(401, 'unauthorized'),
   ),
+  // Lots and batches (B09 contract).
+  http.get('/v1/lots', ({ request }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const status = new URL(request.url).searchParams.get('status');
+    const items = mockState.lots.filter((lot) => !status || lot.status === status);
+    return HttpResponse.json({ items, next_cursor: null, has_more: false });
+  }),
+  http.get('/v1/config/features', () => HttpResponse.json(mockState.features)),
+  http.get('/v1/me', ({ request }) =>
+    authed(request)
+      ? HttpResponse.json<Schemas['MeOut']>({
+          user: {
+            id: mockState.userId,
+            is_super_admin: false,
+            lang: 'en',
+            name: 'Office user',
+            name_local: null,
+            phone: '+919000000000',
+          },
+          memberships: mockState.roles.map((role) => ({ fpo_id: MOCK_FPO_ID, role })),
+          device: null,
+        })
+      : fail(401, 'unauthorized'),
+  ),
+  // Idempotent on `client_id` (200 with the stored batch); refuses with one `gate_not_met` listing every
+  // reason (D-033); shares from the lots' kg with the server's rounding; GI re-check from `gi_eligible`.
+  http.post('/v1/batches', async ({ request }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const input = (await body(request)) as unknown as BatchIn;
+    const stored = mockState.batches.find((b) => b.id === input.client_id);
+    if (stored) return HttpResponse.json(stored);
+    if (!mockState.processors.some((p) => p.id === input.processor_id)) {
+      return fail(404, 'not_found', { processor_id: input.processor_id });
+    }
+    const lots = input.lot_ids.map((id) => mockState.lots.find((lot) => lot.id === id));
+    if (lots.some((lot) => !lot)) return fail(404, 'not_found', { lot_ids: input.lot_ids });
+    const chosen = lots as LotOut[];
+    const reasons = chosen
+      .filter((lot) => lot.status !== 'received')
+      .map((lot) => ({
+        code: 'lot_not_received',
+        message: 'The lot has no intake yet or is already batched.',
+        lot_id: lot.id,
+      }));
+    if (reasons.length > 0) return fail(409, 'gate_not_met', { reasons });
+    const grams = chosen.map((lot) => [lot.id, toGrams(lot.packed?.value ?? 0)] as const);
+    const pct = splitShares(grams);
+    const total = grams.reduce((sum, [, g]) => sum + g, 0);
+    const blocked = chosen.filter((lot) => !lot.gi_eligible);
+    const batch: BatchOut = {
+      id: input.client_id,
+      code: `FGP${String(mockState.batches.length + 1).padStart(9, '0')}`,
+      superlot_code: null,
+      crop_id: chosen[0]?.crop_id ?? '',
+      processor_id: input.processor_id,
+      created_by: mockState.userId,
+      status: 'created',
+      current_build_no: 0,
+      gi_label_requested: input.gi_label_requested,
+      gi_verified: input.gi_label_requested && blocked.length === 0,
+      gi_block_reasons: input.gi_label_requested
+        ? blocked.map((lot) => ({
+            reason: 'lot_on_hold',
+            lot_id: lot.id,
+            detail: lot.gi_hold_reason,
+          }))
+        : [],
+      second_signoff_required: total > toGrams(mockState.features.second_signoff_threshold_kg),
+      second_signoff_by: null,
+      total_received: { value: String(total / 1000), unit: 'kg' },
+      shares: chosen.map((lot, i) => ({
+        lot_id: lot.id,
+        farmer_id: lot.farmer_id,
+        contributed: { value: String((grams[i]?.[1] ?? 0) / 1000), unit: 'kg' },
+        share_pct: pct.get(lot.id) ?? '0.000',
+      })),
+    };
+    mockState.batches.push(batch);
+    for (const lot of chosen) lot.status = 'batched';
+    return HttpResponse.json(batch, { status: 201 });
+  }),
+  http.get('/v1/batches/:batchId', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const batch = mockState.batches.find((b) => b.id === params['batchId']);
+    return batch ? HttpResponse.json(batch) : fail(404, 'not_found');
+  }),
+  http.post('/v1/batches/:batchId/second-signoff', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const batch = mockState.batches.find((b) => b.id === params['batchId']);
+    if (!batch) return fail(404, 'not_found');
+    if (batch.second_signoff_by === null && batch.created_by === mockState.userId) {
+      return fail(409, 'gate_not_met', {
+        reasons: [
+          { code: 'same_approver', message: 'The second sign-off must come from another admin.' },
+        ],
+      });
+    }
+    batch.second_signoff_by ??= mockState.userId;
+    return HttpResponse.json(batch);
+  }),
   http.post('/v1/processors', async ({ request }) => {
     if (!authed(request)) return fail(401, 'unauthorized');
     const input = (await body(request)) as unknown as ProcessorIn;
