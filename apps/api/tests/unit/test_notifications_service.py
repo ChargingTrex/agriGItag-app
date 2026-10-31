@@ -235,8 +235,41 @@ def test_failure_log_masks_task_arguments(caplog: pytest.LogCaptureFixture) -> N
 
     with caplog.at_level(logging.INFO):
         boom.apply(kwargs={"payload": {"code": OTP}})
-    failures = [r for r in caplog.records if r.name == "celery.app.trace"]
-    assert failures, "Celery logged no failure line"
+        # The worker's "received" line (celery.worker.strategy) logs the same context shape; no worker runs
+        # here, so emit it the way strategy.py does.
+        context = {"id": "t1", "name": "tests.boom", "args": "()", "kwargs": repr({"payload": {"code": OTP}})}
+        logging.getLogger("celery.worker.strategy").info(
+            "Task %(name)s[%(id)s] received", context, extra={"data": context}
+        )
+    records = [r for r in caplog.records if r.name in ("celery.app.trace", "celery.worker.strategy")]
+    assert {r.name for r in records} == {"celery.app.trace", "celery.worker.strategy"}
     assert OTP not in caplog.text
-    for record in failures:
+    for record in records:
         assert record.data["kwargs"] == MASKED and record.data["args"] == MASKED  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize("sms_provider", [None, "console"])
+def test_prod_refuses_missing_or_console_sms_provider(sms_provider: str | None) -> None:
+    """ENV=prod does not start without a real SMS gateway (review B04-r1 P2-1).
+
+    Args:
+        sms_provider: the refused value.
+    """
+    from pydantic import ValidationError
+
+    from agritrace.core.config import Settings
+
+    secret = "x" * 32
+    with pytest.raises(ValidationError, match="requires a real SMS_PROVIDER"):
+        Settings(_env_file=None, env="prod", jwt_secret=secret, sms_provider=sms_provider)
+    assert Settings(_env_file=None, env="dev", jwt_secret=secret, sms_provider=sms_provider)
+
+
+def test_sms_provider_typo_fails_at_start_up() -> None:
+    """A misspelt SMS_PROVIDER is a validation error, not a silent `provider_not_configured` (B04-r1 P3-1)."""
+    from pydantic import ValidationError
+
+    from agritrace.core.config import Settings
+
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, jwt_secret="x" * 32, sms_provider="Console")

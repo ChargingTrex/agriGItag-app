@@ -53,10 +53,11 @@ class Settings(BaseSettings):
     otp_daily_cap: int = Field(
         10, ge=1, description="Most OTP codes one phone may request in any 24 hours (SMS cost and guessing)."
     )
-    sms_provider: str | None = Field(
+    # TODO(provider): add the real gateway's name to this Literal; until then ENV=prod cannot start.
+    sms_provider: Literal["console"] | None = Field(
         None,
-        description="SMS gateway: `console` logs messages (dev); unset or any other value fails every SMS "
-        "with `provider_not_configured` until a real gateway is wired (TODO(provider)).",
+        description="SMS gateway: `console` logs messages without sending (dev); unset fails every SMS with "
+        "`provider_not_configured`. ENV=prod refuses both (no real gateway yet).",
     )
     sms_sender_id: str | None = Field(
         None, description="DLT-registered 6-letter SMS sender id (header), used by the real SMS gateway."
@@ -83,10 +84,15 @@ class Settings(BaseSettings):
             The validated settings, unchanged.
 
         Raises:
-            ValueError: `ENV=prod` with a `JWT_SECRET` shorter than 32 bytes or with `OTP_DEV_CODE` set.
+            ValueError: `ENV=prod` with a `JWT_SECRET` shorter than 32 bytes, with `OTP_DEV_CODE` set, or
+                without a real SMS gateway (`SMS_PROVIDER` unset or `console`: OTPs would never arrive).
         """
-        if self.env == "prod" and (len(self.jwt_secret.encode()) < 32 or self.otp_dev_code):
+        if self.env != "prod":
+            return self
+        if len(self.jwt_secret.encode()) < 32 or self.otp_dev_code:
             raise ValueError("ENV=prod requires JWT_SECRET of at least 32 bytes and no OTP_DEV_CODE")
+        if self.sms_provider in (None, "console"):
+            raise ValueError("ENV=prod requires a real SMS_PROVIDER (unset or `console` sends no OTP SMS)")
         return self
 
 
