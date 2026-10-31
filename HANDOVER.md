@@ -1,4 +1,4 @@
-# Handover — AgriTrace build, end of day 2026-10-31 (18:30 IST, refreshed while three agents still run)
+# Handover — AgriTrace build, end of day 2026-10-31 (18:50 IST; user stopped the day with three workers mid-flight)
 
 Written for: whoever resumes the multi-agent build (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §5 and the "Architect-Gate queue" / decision-ledger lines.
 
@@ -17,13 +17,15 @@ Written for: whoever resumes the multi-agent build (human or the Orchestrator se
 ### Merged to `main` today (2026-10-31), in order
 B07, B08, B09, B10, B11, B15, B16 (backend); M02, M07, M08, M09, M10 (+ follow-up), M11, M12 (mobile); P02, P03, P04, P06, P08 (portal); W03 (public page); B12 (seed, e2e, `make clients`). Plus the three Architect-Gate rulings batches (D-030–D-032, D-040–D-043) and D-033–D-053 from workers.
 
-### In flight at hand-over (worktrees under `.claude/worktrees/`)
+### In flight at hand-over (worktrees under `.claude/worktrees/`; each worker was told at 18:45 to commit a WIP and stop)
 
-| WP | Agent state | Next step |
+| WP | Branch / state at 18:48 | Tomorrow |
 |---|---|---|
-| P05 labels PDF + CSV exports | worker done @ `e263801`; WEB reviewer running | on PASS: micro-patch if any → Orchestrator confirm → merge (expect `AppRoutes.tsx`/`navigation.ts` conflicts with P06: resolve by hand, never "keep both" in code) |
-| P07 Playwright chain + axe | worker running | review → merge; the live chain is the Verifier's (`make up && make seed && cd apps/portal && E2E_LIVE=1 npm run e2e`) |
-| M13 hardening & release | worker running (size, cold start, low-storage purge, WorkManager proof, D-029 user-switch clearing, rejected-packing ready fix, schema v3) | MOB review → merge; then the mobile tree is complete |
+| P05 labels PDF + CSV exports | `worktree-agent-a0f7bf849398faf5a` @ `7b898f8` (main merged in; 11 uncommitted files = the micro-patch in progress). Review `docs/agents/reviews/P05-r1.md`: PASS, 1 P2 (derived `packed_share` column must be labelled derived + recorded `harvested`/`farm_packed` columns; D-051 wording) + P3s (disable lots CSV until names load, BOM on the audit CSV, spaced phone pattern in the privacy test, Tamil whole-file test, FR9 header, long comments) | `git log`/`git status` in the worktree; if the WIP commit exists, resume the worker with "finish the P05 micro-patch" (agent id in `docs/agents/reports/P05.md` is not stored: spawn a fresh worker if the session is new); on completion Orchestrator confirms the P2 and merges (`AppRoutes.tsx` conflict with P06 by hand) |
+| P07 Playwright chain + axe | `worktree-agent-af029d14158299b86` @ `820a080` (no commit yet; 16 uncommitted files = specs, config, CI step). No report yet | if a WIP commit landed, read `docs/agents/reports/P07.md` "State at close"; resume/respawn the worker to finish: mock-mode chain twice with durations, axe per page, CI step; then WEB review → merge; live chain = Verifier (`make up && make seed && cd apps/portal && E2E_LIVE=1 npm run e2e`) |
+| M13 hardening & release | `worktree-agent-a94b72ad04155d510` @ `eb0e23b` (no commit yet; 31 uncommitted files). Brief: APK/AAB size + shrinking, deferred imports for officer/QC, low-storage purge, WorkManager registration test, min-version sheet, D-029 user-switch clearing of pulled rows, rejected-packing `ready_for_sale` fix, Drift v3 dropping Session token columns, unawaited-future error handlers | same: check for the WIP commit and `docs/agents/reports/M13.md`; resume/respawn to finish; MOB review → merge; then the mobile tree is complete and Q01 can start once an AVD and the stack exist |
+
+If a worktree shows uncommitted files and no WIP commit tomorrow, the agent died before committing: inspect `git diff` there, keep what is coherent as a WIP commit yourself, then respawn with the acceptance file and that diff as the starting point.
 
 ## 2. Blockers only a human can clear (do these first)
 
