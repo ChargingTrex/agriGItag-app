@@ -14,6 +14,49 @@ client authors. Source of truth for shared types: apps/api/agritrace/core/schema
   kept in `packages/openapi/previous/` and `oasdiff` fails CI on a breaking change.
 - Clients must ignore response fields they do not know.
 
+## Authentication (D-024, D-022)
+
+- **Sign-in.** `POST /v1/auth/otp/request {phone}` (E.164) → 204, the same for unknown numbers. A second
+  request for the phone within 60 s, or more than `OTP_DAILY_CAP` (default 10) in 24 hours, → 429
+  `rate_limited` with `details.retry_after_s`. `POST /v1/auth/otp/verify {phone, code,
+  device_id, platform, app_version?}` → `oneOf` discriminated by `kind`:
+  - farmers: `{kind: "session", access_token, refresh_token, expires_in: 900, roles, fpo_id}`;
+  - office roles (field_officer, qc_officer, fpo_admin, viewer) and every super-admin:
+    `{kind: "pin_required", pin_token, expires_in: 300, pin_set}`. No refresh token, role or FPO id before
+    the PIN.
+  Wrong code `otp_invalid` (422), expired `otp_expired` (422), the 5th wrong code and after `otp_locked`
+  (409). Never a bare 401 for a wrong code. A `device_id` that is signed in for another user → 409
+  `device_in_use` (sign out on that device first).
+- **PIN.** `POST /v1/auth/pin/verify {pin}` with `Authorization: Bearer <pin_token>` → session. When
+  `pin_set` was false this first PIN becomes the user's PIN. Wrong PIN `pin_invalid` (422, with
+  `details.attempts_left`); the 5th wrong PIN and the next 5 minutes `pin_locked` (409, with
+  `details.locked_until`). `POST /v1/auth/pin {pin, current_pin}` (session, office roles) changes it;
+  `current_pin` is required once a PIN is set and shares the same lockout. A pin token is spent once its
+  sign-in succeeds.
+- **Calls.** Send `Authorization: Bearer <access_token>` (15 minutes). A `pin_token` is never accepted as
+  an access token. The token's device must still be signed in, and the token must be issued after the
+  device's latest sign-in, otherwise 401 `unauthorized`. Optional
+  headers: `X-Assist-Session: <assist session id>` (field officer entering data for a farmer; an unknown,
+  foreign or ended session → 403 `assist_session_invalid`) and `X-Request-Id` (≤ 64 chars, copied to audit
+  rows). The device comes from the token; `X-Device-Id` is not read.
+- **Refresh.** `POST /v1/auth/refresh {refresh_token}` → a new session; the presented token is rotated
+  out. Presenting the token rotated out last signs the device out: 401 `refresh_reused`. Any other unknown
+  token is a plain 401 `unauthorized`. Clients must never
+  run two refreshes at once. `POST /v1/auth/logout` signs the device out (its refresh token → 401).
+- **Web (portal).** Send `X-Client: web` on verify, PIN verify and refresh. The refresh token then arrives
+  only as the httpOnly, Secure, SameSite=Strict cookie `agritrace_refresh` (path `/v1/auth`,
+  browser-session lifetime) and `refresh_token` in the body is null; call refresh with an empty body. A
+  refresh token read from the cookie is always answered through the cookie, whatever `X-Client` says.
+  Mobile keeps the body token.
+- **Differences from the P00 portal skeleton** (P01 adapts the portal): verify also needs `device_id`
+  (a UUID kept in `localStorage`) and `platform: "web"`; the PIN step uses `pin_token`, not
+  `access_token`; office responses carry `pin_set`; the session body has a null `refresh_token` on web;
+  `POST /v1/auth/otp/request` answers 204 with no body (P00's mock returned `expires_in_s`).
+- `GET /v1/me` returns the user, every membership `{fpo_id, role}` and the session's device. Device ids
+  appear in no other response (consent records do not carry them). Assist
+  sessions: `POST /v1/assist/start {client_id, farmer_id, started_at?, started_gps?}` (field officer,
+  idempotent by `client_id`) and `POST /v1/assist/end {assist_session_id}`.
+
 ## Error envelope
 
 Every error response, whatever the status, has this body:

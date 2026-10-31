@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       4G brief acceptance under simulated network profiles (plan §13, BM-11..BM-16).
+Documentation       4G brief acceptance under simulated network profiles (plan §13, BM-11..BM-15; BM-16 lives in qa/robot/public/page.robot).
 ...                 Drives the emulator console through qa/scripts/network.sh with profiles from qa/robot/profiles.yaml
 ...                 (simulator defaults, not field readings). Serves: FR-4, FR-19; gate G3. Run by: Q01 Verifier.
 ...                 Placeholders are tagged not-ready and skip until M02 / W01 merge.
@@ -48,6 +48,3 @@ BM-15 Same Push Replayed 5 Times Leaves One Record
     [Tags]    WP-B06    WP-Q01    BM-15    FR-4    not-ready
     Not Ready    B06
 
-BM-16 Public Page On Normal 4G Is Under 100 KB With LCP Under 2.5 s
-    [Tags]    WP-W01    WP-Q03    BM-16    FR-19    not-ready
-    Not Ready    W01

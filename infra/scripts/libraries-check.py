@@ -25,6 +25,7 @@ MANIFESTS = (
     "apps/public-page/pyproject.toml",
     "apps/mobile/pubspec.yaml",
     "apps/portal/package.json",
+    "apps/public-page/package.json",
     "qa/robot/requirements.txt",
 )
 # DECISION D-018: GPL, AGPL and LGPL are rejected for linked libraries, together with the other copyleft

@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 15 % (9/59 items)
+Completion: 19 % (11/59 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -12,7 +12,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] CHECKLIST.md, CHANGELOG.md, TODO.md, docs/LIBRARIES.md
 - [x] docs/agents: roles, checkpoint protocol, QA rubric, acceptance files
 - [x] CodeGraph initialised (`codegraph init .`) — 2026-10-29, re-run `codegraph sync` after every merge
-- [ ] Ponytail plugin installed for this project (user runs `/plugin install ponytail@ponytail`)
+- [x] Ponytail plugin installed for this project (user reloaded plugins 2026-10-30; reviewers run `/ponytail-review` from here on)
 
 ## G0 Foundation
 
@@ -30,15 +30,15 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G2 Core backend
 
-- [ ] B02 — Identity — wave 2 — worker: — reviewer: — verifier:
-- [ ] B03 — Registry + PostGIS geo — wave 2 — worker: — reviewer: — verifier:
+- [ ] B02 — Identity — wave 2 — worker: Opus (2 rounds) — reviewer: SEC FAIL r1 / PASS-PENDING-STACK r2 — verifier: PENDING (merged conditionally; integration tests deferred)
+- [ ] B03 — Registry + PostGIS geo — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; PostGIS tests deferred)
 - [ ] B04 — Notifications — wave 2 — worker: — reviewer: — verifier:
-- [ ] B05 — Quality + grade engine — wave 2 — worker: — reviewer: — verifier:
-- [ ] M01 — Drift store + DAOs + migrations + schema test — wave 2 — worker: — reviewer: — verifier:
+- [ ] B05 — Quality + grade engine — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
+- [x] M01 — Drift store + DAOs + migrations + schema test — wave 2 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 + r2 confirm — verifier: Orchestrator-run db suite PASS; Go-AVD timing → Q01
 - [ ] M04 — Capture kit: camera (no gallery), compress to long edge 1600 px at JPEG q≈80 stepping down — wave 2 — worker: — reviewer: — verifier:
 - [ ] M05 — Farmer widget kit: FarmerButton, PictureCardGrid, BigStepper, NumberPad, StatusBadge, Voic — wave 2 — worker: — reviewer: — verifier:
 - [ ] M06 — Auth & session: OTP auto-read, device binding, PIN for officer/QC, role routing, restore o — wave 2 — worker: — reviewer: — verifier:
-- [ ] W02 — `privacy_lint.py` (canary strings + regexes for phone/Aadhaar/survey/polygon/coordinate pr — wave 2 — worker: — reviewer: — verifier:
+- [ ] W02 — `privacy_lint.py` (canary strings + regexes for phone/Aadhaar/survey/polygon/coordinate pr — wave 2 — worker: Opus — reviewer: WEB PASS r1 (executed acceptance) — verifier: PENDING (merged conditionally)
 - [ ] B06 — Events + sync push + evidence — wave 3 — worker: — reviewer: — verifier:
 - [ ] B13 — Config-driven fields/features + masters + bulk import (from the gap analysis) — wave 3 — worker: — reviewer: — verifier:
 - [ ] M02 — Sync engine (outbox, triggers incl. reachability probe, timeouts 10 s/30 s, retry only on  — wave 3 — worker: — reviewer: — verifier:

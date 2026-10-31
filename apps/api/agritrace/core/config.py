@@ -1,7 +1,9 @@
 """Process settings read from environment variables (and `apps/api/.env` when present).
 
-Serves: Arch §Backend services (twelve-factor config), D-008 (bucket names), D-009 (Redis broker URL).
-Callers: `core.db`, `core.storage`, `agritrace.main`, `agritrace.worker`, `alembic/env.py`, tests.
+Serves: Arch §Backend services (twelve-factor config), D-008 (bucket names), D-009 (Redis broker URL),
+D-024 (JWT secret, OTP dev code and daily cap).
+Callers: `core.db`, `core.storage`, `core.auth`, identity service (B02), `agritrace.main`, `agritrace.worker`,
+`alembic/env.py`, tests.
 Every variable is documented in `apps/api/.env.example`.
 """
 
@@ -46,6 +48,10 @@ class Settings(BaseSettings):
     jwt_secret: str = Field(description="HMAC secret for access tokens; required, at least 32 bytes in prod.")
     otp_dev_code: str | None = Field(
         None, description="Fixed OTP for testers outside prod (no SMS); off when unset; refused in prod."
+    )
+
+    otp_daily_cap: int = Field(
+        10, ge=1, description="Most OTP codes one phone may request in any 24 hours (SMS cost and guessing)."
     )
 
     @field_validator("otp_dev_code")

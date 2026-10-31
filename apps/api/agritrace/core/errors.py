@@ -129,6 +129,65 @@ class AppendOnlyViolationError(AppError):
     fix = "Submit a correction as a new version instead of editing the old one."
 
 
+# --- registry (B03): onboarding, plots, GI regions ------------------------------------------------------
+
+
+class ClientIdConflictError(AppError):
+    """A client-generated id (D-005) is already used by another user, FPO or a different record."""
+
+    code, status, message_key = "client_id_conflict", 409, "error.client_id_conflict"
+    message = "This id is already used by another record."
+    fix = "Generate a new UUID on the device for the new record and send it again."
+
+
+class PlotLockedError(AppError):
+    """A plot's location is set once at onboarding; only an FPO admin correction may change it (FR71)."""
+
+    code, status, message_key = "plot_locked", 409, "error.plot_locked"
+    message = "The plot location is locked after onboarding."
+    fix = "Ask the FPO admin to correct the plot with a reason (POST /v1/plots/{id}/correct)."
+
+
+class ReasonRequiredError(AppError):
+    """A correction was sent without the coded reason it must carry (FR71, FR25)."""
+
+    code, status, message_key = "reason_required", 422, "error.reason_required"
+    message = "A reason is required for this correction."
+    fix = "Pick a reason code (and add a note if useful), then send the correction again."
+
+
+class InvalidGeometryError(AppError):
+    """A GeoJSON geometry is malformed, self-intersecting, empty or outside WGS84 ranges."""
+
+    code, status, message_key = "invalid_geometry", 422, "error.invalid_geometry"
+    message = "The shape is not a valid outline."
+    fix = "Send a closed, non-self-intersecting outline in WGS84 [lon, lat]; `details` names the problem."
+
+
+class GiRegionMissingError(AppError):
+    """The GI tag has no effective region version yet, so locations cannot be checked against it (FR27)."""
+
+    code, status, message_key = "gi_region_missing", 404, "error.gi_region_missing"
+    message = "No GI region is loaded for this GI tag yet."
+    fix = "A super-admin uploads a region version (POST /v1/gi-tags/{id}/region-versions)."
+
+
+class FarmerNotPendingError(AppError):
+    """Only a pending farmer can be approved (Stage 0)."""
+
+    code, status, message_key = "farmer_not_pending", 409, "error.farmer_not_pending"
+    message = "This farmer is not waiting for approval."
+    fix = "Reload the farmer; it may already be active or suspended."
+
+
+class FarmerPhoneTakenError(AppError):
+    """Another farmer of the same FPO already uses this phone (Architect-Gate F7: one home per phone)."""
+
+    code, status, message_key = "farmer_phone_taken", 409, "error.farmer_phone_taken"
+    message = "Another farmer in this FPO already has this phone number."
+    fix = "Open the existing farmer instead, or check the number with the farmer."
+
+
 class RateLimitedError(AppError):
     """Too many requests from this caller."""
 
@@ -159,6 +218,154 @@ class NotImplementedPilotError(AppError):
     code, status, message_key = "not_implemented_pilot", 501, "error.not_implemented_pilot"
     message = "This feature is not available in the pilot."
     fix = "No client action; the feature is planned after the pilot."
+
+
+
+# Quality readings and grading (B05; PRD §6.8 FR47–FR50). Plausibility codes equal the grade engine's
+# `Violation.code` values, so the phone preview (D-006) shows the same reason.
+
+
+class ImplausibleValueError(AppError):
+    """A reading lies outside the parameter's physically plausible range (FR50)."""
+
+    code, status, message_key = "implausible_value", 422, "error.implausible_value"
+    message = "The value is outside the plausible range for this parameter."
+    fix = "Re-measure and enter the value shown by the instrument; `details` gives the allowed range."
+
+
+class UnitMismatchError(AppError):
+    """A reading's unit differs from the unit its Standards Profile parameter uses (FR42, FR58)."""
+
+    code, status, message_key = "unit_mismatch", 422, "error.unit_mismatch"
+    message = "The unit does not match the standards profile."
+    fix = "Send the value in the unit named in `details` (convert it on the device if needed)."
+
+
+class UnknownParameterError(AppError):
+    """A reading names a parameter the crop's Standards Profile does not define (FR46)."""
+
+    code, status, message_key = "unknown_parameter", 422, "error.unknown_parameter"
+    message = "This parameter is not part of the crop's standards profile."
+    fix = "Refresh the standards bundle and pick a parameter from the current profile."
+
+
+class SourceNotAllowedError(AppError):
+    """The measurement source (lab, instrument, visual) is not accepted for this parameter (FR44)."""
+
+    code, status, message_key = "source_not_allowed", 422, "error.source_not_allowed"
+    message = "This measurement source is not accepted for this parameter."
+    fix = "Measure with one of the sources listed in `details` (e.g. a calibrated instrument or a lab)."
+
+
+class InstrumentCalibrationExpiredError(AppError):
+    """The instrument was past its calibration due date (or has none) when the reading was taken (FR50)."""
+
+    code, status, message_key = "instrument_calibration_expired", 422, "error.instrument_calibration_expired"
+    message = "The instrument's calibration has expired."
+    fix = "Recalibrate the instrument and update its calibration dates, or use another calibrated instrument."
+
+
+class MoistureTrailViolationError(AppError):
+    """A later-stage reading rose above the earlier stage beyond the tolerance, without a reason (FR50)."""
+
+    code, status, message_key = "moisture_trail_violation", 422, "error.moisture_trail_violation"
+    message = "The value rose since the previous stage."
+    fix = "Re-measure, or send the reading again with a `reason_code` (it is then accepted and flagged)."
+
+
+class UnknownGradeForProfileError(AppError):
+    """The declared grade is not in the Standards Profile applied (FR49), e.g. "A" for AGMARK chilli."""
+
+    code, status, message_key = "unknown_grade_for_profile", 422, "error.unknown_grade_for_profile"
+    message = "This grade does not exist in the standards profile."
+    fix = "Declare one of the grades listed in `details`."
+
+
+class NoPublishedProfileError(AppError):
+    """The crop has no published Standards Profile, so readings cannot be checked or graded (FR47)."""
+
+    code, status, message_key = "no_published_profile", 422, "error.no_published_profile"
+    message = "The crop has no published standards profile."
+    fix = "Ask the compliance team (super-admin) to publish a standards profile for the crop."
+
+
+class ProfileIncompleteNotAllowedError(AppError):
+    """Publishing a profile version whose grading parameters still say load_from_standard (FR47, D-015)."""
+
+    code, status, message_key = "profile_incomplete_not_allowed", 422, "error.profile_incomplete_not_allowed"
+    message = "Some grading parameters have no limits yet (load_from_standard)."
+    fix = "Enter the limits from the standard, or publish with `allow_incomplete: true` (public note shown)."
+# Identity (B02, FR1, D-024). Wrong codes and PINs get their own codes, never a bare 401 (P00 contract).
+class OtpInvalidError(AppError):
+    """The one-time code is wrong, or the phone cannot sign in (indistinguishable on purpose)."""
+
+    code, status, message_key = "otp_invalid", 422, "error.otp_invalid"
+    message = "The code is not correct."
+    fix = "Re-enter the 6-digit code from the SMS; after 5 wrong tries request a new code."
+
+
+class OtpExpiredError(AppError):
+    """The one-time code is older than its 5-minute lifetime."""
+
+    code, status, message_key = "otp_expired", 422, "error.otp_expired"
+    message = "The code has expired."
+    fix = "Request a new code (`POST /v1/auth/otp/request`) and enter it within 5 minutes."
+
+
+class OtpLockedError(AppError):
+    """Five wrong codes were entered for the current challenge."""
+
+    code, status, message_key = "otp_locked", 409, "error.otp_locked"
+    message = "Too many wrong codes."
+    fix = "Request a new code after 60 seconds; the locked code can no longer be used."
+
+
+class PinInvalidError(AppError):
+    """The office PIN is wrong."""
+
+    code, status, message_key = "pin_invalid", 422, "error.pin_invalid"
+    message = "The PIN is not correct."
+    fix = "Re-enter your 4-digit PIN; 5 wrong tries lock it for 5 minutes."
+
+
+class PinLockedError(AppError):
+    """Five wrong PINs were entered; the PIN is locked for 5 minutes."""
+
+    code, status, message_key = "pin_locked", 409, "error.pin_locked"
+    message = "Too many wrong PINs; try again in 5 minutes."
+    fix = "Wait until `details.locked_until`, then sign in again with a new OTP."
+
+
+class RefreshReusedError(AppError):
+    """A refresh token that was already rotated was presented again; the device is signed out."""
+
+    code, status, message_key = "refresh_reused", 401, "error.refresh_reused"
+    message = "This sign-in was used elsewhere and has been closed."
+    fix = "Sign in again with an OTP; make sure the app sends only one refresh at a time."
+
+
+class AssistSessionInvalidError(AppError):
+    """`X-Assist-Session` names a session that is not the caller's or is already closed."""
+
+    code, status, message_key = "assist_session_invalid", 403, "error.assist_session_invalid"
+    message = "The assist session is not open for you."
+    fix = "Start a new assist session (`POST /v1/assist/start`) and send its id in `X-Assist-Session`."
+
+
+class DeviceInUseError(AppError):
+    """The device id is signed in for another user; it must sign out before someone else signs in on it."""
+
+    code, status, message_key = "device_in_use", 409, "error.device_in_use"
+    message = "This device is signed in for another user."
+    fix = "Sign out on this device first (`POST /v1/auth/logout`), then sign in again."
+
+
+class ConsentConflictError(AppError):
+    """A consent `client_id` already exists with different content or for another farmer (D-005)."""
+
+    code, status, message_key = "consent_conflict", 409, "error.consent_conflict"
+    message = "A different consent was already saved with this id."
+    fix = "Generate a new client_id for a new consent; resend the same body only to retry."
 
 
 def _envelope(

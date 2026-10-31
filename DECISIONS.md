@@ -23,8 +23,12 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-016 | Tamil and English voice and icons bundled in the app; everything else as downloadable bundles | 2026-10-29 | Accepted | [D-016.md](docs/adr/D-016.md) |
 | D-017 | YAML-driven field and feature configuration with per-tenant overrides | 2026-10-29 | Accepted | [D-017.md](docs/adr/D-017.md) |
 | D-018 | Library-first implementation with a dependency ledger | 2026-10-29 | Accepted | [D-018.md](docs/adr/D-018.md) |
-| D-019 | GI region derived from open administrative boundaries with recorded provenance | 2026-10-29 | Accepted | [D-019.md](docs/adr/D-019.md) |
+| D-019 | GI region derived from open administrative boundaries (geoBoundaries ODbL, amended) with recorded provenance | 2026-10-29 | Accepted | [D-019.md](docs/adr/D-019.md) |
 | D-020 | API versioning under /v1 with one-season backward compatibility | 2026-10-29 | Accepted | [D-020.md](docs/adr/D-020.md) |
 | D-021 | Valkey instead of Redis for broker and cache | 2026-10-29 | Accepted | [D-021.md](docs/adr/D-021.md) |
 | D-022 | Portal and API served from one origin | 2026-10-29 | Accepted | [D-022.md](docs/adr/D-022.md) |
 | D-023 | Enum columns as VARCHAR(32) + CHECK, not PostgreSQL ENUM | 2026-10-29 | Accepted | [D-023.md](docs/adr/D-023.md) |
+| D-025 | BM-03 "3G" means Lighthouse's built-in 3G preset | 2026-10-30 | Accepted | [D-025.md](docs/adr/D-025.md) |
+| D-024 | Phone + OTP + PIN session model | 2026-10-29 | Accepted | [D-024.md](docs/adr/D-024.md) |
+| D-026 | Drift stores dates as ISO-8601 text with ms precision | 2026-10-30 | Accepted | [D-026.md](docs/adr/D-026.md) |
+| D-027 | Tokens live in the platform keystore, not in SQLite | 2026-10-30 | Accepted | [D-027.md](docs/adr/D-027.md) |

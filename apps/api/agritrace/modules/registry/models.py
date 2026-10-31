@@ -243,8 +243,11 @@ class Crop(IdTimestamps, Base):
     active: Mapped[bool] = mapped_column(default=True, comment="False hides the crop from new lots.")
 
 
-class GiRegionVersion(IdTimestamps, Base):
-    """One version of a GI tag's production area with its provenance; super-admin only (FR27, FR31, FR32)."""
+class GiRegionVersion(Audited, IdTimestamps, Base):
+    """One version of a GI tag's production area with its provenance; super-admin only (FR27, FR31, FR32).
+
+    Audited: a region is a legal fact (FR31), so every upload is in `audit_log` with its uploader.
+    """
 
     __tablename__ = "gi_region_versions"
     __table_args__ = (UniqueConstraint("gi_tag_id", "version_no"),)

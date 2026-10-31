@@ -53,7 +53,12 @@ NEUTRAL = re.compile(
 
 NUM = r"-?\d{1,3}\.\d+"
 PRECISE = r"-?\d{1,3}\.\d{4,}"
-SEP = r"\s*(?:,|%2C)\s*"
+# A pair is split by a comma (also URL-encoded), whitespace, `+` or %20 (`GPS 9.5598061 78.1335214`,
+# `?q=9.5598061+78.1335214`).
+SEP = r"(?:\s*(?:,|%2C)\s*|\s+|\+|%20)"
+# Degree sign and arc-minute mark, also as entities, because Jinja autoescape writes ' as &#39;.
+DEG = r"(?:°|º|&deg;|&#0*176;|&#x0*b0;)"
+MINUTE = r"(?:'|′|’|&#0*39;|&#x0*27;|&apos;|&prime;|&rsquo;)"
 # A label word is only a leak signal in context (W01-1: "Mobile-first" in a CSS comment is not data):
 # as a JSON key, inside <th>/<dt>/<label>, or followed by the number it labels. Land-record labels
 # (survey/patta/chitta, S.F./Sy. No.) take a number right after them, because survey numbers are
@@ -103,11 +108,18 @@ NOT_CONTENT = re.compile(
     r"(<(style|script)\b[^>]*>).*?(?=</\2\s*>)|/\*.*?\*/|(?<![:\"'\w])//[^\n]*", re.IGNORECASE | re.DOTALL
 )
 TEXT_RULES = {
-    # More than 3 decimal places (~110 m) pinpoints a farm: lat/lng pairs (also URL-encoded %2C and
-    # across lines), lat/lng keys or parameters, and WKT geometries.
+    # More than 3 decimal places (~110 m) pinpoints a farm. In order: lat/lng pairs (comma, %2C, space,
+    # across lines); `zoom/lat/lon` map hashes (OSM `#map=17/9.559806/78.133521`, MapLibre `#17/…`);
+    # lat/lng keys or parameters with any prefix (OSM `mlat=`/`mlon=`, `pin_lat`; Q00-1, hence no \b);
+    # a whole-word label then a number (`lat 9.536271`); decimal degrees with a degree sign; DMS with
+    # seconds or decimal minutes (1" is ~30 m); WKT geometries.
     "coordinate_precision": re.compile(
         rf"(?<![\w.])(?:{PRECISE}{SEP}{NUM}|{NUM}{SEP}{PRECISE})(?!\d)"
-        rf"|\b(?:lat|lng|lon)\w*[\"']?\s*[:=]\s*[\"']?{PRECISE}"
+        rf"|(?<![\w.])\d{{1,2}}(?:\.\d+)?/(?:{PRECISE}/{NUM}|{NUM}/{PRECISE})(?!\d)"
+        rf"|(?:lat|lng|lon)\w*[\"']?\s*[:=]\s*[\"']?{PRECISE}"
+        rf"|\b(?:lat|latitude|lng|lon|longitude)\b\.?\s+{PRECISE}"
+        rf"|{PRECISE}\s*{DEG}"
+        rf"|\d{{1,3}}\s*{DEG}\s*\d{{1,2}}(?:\s*{MINUTE}\s*\d{{1,2}}|\.\d{{2,}})"
         rf"|\b(?:MULTI)?(?:POINT|LINESTRING|POLYGON)\s*Z?\s*\(+[^)]*?{PRECISE}",
         re.IGNORECASE,
     ),

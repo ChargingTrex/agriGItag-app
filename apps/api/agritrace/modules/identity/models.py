@@ -3,7 +3,9 @@
 Serves: FR1 (OTP sign-in), FR14 (roles), FR24 (tenant scoping), FR25 (audit trail), FR41 (consent),
 CLAUDE.md §6 (assist mode recorded), Dataflow Stage 0 (onboarding) and Stage 11 (audit), D-005, D-012.
 Callers: identity service and router (B02), other modules' services through `models` (D-004),
-`core.audit` (writes `audit_log` through a lightweight table handle), alembic/env.py, migration 0001.
+`core.audit` (writes `audit_log` through a lightweight table handle), `core.auth` (reads `devices` and
+`assist_sessions` through lightweight table handles), alembic/env.py, migrations 0001 and 0002 (PIN and
+device sign-in columns).
 """
 
 import uuid
@@ -11,7 +13,7 @@ from datetime import datetime
 from typing import Any
 
 from geoalchemy2 import Geography
-from sqlalchemy import ForeignKey, Index, UniqueConstraint
+from sqlalchemy import ForeignKey, Index, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from agritrace.core.audit import Audited
@@ -35,6 +37,19 @@ class User(Audited, IdTimestamps, Base):
     )
     status: Mapped[UserStatus] = mapped_column(
         default=UserStatus.ACTIVE, comment="active may sign in; suspended may not."
+    )
+    # DECISION D-024: the office PIN lives on the user (one PIN across FPOs and devices), migration 0002.
+    #   ADV: one PIN to remember; the lockout follows the person, not one device or one membership.
+    #   COMPROMISE: a 4-digit PIN hash is brute-forceable offline by anyone who can read `users`; the
+    #     audit trail records PIN changes as "[redacted]" (core.audit.is_secret_column), never the hash.
+    pin_hash: Mapped[str | None] = mapped_column(
+        comment="Argon2id hash of the 4-digit office PIN; null until set. Never returned by the API."
+    )
+    pin_attempts: Mapped[int] = mapped_column(
+        default=0, server_default=text("0"), comment="Wrong PINs since the last success or lock (max 5)."
+    )
+    pin_locked_until: Mapped[datetime | None] = mapped_column(
+        comment="PIN refused until this instant after 5 wrong tries (5-minute lock)."
     )
 
 
@@ -71,6 +86,12 @@ class Device(IdTimestamps, Base):
     platform: Mapped[str] = mapped_column(comment="`android`, `ios` or `web`.")
     app_version: Mapped[str | None] = mapped_column(comment="App version last reported, e.g. 1.0.3.")
     refresh_token_hash: Mapped[str | None] = mapped_column(comment="Hash of the current refresh token.")
+    previous_refresh_token_hash: Mapped[str | None] = mapped_column(
+        comment="Hash of the refresh token rotated out last; presenting it again is reuse (D-024)."
+    )
+    signed_in_at: Mapped[datetime | None] = mapped_column(
+        comment="Last OTP/PIN sign-in on this device; access and pin tokens issued earlier are refused."
+    )
     last_seen_at: Mapped[datetime | None] = mapped_column(comment="Last authenticated request from it.")
     revoked_at: Mapped[datetime | None] = mapped_column(comment="When sign-out or an admin revoked it.")
 

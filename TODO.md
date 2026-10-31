@@ -28,9 +28,22 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Replace illustrative numbers before go-live: yield ceiling 1,000 kg/acre, 5 % reconciliation threshold, AGMARK parameters marked `load_from_standard`, the 4G test profiles in `qa/robot/profiles.yaml`.
 
 ## 3. Debt ledger (from `shortcut:` comments; refreshed by /ponytail-debt)
-_(empty)_
+- [ ] B03 `registry/service.py` `create_farmer`: farmer code is `F` + 6 random hex per FPO (a collision is a 500 on UNIQUE(fpo_id, code)); switch to a per-FPO sequence before an FPO passes ~1,000 farmers.
+- [ ] B03 `registry/service.py` `_check_region`: plots do not store their GI tag; a request without `gi_tag_id` uses the only GI tag that has a region. Add `plots.gi_tag_id` (B13 migration) before a second GI crop is onboarded.
 
 ## 4. Reviewer and worker follow-ups
+- [ ] B02: integration tests `apps/api/tests/integration/test_identity.py` and migration 0002 under `alembic check` not yet run on PostGIS (Docker down); run before merge to main is final.
+- [ ] B02: `notifications.send` kwargs contract for B11: `user_id`, `template_key="otp"`, `channel="sms"`, `lang`, `payload={"code"}`; the task must resolve the phone from `user_id` and never log `payload.code`.
+- [ ] B02: multi-FPO users sign in to their oldest membership; add an FPO switch when needed (D-024 Revisit).
+- [ ] B02: refresh tokens have no idle expiry and office roles get no PIN prompt on app open; SEC review to decide (D-024 Revisit).
+- [ ] B02/B03: farmers and their users/memberships are created by registry (B03); identity only signs existing users in.
+- [ ] B02/P01: portal adapts to the auth contract differences listed in docs/api/conventions.md "Authentication".
+- [ ] B02: revisit `tests/conftest.py` JWT_SECRET (23 bytes triggers PyJWT InsecureKeyLengthWarning).
+- [ ] B02 (B02-r1 P2-6, accepted for the pilot): admin-issued initial PIN for office users (B03/P01); today the first OTP sets the PIN.
+- [ ] B02 (B02-r1 P3-7): security event log lines (OTP lock, PIN lock, refresh reuse, `device_in_use`) with no codes or tokens, when observability lands.
+- [ ] B02 (B02-r1 P3-8): idle expiry for refresh tokens (e.g. `last_seen_at > now - 90 d`); Orchestrator to decide before the pilot.
+- [ ] B02 (B02-r1 P3-11) for B11: no Celery `result_extended` and no task kwargs in failure logs (the OTP code travels in `payload.code`).
+- [ ] B02 (B02-r1 P3-2, P3-5, P3-13): unknown-phone timing on `otp/request` (enqueue after the response), maximum age for assist sessions, escalating PIN lock.
 - [ ] W01: a native Tamil speaker should review `apps/public-page/agritrace_page/i18n/ta.json`.
 - [ ] W03: the print stylesheet must open or expand the `<details>` timelines so printed pages are complete.
 - [ ] W02: the schema's number checks skip http(s) URLs to avoid false hits on hashed evidence URLs; the built-output privacy lint is the second line of defence and must stay in CI.
@@ -56,15 +69,15 @@ _(empty)_
 - [ ] B06: request size cap for `/v1/sync/push` (256 KB) and 413 `payload_too_large` mapping.
 - [ ] B10: use a real key prefix for `storage.put_public` (`public-pages/batches/<code>/…`).
 - [ ] Ledger note: `certifi` and `pathspec` are MPL-2.0 transitive dependencies (file-level copyleft, unmodified use; accepted, record in LIBRARIES.md when they appear as direct deps).
-- [ ] B02: treat `OTP_DEV_CODE` None/empty as "off"; never add a code default (B00 r2 P3-1).
+- [x] B02: treat `OTP_DEV_CODE` None/empty as "off"; never add a code default (B00 r2 P3-1). Done in B02 (no default; dev code only when set).
 - [ ] Q00 (W02 owner): `t.me/+91…` links stay masked; a phone number in a non-WhatsApp URL path stays masked (X17, by decision); two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is ~400 lines and should be split when W02 touches it. (Done in r4: `.jsonl/.yaml/.vcf/.map`, `R.S./T.S. No.`, `&ndash;`/U+2212.)
 - [ ] P00: `apps/portal/ci-job.yml` must be pasted under `jobs:` in `.github/workflows/ci.yml` (Orchestrator, at merge).
 - [ ] B12: `make clients` must call `npm run gen:api` (writes `apps/portal/src/api/generated/schema.d.ts`) and the Dart generator.
-- [ ] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); upgrade path is an httpOnly refresh cookie once B02 decides.
+- [ ] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); B02 decided: httpOnly refresh cookie with `X-Client: web` (D-022, D-024); P01 removes sessionStorage.
 - [ ] Infra: no `portal` service in docker-compose yet; production must serve the portal and `/v1` from one origin (CORS/cookie decision with B02).
 - [ ] Ledger: `lightningcss` (Vite build dependency) is MPL-2.0, build-time only, not shipped; accepted under D-018 as file-level copyleft in unmodified use (same reasoning as certifi/pathspec).
 - [ ] B09: enforce Σ `batch_shares.share_pct` = 100 ± 0.01 in the service (spans rows; not a CHECK).
-- [ ] B02: replace `core/auth.get_current_user` placeholder body and call `set_audit_context` per request.
+- [x] B02: replace `core/auth.get_current_user` placeholder body and call `set_audit_context` per request. Done in B02.
 - [ ] B06/B07: map SQLSTATE 23001 (`append_only_violation` trigger) to the registered AppError.
 - [ ] B01 risk: first live `alembic check` may show drift on geography reflection, VARCHAR enums or NULLS NOT DISTINCT; fix model or migration, never env.py. `alembic check` ignores CHECK constraints (enum values pinned by unit test instead).
 - [ ] Tests on append-only tables cannot DELETE; use fresh rows or TRUNCATE.
@@ -81,12 +94,54 @@ _(empty)_
 - [ ] B01 r2 / B03 (F8): the shared `Address` schema needs a `taluk` field for FR53's taluk check.
 - [ ] M00 P3s (review M00-r1): CI mobile job needs `timeout-minutes`; the regen-and-diff check misses untracked files (`git status --porcelain` is stricter); unknown sub-paths show go_router's English "Page Not Found" (add a farmer-friendly error page in M07); first Verifier with disk should re-run `size_check.sh` with bundletool to measure the AAB download size.
 - [ ] Q01: re-record FarmerButton goldens on Linux (Flutter 3.38.4), then remove the macOS-only skip in test/widget/farmer_button_golden_test.dart.
+- [x] Compliance (B05): moisture profile allows only instrument/lab sources, so a visual moisture reading is rejected at entry (correct: moisture is not visual); the `max_grade_for_source: visual → Standard` cap is for colour/visual parameters. Confirm with the compliance owner when the full AGMARK schedule is loaded.
+- [ ] B08: sweep readings carrying a `reason_code` (trail overrides) in case the broker was down when the override was accepted (B05 `shortcut:`), and turn `per_parameter` entries with `outcome == "profile_incomplete"` into the info flag.
+- [ ] B06: reuse the registered `client_id_conflict` error code (registering it twice raises).
+- [ ] B13 migration 0003: add `plots.gi_tag_id` (B03 shortcut: when a request omits it, the only GI tag with a region is used; breaks with a second GI crop).
+- [ ] B03 shortcut: farmer codes are random 6-hex per FPO; a collision surfaces as 500 — add a retry or sequence before scale.
+- [ ] B02/B03 reconcile: B03 reads `users.is_super_admin` per call because `CurrentUser` has no super-admin flag; B02's `require_role` honours "super_admin" — one mechanism should win (prefer a claim in the access token, D-024).
+- [ ] B08: GPS accuracy threshold flag, taluk check against GI registration (FR53), raising the walked-vs-declared gap flag (B03 computes, B08 flags).
+- [ ] B06: dict-accepting plot entry for sync push (`registry.service.create_plot_from_sync`).
+- [ ] Product: must a plot's location be confirmed before a farmer is activated (FR67 says yes for GI eligibility; activation itself is admin approval) — confirm with product.
+- [ ] Public page / W03: show the ODbL attribution for the GI boundary (D-019 amendment).
+- [ ] B05 P3s (review B05-r1): `compute()` ignores units (F9); calibration judged on client `measured_at` without skew check, instrument kind not matched to parameter, stage not checked against role/subject (F10); `send_task` can block a request while the broker is down (F12, same family as the B05 trail-override shortcut).
+- [ ] At every backend merge: run `npm run gen:api` in apps/portal and commit the regenerated client so the portal `gen:check` CI step stays green (B05-r1 F4).
+- [x] Compliance (B05) visual-moisture question answered: rejected at entry is correct; cap applies to visual-capable parameters.
+- [ ] W02 follow-ups: retag or delete the BM-16 placeholder in `qa/robot/mobile/network_profiles.robot` (the real test lives in `qa/robot/public/page.robot`) so `gate-readiness G1` passes; add `apps/public-page/package.json` to `libraries-check.py`'s manifest list; @lhci/cli 0.15.1 brings 16 npm-audit advisories in dev-only tools (not shipped) — revisit at G5; adding npm tools in apps/public-page needs `npm install --legacy-peer-deps` (npm ci works); re-check both Lighthouse profiles after W03 adds CSS; the new coordinate rules fail closed on a few prose shapes (`calculated: 12.3456`).
+- [ ] B03/P01: admin-issued initial PIN for office users (pilot accepts first-OTP-sets-PIN, B02 review P2-6 shortcut).
+- [ ] B02 P3s (review B02-r1, 13 items): see the review file; pick up in the SEC pass before G5.
+- [ ] B03 P3s (review B03-r1): `create_farmer` edge cases (phone already holding a staff role in the same FPO gets no farmer membership; two concurrent creates with the same new phone → 500); move cursor helpers to `core/` once a second module needs them; the ≤ 50 KB simplify test only runs on the 1 KB fixture.
+- [ ] Verifier watch-list for B03 on the live stack: geography `ST_Covers` on MULTIPOLYGON vs point; asyncpg parameter typing in raw SQL; the 100 m point classified `near_edge` not `outside`.
+- [ ] M02/M06: M01 skipped a Riverpod provider for `AppDatabase`, a Session DAO, write methods for pulled tables (Lots/Flags/Tasks upserts) and a `migrations/` folder; M02 adds the pull upserts, M06 the Session DAO and provider.
+- [ ] M06: access and refresh tokens sit in plain SQLite (mobile-design §2); decide on the platform keystore (flutter_secure_storage) before release.
+- [ ] M01 risk: the 500-save timing test has ~0.4 s headroom under load; tag it or relax it on CI if it flakes. build_runner needs the Flutter SDK's `dart` and `--force-jit` on this machine (documented in apps/mobile/README).
+- [ ] M02: `OutboxDao.nextBatch` returns media rows regardless of entry confirmation; use `MediaDao.pendingUploads` (which waits for confirmation) for photo uploads.
+- [x] B03 (F7, Architect-Gate ruling): create a `users` row for every farmer who has a phone, including feature-phone farmers, so the phone has exactly one home.
+- [x] B01 r2 / B03 (F8): the shared `Address` schema needs a `taluk` field for FR53's taluk check.
+- [ ] W03 (from W02 review P2-1): coordinate forms `9.559806 N, 78.133521 E`, `N 9.559806 E 78.133521`, `9.559806;78.133521` and the `geo.position` meta tag slip the linter; two-line fix tested by the reviewer in /tmp/w02rev/pl_cand.py (re-derive from the review file W02-r1.md).
+- [ ] W02 P3s: `check_output.sh` silently drops canaries if canaries.json is unreadable under newer bash (pytest guards it); stale `<details>` comment in .htmlvalidate.mjs; favicon 404; a Robot SKIP on Chrome-tagged tests is not BM-03 evidence; 3G perf median 0.94 is close to the 0.90 line — re-check after W03.
+- [ ] Orchestrator deviation: W02 merged on the reviewer's executed acceptance (review W02-r1 has the evidence); a formal Verifier pass is still owed before G1.
+- [ ] B02 P3s from r2 (review B02-r2): `signed_in_at` check compares whole seconds and ignores the 30 s leeway (stamp from DB clock, subtract leeway); per-phone OTP daily cap lets an attacker lock a victim out for 24 h (add per-IP limits, D-024); OTP verify description still says pin_required is for office roles only (super-admins too).
+- [ ] M06/M07: mobile needs an explicit "sign out" action because a device active for another user now returns 409 `device_in_use` (shared family phones, User Flows §Who uses what).
+- [ ] M05 P3s (review M05-r1): goldens render Latin text and digits as boxes (load Roboto from the SDK cache in the golden harness); PictureCardGrid has no ≤ 2-word label assert and its speaker is optional; M07: a double tap on the confirm tick fires `onConfirm` twice, callers must be idempotent; real voice clips still placeholders; iOS cannot play `.ogg` (CAF/AAC copies needed).
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
+- [ ] B03 → Architect-Gate (D-019 wording): the Datameet maps repo has no sub-district layer (only Census 2011 districts) and Datameet village boundaries skip Tamil Nadu; open Census-2011 taluk files found are CC BY-NC-SA (rejected) or restricted. `infra/scripts/gi_boundary/README.md` therefore recommends geoBoundaries gbOpen IND ADM3 + ADM2 (ODbL-1.0, LGD-derived, commit 9469f09); measured v0 40.7 KB / v1 33.1 KB, reference point inside both. Amend D-019's source sentence, and decide the ODbL attribution line on the public page (B10).
+- [ ] B03 → B06: the sync push `plot` entry kind should reuse `registry.service.create_plot` + `enqueue_plot_check` (after the per-entry commit); `create_plot` takes the registry `PlotIn` schema, which other modules may not import (D-004), so B06 needs a service entry that accepts the entry's dict (add it to `service.__all__` then).
+- [ ] B03 → B08: `rules.check_plot` owns the checks the plot API does not do: GPS accuracy threshold (FR67 "acceptable accuracy"), farmer/plot taluk vs `gi_region_versions.taluks` (FR53 second GI check), the walked-vs-declared gap flag (the API only reports `area_gap_exceeds`).
+- [ ] B03 product question: FR67 says a confirmed location activates the farmer; the pilot activates only on `POST /v1/farmers/{id}/approve` (Stage 0 "admin approval plus confirmed location"). Decide whether approval should also require a confirmed plot.
+- [ ] B03 → B02: `CurrentUser` carries no super-admin flag, so the registry reads `users.is_super_admin` per super-admin call; if B02 adds it to the token, switch `registry.service._is_super_admin` to it.
+- [ ] B03: the plot API does not return the walked outline (internal only) and a correction cannot remove a walked boundary; concurrent first inserts of one plot `client_id` surface as 500 (IntegrityError) instead of a duplicate (rare; sync retries are sequential per device).
+- [ ] B03: integration tests `apps/api/tests/integration/test_registry.py` were written but not run (Docker daemon down); the Verifier runs them with `make test`.
 
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).
-- [ ] Run `/plugin install ponytail@ponytail` in this project.
+- [x] Run `/plugin install ponytail@ponytail` in this project (done 2026-10-30).
 - [ ] Provide SMS/OTP provider credentials when moving past the console OTP sender.
 - [ ] Record Tamil voice prompts (about 150 clips).
 - [ ] Decide on the Datameet / Census 2011 sub-district file versus a surveyed GI boundary.
 - [ ] Allow the `localstack/localstack` image to run if a permission prompt appears for the Verifier (replaces MinIO, D-008).
+- [ ] B05: `?fields=` on the quality list endpoints (docs/api/conventions.md) is not implemented; add with the shared helper when B03 or a core WP provides one.
+- [ ] B05: no `POST /standards-profiles` (profiles are created only by the seed loader) and no instrument update/deactivate route; add when the compliance and admin screens need them.
+- [ ] B05: B08 must turn `grade_computations.per_parameter[*].outcome == "profile_incomplete"` into the info flag `profile_incomplete`, handle `rules.check_lot` kwargs `{lot_id, batch_id, reading_id, hint: "moisture_trail_override"}`, and sweep readings with `reason_code` in case an enqueue was lost.
+- [ ] B05: coffee-style `exception_flags` (e.g. `monsooned`) are supported by the engine but no API field sets them on a batch yet.
+- [ ] B05: the AGMARK chilli profile allows only instrument/lab moisture, so visual moisture is rejected at entry (`source_not_allowed`) even though the profile caps visual at Standard; confirm the intended policy with compliance.

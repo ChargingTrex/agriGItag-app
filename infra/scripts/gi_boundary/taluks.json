@@ -1,0 +1,11 @@
+{
+  "gi_number": "883",
+  "gi_name": "Virudhunagar Samba Vathal",
+  "confirmed": false,
+  "note": "Working list (TODO.md §2): confirm against GI Journal No. 200 / Application 883 before region v1 is used for checks (D-019). Aliases cover spelling variants between boundary datasets.",
+  "taluks": [
+    { "name": "Sattur", "aliases": ["Satur", "Chattur"] },
+    { "name": "Aruppukottai", "aliases": ["Aruppukkottai", "Aruppukotai"] },
+    { "name": "Tiruchuli", "aliases": ["Thiruchuli", "Tiruchchuli", "Thiruchuzhi", "Tiruchuzhi"] }
+  ]
+}

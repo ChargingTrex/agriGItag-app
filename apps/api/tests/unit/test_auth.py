@@ -1,7 +1,7 @@
-"""Unit tests of the auth placeholder and the role guard.
+"""Unit tests of the role guard and the missing-token path of `get_current_user`.
 
-Serves: FR14 (role-based access), CLAUDE.md §6 (every call scoped to role). B02 replaces the placeholder
-body of `get_current_user`; the role-guard tests stay valid.
+Serves: FR14 (role-based access), CLAUDE.md §6 (every call scoped to role). Token and assist-header
+behaviour is in tests/unit/test_identity_tokens.py; the full role matrix in test_identity_schemas.py.
 Callers: pytest (`make test-unit`).
 """
 
@@ -26,10 +26,10 @@ def _user(role: Role) -> CurrentUser:
     return CurrentUser(user_id=uuid.uuid4(), fpo_id=uuid.uuid4(), role=role)
 
 
-async def test_placeholder_refuses_everyone() -> None:
-    """Until B02 wires JWT, every guarded route answers 401 `unauthorized`."""
+async def test_no_bearer_token_is_unauthorized() -> None:
+    """A request without `Authorization: Bearer` is refused with `unauthorized` before any DB read."""
     with pytest.raises(UnauthorizedError):
-        await get_current_user()
+        await get_current_user(session=None, credentials=None)  # type: ignore[arg-type]
 
 
 async def test_require_role_admits_listed_roles_only() -> None:

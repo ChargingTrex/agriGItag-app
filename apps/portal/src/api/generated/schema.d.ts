@@ -4,6 +4,587 @@
  */
 
 export interface paths {
+    "/v1/assist/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assist End
+         * @description End an assist session (idempotent).
+         *
+         *     Args:
+         *         body: the session id.
+         *         session: database session.
+         *         user: the field officer.
+         *
+         *     Returns:
+         *         The ended session.
+         *
+         *     Raises:
+         *         ForbiddenError: not a field officer.
+         *         NotFoundError: not this officer's session.
+         */
+        post: operations["assist_end_v1_assist_end_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assist/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assist Start
+         * @description Start entering data for a farmer; send the returned `id` as `X-Assist-Session` afterwards.
+         *
+         *     Idempotent by `client_id`: a retry returns the stored session.
+         *
+         *     Args:
+         *         body: client id, farmer, optional start time and position.
+         *         session: database session.
+         *         user: the field officer.
+         *
+         *     Returns:
+         *         The assist session.
+         *
+         *     Raises:
+         *         ForbiddenError: not a field officer.
+         *         NotFoundError: the farmer is not in the officer's FPO.
+         *         ConflictError: the client id belongs to another officer's or farmer's session.
+         */
+        post: operations["assist_start_v1_assist_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Logout
+         * @description Sign this device out: its refresh token and access tokens stop working.
+         *
+         *     Args:
+         *         user: the signed-in caller.
+         *         response: the outgoing response (the web refresh cookie is cleared).
+         *         session: database session.
+         *
+         *     Raises:
+         *         UnauthorizedError: not signed in.
+         *
+         *     Side effects:
+         *         Revokes the device; deletes the refresh cookie.
+         */
+        post: operations["logout_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Otp Request
+         * @description Send a 6-digit sign-in code by SMS (valid 5 minutes; one request per phone per 60 s).
+         *
+         *     The answer is the same for registered and unknown numbers.
+         *
+         *     Args:
+         *         body: the phone number.
+         *         session: database session.
+         *
+         *     Raises:
+         *         RateLimitedError: a code was requested for this phone less than 60 s ago.
+         *
+         *     Side effects:
+         *         Stores a hashed challenge; enqueues the SMS (not with `OTP_DEV_CODE` set, dev only).
+         */
+        post: operations["otp_request_v1_auth_otp_request_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/otp/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Otp Verify
+         * @description Trade the SMS code for a session (farmers) or a `pin_token` (office roles, D-024).
+         *
+         *     Args:
+         *         body: phone, code and device details.
+         *         request: the incoming request (`X-Client: web` selects the cookie transport).
+         *         response: the outgoing response (refresh cookie for web).
+         *         session: database session.
+         *
+         *     Returns:
+         *         `{kind: "session", ...}` or `{kind: "pin_required", pin_token, expires_in, pin_set}`.
+         *
+         *     Raises:
+         *         OtpInvalidError: wrong code, or a phone that cannot sign in.
+         *         OtpExpiredError: the code is older than 5 minutes.
+         *         OtpLockedError: 5 wrong codes.
+         */
+        post: operations["otp_verify_v1_auth_otp_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pin Set
+         * @description Set or change the caller's 4-digit PIN (office roles); a change needs the current PIN.
+         *
+         *     Args:
+         *         body: the new PIN and, when one is set, the current PIN.
+         *         session: database session.
+         *         user: the signed-in office user.
+         *
+         *     Raises:
+         *         UnauthorizedError: not signed in.
+         *         ForbiddenError: farmers have no PIN.
+         *         PinInvalidError: the current PIN is missing or wrong.
+         *         PinLockedError: 5 wrong current PINs.
+         *
+         *     Side effects:
+         *         Stores the Argon2id hash and clears any PIN lock.
+         */
+        post: operations["pin_set_v1_auth_pin_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/pin/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pin Verify
+         * @description Trade the `pin_token` (as Bearer) and the 4-digit PIN for a full session.
+         *
+         *     On an office user's first sign-in (`pin_set: false`) the PIN sent here becomes their PIN.
+         *
+         *     Args:
+         *         body: the PIN.
+         *         request: the incoming request (`X-Client: web` selects the cookie transport).
+         *         response: the outgoing response (refresh cookie for web).
+         *         session: database session.
+         *         credentials: `Authorization: Bearer <pin_token>`.
+         *
+         *     Returns:
+         *         The session.
+         *
+         *     Raises:
+         *         UnauthorizedError: no pin token, an access/expired/forged token in its place, or a pin token
+         *             already used for a sign-in.
+         *         PinInvalidError: wrong PIN.
+         *         PinLockedError: 5 wrong PINs.
+         */
+        post: operations["pin_verify_v1_auth_pin_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh
+         * @description Rotate the refresh token and get a new 15-minute access token.
+         *
+         *     Mobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie.
+         *     A token read from the cookie is always answered through the cookie. Presenting the token rotated out
+         *     last signs the device out (`refresh_reused`).
+         *
+         *     Args:
+         *         body: the refresh token (mobile) or nothing (web).
+         *         request: the incoming request (cookie and `X-Client`).
+         *         response: the outgoing response (new cookie for web).
+         *         session: database session.
+         *
+         *     Returns:
+         *         A new session; the old refresh token is now invalid.
+         *
+         *     Raises:
+         *         UnauthorizedError: no or unknown token, signed-out device.
+         *         RefreshReusedError: reuse of a rotated token.
+         */
+        post: operations["refresh_v1_auth_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/grade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a batch's latest grade
+         * @description The batch's most recent grade computation with its per-parameter breakdown (FR48–FR51).
+         */
+        get: operations["get_batch_grade_v1_batches__batch_id__grade_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/grading": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Grade a batch
+         * @description Records any inline readings, then computes the grade from the batch's readings against the crop's profile (FR48) and compares it with the declared grade (FR49). Status `incomplete` (a required reading is missing) or `declared_above_computed` blocks the admin's approval (B09). A declared grade the profile does not know is rejected with `unknown_grade_for_profile`.
+         */
+        post: operations["grade_batch_v1_batches__batch_id__grading_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a batch's quality readings
+         * @description Grading and storage readings recorded on a batch (Dataflow Stage 8).
+         */
+        get: operations["list_batch_readings_v1_batches__batch_id__readings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Consent Create
+         * @description Record a farmer's consent (the farmer, or an officer in assist mode); idempotent by `client_id`.
+         *
+         *     Args:
+         *         body: the consent.
+         *         user: the caller.
+         *         session: database session.
+         *
+         *     Returns:
+         *         The stored consent.
+         *
+         *     Raises:
+         *         ForbiddenError: an officer outside assist mode for this farmer.
+         *         NotFoundError: the farmer is outside the caller's scope.
+         *         ConsentConflictError: the client id holds a different consent.
+         */
+        post: operations["consent_create_v1_consents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/consents/{consent_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Consent Revoke
+         * @description Withdraw a consent (sets `revoked_at` only; the record itself is kept).
+         *
+         *     Args:
+         *         consent_id: the consent.
+         *         user: the farmer, or an officer in assist mode for that farmer.
+         *         session: database session.
+         *
+         *     Returns:
+         *         The consent with `revoked_at` set.
+         *
+         *     Raises:
+         *         NotFoundError: unknown consent or outside the caller's scope.
+         *         ForbiddenError: an officer outside assist mode for this farmer.
+         */
+        post: operations["consent_revoke_v1_consents__consent_id__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/crops": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List crops
+         * @description List active crops.
+         */
+        get: operations["list_crops_v1_crops_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the FPO's farmers
+         * @description List farmers of the caller's FPO (a farmer sees only themself).
+         */
+        get: operations["list_farmers_v1_farmers_get"];
+        put?: never;
+        /**
+         * Onboard a farmer
+         * @description Onboard a farmer, pending approval (field officer or FPO admin).
+         */
+        post: operations["create_farmer_v1_farmers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a farmer
+         * @description Read one farmer of the caller's FPO.
+         */
+        get: operations["get_farmer_v1_farmers__farmer_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change a farmer's profile
+         * @description Change a farmer's profile (field officer or FPO admin).
+         */
+        patch: operations["update_farmer_v1_farmers__farmer_id__patch"];
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a pending farmer
+         * @description Approve a pending farmer as a genuine member (FPO admin).
+         */
+        post: operations["approve_farmer_v1_farmers__farmer_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consent List
+         * @description List a farmer's consents (revoked included), oldest first.
+         *
+         *     Args:
+         *         farmer_id: the farmer.
+         *         user: the farmer themself or any role in the same FPO.
+         *         session: database session.
+         *
+         *     Returns:
+         *         One page holding every consent of the farmer.
+         *
+         *     Raises:
+         *         NotFoundError: the farmer is outside the caller's scope.
+         */
+        get: operations["consent_list_v1_farmers__farmer_id__consents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/fpos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List FPOs (super-admin: all; others: own)
+         * @description List FPOs visible to the caller.
+         */
+        get: operations["list_fpos_v1_fpos_get"];
+        put?: never;
+        /**
+         * Create an FPO
+         * @description Create an FPO (super-admin only).
+         */
+        post: operations["create_fpo_v1_fpos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gi-tags/{gi_tag_id}/region": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current GI region (simplified)
+         * @description Return the GI tag's region in effect today, simplified.
+         */
+        get: operations["get_region_v1_gi_tags__gi_tag_id__region_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gi-tags/{gi_tag_id}/region-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a GI region version (super-admin)
+         * @description Store a new region outline version (super-admin only; FPO admins get 403, FR31).
+         */
+        post: operations["create_region_version_v1_gi_tags__gi_tag_id__region_versions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/healthz": {
         parameters: {
             query?: never;
@@ -44,10 +625,566 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the input master list
+         * @description List active inputs: global plus the caller's FPO's own.
+         */
+        get: operations["list_inputs_v1_inputs_get"];
+        put?: never;
+        /**
+         * Add an input
+         * @description Add an input to the FPO's list (FPO admin) or the global list (super-admin).
+         */
+        post: operations["create_input_v1_inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/instruments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the FPO's instruments
+         * @description Moisture meters, colorimeters, hygrometers and scales with their calibration dates (FR42).
+         */
+        get: operations["list_instruments_v1_instruments_get"];
+        put?: never;
+        /**
+         * Register an instrument
+         * @description Adds an instrument with its calibration dates to the caller's FPO. Readings measured after `calibration_due_on` are rejected (FR50). QC officer or FPO admin.
+         */
+        post: operations["create_instrument_v1_instruments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/lots/{lot_id}/readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a lot's quality readings
+         * @description Drying-end and intake readings of a lot (its moisture trail, Dataflow Stages 5 and 7).
+         */
+        get: operations["list_lot_readings_v1_lots__lot_id__readings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Me
+         * @description Return the signed-in user, their FPO memberships and this session's device.
+         *
+         *     Args:
+         *         user: the signed-in caller.
+         *         session: database session.
+         *
+         *     Returns:
+         *         Profile, memberships and device.
+         *
+         *     Raises:
+         *         UnauthorizedError: not signed in.
+         */
+        get: operations["me_v1_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/plots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register a plot (idempotent on client_id)
+         * @description Register a plot and run the GI region check; a resend returns 200 with the stored plot.
+         */
+        post: operations["create_plot_v1_plots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/plots/{plot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a plot
+         * @description Read one plot of the caller's FPO.
+         */
+        get: operations["get_plot_v1_plots__plot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/plots/{plot_id}/correct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Correct a plot with a reason
+         * @description Correct an onboarded plot (FPO admin), keeping the old state as a revision.
+         */
+        post: operations["correct_plot_v1_plots__plot_id__correct_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/processors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List processors
+         * @description List the FPO's processors and shared ones.
+         */
+        get: operations["list_processors_v1_processors_get"];
+        put?: never;
+        /**
+         * Register a processor
+         * @description Register a processor for the caller's FPO (FPO admin).
+         */
+        post: operations["create_processor_v1_processors_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/quality-readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a quality reading
+         * @description Stores one measured parameter of a lot or batch (FR42). Checked at entry against the crop's published profile (FR50): `unknown_parameter`, `unit_mismatch`, `implausible_value`, `source_not_allowed`, `instrument_calibration_expired`, `moisture_trail_violation` (accepted and flagged when `reason_code` is given). `client_id` is the idempotency key: resending it returns the stored reading with 200.
+         */
+        post: operations["create_quality_reading_v1_quality_readings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/standards-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Standards Profiles
+         * @description Profiles per crop with the number of the version currently published (FR47).
+         */
+        get: operations["list_standards_profiles_v1_standards_profiles_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/standards-profiles/{profile_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a Standards Profile version (super-admin)
+         * @description Validates the rules JSON (grades, limits, stages, gates, trail rules) and stores the next version. Publishing retires the previous published version. Publishing while a grading parameter is still `load_from_standard` needs `allow_incomplete: true` and stamps a `public_note`. Super-admin only.
+         */
+        post: operations["create_standards_profile_version_v1_standards_profiles__profile_id__versions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/standards-profiles/{profile_id}/versions/{version_no}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one Standards Profile version
+         * @description The rules JSON of one version (backend-design.md §4) with its edition and status.
+         */
+        get: operations["get_standards_profile_version_v1_standards_profiles__profile_id__versions__version_no__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/villages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search the village directory
+         * @description Search villages for the onboarding picker (FR53).
+         */
+        get: operations["list_villages_v1_villages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * Address
+         * @description Structured address of a farmer, plot, FPO or processor (FR53); also a second GI check by taluk.
+         *
+         *     Every part is optional here: which parts are required is field configuration (D-017, B13).
+         */
+        Address: {
+            /**
+             * Block
+             * @description Development block.
+             */
+            block?: string | null;
+            /**
+             * District
+             * @description District, e.g. `Virudhunagar`.
+             */
+            district?: string | null;
+            /**
+             * Pin
+             * @description Six-digit Indian PIN code.
+             */
+            pin?: string | null;
+            /**
+             * State
+             * @description State, e.g. `Tamil Nadu`.
+             */
+            state?: string | null;
+            /**
+             * Taluk
+             * @description Taluk (sub-district); second GI check against registered taluks (FR53).
+             */
+            taluk?: string | null;
+            /**
+             * Village
+             * @description Village or hamlet name.
+             */
+            village?: string | null;
+        };
+        /**
+         * AssistEndIn
+         * @description Close an assist session.
+         */
+        AssistEndIn: {
+            /**
+             * Assist Session Id
+             * Format: uuid
+             * @description The session to end (its client id).
+             */
+            assist_session_id: string;
+        };
+        /**
+         * AssistSessionOut
+         * @description An assist session; send its `id` as `X-Assist-Session` on every request made for the farmer.
+         */
+        AssistSessionOut: {
+            /**
+             * Ended At
+             * @description When it ended; null while open.
+             */
+            ended_at: string | null;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer being assisted.
+             */
+            farmer_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Assist session id (the client id it was started with).
+             */
+            id: string;
+            /**
+             * Officer User Id
+             * Format: uuid
+             * @description Field officer doing the entries.
+             */
+            officer_user_id: string;
+            /**
+             * Started At
+             * Format: date-time
+             * @description When the session started.
+             */
+            started_at: string;
+        };
+        /**
+         * AssistStartIn
+         * @description Start entering data on a farmer's behalf; `client_id` becomes the assist session id (D-005).
+         */
+        AssistStartIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 generated on the device; resending it is a no-op.
+             */
+            client_id: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer being assisted; must be in the officer's FPO.
+             */
+            farmer_id: string;
+            /**
+             * Started At
+             * @description Device time the session started (offline start); defaults to server time.
+             */
+            started_at?: string | null;
+            /** @description Where the session started, if a fix was taken. */
+            started_gps?: components["schemas"]["GeoPoint"] | null;
+        };
+        /**
+         * ConsentIn
+         * @description Record a farmer's consent; resending the same `client_id` returns the stored record (D-005).
+         */
+        ConsentIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 generated on the device; resending it is a no-op.
+             */
+            client_id: string;
+            /** @description What is consented to. */
+            consent_type: components["schemas"]["ConsentType"];
+            /**
+             * Consent Version
+             * @description Version of the consent text played, e.g. `v1-ta`.
+             */
+            consent_version: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer who consents (the caller, or the assisted farmer).
+             */
+            farmer_id: string;
+            /**
+             * Given At
+             * Format: date-time
+             * @description When the farmer agreed (device clock), ISO 8601.
+             */
+            given_at: string;
+            /**
+             * Recording Ref
+             * @description Object key of the consent recording played or captured, if any.
+             */
+            recording_ref?: string | null;
+        };
+        /**
+         * ConsentOut
+         * @description A stored consent record.
+         */
+        ConsentOut: {
+            /** @description What was consented to. */
+            consent_type: components["schemas"]["ConsentType"];
+            /**
+             * Consent Version
+             * @description Version of the consent text.
+             */
+            consent_version: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer who consented.
+             */
+            farmer_id: string;
+            /**
+             * Given At
+             * Format: date-time
+             * @description When consent was given.
+             */
+            given_at: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Consent id (the client id it was recorded with).
+             */
+            id: string;
+            /**
+             * Recording Ref
+             * @description Object key of the recording, if any.
+             */
+            recording_ref: string | null;
+            /**
+             * Revoked At
+             * @description When it was withdrawn; null while in force.
+             */
+            revoked_at: string | null;
+            /**
+             * Witnessed By User Id
+             * @description Officer who witnessed it (assist mode).
+             */
+            witnessed_by_user_id: string | null;
+        };
+        /**
+         * ConsentType
+         * @description What a farmer consented to (FR41, CLAUDE.md §6).
+         * @enum {string}
+         */
+        ConsentType: "data_collection" | "public_name" | "partner_share";
+        /**
+         * CropOut
+         * @description A crop farmers can grow, with its GI tag and event schema (FR22, FR55).
+         */
+        CropOut: {
+            /**
+             * Active
+             * @description False hides the crop from new lots.
+             */
+            active: boolean;
+            /**
+             * Code
+             * @description Stable crop code.
+             */
+            code: string;
+            /**
+             * Event Schema
+             * @description Mandatory event types and date-order rules (FR55).
+             */
+            event_schema: {
+                [key: string]: unknown;
+            };
+            /**
+             * Gi Tag Id
+             * @description GI tag the crop is sold under, if any.
+             */
+            gi_tag_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Crop id.
+             */
+            id: string;
+            /**
+             * Lang
+             * @description Language code of name_local.
+             */
+            lang: string;
+            /**
+             * Name En
+             * @description Crop name in English.
+             */
+            name_en: string;
+            /**
+             * Name Local
+             * @description Crop name in the local script.
+             */
+            name_local: string | null;
+        };
+        /**
+         * DeviceOut
+         * @description The device this session is tied to.
+         */
+        DeviceOut: {
+            /**
+             * App Version
+             * @description App version last reported.
+             */
+            app_version: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Device id generated by the app.
+             */
+            id: string;
+            /**
+             * Last Seen At
+             * @description Last sign-in or token refresh from it.
+             */
+            last_seen_at: string | null;
+            /**
+             * Platform
+             * @description `android`, `ios` or `web`.
+             */
+            platform: string;
+        };
         /**
          * ErrorBody
          * @description Inner object of the error envelope.
@@ -78,6 +1215,494 @@ export interface components {
             error: components["schemas"]["ErrorBody"];
         };
         /**
+         * FarmerIn
+         * @description A farmer onboarded by a field officer or admin (Stage 0, UserFlows §Onboarding a farmer).
+         */
+        FarmerIn: {
+            /** @description Structured address (FR53); parts left empty are filled from `village_id`. */
+            address?: components["schemas"]["Address"] | null;
+            /**
+             * Gi Authorised User No
+             * @description Farmer's GI authorised-user registration number (FR62).
+             */
+            gi_authorised_user_no?: string | null;
+            /**
+             * Lang
+             * @description Preferred language for app, SMS and voice.
+             * @default ta
+             * @enum {string}
+             */
+            lang: "ta" | "en";
+            /**
+             * Name
+             * @description Name in English script.
+             */
+            name: string;
+            /**
+             * Name Local
+             * @description Name in the local script (FR5).
+             */
+            name_local?: string | null;
+            /**
+             * No Smartphone
+             * @description True when the officer always enters data for this farmer (assist mode).
+             * @default false
+             */
+            no_smartphone: boolean;
+            /**
+             * Phone
+             * @description Mobile number in E.164, e.g. +919876543210; creates or links the farmer's sign-in account (also for feature-phone farmers, who get SMS).
+             */
+            phone?: string | null;
+            /**
+             * Photo Key
+             * @description Object key of the profile photo.
+             */
+            photo_key?: string | null;
+            /**
+             * Village Id
+             * @description Village picked from GET /v1/villages.
+             */
+            village_id?: string | null;
+        };
+        /**
+         * FarmerOut
+         * @description A farmer as returned by the API (no phone number: it lives on the sign-in account).
+         */
+        FarmerOut: {
+            /** @description Structured address. */
+            address: components["schemas"]["Address"] | null;
+            /**
+             * Address Line
+             * @description Address on one line, without repeated parts.
+             */
+            readonly address_line: string;
+            /**
+             * Approved At
+             * @description When the farmer was approved.
+             */
+            approved_at: string | null;
+            /**
+             * Approved By
+             * @description Admin who approved the farmer.
+             */
+            approved_by: string | null;
+            /**
+             * Code
+             * @description Farmer code, unique inside the FPO.
+             */
+            code: string;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number.
+             */
+            gi_authorised_user_no: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Farmer id.
+             */
+            id: string;
+            /**
+             * Name
+             * @description Name in English script.
+             */
+            name: string;
+            /**
+             * Name Local
+             * @description Name in the local script.
+             */
+            name_local: string | null;
+            /**
+             * No Smartphone
+             * @description True when the officer always enters data.
+             */
+            no_smartphone: boolean;
+            /**
+             * Photo Key
+             * @description Object key of the profile photo.
+             */
+            photo_key: string | null;
+            /** @description pending until an FPO admin approves; then active. */
+            status: components["schemas"]["FarmerStatus"];
+            /**
+             * User Id
+             * @description Sign-in account; null when no phone was given.
+             */
+            user_id: string | null;
+            /**
+             * Village Id
+             * @description Village from the directory.
+             */
+            village_id: string | null;
+        };
+        /**
+         * FarmerPatch
+         * @description Changes to a farmer's profile; only the fields sent are changed.
+         */
+        FarmerPatch: {
+            /** @description Structured address (replaces the stored one). */
+            address?: components["schemas"]["Address"] | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user number.
+             */
+            gi_authorised_user_no?: string | null;
+            /**
+             * Name
+             * @description Name in English script.
+             */
+            name?: string | null;
+            /**
+             * Name Local
+             * @description Name in the local script.
+             */
+            name_local?: string | null;
+            /**
+             * No Smartphone
+             * @description True when the officer always enters data.
+             */
+            no_smartphone?: boolean | null;
+            /**
+             * Photo Key
+             * @description Object key of the profile photo.
+             */
+            photo_key?: string | null;
+            /**
+             * Village Id
+             * @description Village picked from GET /v1/villages.
+             */
+            village_id?: string | null;
+        };
+        /**
+         * FarmerStatus
+         * @description Farmer onboarding state (Stage 0; FR67 activates on a confirmed location).
+         * @enum {string}
+         */
+        FarmerStatus: "pending" | "active" | "suspended";
+        /**
+         * FarmingType
+         * @description Irrigated or rainfed farming (FR54).
+         * @enum {string}
+         */
+        FarmingType: "irrigated" | "rainfed";
+        /**
+         * FpoIn
+         * @description A new FPO (tenant); created by a super-admin.
+         */
+        FpoIn: {
+            /** @description Registered address (FR53). */
+            address?: components["schemas"]["Address"] | null;
+            /**
+             * Code
+             * @description Stable upper-case code.
+             */
+            code: string;
+            /**
+             * Fssai No
+             * @description FSSAI licence number (FR62).
+             */
+            fssai_no?: string | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number (FR62).
+             */
+            gi_authorised_user_no?: string | null;
+            /**
+             * @description Legal form: fpo, company or coop.
+             * @default fpo
+             */
+            kind: components["schemas"]["OrgKind"];
+            /**
+             * Name
+             * @description Registered name.
+             */
+            name: string;
+            /**
+             * Public Show Farmer Names
+             * @description Whether public pages may show farmer names (still subject to each consent).
+             * @default false
+             */
+            public_show_farmer_names: boolean;
+        };
+        /**
+         * FpoOut
+         * @description An FPO as returned by the API.
+         */
+        FpoOut: {
+            /** @description Registered address. */
+            address: components["schemas"]["Address"] | null;
+            /**
+             * Address Line
+             * @description Address on one line, without repeated parts.
+             */
+            readonly address_line: string;
+            /**
+             * Code
+             * @description Stable upper-case code.
+             */
+            code: string;
+            /**
+             * Fssai No
+             * @description FSSAI licence number.
+             */
+            fssai_no: string | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number.
+             */
+            gi_authorised_user_no: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description FPO id.
+             */
+            id: string;
+            /** @description Legal form. */
+            kind: components["schemas"]["OrgKind"];
+            /**
+             * Name
+             * @description Registered name.
+             */
+            name: string;
+            /**
+             * Public Show Farmer Names
+             * @description Whether public pages may show farmer names.
+             */
+            public_show_farmer_names: boolean;
+        };
+        /**
+         * GeoPoint
+         * @description A WGS84 point with the device's reported accuracy.
+         */
+        GeoPoint: {
+            /**
+             * Accuracy M
+             * @description Horizontal accuracy radius in metres.
+             */
+            accuracy_m?: number | null;
+            /**
+             * Lat
+             * @description Latitude in decimal degrees (WGS84).
+             */
+            lat: number;
+            /**
+             * Lon
+             * @description Longitude in decimal degrees (WGS84).
+             */
+            lon: number;
+        };
+        /**
+         * GiRegionOut
+         * @description The current region of a GI tag: version metadata plus a simplified outline (≤ 50 KB).
+         */
+        GiRegionOut: {
+            /**
+             * Geometry
+             * @description Simplified GeoJSON outline (MultiPolygon or Polygon), [lon, lat], 6 decimal places.
+             */
+            geometry: {
+                [key: string]: unknown;
+            };
+            /**
+             * Simplified Tolerance M
+             * @description Simplification tolerance used, in metres.
+             */
+            simplified_tolerance_m: number;
+            /** @description The region version in effect today. */
+            version: components["schemas"]["GiRegionVersionOut"];
+        };
+        /**
+         * GiRegionVersionIn
+         * @description A new version of a GI tag's production-area outline with its provenance (FR27, FR31, FR32, D-019).
+         */
+        GiRegionVersionIn: {
+            /**
+             * Attribution
+             * @description Attribution line the source licence requires, e.g. `Boundary data © geoBoundaries contributors, ODbL-1.0; ...`; stored inside `source_ref` (no column for it).
+             */
+            attribution: string;
+            /**
+             * Confidence
+             * @description How the outline was derived: official (registry or surveyed file), district_derived (admin boundaries, D-019) or fixture (test data, never for real checks).
+             * @enum {string}
+             */
+            confidence: "official" | "district_derived" | "fixture";
+            /**
+             * Effective From
+             * @description First day checks use it; default today.
+             */
+            effective_from?: string | null;
+            /** @description Outline in WGS84 [lon, lat]. */
+            geometry: components["schemas"]["MultiPolygonGeoJSON"];
+            /**
+             * Licence
+             * @description Licence of the source data, e.g. ODbL-1.0.
+             */
+            licence: string;
+            /**
+             * Share Alike
+             * @description True when the derived outline must be shared under the same licence (ODbL); stored inside `source_ref`.
+             */
+            share_alike: boolean;
+            /**
+             * Source Ref
+             * @description Source dataset, file and build script reference (D-019).
+             */
+            source_ref: string;
+            /**
+             * Taluks
+             * @description Taluks named in the GI registration that this outline unions (D-019).
+             */
+            taluks: string[];
+            /**
+             * Tolerance Buffer M
+             * @description GPS-drift buffer around the outline in metres (FR32), e.g. 150.
+             */
+            tolerance_buffer_m: number | string;
+        };
+        /**
+         * GiRegionVersionOut
+         * @description Metadata of one region version (the outline itself is served by GET /v1/gi-tags/{id}/region).
+         */
+        GiRegionVersionOut: {
+            /**
+             * Confidence
+             * @description How the outline was derived.
+             */
+            confidence: string;
+            /**
+             * Effective From
+             * Format: date
+             * @description First day checks use it.
+             */
+            effective_from: string;
+            /**
+             * Gi Tag Id
+             * Format: uuid
+             * @description GI tag.
+             */
+            gi_tag_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Region version id.
+             */
+            id: string;
+            /**
+             * Licence
+             * @description Licence of the source data.
+             */
+            licence: string;
+            /**
+             * Source Ref
+             * @description Source dataset and build script reference, then `; attribution: …; share_alike: …`.
+             */
+            source_ref: string;
+            /**
+             * Taluks
+             * @description Taluks this outline unions.
+             */
+            taluks: string[] | null;
+            /**
+             * Tolerance Buffer M
+             * @description GPS-drift buffer in metres.
+             */
+            tolerance_buffer_m: string;
+            /**
+             * Version No
+             * @description Version number, 0 upwards.
+             */
+            version_no: number;
+        };
+        /**
+         * GradeOut
+         * @description A stored grade computation of a batch (FR48, FR49, FR51).
+         */
+        GradeOut: {
+            /**
+             * Batch Id
+             * Format: uuid
+             * @description Batch graded.
+             */
+            batch_id: string;
+            /**
+             * Computed At
+             * Format: date-time
+             * @description When the engine ran.
+             */
+            computed_at: string;
+            /**
+             * Computed Grade
+             * @description Lowest grade every parameter meets; null when incomplete.
+             */
+            computed_grade: string | null;
+            /**
+             * Declared Grade
+             * @description Grade the QC officer declared.
+             */
+            declared_grade: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Computation id.
+             */
+            id: string;
+            /**
+             * Lab Certified
+             * @description Any batch reading of a profile parameter is a lab result with a NABL number (FR51).
+             */
+            lab_certified: boolean;
+            /**
+             * Per Parameter
+             * @description Contribution of each parameter, by code.
+             */
+            per_parameter: {
+                [key: string]: components["schemas"]["ParameterResult"];
+            };
+            /**
+             * Profile Version Id
+             * Format: uuid
+             * @description Profile version applied.
+             */
+            profile_version_id: string;
+            /** @description ok, incomplete or declared_above_computed (FR49 blocks approval). */
+            status: components["schemas"]["GradeStatus"];
+        };
+        /**
+         * GradeStatus
+         * @description Outcome of a grade computation (FR48, FR49).
+         * @enum {string}
+         */
+        GradeStatus: "incomplete" | "ok" | "declared_above_computed";
+        /**
+         * GradingIn
+         * @description Grade a batch: the declared grade plus the readings to use (Dataflow Stage 8, FR48, FR49).
+         */
+        GradingIn: {
+            /**
+             * Declared Grade
+             * @description Grade the QC officer declares.
+             */
+            declared_grade: string;
+            /**
+             * Reading Ids
+             * @description Readings of this batch to use; omitted: every reading of the batch.
+             */
+            reading_ids?: string[] | null;
+            /**
+             * Readings
+             * @description Readings to record first, then used too; their subject is forced to this batch.
+             */
+            readings?: components["schemas"]["QualityReadingIn"][];
+        };
+        /**
          * Health
          * @description Status of each dependency: `ok` or `error: <ExceptionClass>` (details go to the server log only).
          */
@@ -98,6 +1723,1920 @@ export interface components {
              */
             s3: string;
         };
+        /**
+         * InputCategory
+         * @description Category of a farm input; practice tags are derived from it (FR56).
+         * @enum {string}
+         */
+        InputCategory: "chemical_fertilizer" | "organic_fertilizer" | "bio_fertilizer" | "chemical_pesticide" | "bio_pesticide" | "other";
+        /**
+         * InputIn
+         * @description A fertiliser or pesticide added to the master list (FR56).
+         */
+        InputIn: {
+            /** @description Category from which practice tags are derived (FR56). */
+            category: components["schemas"]["InputCategory"];
+            /**
+             * Global Entry
+             * @description True adds it to the list every FPO sees (super-admin only); else FPO-only.
+             * @default false
+             */
+            global_entry: boolean;
+            /**
+             * Manufacturer
+             * @description Manufacturer or brand.
+             */
+            manufacturer?: string | null;
+            /**
+             * Name En
+             * @description Product name in English.
+             */
+            name_en: string;
+            /**
+             * Name Local
+             * @description Product name in the local script.
+             */
+            name_local?: string | null;
+            /**
+             * Pack Size
+             * @description Typical pack size, in `unit`.
+             */
+            pack_size?: number | string | null;
+            /**
+             * Photo Key
+             * @description Object key of a product photo.
+             */
+            photo_key?: string | null;
+            /**
+             * Unit
+             * @description Unit quantities are entered in, e.g. kg, l.
+             */
+            unit: string;
+        };
+        /**
+         * InputOut
+         * @description An entry of the input master list.
+         */
+        InputOut: {
+            /**
+             * Active
+             * @description False hides it from new entries.
+             */
+            active: boolean;
+            /** @description Input category (FR56). */
+            category: components["schemas"]["InputCategory"];
+            /**
+             * Fpo Id
+             * @description FPO-specific entry; null for the global list.
+             */
+            fpo_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Input id.
+             */
+            id: string;
+            /**
+             * Manufacturer
+             * @description Manufacturer or brand.
+             */
+            manufacturer: string | null;
+            /**
+             * Name En
+             * @description Product name in English.
+             */
+            name_en: string;
+            /**
+             * Name Local
+             * @description Product name in the local script.
+             */
+            name_local: string | null;
+            /**
+             * Pack Size
+             * @description Typical pack size, in `unit`.
+             */
+            pack_size: string | null;
+            /**
+             * Photo Key
+             * @description Object key of a product photo.
+             */
+            photo_key: string | null;
+            /**
+             * Unit
+             * @description Unit quantities are entered in.
+             */
+            unit: string;
+        };
+        /**
+         * InstrumentIn
+         * @description A moisture meter, colorimeter, hygrometer or scale registered by the FPO (FR42, FR50).
+         */
+        InstrumentIn: {
+            /**
+             * Active
+             * @description False hides it from new readings.
+             * @default true
+             */
+            active: boolean;
+            /**
+             * Calibrated On
+             * @description Date of last calibration (YYYY-MM-DD).
+             */
+            calibrated_on?: string | null;
+            /**
+             * Calibration Cert Photo Id
+             * @description Evidence photo of the certificate.
+             */
+            calibration_cert_photo_id?: string | null;
+            /**
+             * Calibration Due On
+             * @description Calibration due date; readings measured after it are rejected (FR50).
+             */
+            calibration_due_on?: string | null;
+            /** @description Instrument kind. */
+            kind: components["schemas"]["InstrumentKind"];
+            /**
+             * Make Model
+             * @description Make and model.
+             */
+            make_model: string;
+            /**
+             * Serial No
+             * @description Serial number.
+             */
+            serial_no: string;
+        };
+        /**
+         * InstrumentKind
+         * @description Kind of registered measuring instrument (FR42, PRD §5 Instrument).
+         * @enum {string}
+         */
+        InstrumentKind: "moisture_meter" | "colorimeter" | "hygrometer" | "scale";
+        /**
+         * InstrumentOut
+         * @description A registered instrument.
+         */
+        InstrumentOut: {
+            /**
+             * Active
+             * @description False hides it from new readings.
+             * @default true
+             */
+            active: boolean;
+            /**
+             * Calibrated On
+             * @description Date of last calibration (YYYY-MM-DD).
+             */
+            calibrated_on?: string | null;
+            /**
+             * Calibration Cert Photo Id
+             * @description Evidence photo of the certificate.
+             */
+            calibration_cert_photo_id?: string | null;
+            /**
+             * Calibration Due On
+             * @description Calibration due date; readings measured after it are rejected (FR50).
+             */
+            calibration_due_on?: string | null;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Instrument id.
+             */
+            id: string;
+            /** @description Instrument kind. */
+            kind: components["schemas"]["InstrumentKind"];
+            /**
+             * Make Model
+             * @description Make and model.
+             */
+            make_model: string;
+            /**
+             * Serial No
+             * @description Serial number.
+             */
+            serial_no: string;
+        };
+        /**
+         * IrrigationSource
+         * @description Water source of an irrigated plot (FR54).
+         * @enum {string}
+         */
+        IrrigationSource: "well" | "borewell" | "canal" | "tank" | "rain";
+        /**
+         * LabCertifiedRequires
+         * @description What makes a grade "Lab-certified" on the public page (FR51).
+         */
+        LabCertifiedRequires: {
+            /**
+             * @description At least one reading used for the grade must have this source.
+             * @default lab
+             */
+            any_parameter_source: components["schemas"]["ReadingSource"];
+            /**
+             * Nabl No Present
+             * @description That reading must also carry a NABL accreditation number.
+             * @default true
+             */
+            nabl_no_present: boolean;
+        };
+        /**
+         * LocationStatus
+         * @description Result of the GI region check on a plot (FR28, FR67, FR70).
+         * @enum {string}
+         */
+        LocationStatus: "confirmed" | "needs_review" | "outside" | "near_edge";
+        /**
+         * LotGate
+         * @description A reading condition a lot must meet before a lifecycle step, e.g. ready for sale (Dataflow Stage 5).
+         */
+        "LotGate-Input": {
+            /**
+             * Max
+             * @description Highest passing value, inclusive, e.g. moisture ≤ 11 %.
+             */
+            max?: number | string | null;
+            /**
+             * Min
+             * @description Lowest passing value, inclusive.
+             */
+            min?: number | string | null;
+            /**
+             * Parameter
+             * @description Parameter code checked.
+             */
+            parameter: string;
+            /** @description Stage whose latest reading is checked. */
+            stage: components["schemas"]["ReadingStage"];
+        };
+        /**
+         * LotGate
+         * @description A reading condition a lot must meet before a lifecycle step, e.g. ready for sale (Dataflow Stage 5).
+         */
+        "LotGate-Output": {
+            /**
+             * Max
+             * @description Highest passing value, inclusive, e.g. moisture ≤ 11 %.
+             */
+            max?: number | null;
+            /**
+             * Min
+             * @description Lowest passing value, inclusive.
+             */
+            min?: number | null;
+            /**
+             * Parameter
+             * @description Parameter code checked.
+             */
+            parameter: string;
+            /** @description Stage whose latest reading is checked. */
+            stage: components["schemas"]["ReadingStage"];
+        };
+        /**
+         * MeOut
+         * @description Who is signed in, where, and on which device.
+         */
+        MeOut: {
+            /** @description The device of this session; null if it was deleted. */
+            device: components["schemas"]["DeviceOut"] | null;
+            /**
+             * Memberships
+             * @description Every FPO role of the user, oldest first.
+             */
+            memberships: components["schemas"]["MembershipOut"][];
+            /** @description The user. */
+            user: components["schemas"]["UserOut"];
+        };
+        /**
+         * MembershipOut
+         * @description One role in one FPO.
+         */
+        MembershipOut: {
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description The FPO.
+             */
+            fpo_id: string;
+            /** @description Role inside that FPO. */
+            role: components["schemas"]["Role"];
+        };
+        /**
+         * MultiPolygonGeoJSON
+         * @description A GeoJSON MultiPolygon in WGS84, e.g. a GI production-area outline (FR27).
+         */
+        MultiPolygonGeoJSON: {
+            /**
+             * Coordinates
+             * @description Polygons, each a list of closed rings of [lon, lat] positions.
+             */
+            coordinates: number[][][][];
+            /**
+             * Type
+             * @description Always `MultiPolygon`.
+             * @constant
+             */
+            type: "MultiPolygon";
+        };
+        /**
+         * OrgKind
+         * @description Legal form of an FPO or processor (PRD §5 Processor / FPO entity).
+         * @enum {string}
+         */
+        OrgKind: "fpo" | "company" | "coop";
+        /**
+         * OtpRequestIn
+         * @description Ask for a one-time code by SMS.
+         */
+        OtpRequestIn: {
+            /**
+             * Phone
+             * @description Mobile number in E.164 form, e.g. `+919876543210`.
+             */
+            phone: string;
+        };
+        /**
+         * OtpVerifyIn
+         * @description Trade the SMS code for a session (farmers) or a `pin_token` (office roles).
+         */
+        OtpVerifyIn: {
+            /**
+             * App Version
+             * @description App version, e.g. `1.0.3`.
+             */
+            app_version?: string | null;
+            /**
+             * Code
+             * @description The 6-digit code from the SMS.
+             */
+            code: string;
+            /**
+             * Device Id
+             * Format: uuid
+             * @description UUID the app generated once per installation; the session is tied to it (D-005).
+             */
+            device_id: string;
+            /**
+             * Phone
+             * @description The number the code was sent to, E.164.
+             */
+            phone: string;
+            /**
+             * Platform
+             * @description Client platform of this device.
+             * @enum {string}
+             */
+            platform: "android" | "ios" | "web";
+        };
+        /** Page[ConsentOut] */
+        Page_ConsentOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["ConsentOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[FarmerOut] */
+        Page_FarmerOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["FarmerOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[InstrumentOut] */
+        Page_InstrumentOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["InstrumentOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[QualityReadingOut] */
+        Page_QualityReadingOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["QualityReadingOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[StandardsProfileOut] */
+        Page_StandardsProfileOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["StandardsProfileOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[VillageOut] */
+        Page_VillageOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["VillageOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /**
+         * Parameter
+         * @description One quality parameter of a profile: unit, method, where it is captured and its limit per grade.
+         */
+        "Parameter-Input": {
+            /**
+             * Capture Stages
+             * @description Stages where this parameter is captured (FR43 moisture: drying end, intake, grading).
+             */
+            capture_stages?: components["schemas"]["ReadingStage"][];
+            /**
+             * Code
+             * @description Stable snake_case code readings use, e.g. `moisture`.
+             */
+            code: string;
+            /**
+             * Declare For Grades
+             * @description Grades whose label must declare this value (role label_declaration).
+             */
+            declare_for_grades?: string[];
+            /**
+             * Exception Flags
+             * @description Batch attributes (e.g. `monsooned` coffee) under which a value outside the limits is a warning, not a fail: the parameter then does not lower the grade.
+             */
+            exception_flags?: string[];
+            /**
+             * @description Stage whose latest reading is used to compute the grade.
+             * @default grading
+             */
+            grading_stage: components["schemas"]["ReadingStage"];
+            /**
+             * Limits
+             * @description Interval the value must lie in to reach each grade, keyed by grade name; when set, every grade needs a key (`{}` means no constraint for that grade). Null: not graded on this parameter (see `status`).
+             */
+            limits?: {
+                [key: string]: components["schemas"]["Range-Input"];
+            } | null;
+            /**
+             * Max Grade For Source
+             * @description Best grade a reading from that source can earn, e.g. visual → Standard (FR44).
+             */
+            max_grade_for_source?: {
+                [key: string]: string;
+            };
+            /**
+             * Method Ref
+             * @description Test method the standard prescribes (FR42).
+             */
+            method_ref?: string | null;
+            /**
+             * Name En
+             * @description English label for forms and the public page.
+             */
+            name_en?: string | null;
+            /**
+             * Name Local
+             * @description Label in the local script (Tamil for the pilot).
+             */
+            name_local?: string | null;
+            /** @description Physically sensible range; readings outside it are rejected at entry (FR50). */
+            plausible?: components["schemas"]["Range-Input"] | null;
+            /**
+             * Required
+             * @description A grading reading is needed for a complete grade (only when `limits` is set).
+             * @default false
+             */
+            required: boolean;
+            /**
+             * Role
+             * @description `grading` takes part in the grade; `label_declaration` is printed on the label for `declare_for_grades`; `contract_spec` is a buyer specification, recorded but never graded.
+             * @default grading
+             * @enum {string}
+             */
+            role: "grading" | "label_declaration" | "contract_spec";
+            /**
+             * Sources Allowed
+             * @description Measurement sources accepted at entry for this parameter (FR42, FR44).
+             */
+            sources_allowed?: components["schemas"]["ReadingSource"][];
+            /**
+             * Status
+             * @description `load_from_standard`: limits still to be copied from the standard; graded as missing.
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "load_from_standard";
+            /**
+             * Unit
+             * @description Unit every reading must carry, e.g. `%`.
+             */
+            unit: string;
+        };
+        /**
+         * Parameter
+         * @description One quality parameter of a profile: unit, method, where it is captured and its limit per grade.
+         */
+        "Parameter-Output": {
+            /**
+             * Capture Stages
+             * @description Stages where this parameter is captured (FR43 moisture: drying end, intake, grading).
+             */
+            capture_stages?: components["schemas"]["ReadingStage"][];
+            /**
+             * Code
+             * @description Stable snake_case code readings use, e.g. `moisture`.
+             */
+            code: string;
+            /**
+             * Declare For Grades
+             * @description Grades whose label must declare this value (role label_declaration).
+             */
+            declare_for_grades?: string[];
+            /**
+             * Exception Flags
+             * @description Batch attributes (e.g. `monsooned` coffee) under which a value outside the limits is a warning, not a fail: the parameter then does not lower the grade.
+             */
+            exception_flags?: string[];
+            /**
+             * @description Stage whose latest reading is used to compute the grade.
+             * @default grading
+             */
+            grading_stage: components["schemas"]["ReadingStage"];
+            /**
+             * Limits
+             * @description Interval the value must lie in to reach each grade, keyed by grade name; when set, every grade needs a key (`{}` means no constraint for that grade). Null: not graded on this parameter (see `status`).
+             */
+            limits?: {
+                [key: string]: components["schemas"]["Range-Output"];
+            } | null;
+            /**
+             * Max Grade For Source
+             * @description Best grade a reading from that source can earn, e.g. visual → Standard (FR44).
+             */
+            max_grade_for_source?: {
+                [key: string]: string;
+            };
+            /**
+             * Method Ref
+             * @description Test method the standard prescribes (FR42).
+             */
+            method_ref?: string | null;
+            /**
+             * Name En
+             * @description English label for forms and the public page.
+             */
+            name_en?: string | null;
+            /**
+             * Name Local
+             * @description Label in the local script (Tamil for the pilot).
+             */
+            name_local?: string | null;
+            /** @description Physically sensible range; readings outside it are rejected at entry (FR50). */
+            plausible?: components["schemas"]["Range-Output"] | null;
+            /**
+             * Required
+             * @description A grading reading is needed for a complete grade (only when `limits` is set).
+             * @default false
+             */
+            required: boolean;
+            /**
+             * Role
+             * @description `grading` takes part in the grade; `label_declaration` is printed on the label for `declare_for_grades`; `contract_spec` is a buyer specification, recorded but never graded.
+             * @default grading
+             * @enum {string}
+             */
+            role: "grading" | "label_declaration" | "contract_spec";
+            /**
+             * Sources Allowed
+             * @description Measurement sources accepted at entry for this parameter (FR42, FR44).
+             */
+            sources_allowed?: components["schemas"]["ReadingSource"][];
+            /**
+             * Status
+             * @description `load_from_standard`: limits still to be copied from the standard; graded as missing.
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "load_from_standard";
+            /**
+             * Unit
+             * @description Unit every reading must carry, e.g. `%`.
+             */
+            unit: string;
+        };
+        /**
+         * ParameterResult
+         * @description How one parameter contributed to the grade (`grade_computations.per_parameter`).
+         */
+        ParameterResult: {
+            /**
+             * Capped By Source
+             * @description True when `max_grade_for_source` lowered the grade.
+             * @default false
+             */
+            capped_by_source: boolean;
+            /**
+             * Grade
+             * @description Grade reached by this parameter (graded only).
+             */
+            grade?: string | null;
+            /**
+             * Lab Certified
+             * @description An accredited lab result (source lab, non-blank NABL number) for this parameter is attached to the batch at any stage; lets the public page say which values are lab-measured (FR51).
+             * @default false
+             */
+            lab_certified: boolean;
+            /** @description Limit of the grade reached; null for the fail grade. */
+            limit?: components["schemas"]["Range-Output"] | null;
+            /**
+             * Outcome
+             * @description graded: limits applied; missing: no reading at the grading stage; profile_incomplete: limits still load_from_standard; not_graded: label or contract value; exception: limits waived by a batch exception flag (warning).
+             * @enum {string}
+             */
+            outcome: "graded" | "missing" | "profile_incomplete" | "not_graded" | "exception";
+            /**
+             * Parameter
+             * @description Parameter code.
+             */
+            parameter: string;
+            /**
+             * Reading Id
+             * @description Reading used.
+             */
+            reading_id?: string | null;
+            /** @description Source of the reading used. */
+            source?: components["schemas"]["ReadingSource"] | null;
+            /**
+             * Unit
+             * @description Unit of the value.
+             */
+            unit?: string | null;
+            /**
+             * Value
+             * @description Value used.
+             */
+            value?: string | null;
+        };
+        /**
+         * PinChangeIn
+         * @description Set the office PIN (first time) or change it (the current PIN is then required).
+         */
+        PinChangeIn: {
+            /**
+             * Current Pin
+             * @description The PIN in force; required when a PIN is already set.
+             */
+            current_pin?: string | null;
+            /**
+             * Pin
+             * @description Exactly 4 digits.
+             */
+            pin: string;
+        };
+        /**
+         * PinIn
+         * @description A 4-digit office PIN.
+         */
+        PinIn: {
+            /**
+             * Pin
+             * @description Exactly 4 digits.
+             */
+            pin: string;
+        };
+        /**
+         * PinMethod
+         * @description How a plot pin was placed (FR64).
+         * @enum {string}
+         */
+        PinMethod: "live_gps" | "map_pin";
+        /**
+         * PinRequiredOut
+         * @description The OTP passed for an office role; the PIN step must follow before any session is released.
+         */
+        PinRequiredOut: {
+            /**
+             * Expires In
+             * @description Pin token lifetime in seconds (300).
+             */
+            expires_in: number;
+            /**
+             * @description Discriminator: PIN step next. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            kind: "pin_required";
+            /**
+             * Pin Set
+             * @description False on first sign-in: the PIN sent to `/v1/auth/pin/verify` becomes the user's PIN.
+             */
+            pin_set: boolean;
+            /**
+             * Pin Token
+             * @description Single-purpose token for `POST /v1/auth/pin/verify` only; carries no role or FPO.
+             */
+            pin_token: string;
+        };
+        /**
+         * PlotCorrection
+         * @description An FPO admin's correction of an onboarded plot; only the fields sent change (FR70, FR71).
+         */
+        PlotCorrection: {
+            /** @description Corrected declared size (`acre` or `cent`). */
+            declared_area?: components["schemas"]["Quantity-Input"] | null;
+            /** @description Corrected farming type. */
+            farming_type?: components["schemas"]["FarmingType"] | null;
+            /**
+             * Gi Tag Id
+             * @description GI tag to re-check against (see PlotIn).
+             */
+            gi_tag_id?: string | null;
+            /** @description Corrected irrigation source. */
+            irrigation_source?: components["schemas"]["IrrigationSource"] | null;
+            /**
+             * Land Record Ref
+             * @description Corrected land-record reference.
+             */
+            land_record_ref?: string | null;
+            /** @description Corrected pin. */
+            pin?: components["schemas"]["GeoPoint"] | null;
+            /** @description How the corrected pin was placed. */
+            pin_method?: components["schemas"]["PinMethod"] | null;
+            /**
+             * Reason Code
+             * @description Coded reason, e.g. `gps_drift`, `wrong_plot`, `land_record_checked`; required (422 `reason_required` when missing).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text explanation.
+             */
+            reason_text?: string | null;
+            /**
+             * Review Method
+             * @description How a flagged location was reviewed (FR70); send with `review_outcome`.
+             */
+            review_method?: ("land_record" | "satellite" | "field_visit") | null;
+            /**
+             * Review Outcome
+             * @description Review result (FR70): `accepted` lets the region check decide the status (also for a map pin); `rejected` keeps the plot `needs_review`. Put the reviewer's note in `reason_text`.
+             */
+            review_outcome?: ("accepted" | "rejected") | null;
+            /**
+             * Soil Type
+             * @description Corrected soil type.
+             */
+            soil_type?: string | null;
+            /** @description Corrected walked boundary. */
+            walked_boundary?: components["schemas"]["PolygonGeoJSON"] | null;
+        };
+        /**
+         * PlotIn
+         * @description A plot captured at onboarding: live-GPS pin, declared size, optional walked boundary (FR64–FR66).
+         */
+        PlotIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 generated on the device; primary key and idempotency key.
+             */
+            client_id: string;
+            /**
+             * Code
+             * @description Plot code shown to people; default `P-<n>` per farmer.
+             */
+            code?: string | null;
+            /** @description Land size declared by the farmer; unit `acre` or `cent` (100 cents = 1 acre), FR65. */
+            declared_area: components["schemas"]["Quantity-Input"];
+            /**
+             * Device Time
+             * Format: date-time
+             * @description Phone clock when the pin was taken.
+             */
+            device_time: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Farmer who owns the plot (same FPO as the caller).
+             */
+            farmer_id: string;
+            /** @description irrigated or rainfed (FR54). */
+            farming_type?: components["schemas"]["FarmingType"] | null;
+            /**
+             * Gi Tag Id
+             * @description GI tag of the crop picked at onboarding; null uses the only GI tag with a region, if exactly one exists (pilot), else the plot needs review.
+             */
+            gi_tag_id?: string | null;
+            /**
+             * Gps Time
+             * @description GPS fix time of the pin, if any.
+             */
+            gps_time?: string | null;
+            /** @description Water source (FR54). */
+            irrigation_source?: components["schemas"]["IrrigationSource"] | null;
+            /**
+             * Land Record Ref
+             * @description Survey number / patta / chitta reference; never public (FR65).
+             */
+            land_record_ref?: string | null;
+            /** @description Pin from live GPS while standing on the plot, with its accuracy (FR64). */
+            pin: components["schemas"]["GeoPoint"];
+            /**
+             * @description live_gps, or map_pin (assisted fallback; always needs review).
+             * @default live_gps
+             */
+            pin_method: components["schemas"]["PinMethod"];
+            /**
+             * Soil Type
+             * @description Soil type (field configuration, D-017).
+             */
+            soil_type?: string | null;
+            /** @description Boundary walked with GPS (FR66); never public. */
+            walked_boundary?: components["schemas"]["PolygonGeoJSON"] | null;
+        };
+        /**
+         * PlotOut
+         * @description A plot as returned by the API. The walked outline itself is not returned (internal only).
+         */
+        PlotOut: {
+            /**
+             * Area Gap Exceeds
+             * @description True when |area_gap_pct| > 20 %: walked area far from declared size (FR66, FR70).
+             */
+            area_gap_exceeds: boolean;
+            /**
+             * Area Gap Pct
+             * @description Walked minus declared, as % of declared; null when no boundary was walked.
+             */
+            area_gap_pct: string | null;
+            /**
+             * Code
+             * @description Plot code shown to people.
+             */
+            code: string;
+            /** @description Declared size (unit `acre`). */
+            declared_area: components["schemas"]["Quantity-Output"];
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Owner.
+             */
+            farmer_id: string;
+            /** @description irrigated or rainfed. */
+            farming_type: components["schemas"]["FarmingType"] | null;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Plot id (client-generated, D-005).
+             */
+            id: string;
+            /** @description Water source. */
+            irrigation_source: components["schemas"]["IrrigationSource"] | null;
+            /**
+             * Land Record Ref
+             * @description Land-record reference (internal only).
+             */
+            land_record_ref: string | null;
+            /**
+             * Location Method Label
+             * @description How the location was set, for the public page: `Live GPS pin`, `Boundary walked` or `Map pin` (FR72).
+             */
+            location_method_label: string | null;
+            /** @description confirmed, near_edge, outside, or needs_review (map pin or no region to check). */
+            location_status: components["schemas"]["LocationStatus"];
+            /** @description Plot pin (WGS84) with its GPS accuracy. */
+            pin: components["schemas"]["GeoPoint"];
+            /**
+             * Pin Device Time
+             * Format: date-time
+             * @description Phone clock when the pin was taken.
+             */
+            pin_device_time: string;
+            /**
+             * Pin Gps Time
+             * @description GPS fix time of the pin.
+             */
+            pin_gps_time: string | null;
+            /** @description live_gps or map_pin. */
+            pin_method: components["schemas"]["PinMethod"];
+            /**
+             * Pin Server Received At
+             * Format: date-time
+             * @description When the server received the pin.
+             */
+            pin_server_received_at: string;
+            /** @description Region check run by this request (create or correct); null on reads. */
+            region_check?: components["schemas"]["RegionCheckOut"] | null;
+            /**
+             * Review Method
+             * @description land_record, satellite or field_visit.
+             */
+            review_method: string | null;
+            /**
+             * Review Outcome
+             * @description accepted or rejected (FR70); null when not reviewed.
+             */
+            review_outcome: string | null;
+            /**
+             * Reviewed At
+             * @description When a flagged location was reviewed (FR70).
+             */
+            reviewed_at: string | null;
+            /**
+             * Revision No
+             * @description Current revision; bumps on every admin correction.
+             */
+            revision_no: number;
+            /**
+             * Soil Type
+             * @description Soil type.
+             */
+            soil_type: string | null;
+            /** @description Area of the walked boundary (unit `acre`), if walked. */
+            walked_area: components["schemas"]["Quantity-Output"] | null;
+        };
+        /**
+         * PolygonGeoJSON
+         * @description A GeoJSON Polygon in WGS84, e.g. a walked plot boundary (FR66). First ring is the outer edge.
+         */
+        PolygonGeoJSON: {
+            /**
+             * Coordinates
+             * @description Rings of [lon, lat] positions; each ring closed (first = last), at least 4 positions.
+             */
+            coordinates: number[][][];
+            /**
+             * Type
+             * @description Always `Polygon`.
+             * @constant
+             */
+            type: "Polygon";
+        };
+        /**
+         * ProcessorIn
+         * @description A processor an FPO sells to (Stage 7); registered by the FPO admin.
+         */
+        ProcessorIn: {
+            /** @description Address (FR53). */
+            address?: components["schemas"]["Address"] | null;
+            /**
+             * Fssai No
+             * @description FSSAI licence number (FR62).
+             */
+            fssai_no?: string | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number (FR62).
+             */
+            gi_authorised_user_no?: string | null;
+            /**
+             * @description Legal form: fpo, company or coop.
+             * @default company
+             */
+            kind: components["schemas"]["OrgKind"];
+            /**
+             * Name
+             * @description Registered name.
+             */
+            name: string;
+        };
+        /**
+         * ProcessorOut
+         * @description A processor as returned by the API.
+         */
+        ProcessorOut: {
+            /** @description Address. */
+            address: components["schemas"]["Address"] | null;
+            /**
+             * Address Line
+             * @description Address on one line, without repeated parts.
+             */
+            readonly address_line: string;
+            /**
+             * Fpo Id
+             * @description FPO that registered it; null for a shared processor.
+             */
+            fpo_id: string | null;
+            /**
+             * Fssai No
+             * @description FSSAI licence number.
+             */
+            fssai_no: string | null;
+            /**
+             * Gi Authorised User No
+             * @description GI authorised-user registration number.
+             */
+            gi_authorised_user_no: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Processor id.
+             */
+            id: string;
+            /** @description Legal form. */
+            kind: components["schemas"]["OrgKind"];
+            /**
+             * Name
+             * @description Registered name.
+             */
+            name: string;
+        };
+        /**
+         * ProfileVersionIn
+         * @description A new version of a profile's rules, created by the compliance team (super-admin, FR47).
+         */
+        ProfileVersionIn: {
+            /**
+             * Allow Incomplete
+             * @description Required to publish while a grading parameter is still `load_from_standard`; the grade is then computed from the other parameters and a `public_note` is stamped if none is given.
+             * @default false
+             */
+            allow_incomplete: boolean;
+            /** @description The rules JSON (backend-design.md §4). */
+            rules: components["schemas"]["StandardsProfileRules-Input"];
+            /**
+             * Status
+             * @description `published` makes it the version used for new readings and retires the previous one.
+             * @default published
+             * @enum {string}
+             */
+            status: "draft" | "published";
+        };
+        /**
+         * ProfileVersionOut
+         * @description One version of a profile with its rules (FR47).
+         */
+        ProfileVersionOut: {
+            /**
+             * Clause Ref
+             * @description Clause cited.
+             */
+            clause_ref: string;
+            /**
+             * Edition
+             * @description Edition of the standard cited.
+             */
+            edition: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Version id; readings and grade computations reference it.
+             */
+            id: string;
+            /**
+             * Profile Id
+             * Format: uuid
+             * @description Profile.
+             */
+            profile_id: string;
+            /**
+             * Published At
+             * @description When it was published.
+             */
+            published_at: string | null;
+            /** @description The rules JSON. */
+            rules: components["schemas"]["StandardsProfileRules-Output"];
+            /** @description draft, published or retired. */
+            status: components["schemas"]["ProfileVersionStatus"];
+            /**
+             * Version No
+             * @description Version number, 1 upwards.
+             */
+            version_no: number;
+        };
+        /**
+         * ProfileVersionStatus
+         * @description Publication state of a standards profile version (FR47).
+         * @enum {string}
+         */
+        ProfileVersionStatus: "draft" | "published" | "retired";
+        /**
+         * QualityReadingIn
+         * @description One measured parameter of a lot or batch at a stage (FR42–FR46). Also the sync `quality_reading` data.
+         *
+         *     Exactly one of `lot_id` and `batch_id` is set.
+         */
+        QualityReadingIn: {
+            /**
+             * Batch Id
+             * @description Batch measured (grading, storage).
+             */
+            batch_id?: string | null;
+            /**
+             * Certificate Photo Id
+             * @description Evidence photo of the lab certificate.
+             */
+            certificate_photo_id?: string | null;
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 from the device; primary and idempotency key (D-005).
+             */
+            client_id: string;
+            /**
+             * Device Time
+             * @description Phone clock at capture.
+             */
+            device_time?: string | null;
+            /**
+             * Evidence Photo Id
+             * @description Photo of the meter display or colour card.
+             */
+            evidence_photo_id?: string | null;
+            /** @description Where it was measured (FR42). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Gps Time
+             * @description GPS fix time at capture.
+             */
+            gps_time?: string | null;
+            /**
+             * Instrument Id
+             * @description Instrument used; required when source=instrument.
+             */
+            instrument_id?: string | null;
+            /**
+             * Lab Nabl No
+             * @description NABL number; needed for Lab-certified.
+             */
+            lab_nabl_no?: string | null;
+            /**
+             * Lab Name
+             * @description Laboratory name, for lab results.
+             */
+            lab_name?: string | null;
+            /**
+             * Lot Id
+             * @description Lot measured (drying end, intake).
+             */
+            lot_id?: string | null;
+            /**
+             * Measured At
+             * Format: date-time
+             * @description When it was measured, ISO 8601 with offset.
+             */
+            measured_at: string;
+            /** @description Value with its unit, e.g. {value: 9.8, unit: %}. Negative values pass the schema so the plausibility check can answer `implausible_value`. */
+            measurement: components["schemas"]["SignedQuantity-Input"];
+            /**
+             * Method Ref
+             * @description Test method reference (FR42).
+             */
+            method_ref?: string | null;
+            /**
+             * Parameter Code
+             * @description Profile parameter code.
+             */
+            parameter_code: string;
+            /**
+             * Reason Code
+             * @description Reason accepted for a trail-rule override, e.g. `rain_exposure`.
+             */
+            reason_code?: string | null;
+            /**
+             * Sample Id
+             * @description Sample identifier (FR42).
+             */
+            sample_id?: string | null;
+            /** @description lab, instrument or visual (FR42, FR44). */
+            source: components["schemas"]["ReadingSource"];
+            /** @description drying_end, intake, grading or storage (FR43, FR45). */
+            stage: components["schemas"]["ReadingStage"];
+        };
+        /**
+         * QualityReadingOut
+         * @description A stored quality reading.
+         */
+        QualityReadingOut: {
+            /**
+             * Batch Id
+             * @description Batch measured.
+             */
+            batch_id: string | null;
+            /**
+             * Calibration Due On At Time
+             * @description Instrument's calibration due date when read.
+             */
+            calibration_due_on_at_time: string | null;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Reading id (= client_id).
+             */
+            id: string;
+            /**
+             * Instrument Id
+             * @description Instrument used.
+             */
+            instrument_id: string | null;
+            /**
+             * Lab Nabl No
+             * @description NABL number.
+             */
+            lab_nabl_no: string | null;
+            /**
+             * Lab Name
+             * @description Laboratory name.
+             */
+            lab_name: string | null;
+            /**
+             * Lot Id
+             * @description Lot measured.
+             */
+            lot_id: string | null;
+            /**
+             * Measured At
+             * Format: date-time
+             * @description When it was measured.
+             */
+            measured_at: string;
+            /**
+             * Measured By User Id
+             * Format: uuid
+             * @description Who measured.
+             */
+            measured_by_user_id: string;
+            /** @description Value with its unit. */
+            measurement: components["schemas"]["SignedQuantity-Output"];
+            /**
+             * Method Ref
+             * @description Test method reference.
+             */
+            method_ref: string | null;
+            /**
+             * Parameter Code
+             * @description Parameter code.
+             */
+            parameter_code: string;
+            /**
+             * Profile Version Id
+             * @description Profile version it was checked against.
+             */
+            profile_version_id: string | null;
+            /**
+             * Reason Code
+             * @description Trail-override reason, if any.
+             */
+            reason_code: string | null;
+            /**
+             * Sample Id
+             * @description Sample identifier.
+             */
+            sample_id: string | null;
+            /**
+             * Server Received At
+             * Format: date-time
+             * @description When the server received it.
+             */
+            server_received_at: string;
+            /** @description lab, instrument or visual. */
+            source: components["schemas"]["ReadingSource"];
+            /** @description Stage. */
+            stage: components["schemas"]["ReadingStage"];
+        };
+        /**
+         * Quantity
+         * @description A non-negative amount with its unit (FR58): never a bare number.
+         */
+        "Quantity-Input": {
+            /**
+             * Unit
+             * @description Unit code, e.g. `kg`, `acre`, `l`, `count`.
+             */
+            unit: string;
+            /**
+             * Value
+             * @description Amount; decimal string or number, never negative.
+             */
+            value: number | string;
+        };
+        /**
+         * Quantity
+         * @description A non-negative amount with its unit (FR58): never a bare number.
+         */
+        "Quantity-Output": {
+            /**
+             * Unit
+             * @description Unit code, e.g. `kg`, `acre`, `l`, `count`.
+             */
+            unit: string;
+            /**
+             * Value
+             * @description Amount; decimal string or number, never negative.
+             */
+            value: string;
+        };
+        /**
+         * Range
+         * @description An inclusive numeric interval; a missing bound is open (no limit on that side).
+         */
+        "Range-Input": {
+            /**
+             * Max
+             * @description Highest allowed value, inclusive; null means no upper bound.
+             */
+            max?: number | string | null;
+            /**
+             * Min
+             * @description Lowest allowed value, inclusive; null means no lower bound.
+             */
+            min?: number | string | null;
+        };
+        /**
+         * Range
+         * @description An inclusive numeric interval; a missing bound is open (no limit on that side).
+         */
+        "Range-Output": {
+            /**
+             * Max
+             * @description Highest allowed value, inclusive; null means no upper bound.
+             */
+            max?: number | null;
+            /**
+             * Min
+             * @description Lowest allowed value, inclusive; null means no lower bound.
+             */
+            min?: number | null;
+        };
+        /**
+         * ReadingSource
+         * @description How a quality value was measured (FR42, FR44).
+         * @enum {string}
+         */
+        ReadingSource: "lab" | "instrument" | "visual";
+        /**
+         * ReadingStage
+         * @description Where in the chain a quality reading was taken (FR43, FR45).
+         * @enum {string}
+         */
+        ReadingStage: "drying_end" | "intake" | "grading" | "storage";
+        /**
+         * RefreshIn
+         * @description Rotate the refresh token. Web clients omit the body field and send the httpOnly cookie.
+         */
+        RefreshIn: {
+            /**
+             * Refresh Token
+             * @description The current refresh token; omit when the cookie carries it (web).
+             */
+            refresh_token?: string | null;
+        };
+        /**
+         * RegionCheckOut
+         * @description Result of the automatic GI region check run on create or correct (FR67).
+         */
+        RegionCheckOut: {
+            /**
+             * Buffer M
+             * @description Tolerance buffer of that version, in metres (FR32).
+             */
+            buffer_m: string;
+            /**
+             * Distance M
+             * @description Metres from the outline; 0 inside.
+             */
+            distance_m: number;
+            /**
+             * Region Version Id
+             * Format: uuid
+             * @description Region version checked against.
+             */
+            region_version_id: string;
+            /**
+             * Status
+             * @description Where the pin lies.
+             * @enum {string}
+             */
+            status: "inside" | "near_edge" | "outside";
+        };
+        /**
+         * Role
+         * @description A user's role inside one FPO (FR14, Dataflow §3 role matrix).
+         * @enum {string}
+         */
+        Role: "farmer" | "field_officer" | "qc_officer" | "fpo_admin" | "viewer";
+        /**
+         * SessionOut
+         * @description A signed-in session: short-lived access token plus the device's refresh token.
+         */
+        SessionOut: {
+            /**
+             * Access Token
+             * @description JWT for `Authorization: Bearer`; expires after `expires_in` s.
+             */
+            access_token: string;
+            /**
+             * Expires In
+             * @description Access token lifetime in seconds (900).
+             */
+            expires_in: number;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description FPO the session is scoped to (the user's first membership).
+             */
+            fpo_id: string;
+            /**
+             * @description Discriminator: a full session. (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            kind: "session";
+            /**
+             * Refresh Token
+             * @description Opaque token for `POST /v1/auth/refresh`, rotated on every use. Null for web clients (`X-Client: web`), which receive it as an httpOnly cookie instead (D-022).
+             */
+            refresh_token: string | null;
+            /**
+             * Roles
+             * @description Roles in force: the membership role (`farmer`, `field_officer`, `qc_officer`, `fpo_admin`, `viewer`), plus `super_admin` when the user holds that flag.
+             */
+            roles: string[];
+        };
+        /**
+         * SignedQuantity
+         * @description A quantity that may be negative, used only for adjustments and differences.
+         */
+        "SignedQuantity-Input": {
+            /**
+             * Unit
+             * @description Unit code, e.g. `kg`, `acre`, `l`, `count`.
+             */
+            unit: string;
+            /**
+             * Value
+             * @description Amount; negative allowed (adjustment or difference).
+             */
+            value: number | string;
+        };
+        /**
+         * SignedQuantity
+         * @description A quantity that may be negative, used only for adjustments and differences.
+         */
+        "SignedQuantity-Output": {
+            /**
+             * Unit
+             * @description Unit code, e.g. `kg`, `acre`, `l`, `count`.
+             */
+            unit: string;
+            /**
+             * Value
+             * @description Amount; negative allowed (adjustment or difference).
+             */
+            value: string;
+        };
+        /**
+         * StandardRef
+         * @description The published standard a profile version cites (FR47, FR51: shown on the public page with edition).
+         */
+        StandardRef: {
+            /**
+             * Clause Ref
+             * @description Clause cited; `LOAD_FROM_STANDARD` until copied from the standard text.
+             */
+            clause_ref: string;
+            /**
+             * Edition
+             * @description Edition or year cited; `LOAD_FROM_STANDARD` until copied from the text.
+             */
+            edition: string;
+            /**
+             * Name
+             * @description Full name of the standard, e.g. AGMARK Dry Chillies rules.
+             */
+            name: string;
+            /**
+             * Schedule
+             * @description Schedule or part of the standard, e.g. `IV`.
+             */
+            schedule?: string | null;
+        };
+        /**
+         * StandardsProfileOut
+         * @description A Standards Profile with the number of its current published version (FR47).
+         */
+        StandardsProfileOut: {
+            /**
+             * Crop Id
+             * Format: uuid
+             * @description Crop the profile grades.
+             */
+            crop_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Profile id.
+             */
+            id: string;
+            /**
+             * Name
+             * @description Profile name.
+             */
+            name: string;
+            /**
+             * Published Version No
+             * @description Version number currently published; null when none is published.
+             */
+            published_version_no: number | null;
+            /** @description agmark, iso, fssai or custom. */
+            scheme: components["schemas"]["StandardsScheme"];
+            /**
+             * Standard Ref
+             * @description Standard document reference.
+             */
+            standard_ref: string;
+        };
+        /**
+         * StandardsProfileRules
+         * @description The rules JSON of one Standards Profile version, interpreted by `grade_engine` (§4, D-015, FR47).
+         *
+         *     Grades are listed best first; `fail_grade` is what a batch gets when a parameter meets no grade.
+         */
+        "StandardsProfileRules-Input": {
+            /**
+             * Fail Grade
+             * @description Grade given when a limit is not met, e.g. Below grade.
+             */
+            fail_grade: string;
+            /**
+             * Grades
+             * @description Grade names, best first, e.g. [Special, Standard].
+             */
+            grades: string[];
+            /** @description Condition for the Lab-certified badge (FR51); null: never lab-certified. */
+            lab_certified_requires?: components["schemas"]["LabCertifiedRequires"] | null;
+            /**
+             * Lot Gates
+             * @description Named lot gates, e.g. `ready_for_sale` (Dataflow Stage 5).
+             */
+            lot_gates?: {
+                [key: string]: components["schemas"]["LotGate-Input"];
+            };
+            /**
+             * Parameters
+             * @description Every parameter of the standard (FR46).
+             */
+            parameters: components["schemas"]["Parameter-Input"][];
+            /**
+             * Public Note
+             * @description Shown on the public page next to the grade (FR51); stamped when a version is published with parameters still `load_from_standard`.
+             */
+            public_note?: string | null;
+            /**
+             * Schema Version
+             * @description Version of this JSON layout; only 1 exists.
+             * @constant
+             */
+            schema_version: 1;
+            /** @description Standard, edition and clause the limits come from (FR47). */
+            standard: components["schemas"]["StandardRef"];
+            /**
+             * Trail Rules
+             * @description Stage-to-stage rules (FR50).
+             */
+            trail_rules?: components["schemas"]["TrailRule-Input"][];
+            /** @description Yield-ceiling parameters (FR68); null: no yield check for the crop. */
+            yield?: components["schemas"]["YieldRule-Input"] | null;
+        };
+        /**
+         * StandardsProfileRules
+         * @description The rules JSON of one Standards Profile version, interpreted by `grade_engine` (§4, D-015, FR47).
+         *
+         *     Grades are listed best first; `fail_grade` is what a batch gets when a parameter meets no grade.
+         */
+        "StandardsProfileRules-Output": {
+            /**
+             * Fail Grade
+             * @description Grade given when a limit is not met, e.g. Below grade.
+             */
+            fail_grade: string;
+            /**
+             * Grades
+             * @description Grade names, best first, e.g. [Special, Standard].
+             */
+            grades: string[];
+            /** @description Condition for the Lab-certified badge (FR51); null: never lab-certified. */
+            lab_certified_requires?: components["schemas"]["LabCertifiedRequires"] | null;
+            /**
+             * Lot Gates
+             * @description Named lot gates, e.g. `ready_for_sale` (Dataflow Stage 5).
+             */
+            lot_gates?: {
+                [key: string]: components["schemas"]["LotGate-Output"];
+            };
+            /**
+             * Parameters
+             * @description Every parameter of the standard (FR46).
+             */
+            parameters: components["schemas"]["Parameter-Output"][];
+            /**
+             * Public Note
+             * @description Shown on the public page next to the grade (FR51); stamped when a version is published with parameters still `load_from_standard`.
+             */
+            public_note?: string | null;
+            /**
+             * Schema Version
+             * @description Version of this JSON layout; only 1 exists.
+             * @constant
+             */
+            schema_version: 1;
+            /** @description Standard, edition and clause the limits come from (FR47). */
+            standard: components["schemas"]["StandardRef"];
+            /**
+             * Trail Rules
+             * @description Stage-to-stage rules (FR50).
+             */
+            trail_rules?: components["schemas"]["TrailRule-Output"][];
+            /** @description Yield-ceiling parameters (FR68); null: no yield check for the crop. */
+            yield?: components["schemas"]["YieldRule-Output"] | null;
+        };
+        /**
+         * StandardsScheme
+         * @description Grading scheme of a standards profile (FR47).
+         * @enum {string}
+         */
+        StandardsScheme: "agmark" | "iso" | "fssai" | "custom";
+        /**
+         * TrailRule
+         * @description How a parameter may change from one capture stage to the next (FR50: moisture must not rise).
+         */
+        "TrailRule-Input": {
+            /**
+             * Override With Reason
+             * @description A violating reading is accepted when it carries a `reason_code` (then flagged).
+             * @default false
+             */
+            override_with_reason: boolean;
+            /**
+             * Parameter
+             * @description Parameter code the rule follows.
+             */
+            parameter: string;
+            /**
+             * Rule
+             * @description `non_increasing`: a later stage may not be higher.
+             * @constant
+             */
+            rule: "non_increasing";
+            /**
+             * Stages
+             * @description Stages in chain order, earliest first.
+             */
+            stages: components["schemas"]["ReadingStage"][];
+            /**
+             * Tolerance
+             * @description Rise tolerated before it counts as a violation (meter noise).
+             * @default 0
+             */
+            tolerance: number | string;
+        };
+        /**
+         * TrailRule
+         * @description How a parameter may change from one capture stage to the next (FR50: moisture must not rise).
+         */
+        "TrailRule-Output": {
+            /**
+             * Override With Reason
+             * @description A violating reading is accepted when it carries a `reason_code` (then flagged).
+             * @default false
+             */
+            override_with_reason: boolean;
+            /**
+             * Parameter
+             * @description Parameter code the rule follows.
+             */
+            parameter: string;
+            /**
+             * Rule
+             * @description `non_increasing`: a later stage may not be higher.
+             * @constant
+             */
+            rule: "non_increasing";
+            /**
+             * Stages
+             * @description Stages in chain order, earliest first.
+             */
+            stages: components["schemas"]["ReadingStage"][];
+            /**
+             * Tolerance
+             * @description Rise tolerated before it counts as a violation (meter noise).
+             * @default 0
+             */
+            tolerance: number;
+        };
+        /**
+         * UserOut
+         * @description The signed-in user's own profile.
+         */
+        UserOut: {
+            /**
+             * Id
+             * Format: uuid
+             * @description User id.
+             */
+            id: string;
+            /**
+             * Is Super Admin
+             * @description Platform compliance team flag.
+             */
+            is_super_admin: boolean;
+            /**
+             * Lang
+             * @description Preferred UI language: `ta` or `en`.
+             */
+            lang: string;
+            /**
+             * Name
+             * @description Display name in English script.
+             */
+            name: string;
+            /**
+             * Name Local
+             * @description Display name in the local script (Tamil).
+             */
+            name_local: string | null;
+            /**
+             * Phone
+             * @description The user's own mobile number, E.164.
+             */
+            phone: string;
+        };
+        /**
+         * VillageOut
+         * @description A village from the LGD directory, as offered in the onboarding picker (FR53).
+         */
+        VillageOut: {
+            /**
+             * Block
+             * @description Development block.
+             */
+            block: string | null;
+            /**
+             * District
+             * @description District.
+             */
+            district: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Village id.
+             */
+            id: string;
+            /**
+             * Lgd Code
+             * @description Local Government Directory village code.
+             */
+            lgd_code: string | null;
+            /**
+             * Name En
+             * @description Village name in English.
+             */
+            name_en: string;
+            /**
+             * Name Local
+             * @description Village name in the local script.
+             */
+            name_local: string | null;
+            /**
+             * Pincode
+             * @description Six-digit PIN code.
+             */
+            pincode: string | null;
+            /**
+             * State
+             * @description State.
+             */
+            state: string;
+            /**
+             * Taluk
+             * @description Taluk (sub-district).
+             */
+            taluk: string | null;
+        };
+        /**
+         * YieldRule
+         * @description Plausible yield per acre with the warn and hold margins of the yield-ceiling check (FR68, Stage 7).
+         */
+        "YieldRule-Input": {
+            /**
+             * Ceiling Kg Per Acre
+             * @description Plausible maximum harvest per acre, in kg/acre.
+             */
+            ceiling_kg_per_acre: number | string;
+            /**
+             * Hold Margin Pct
+             * @description Excess above which the lot is held out of GI, %.
+             */
+            hold_margin_pct: number | string;
+            /**
+             * Note
+             * @description Where the ceiling came from; calibrate after season 1.
+             */
+            note?: string | null;
+            /**
+             * Warn Margin Pct
+             * @description Excess over the ceiling still passing silently, %.
+             */
+            warn_margin_pct: number | string;
+        };
+        /**
+         * YieldRule
+         * @description Plausible yield per acre with the warn and hold margins of the yield-ceiling check (FR68, Stage 7).
+         */
+        "YieldRule-Output": {
+            /**
+             * Ceiling Kg Per Acre
+             * @description Plausible maximum harvest per acre, in kg/acre.
+             */
+            ceiling_kg_per_acre: number;
+            /**
+             * Hold Margin Pct
+             * @description Excess above which the lot is held out of GI, %.
+             */
+            hold_margin_pct: number;
+            /**
+             * Note
+             * @description Where the ceiling came from; calibrate after season 1.
+             */
+            note?: string | null;
+            /**
+             * Warn Margin Pct
+             * @description Excess over the ceiling still passing silently, %.
+             */
+            warn_margin_pct: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -107,6 +3646,1014 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    assist_end_v1_assist_end_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistEndIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistSessionOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    assist_start_v1_assist_start_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistSessionOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    logout_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    otp_request_v1_auth_otp_request_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OtpRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `rate_limited`. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    otp_verify_v1_auth_otp_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OtpVerifyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"] | components["schemas"]["PinRequiredOut"];
+                };
+            };
+            /** @description `otp_locked` after 5 wrong codes. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `otp_invalid`, `otp_expired` or `validation_error`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    pin_set_v1_auth_pin_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PinChangeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `pin_locked` after 5 wrong current PINs. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `pin_invalid`: current PIN missing or wrong. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    pin_verify_v1_auth_pin_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PinIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description Missing, expired or wrong-type pin token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `pin_locked` for 5 minutes after 5 wrong PINs. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `pin_invalid`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    refresh_v1_auth_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"];
+                };
+            };
+            /** @description `unauthorized` (signed out) or `refresh_reused` (device revoked). */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_batch_grade_v1_batches__batch_id__grade_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GradeOut"];
+                };
+            };
+            /** @description `forbidden`: farmers. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: batch not visible or never graded. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    grade_batch_v1_batches__batch_id__grading_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GradingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GradeOut"];
+                };
+            };
+            /** @description `forbidden`: role not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: batch, or a reading id not on this batch. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `unknown_grade_for_profile`, `no_published_profile`, `validation_error`, or any reading error of `POST /quality-readings` for an inline reading. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_batch_readings_v1_batches__batch_id__readings_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_QualityReadingOut_"];
+                };
+            };
+            /** @description `forbidden`: farmers. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: batch not in the caller's FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    consent_create_v1_consents_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    consent_revoke_v1_consents__consent_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                consent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_crops_v1_crops_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CropOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_farmers_v1_farmers_get: {
+        parameters: {
+            query?: {
+                /** @description Cursor from the previous page's `next_cursor`. */
+                cursor?: string | null;
+                /** @description Page size (1–200). */
+                limit?: number;
+                /** @description Status filter. */
+                status?: components["schemas"]["FarmerStatus"] | null;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_FarmerOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_farmer_v1_farmers_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FarmerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_farmer_v1_farmers__farmer_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_farmer_v1_farmers__farmer_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FarmerPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    approve_farmer_v1_farmers__farmer_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    consent_list_v1_farmers__farmer_id__consents_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ConsentOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_fpos_v1_fpos_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FpoOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_fpo_v1_fpos_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FpoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FpoOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_region_v1_gi_tags__gi_tag_id__region_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description GI tag id. */
+                gi_tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GiRegionOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_region_version_v1_gi_tags__gi_tag_id__region_versions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description GI tag id. */
+                gi_tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GiRegionVersionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GiRegionVersionOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     healthz_v1_healthz_get: {
         parameters: {
             query?: never;
@@ -161,6 +4708,742 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_inputs_v1_inputs_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InputOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_input_v1_inputs_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InputIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InputOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_instruments_v1_instruments_get: {
+        parameters: {
+            query?: {
+                /** @description Only active (true) or inactive (false) ones. */
+                active?: boolean | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_InstrumentOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_instrument_v1_instruments_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstrumentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentOut"];
+                };
+            };
+            /** @description `forbidden`: role not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_lot_readings_v1_lots__lot_id__readings_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Lot id. */
+                lot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_QualityReadingOut_"];
+                };
+            };
+            /** @description `not_found`: lot not visible to the caller. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    me_v1_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_plot_v1_plots_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlotIn"];
+            };
+        };
+        responses: {
+            /** @description The plot already existed with this client_id. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_plot_v1_plots__plot_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Plot id (client-generated, D-005). */
+                plot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    correct_plot_v1_plots__plot_id__correct_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Plot id (client-generated, D-005). */
+                plot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlotCorrection"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_processors_v1_processors_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessorOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_processor_v1_processors_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProcessorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessorOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_quality_reading_v1_quality_readings_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QualityReadingIn"];
+            };
+        };
+        responses: {
+            /** @description Already stored with this `client_id` (duplicate). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityReadingOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityReadingOut"];
+                };
+            };
+            /** @description `forbidden`: role not allowed (viewers; farmers on batches). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: lot, batch or instrument not in the caller's FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `client_id_conflict`: the id belongs to another user's reading. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error`, `no_published_profile`, `unknown_parameter`, `unit_mismatch`, `implausible_value`, `source_not_allowed`, `instrument_calibration_expired`, `moisture_trail_violation`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_standards_profiles_v1_standards_profiles_get: {
+        parameters: {
+            query?: {
+                /** @description Only this crop's profiles. */
+                crop_id?: string | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_StandardsProfileOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_standards_profile_version_v1_standards_profiles__profile_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Profile id. */
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileVersionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileVersionOut"];
+                };
+            };
+            /** @description `forbidden`: the caller is not a super-admin. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: no such profile. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error` (invalid rules JSON) or `profile_incomplete_not_allowed`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_standards_profile_version_v1_standards_profiles__profile_id__versions__version_no__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Profile id. */
+                profile_id: string;
+                /** @description Version number. */
+                version_no: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileVersionOut"];
+                };
+            };
+            /** @description `not_found`: no such version. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_villages_v1_villages_get: {
+        parameters: {
+            query?: {
+                /** @description Cursor from the previous page's `next_cursor`. */
+                cursor?: string | null;
+                /** @description Page size (1–200). */
+                limit?: number;
+                /** @description District name (exact). */
+                district?: string | null;
+                /** @description Block name (exact). */
+                block?: string | null;
+                /** @description Part of the village name. */
+                q?: string | null;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_VillageOut_"];
                 };
             };
             /** @description Error */

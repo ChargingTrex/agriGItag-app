@@ -79,8 +79,7 @@ medium image. Per-lot timelines use native `<details>`, so they expand with JS o
 
 ## Not built here (later work packages)
 
-Print stylesheet, OG tags, unpublished/404 variant and static map thumbnail are W03. Privacy lint
-over the built output, html-validate and Lighthouse CI are W02.
+Print stylesheet, OG tags, unpublished/404 variant and static map thumbnail are W03.
 
 ## Tests
 
@@ -89,3 +88,24 @@ uv run pytest -q
 uv run ruff check .
 uv run interrogate -vv --fail-under 100 agritrace_page
 ```
+
+## Checks on the built page (W02; CI job `public-page`)
+
+```sh
+npm ci                                                      # html-validate, Lighthouse CI (dev tools only)
+uv run python -m agritrace_page build fixtures/batch_sample.json out/site
+tools/check_output.sh out/site       # privacy lint + canaries (BM-09); exit 1 on any hit
+npm run validate                     # html-validate, 0 errors (.htmlvalidate.mjs)
+uv run python -m agritrace_page check out/site              # byte budgets (plan §13 E1, BM-16)
+CHROME_PATH=/path/to/chrome npm run lhci:3g                 # BM-03: perf >= 0.90, LCP <= 2 s, <= 500 KB
+CHROME_PATH=/path/to/chrome npm run lhci:4g                 # BM-16: LCP <= 2.5 s, <= 100 KB
+```
+
+- `fixtures/canaries.json` holds fake sensitive strings (phone, Aadhaar-like number, survey
+  number, the fixture's 6-dp pin, a `temp_uploads` path). `check_output.sh` passes each one to
+  `infra/scripts/privacy-lint.py` as `--canary`. The tests plant each canary in the record (the
+  schema refuses it or coarsens the pin) and inject it into a template copy (the lint must fail).
+- Lighthouse reports go to `out/lhci/3g/` and `out/lhci/4g/`. Without `CHROME_PATH`, lhci looks for
+  an installed Chrome. The Robot Lighthouse tests (tag `needs-chrome`) skip when none is found.
+- To add or upgrade an npm tool, use `npm install --legacy-peer-deps`: npm 11 crashes on
+  html-validate's optional jest/vitest peers. `npm ci` from the lockfile works without the flag.
