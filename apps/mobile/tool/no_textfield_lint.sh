@@ -10,9 +10,10 @@ set -euo pipefail
 LIB="$(cd "$(dirname "$0")/.." && pwd)/lib"
 
 # Farmer-facing feature folders (mobile-design.md §1) and the farmer widget kit in core/widgets (M05), which
-# every farmer screen uses. Officer and QC features may use text fields.
+# every farmer screen uses. Officer and QC features may use text fields. auth (M06) is here because farmers sign
+# in on it too: the phone number, code and PIN come from the on-screen keypad.
 FARMER_DIRS=()
-for dir in "$LIB"/features/farmer_* "$LIB"/features/{event_log,problem_report,sell,money,history,settings} \
+for dir in "$LIB"/features/farmer_* "$LIB"/features/{auth,event_log,problem_report,sell,money,history,settings} \
   "$LIB"/core/widgets; do
   [ -d "$dir" ] && FARMER_DIRS+=("$dir")
 done

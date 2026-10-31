@@ -100,7 +100,7 @@ abstract class AppLocalizations {
   /// **'அக்ரிட்ரேஸ்'**
   String get appTitle;
 
-  /// Title of the sign-in placeholder screen (replaced by the OTP flow in M06); at most two words.
+  /// App bar title of the sign-in steps (phone, code, PIN); at most two words.
   ///
   /// In ta, this message translates to:
   /// **'உள்நுழை'**
@@ -141,6 +141,162 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'குரல் கேள்'**
   String get playVoice;
+
+  /// Prompt of the first sign-in step (F01): the farmer's or officer's mobile number, typed on the on-screen keypad.
+  ///
+  /// In ta, this message translates to:
+  /// **'கைபேசி எண்ணை உள்ளிடுக'**
+  String get authPhoneTitle;
+
+  /// Button on the phone step that asks for the SMS sign-in code; at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'குறியீடு பெறு'**
+  String get authGetCode;
+
+  /// Prompt of the OTP step; the app usually fills the code in from the SMS by itself.
+  ///
+  /// In ta, this message translates to:
+  /// **'SMS-இல் வந்த 6 இலக்கக் குறியீட்டை உள்ளிடுக'**
+  String get authOtpTitle;
+
+  /// Button on the OTP step that asks for a new SMS code; at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீண்டும் அனுப்பு'**
+  String get authResend;
+
+  /// Prompt of the PIN step for field and QC officers who already have a PIN.
+  ///
+  /// In ta, this message translates to:
+  /// **'உங்கள் 4 இலக்க PIN-ஐ உள்ளிடுக'**
+  String get authPinTitle;
+
+  /// Prompt on an officer's first sign-in: choose the PIN (entered twice).
+  ///
+  /// In ta, this message translates to:
+  /// **'4 இலக்க PIN ஒன்றைத் தேர்ந்தெடுக்கவும்'**
+  String get authPinChoose;
+
+  /// Prompt for the second entry of a newly chosen PIN.
+  ///
+  /// In ta, this message translates to:
+  /// **'அதே PIN-ஐ மீண்டும் உள்ளிடுக'**
+  String get authPinRepeat;
+
+  /// One sentence shown when the second entry of a new PIN does not match the first.
+  ///
+  /// In ta, this message translates to:
+  /// **'இரண்டு PIN-களும் வேறுபடுகின்றன. மீண்டும் தேர்ந்தெடுக்கவும்.'**
+  String get authPinMismatch;
+
+  /// Button that goes back to the phone step after the PIN step timed out; at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீண்டும் தொடங்கு'**
+  String get authStartAgain;
+
+  /// Screen-reader label of the delete (backspace) key on the sign-in keypad.
+  ///
+  /// In ta, this message translates to:
+  /// **'அழி'**
+  String get authDelete;
+
+  /// Shown for API error otp_invalid (wrong SMS code).
+  ///
+  /// In ta, this message translates to:
+  /// **'தவறான குறியீடு. SMS-ஐப் பார்த்து மீண்டும் முயலவும்.'**
+  String get errorOtpInvalid;
+
+  /// Shown for API error otp_expired (the code is older than 5 minutes).
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தக் குறியீடு காலாவதியானது. மீண்டும் அனுப்பு என்பதைத் தட்டவும்.'**
+  String get errorOtpExpired;
+
+  /// Shown for API error otp_locked (5 wrong codes).
+  ///
+  /// In ta, this message translates to:
+  /// **'பல முறை தவறான குறியீடு. புதிய குறியீட்டிற்கு மீண்டும் அனுப்பு என்பதைத் தட்டவும்.'**
+  String get errorOtpLocked;
+
+  /// Shown for API error pin_invalid; attempts is details.attempts_left.
+  ///
+  /// In ta, this message translates to:
+  /// **'தவறான PIN. இன்னும் {attempts} முறை முயலலாம்.'**
+  String errorPinInvalid(int attempts);
+
+  /// Shown for API error pin_locked (5 wrong PINs lock sign-in for 5 minutes); minutes until details.locked_until, rounded up.
+  ///
+  /// In ta, this message translates to:
+  /// **'பல முறை தவறான PIN. {minutes} நிமிடத்தில் மீண்டும் முயலவும்.'**
+  String errorPinLocked(int minutes);
+
+  /// Shown for API error rate_limited on code requests; minutes from details.retry_after_s, rounded up.
+  ///
+  /// In ta, this message translates to:
+  /// **'புதிய குறியீடு கேட்க {minutes} நிமிடம் காத்திருக்கவும்.'**
+  String errorRateLimited(int minutes);
+
+  /// Sheet text for API error device_in_use (a shared phone still signed in for another user).
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தக் கைபேசி வேறொருவர் பெயரில் உள்நுழைந்துள்ளது. முதலில் வெளியேறவும்.'**
+  String get errorDeviceInUse;
+
+  /// Shown when the 5-minute PIN step ran out (API 401 on PIN verify).
+  ///
+  /// In ta, this message translates to:
+  /// **'உள்நுழைவு நேரம் முடிந்தது. மீண்டும் தொடங்கவும்.'**
+  String get errorSignInExpired;
+
+  /// Shown when the API rejects the phone number (validation_error).
+  ///
+  /// In ta, this message translates to:
+  /// **'கைபேசி எண்ணைச் சரிபார்க்கவும்.'**
+  String get errorPhoneInvalid;
+
+  /// Shown when a sign-in request got no answer (no network).
+  ///
+  /// In ta, this message translates to:
+  /// **'சிக்னல் இல்லை. சிக்னல் வந்ததும் மீண்டும் முயலவும்.'**
+  String get errorNetwork;
+
+  /// Shown when an FPO admin or viewer signs in on the phone app; their work is on the web portal.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தக் கணக்கு இணைய தளத்தில் மட்டுமே செயல்படும், கைபேசியில் அல்ல.'**
+  String get errorPortalOnly;
+
+  /// Shown for any other sign-in failure; the error code itself is never shown.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏதோ தவறு நடந்தது. மீண்டும் முயலவும்.'**
+  String get errorUnknown;
+
+  /// Shown on the phone step when the server ended the session (refresh token reused or the phone was signed out remotely).
+  ///
+  /// In ta, this message translates to:
+  /// **'நீங்கள் வெளியேற்றப்பட்டீர்கள். மீண்டும் உள்நுழையவும்.'**
+  String get sessionEnded;
+
+  /// Button that signs this phone out (settings, and the device-in-use sheet); at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'வெளியேறு'**
+  String get signOut;
+
+  /// Title of the settings screen and tooltip of the gear icon that opens it.
+  ///
+  /// In ta, this message translates to:
+  /// **'அமைப்புகள்'**
+  String get settingsTitle;
+
+  /// Reminder on the settings screen above Sign out when the outbox still holds unsent entries.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்னும் அனுப்பப்படாத பதிவுகள்: {count}. அவை இந்தக் கைபேசியிலேயே இருக்கும்; அனுப்ப சிக்னல் பெறவும்.'**
+  String unsentReminder(int count);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

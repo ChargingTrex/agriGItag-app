@@ -1,4 +1,5 @@
-// ApiClient: timeouts, X-Device-Id and bearer headers, and a healthz call through the generated client.
+// ApiClient: timeouts, no bearer on a public operation, and a healthz call through the generated client.
+// (Bearer, refresh and retry on secured operations: test/auth/interceptor_test.dart.)
 // Requirement: plan §13 A6 (connect 10 s / request 30 s), D-003 (generated client), mobile-design.md §1.
 // Callers: flutter test (CI mobile job).
 
@@ -49,14 +50,9 @@ class _FakeAdapter implements HttpClientAdapter {
 void main() {
   const healthy = {'db': 'ok', 'redis': 'ok', 's3': 'ok'};
 
-  test('healthz parses Health and sends device, auth headers and timeouts', () async {
+  test('healthz parses Health, sends no bearer (public operation) and uses the timeouts', () async {
     final adapter = _FakeAdapter(200, healthy);
-    final client = ApiClient(
-      baseUrl: 'http://api.test',
-      deviceId: 'device-1',
-      accessToken: () => 'tok',
-      httpClientAdapter: adapter,
-    );
+    final client = ApiClient(baseUrl: 'http://api.test', accessToken: () => 'tok', httpClientAdapter: adapter);
 
     final health = await client.healthz();
 
@@ -65,8 +61,7 @@ void main() {
     final request = adapter.last!;
     expect(request.uri.toString(), 'http://api.test/v1/healthz');
     expect(request.method, 'GET');
-    expect(request.headers['X-Device-Id'], 'device-1');
-    expect(request.headers['Authorization'], 'Bearer tok');
+    expect(request.headers.containsKey('Authorization'), isFalse);
     expect(request.connectTimeout, const Duration(seconds: 10));
     expect(request.receiveTimeout, const Duration(seconds: 30));
     expect(request.sendTimeout, const Duration(seconds: 30));
@@ -74,7 +69,7 @@ void main() {
 
   test('no Authorization header when signed out; 503 surfaces as DioException', () async {
     final adapter = _FakeAdapter(503, {'db': 'error: OperationalError', 'redis': 'ok', 's3': 'ok'});
-    final client = ApiClient(baseUrl: 'http://api.test', deviceId: 'device-1', httpClientAdapter: adapter);
+    final client = ApiClient(baseUrl: 'http://api.test', httpClientAdapter: adapter);
 
     await expectLater(client.healthz(), throwsA(isA<DioException>()));
     expect(adapter.last!.headers.containsKey('Authorization'), isFalse);

@@ -2,7 +2,10 @@
     <!-- Release builds need sockets for sync, OTP and the healthz probe (plan §13 A1). Debug and profile
          inherit this through manifest merging, so they have no manifest of their own. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- allowBackup=false (D-027, flutter_secure_storage): a restored backup cannot decrypt Keystore-protected tokens
+         and would crash sign-in; a reinstall or a new phone signs in again and pulls history from the server. -->
     <application
+        android:allowBackup="false"
         android:label="AgriTrace"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

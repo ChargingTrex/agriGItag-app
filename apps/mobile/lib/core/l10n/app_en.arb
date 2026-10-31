@@ -6,7 +6,7 @@
   },
   "signIn": "Sign in",
   "@signIn": {
-    "description": "Title of the sign-in placeholder screen (replaced by the OTP flow in M06); at most two words."
+    "description": "App bar title of the sign-in steps (phone, code, PIN); at most two words."
   },
   "roleFarmer": "Farmer",
   "@roleFarmer": {
@@ -37,5 +37,133 @@
   "playVoice": "Play voice",
   "@playVoice": {
     "description": "Screen-reader label of the speaker icon that plays the recorded voice prompt for a button."
+  },
+  "authPhoneTitle": "Enter mobile number",
+  "@authPhoneTitle": {
+    "description": "Prompt of the first sign-in step (F01): the farmer's or officer's mobile number, typed on the on-screen keypad."
+  },
+  "authGetCode": "Get code",
+  "@authGetCode": {
+    "description": "Button on the phone step that asks for the SMS sign-in code; at most two words."
+  },
+  "authOtpTitle": "Enter the 6-digit code from the SMS",
+  "@authOtpTitle": {
+    "description": "Prompt of the OTP step; the app usually fills the code in from the SMS by itself."
+  },
+  "authResend": "Send again",
+  "@authResend": {
+    "description": "Button on the OTP step that asks for a new SMS code; at most two words."
+  },
+  "authPinTitle": "Enter your 4-digit PIN",
+  "@authPinTitle": {
+    "description": "Prompt of the PIN step for field and QC officers who already have a PIN."
+  },
+  "authPinChoose": "Choose a 4-digit PIN",
+  "@authPinChoose": {
+    "description": "Prompt on an officer's first sign-in: choose the PIN (entered twice)."
+  },
+  "authPinRepeat": "Enter the same PIN again",
+  "@authPinRepeat": {
+    "description": "Prompt for the second entry of a newly chosen PIN."
+  },
+  "authPinMismatch": "The two PINs are different. Choose again.",
+  "@authPinMismatch": {
+    "description": "One sentence shown when the second entry of a new PIN does not match the first."
+  },
+  "authStartAgain": "Start again",
+  "@authStartAgain": {
+    "description": "Button that goes back to the phone step after the PIN step timed out; at most two words."
+  },
+  "authDelete": "Delete",
+  "@authDelete": {
+    "description": "Screen-reader label of the delete (backspace) key on the sign-in keypad."
+  },
+  "errorOtpInvalid": "Wrong code. Check the SMS and try again.",
+  "@errorOtpInvalid": {
+    "description": "Shown for API error otp_invalid (wrong SMS code)."
+  },
+  "errorOtpExpired": "This code is too old. Tap Send again.",
+  "@errorOtpExpired": {
+    "description": "Shown for API error otp_expired (the code is older than 5 minutes)."
+  },
+  "errorOtpLocked": "Too many wrong codes. Tap Send again for a new one.",
+  "@errorOtpLocked": {
+    "description": "Shown for API error otp_locked (5 wrong codes)."
+  },
+  "errorPinInvalid": "Wrong PIN. {attempts} tries left.",
+  "@errorPinInvalid": {
+    "description": "Shown for API error pin_invalid; attempts is details.attempts_left.",
+    "placeholders": {
+      "attempts": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "errorPinLocked": "Too many wrong PINs. Try again in {minutes} min.",
+  "@errorPinLocked": {
+    "description": "Shown for API error pin_locked (5 wrong PINs lock sign-in for 5 minutes); minutes until details.locked_until, rounded up.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "errorRateLimited": "Please wait {minutes} min before asking for a new code.",
+  "@errorRateLimited": {
+    "description": "Shown for API error rate_limited on code requests; minutes from details.retry_after_s, rounded up.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "errorDeviceInUse": "This phone is signed in as someone else. Sign out first.",
+  "@errorDeviceInUse": {
+    "description": "Sheet text for API error device_in_use (a shared phone still signed in for another user)."
+  },
+  "errorSignInExpired": "Sign-in took too long. Start again.",
+  "@errorSignInExpired": {
+    "description": "Shown when the 5-minute PIN step ran out (API 401 on PIN verify)."
+  },
+  "errorPhoneInvalid": "Check the mobile number.",
+  "@errorPhoneInvalid": {
+    "description": "Shown when the API rejects the phone number (validation_error)."
+  },
+  "errorNetwork": "No signal. Try again when signal comes.",
+  "@errorNetwork": {
+    "description": "Shown when a sign-in request got no answer (no network)."
+  },
+  "errorPortalOnly": "This account works on the web portal, not on the phone.",
+  "@errorPortalOnly": {
+    "description": "Shown when an FPO admin or viewer signs in on the phone app; their work is on the web portal."
+  },
+  "errorUnknown": "Something went wrong. Try again.",
+  "@errorUnknown": {
+    "description": "Shown for any other sign-in failure; the error code itself is never shown."
+  },
+  "sessionEnded": "You were signed out. Please sign in again.",
+  "@sessionEnded": {
+    "description": "Shown on the phone step when the server ended the session (refresh token reused or the phone was signed out remotely)."
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Button that signs this phone out (settings, and the device-in-use sheet); at most two words."
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title of the settings screen and tooltip of the gear icon that opens it."
+  },
+  "unsentReminder": "Entries not sent yet: {count}. They stay on this phone; get signal to send them.",
+  "@unsentReminder": {
+    "description": "Reminder on the settings screen above Sign out when the outbox still holds unsent entries.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
   }
 }
