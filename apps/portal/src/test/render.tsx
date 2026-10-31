@@ -1,30 +1,23 @@
 /**
  * Test helper: renders the real route table at a given path with fresh providers.
- * Serves: plan §7.3 P00 tests. Called by: *.test.tsx under src/.
+ * Serves: plan §7.3 P00/P01 tests. Called by: *.test.tsx under src/.
  */
 import { render, type RenderResult } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { AppProviders } from '../AppProviders';
 import { AppRoutes } from '../AppRoutes';
-import { SESSION_STORAGE_KEY, type Session } from '../auth/AuthProvider';
+import { mockState } from '../mocks/handlers';
 import { createQueryClient } from '../queryClient';
-
-/** A complete session as the PIN step would store it. */
-export const TEST_SESSION: Session = {
-  accessToken: 'mock-access-token',
-  refreshToken: 'mock-refresh-token',
-  role: 'fpo_admin',
-  fpoId: 'mock-fpo',
-};
 
 /**
  * Renders the app at `path`.
  * @param path Initial URL path.
- * @param session Session to pre-store (as after a previous sign-in), or null for signed out.
+ * @param signedIn When true the mock refresh "cookie" is set, so the app restores a session on mount exactly
+ *   as after a reload (D-024: no token is stored in the browser).
  * @returns The RTL render result.
  */
-export function renderApp(path: string, session: Session | null = null): RenderResult {
-  if (session) sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+export function renderApp(path: string, signedIn = false): RenderResult {
+  mockState.signedIn = signedIn;
   return render(
     <MemoryRouter initialEntries={[path]}>
       <AppProviders queryClient={createQueryClient()}>

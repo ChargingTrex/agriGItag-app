@@ -19,8 +19,8 @@ export default defineConfig({
     // public/ holds only MSW's mockServiceWorker.js, which production must not serve.
     copyPublicDir: false,
     // The budget that matters is the gzipped initial bundle (scripts/bundle-size.ts, < 400 KB); Vite's raw
-    // 500 KB warning would fire on MUI + React alone.
-    chunkSizeWarningLimit: 800,
+    // 500 KB warning would fire on MUI + React alone. The lazy MapLibre chunk (P01 plot map) is ~1.1 MB raw.
+    chunkSizeWarningLimit: 1200,
   },
   server: { port: 5173, proxy: { '/v1': apiUrl } },
   preview: { port: 4173, proxy: { '/v1': apiUrl } },

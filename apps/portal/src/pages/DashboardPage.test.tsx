@@ -7,11 +7,11 @@ import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { server } from '../test/setup';
-import { renderApp, TEST_SESSION } from '../test/render';
+import { renderApp } from '../test/render';
 
 describe('DashboardPage', () => {
   it('shows the API health from GET /v1/healthz', async () => {
-    renderApp('/', TEST_SESSION);
+    renderApp('/', true);
     expect(await screen.findByText(/API reachable/)).toHaveTextContent('database ok');
   });
 
@@ -24,7 +24,7 @@ describe('DashboardPage', () => {
         ),
       ),
     );
-    renderApp('/', TEST_SESSION);
+    renderApp('/', true);
     expect(
       await screen.findByRole('heading', { name: 'Sign in to AgriTrace' }),
     ).toBeInTheDocument();

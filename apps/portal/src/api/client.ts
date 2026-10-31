@@ -2,12 +2,13 @@
  * The portal's API client: `openapi-fetch` over the types generated from packages/openapi/openapi.json.
  * Serves: plan §7.3 P00 (generated client), docs/api/conventions.md (error envelope, `/v1` base path).
  * Called by: src/auth/AuthProvider.tsx (creates one client per session and exposes it as `useAuth().api`),
- * screens via `unwrap(api.GET('/v1/...'))`.
+ * screens via `unwrap(api.GET('/v1/...'))`, src/auth/authApi.ts (`unwrap`).
  *
  * DECISION D-003: the client is `openapi-fetch` typed by `openapi-typescript` output that is never edited.
  *   ADV: paths, params and bodies are checked against the contract at compile time; the runtime is ~6 KB and
  *   regeneration is one command (`npm run gen:api`) with a CI diff check.
- *   COMPROMISE: endpoints missing from the spec (B02's /v1/auth/*) cannot use it yet, see src/auth/authApi.ts.
+ *   COMPROMISE: an endpoint missing from the spec cannot be called until the backend WP adds it (P01 leaves
+ *   TODOs for the phone reveal, farmer reject and per-farmer plot list instead of hand-typed calls).
  */
 import createClient, { type Client } from 'openapi-fetch';
 import { toApiError } from './errors';
@@ -36,7 +37,8 @@ export function createApiClient(accessToken: string | null, onUnauthorized: () =
       return request;
     },
     /**
-     * Reports 401 responses. TODO(B02): try `POST /v1/auth/refresh` once before signing out.
+     * Reports 401 responses. The access token is refreshed before it expires (AuthProvider), so a 401 here
+     * means the device was signed out or revoked: the session ends rather than retrying.
      * @param params Middleware parameters.
      * @param params.response The incoming response.
      * @returns The response unchanged.

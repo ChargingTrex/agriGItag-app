@@ -37,7 +37,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B02: multi-FPO users sign in to their oldest membership; add an FPO switch when needed (D-024 Revisit).
 - [ ] B02: refresh tokens have no idle expiry and office roles get no PIN prompt on app open; SEC review to decide (D-024 Revisit).
 - [ ] B02/B03: farmers and their users/memberships are created by registry (B03); identity only signs existing users in.
-- [ ] B02/P01: portal adapts to the auth contract differences listed in docs/api/conventions.md "Authentication".
+- [x] B02/P01: portal adapts to the auth contract differences listed in docs/api/conventions.md "Authentication" (P01: `kind`, `pin_token`, first PIN typed twice, `X-Client: web`, cookie refresh, device id in localStorage).
 - [ ] B02: revisit `tests/conftest.py` JWT_SECRET (23 bytes triggers PyJWT InsecureKeyLengthWarning).
 - [ ] B02 (B02-r1 P2-6, accepted for the pilot): admin-issued initial PIN for office users (B03/P01); today the first OTP sets the PIN.
 - [ ] B02 (B02-r1 P3-7): security event log lines (OTP lock, PIN lock, refresh reuse, `device_in_use`) with no codes or tokens, when observability lands.
@@ -73,7 +73,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Q00 (W02 owner): `t.me/+91…` links stay masked; a phone number in a non-WhatsApp URL path stays masked (X17, by decision); two fail-closed false positives (`Pest survey: 3 traps checked`, `Mobile app build 1500`); privacy-lint.py is ~400 lines and should be split when W02 touches it. (Done in r4: `.jsonl/.yaml/.vcf/.map`, `R.S./T.S. No.`, `&ndash;`/U+2212.)
 - [ ] P00: `apps/portal/ci-job.yml` must be pasted under `jobs:` in `.github/workflows/ci.yml` (Orchestrator, at merge).
 - [ ] B12: `make clients` must call `npm run gen:api` (writes `apps/portal/src/api/generated/schema.d.ts`) and the Dart generator.
-- [ ] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); B02 decided: httpOnly refresh cookie with `X-Client: web` (D-022, D-024); P01 removes sessionStorage.
+- [x] P00/B02: portal token storage is sessionStorage (`shortcut:` comment); B02 decided: httpOnly refresh cookie with `X-Client: web` (D-022, D-024); P01 removed sessionStorage (access token in React state only).
 - [ ] Infra: no `portal` service in docker-compose yet; production must serve the portal and `/v1` from one origin (CORS/cookie decision with B02).
 - [ ] Ledger: `lightningcss` (Vite build dependency) is MPL-2.0, build-time only, not shipped; accepted under D-018 as file-level copyleft in unmodified use (same reasoning as certifi/pathspec).
 - [ ] B09: enforce Σ `batch_shares.share_pct` = 100 ± 0.01 in the service (spans rows; not a CHECK).
@@ -146,3 +146,10 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B05: B08 must turn `grade_computations.per_parameter[*].outcome == "profile_incomplete"` into the info flag `profile_incomplete`, handle `rules.check_lot` kwargs `{lot_id, batch_id, reading_id, hint: "moisture_trail_override"}`, and sweep readings with `reason_code` in case an enqueue was lost.
 - [ ] B05: coffee-style `exception_flags` (e.g. `monsooned`) are supported by the engine but no API field sets them on a batch yet.
 - [ ] B05: the AGMARK chilli profile allows only instrument/lab moisture, so visual moisture is rejected at entry (`source_not_allowed`) even though the profile caps visual at Standard; confirm the intended policy with compliance.
+- [ ] B03/P01 (contract gap, blocks P01 acceptance "phone masked except audited reveal"): `FarmerOut` carries no phone and there is no reveal endpoint. Proposal: add `phone_masked` (`XXXXXX1234`) to `FarmerOut` and an audited `GET /v1/farmers/{id}/phone` → `{phone}` (fpo_admin only, audit row per call); P01 then adds the column and the Reveal button.
+- [ ] B03/P01: no way to reject a pending farmer (only `POST /v1/farmers/{id}/approve`); add `POST /v1/farmers/{id}/reject {reason_text}` (or a `rejected` status) and P01 adds the button with a reason.
+- [ ] B03/P01: no per-farmer plot list; add `GET /v1/plots?farmer_id=` (Page, `?fields=`) so the farmer detail lists all plots (gap analysis "Multiple farm lands"). Until then plot pages open by URL (`/members/plots/:plotId`, P02 links from flags).
+- [ ] B03/P01: `GET /v1/farmers` has no `q`/`village_id` filter and no `?fields=`; the portal search filters only loaded pages (`shortcut:` in MembersPage.tsx).
+- [ ] B03/P01: plots do not name their crop/GI tag and FPOs have no bounding box; the plot map uses the first GI crop's region and its bbox as the tile area (`shortcut:` in PlotPage.tsx).
+- [ ] P01 ops: tile.openstreetmap.org allows light use only; production needs its own tile host or a provider. Satellite layer uses EOX Sentinel-2 cloudless 2016 (CC BY 4.0): compliance to confirm; the reverse proxy must serve `.mjs` (MapLibre worker) as `text/javascript`.
+- [ ] P01 risk: two portal tabs restoring a session at the same moment both refresh the cookie and can trip `refresh_reused` (device signed out); acceptable for the pilot, revisit with a BroadcastChannel lock if users report it.

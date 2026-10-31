@@ -1,12 +1,15 @@
 /**
- * Sign-in page: mobile number -> SMS code -> 4-digit PIN (office roles), one field per step.
+ * Sign-in page: mobile number -> SMS code -> 4-digit PIN (office roles), one field per step. On an office
+ * user's first sign-in (`pin_set: false`) the PIN is chosen and typed twice.
  * Serves: System Architecture "Login" (OTP, admins add a PIN), User Flows "Log in once ... No passwords",
- * plan §7.3 P00 (login passes with MSW). Called by: src/AppRoutes.tsx (`/login`).
+ * D-024, plan §7.3 P00 (login passes with MSW) and P01 (final B02 contract). Called by: src/AppRoutes.tsx
+ * (`/login`).
  */
 import { zodResolver } from '@hookform/resolvers/zod';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
+import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -15,8 +18,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Navigate, useLocation } from 'react-router';
 import { z } from 'zod';
-import { errorMessage } from '../api/errors';
-import { requestOtp, verifyOtp, verifyPin, type TokenResponse } from './authApi';
+import { ApiError, errorMessage } from '../api/errors';
+import { requestOtp, verifyOtp, verifyPin } from './authApi';
 import { useAuth } from './AuthProvider';
 
 const phoneForm = z.object({
@@ -27,7 +30,37 @@ const otpForm = z.object({
 });
 const pinForm = z.object({ value: z.string().regex(/^\d{4}$/, 'Enter your 4-digit PIN.') });
 
-type Step = { kind: 'phone' } | { kind: 'otp'; phone: string } | { kind: 'pin'; token: string };
+type Step =
+  | { kind: 'phone' }
+  | { kind: 'otp'; phone: string }
+  | { kind: 'pin'; token: string; pinSet: boolean }
+  | { kind: 'confirm'; token: string; pin: string };
+
+/**
+ * The message for a failed sign-in step: the generated text for the code plus the limit the API sent.
+ * @param error Whatever the step threw.
+ * @returns One sentence or two, e.g. "The PIN is not correct. 3 attempts left."
+ */
+export function signInError(error: unknown): string {
+  const message = errorMessage(error);
+  if (!(error instanceof ApiError)) return message;
+  const details = (error.details ?? {}) as Record<string, unknown>;
+  const { attempts_left: attempts, locked_until: until, retry_after_s: wait } = details;
+  if (error.code === 'pin_invalid' && typeof attempts === 'number') {
+    return `${message} ${String(attempts)} attempts left.`;
+  }
+  if (error.code === 'pin_locked' && typeof until === 'string') {
+    const time = new Date(until).toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `${message} You can try again at ${time}.`;
+  }
+  if (error.code === 'rate_limited' && typeof wait === 'number') {
+    return `${message} Try again in ${String(wait)} seconds.`;
+  }
+  return message;
+}
 
 /** Props of one login step. */
 interface StepFormProps {
@@ -64,7 +97,7 @@ function StepForm(props: StepFormProps) {
     try {
       await props.onSubmit(value);
     } catch (error) {
-      setError('root', { message: errorMessage(error) });
+      setError('root', { message: signInError(error) });
     }
   });
   return (
@@ -99,26 +132,10 @@ export function LoginPage() {
   const location = useLocation();
   const [step, setStep] = useState<Step>({ kind: 'phone' });
 
+  if (session === undefined) return <LinearProgress aria-label="Restoring session" />;
   if (session) {
     const from = (location.state as { from?: string } | null)?.from ?? '/';
     return <Navigate to={from} replace />;
-  }
-
-  /**
-   * Finishes sign-in, or moves to the PIN step when the role needs one.
-   * @param tokens Response of OTP or PIN verify.
-   */
-  function accept(tokens: TokenResponse): void {
-    if (tokens.pin_required) {
-      setStep({ kind: 'pin', token: tokens.access_token });
-      return;
-    }
-    signIn({
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      role: tokens.role,
-      fpoId: tokens.fpo_id,
-    });
   }
 
   return (
@@ -151,21 +168,40 @@ export function LoginPage() {
             inputMode="numeric"
             autoComplete="one-time-code"
             onSubmit={async (code) => {
-              accept(await verifyOtp(step.phone, code));
+              const result = await verifyOtp(step.phone, code);
+              if (result.kind === 'session') signIn(result);
+              else setStep({ kind: 'pin', token: result.pin_token, pinSet: result.pin_set });
             }}
           />
         )}
         {step.kind === 'pin' && (
           <StepForm
             key="pin"
-            label="PIN"
+            label={step.pinSet ? 'PIN' : 'Choose a 4-digit PIN'}
             schema={pinForm}
-            submitLabel="Sign in"
+            submitLabel={step.pinSet ? 'Sign in' : 'Next'}
             inputMode="numeric"
-            autoComplete="off"
+            autoComplete={step.pinSet ? 'current-password' : 'new-password'}
             secret
             onSubmit={async (pin) => {
-              accept(await verifyPin(step.token, pin));
+              if (step.pinSet) signIn(await verifyPin(step.token, pin));
+              else setStep({ kind: 'confirm', token: step.token, pin });
+            }}
+          />
+        )}
+        {step.kind === 'confirm' && (
+          <StepForm
+            key="confirm"
+            label="Type the PIN again"
+            schema={z.object({
+              value: z.string().refine((value) => value === step.pin, 'The two PINs differ.'),
+            })}
+            submitLabel="Save PIN and sign in"
+            inputMode="numeric"
+            autoComplete="new-password"
+            secret
+            onSubmit={async (pin) => {
+              signIn(await verifyPin(step.token, pin));
             }}
           />
         )}
