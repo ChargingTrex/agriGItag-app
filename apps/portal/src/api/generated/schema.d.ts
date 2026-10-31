@@ -392,7 +392,7 @@ export interface paths {
         put?: never;
         /**
          * Sign off final packing
-         * @description Sign off final packing.
+         * @description Packed kg may not exceed graded kg. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).
          */
         post: operations["final_packing_v1_batches__batch_id__final_packing_post"];
         delete?: never;
@@ -452,7 +452,7 @@ export interface paths {
         put?: never;
         /**
          * Approve the batch grading
-         * @description Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing.
+         * @description Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).
          */
         post: operations["approve_grading_v1_batches__batch_id__grading_approve_post"];
         delete?: never;
@@ -492,7 +492,7 @@ export interface paths {
         put?: never;
         /**
          * Publish the public page (final sign-off)
-         * @description Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, `publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge.
+         * @description Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, `publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).
          */
         post: operations["publish_v1_batches__batch_id__publish_post"];
         delete?: never;
@@ -1292,7 +1292,7 @@ export interface paths {
         put?: never;
         /**
          * Receive a lot at the processor (idempotent on client_id)
-         * @description Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched, send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).
+         * @description Stage 7 intake of a lot by a QC officer or FPO admin (D-040; the QC phone sends the same body as push kind `lot_intake`). The lot is `ready_for_sale`, or `open`/`drying` and passes the ready gate here (latest drying-end moisture at or under the limit). Without `processor_id` the FPO's only own processor receives it. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched (FPO admin only), send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).
          */
         post: operations["create_intake_v1_intakes_post"];
         delete?: never;
@@ -1874,7 +1874,7 @@ export interface paths {
         put?: never;
         /**
          * Push offline entries
-         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`), `farmer` (`FarmerIn`, field officer or FPO admin, D-031) and `assist_session` (`AssistStartIn`, field officer, D-032); send `farmer`, then `assist_session`, then the entries that use them. An entry's `assist_session_id` records assist mode for that entry only (ended sessions accepted). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, `assist_session_invalid`, `farmer_phone_taken`, `conflict`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
+         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`), `farmer` (`FarmerIn`, field officer or FPO admin, D-031), `assist_session` (`AssistStartIn`, field officer, D-032) and `lot_intake` (`IntakeIn` without `client_id`, QC officer or FPO admin: receives the lot, D-040); send `farmer`, then `assist_session`, then the entries that use them, and a lot's intake reading before its `lot_intake`. An entry's `assist_session_id` records assist mode for that entry only (ended sessions accepted): checked against the farmer of a consent, plot, lot event or lot reading, refused on batch readings and batch events, ignored on `farmer`, `flag_resolution`, `assist_session` and `lot_intake` (D-042). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, `assist_session_invalid`, `farmer_phone_taken`, `conflict`, `field_required`, `gate_not_met`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
          */
         post: operations["sync_push_v1_sync_push_post"];
         delete?: never;
@@ -4642,7 +4642,7 @@ export interface components {
             /**
              * Lot Id
              * Format: uuid
-             * @description Lot received; must be `ready_for_sale`.
+             * @description Lot received; `ready_for_sale`, or `open`/`drying` with a drying-end moisture that passes the ready gate (run here, D-040).
              */
             lot_id: string;
             /**
@@ -4652,10 +4652,9 @@ export interface components {
             price_per_kg?: number | string | null;
             /**
              * Processor Id
-             * Format: uuid
-             * @description Receiving processor.
+             * @description Receiving processor (own or shared); absent → the FPO's only own processor (D-040), zero or several own processors → `field_required`.
              */
-            processor_id: string;
+            processor_id?: string | null;
             /** @description Quantity received, unit `kg`. */
             received: components["schemas"]["Quantity-Input"];
             /**
@@ -4678,7 +4677,7 @@ export interface components {
             /**
              * Accepted By User Id
              * Format: uuid
-             * @description Admin who accepted the lot.
+             * @description QC officer or FPO admin who accepted the lot.
              */
             accepted_by_user_id: string;
             /**
@@ -4737,25 +4736,28 @@ export interface components {
         };
         /**
          * IntakePayload
-         * @description Stage 7 sale of a lot to the processor, as recorded on the lot's timeline.
+         * @description Stage 7 sale of a lot to the processor, as a note on the lot's timeline only.
+         *
+         *     It does not receive the lot: no `lot_intakes` row, no status change (D-040). To receive a lot use push
+         *     kind `lot_intake` or `POST /v1/intakes`.
          */
         IntakePayload: {
             /**
              * Moisture Reading Id
-             * @description Client id of the intake moisture reading taken at the gate.
+             * @description Client id of the intake moisture reading taken at the gate (note only).
              */
             moisture_reading_id?: string | null;
             /**
              * Price Per Kg
-             * @description Price paid in INR per kg (optional).
+             * @description Price noted in INR per kg (optional).
              */
             price_per_kg?: number | string | null;
             /**
              * Processor Id
-             * @description Processor that received the lot.
+             * @description Processor named in the note (the lot is received only by `lot_intake`).
              */
             processor_id?: string | null;
-            /** @description Quantity received, unit `kg`. */
+            /** @description Quantity noted, unit `kg` (not used for shares or reconciliation). */
             received?: components["schemas"]["Quantity-Input"] | null;
         };
         /**
@@ -7622,18 +7624,18 @@ export interface components {
         SyncEntry: {
             /**
              * Assist Session Id
-             * @description Assist session this entry was captured in (D-032): one of the caller's sessions, open or ended, pushed earlier as an `assist_session` entry or started online. Records assist mode for this entry only (event version, audit row, consent witness); the entry's farmer must be the session's (`forbidden` otherwise); unknown or another officer's → `assist_session_invalid`. When absent, the `X-Assist-Session` header applies. Ignored on `farmer` entries.
+             * @description Assist session this entry was captured in (D-032): one of the caller's sessions, open or ended, pushed earlier as an `assist_session` entry or started online. Records assist mode for this entry only (event version, audit row, consent witness); the entry's farmer must be the session's (`forbidden` otherwise: consent, plot, lot event, reading on a lot); a batch reading or batch event with it → `forbidden` (D-042); unknown or another officer's → `assist_session_invalid`. When absent, the `X-Assist-Session` header applies. Ignored (no lookup, no assist fields) on `farmer`, `flag_resolution`, `assist_session` and `lot_intake` entries.
              */
             assist_session_id?: string | null;
             /**
              * Client Id
              * Format: uuid
-             * @description Id of the record created (event version, reading, plot, consent, farmer, assist session); idempotency key.
+             * @description Id of the record created (event version, reading, plot, consent, farmer, assist session, lot intake); idempotency key.
              */
             client_id: string;
             /**
              * Data
-             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id); `farmer`: `FarmerIn` (field officer or FPO admin; stored `pending`, D-031); `assist_session`: `AssistStartIn` without `client_id` (field officer only, D-032). Otherwise the entry's `client_id` is used as the record's id.
+             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id); `farmer`: `FarmerIn` (field officer or FPO admin; stored `pending`, D-031); `assist_session`: `AssistStartIn` without `client_id` (field officer only, D-032); `lot_intake`: `IntakeIn` without `client_id` (QC officer or FPO admin; receives the lot, `processor_id` optional, corrections FPO admin only; its `server_id` is the intake id, D-040). Otherwise the entry's `client_id` is used as the record's id.
              */
             data: {
                 [key: string]: unknown;
@@ -7643,7 +7645,7 @@ export interface components {
              * @description What `data` holds.
              * @enum {string}
              */
-            kind: "event_version" | "quality_reading" | "plot" | "consent" | "flag_resolution" | "farmer" | "assist_session";
+            kind: "event_version" | "quality_reading" | "plot" | "consent" | "flag_resolution" | "farmer" | "assist_session" | "lot_intake";
         };
         /**
          * SyncHealthRow
@@ -11045,6 +11047,15 @@ export interface operations {
                     "application/json": components["schemas"]["IntakeOut"];
                 };
             };
+            /** @description `forbidden`: not a QC officer or FPO admin, or a correction by a QC officer. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description `not_found`: lot, processor, superseded intake or moisture reading. */
             404: {
                 headers: {
@@ -11054,8 +11065,17 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
-            /** @description `client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_ready`, `lot_already_batched`, `intake_not_current`. */
+            /** @description `client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `moisture_gate_failed`, `lot_not_ready`, `lot_already_batched`, `intake_not_current`. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `field_required` (`processor_id`: the FPO has zero or several own processors), `validation_error`. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

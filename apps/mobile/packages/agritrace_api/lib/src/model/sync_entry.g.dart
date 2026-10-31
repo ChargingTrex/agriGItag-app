@@ -20,6 +20,8 @@ const SyncEntryKindEnum _$syncEntryKindEnum_farmer =
     const SyncEntryKindEnum._('farmer');
 const SyncEntryKindEnum _$syncEntryKindEnum_assistSession =
     const SyncEntryKindEnum._('assistSession');
+const SyncEntryKindEnum _$syncEntryKindEnum_lotIntake =
+    const SyncEntryKindEnum._('lotIntake');
 
 SyncEntryKindEnum _$syncEntryKindEnumValueOf(String name) {
   switch (name) {
@@ -37,6 +39,8 @@ SyncEntryKindEnum _$syncEntryKindEnumValueOf(String name) {
       return _$syncEntryKindEnum_farmer;
     case 'assistSession':
       return _$syncEntryKindEnum_assistSession;
+    case 'lotIntake':
+      return _$syncEntryKindEnum_lotIntake;
     default:
       throw ArgumentError(name);
   }
@@ -51,6 +55,7 @@ final BuiltSet<SyncEntryKindEnum> _$syncEntryKindEnumValues =
   _$syncEntryKindEnum_flagResolution,
   _$syncEntryKindEnum_farmer,
   _$syncEntryKindEnum_assistSession,
+  _$syncEntryKindEnum_lotIntake,
 ]);
 
 Serializer<SyncEntryKindEnum> _$syncEntryKindEnumSerializer =
@@ -66,6 +71,7 @@ class _$SyncEntryKindEnumSerializer
     'flagResolution': 'flag_resolution',
     'farmer': 'farmer',
     'assistSession': 'assist_session',
+    'lotIntake': 'lot_intake',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'event_version': 'eventVersion',
@@ -75,6 +81,7 @@ class _$SyncEntryKindEnumSerializer
     'flag_resolution': 'flagResolution',
     'farmer': 'farmer',
     'assist_session': 'assistSession',
+    'lot_intake': 'lotIntake',
   };
 
   @override
