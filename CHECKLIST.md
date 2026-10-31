@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 31 % (20/64 items)
+Completion: 33 % (21/64 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -60,7 +60,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B16 — QC intake via sync (`lot_intake` push kind, `POST /intakes` for QC, processor default, moisture gate at intake; D-040), non-GI holds (D-041), assist_session_id per kind (D-042) — wave 6 — worker: Opus (micro-patch in progress) — reviewer: BE/SEC PASS-PENDING-STACK r1 (P2: resend check before lock, fixed before merge) — verifier:
 - [x] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: Opus (1 round + 2 micro-patches) — reviewer: MOB PASS r1 — verifier: Orchestrator-run suite PASS (660 on main); device checks → Q01
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
-- [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (2 rounds) — reviewer: MOB/SEC FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite (post-merge, see CHANGELOG); device checks → Q01
+- [x] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (2 rounds) — reviewer: MOB/SEC FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (724 on main); device checks → Q01
 - [ ] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (round 2 done a483908, waits for M10 merge) — reviewer: MOB FAIL r1 / r2 pending — verifier:
 - [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: — reviewer: — verifier:
 - [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
