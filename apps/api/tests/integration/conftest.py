@@ -3,18 +3,15 @@
 Serves: B09 and B10 integration tests (Dataflow Stages 4–10); moved here from test_lots_batches.py in B10
 round 2 (review B10-r1 P3-5) so test modules share the seeded world without importing each other.
 Callers: pytest; tests/integration/test_lots_batches.py and test_publishing.py request `world` (and through it
-`migrated`). Needs Docker (containers from tests/conftest.py `stack`).
+`migrated` from tests/conftest.py). Needs Docker (containers from tests/conftest.py `stack`).
 """
 
 import secrets
-import subprocess
-import sys
 import uuid
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -29,28 +26,6 @@ from agritrace.modules.identity.models import User
 from agritrace.modules.quality.models import Instrument
 from agritrace.modules.quality.profiles.loader import load_profile
 from agritrace.modules.registry.models import Crop, Farmer, Fpo, GiTag, Plot, Processor
-
-API_DIR = Path(__file__).parents[2]
-
-
-@pytest.fixture(scope="session")
-def migrated(stack: None) -> None:
-    """Migrate the test database to head (a no-op when another test module already did).
-
-    Args:
-        stack: the running containers (fixture).
-
-    Raises:
-        AssertionError: alembic failed (its output is in the message).
-
-    Side effects:
-        Creates every table and trigger up to the latest revision.
-    """
-    alembic = str(Path(sys.executable).parent / "alembic")
-    result = subprocess.run(  # noqa: S603
-        [alembic, "upgrade", "head"], cwd=API_DIR, capture_output=True, text=True, check=False
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
 
 
 @dataclass
