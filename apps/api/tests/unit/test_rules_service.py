@@ -17,10 +17,18 @@ from agritrace.core.auth import CurrentUser, get_current_user
 from agritrace.core.db import get_session
 from agritrace.core.enums import FlagStatus, FlagSubject, Role, Severity
 from agritrace.main import create_app
+from agritrace.modules.lots_batches.models import Lot
 from agritrace.modules.rules_flags.models import Flag
 from agritrace.modules.rules_flags.rules import event_location
-from agritrace.modules.rules_flags.rules.context import EventContext
-from agritrace.modules.rules_flags.service import assignee, dedupe_key, resolve_from_sync
+from agritrace.modules.rules_flags.rules.context import EventContext, FlagCandidate
+from agritrace.modules.rules_flags.service import (
+    RULE_PASSED,
+    apply_hold,
+    assignee,
+    dedupe_key,
+    reopens,
+    resolve_from_sync,
+)
 
 FPO = uuid.uuid4()
 
@@ -35,9 +43,40 @@ def test_recheck_gives_the_same_dedupe_key() -> None:
 
 
 def test_holds_go_to_the_admin() -> None:
-    """Hold → fpo_admin; warn and info → field_officer."""
-    assert assignee(Severity.HOLD) == Role.FPO_ADMIN
-    assert assignee(Severity.WARN) == assignee(Severity.INFO) == Role.FIELD_OFFICER
+    """Hold → fpo_admin; warn and info → field_officer, except practice-tag contradictions (FR56)."""
+    assert assignee(Severity.HOLD, "yield_over_ceiling") == Role.FPO_ADMIN
+    assert (
+        assignee(Severity.WARN, "event_off_plot")
+        == assignee(Severity.INFO, "clock_skew")
+        == Role.FIELD_OFFICER
+    )
+    assert assignee(Severity.WARN, "practice_tag_contradiction") == Role.FPO_ADMIN
+
+
+def test_closed_flag_reopens_when_the_system_closed_it_or_it_got_worse() -> None:
+    """`rule_passed` closures always reopen; a reviewer's decision reopens only on a higher severity."""
+    hold = FlagCandidate(FlagSubject.LOT, uuid.uuid4(), "yield_over_ceiling", Severity.HOLD)
+    warn = FlagCandidate(FlagSubject.LOT, uuid.uuid4(), "yield_over_ceiling", Severity.WARN)
+    auto = _flag(Severity.HOLD, FlagStatus.FIXED)
+    auto.resolution_reason_code = RULE_PASSED
+    assert reopens(auto, hold)
+    looked_fine = _flag(Severity.WARN, FlagStatus.CLEARED)
+    looked_fine.resolution_reason_code = "land_record_checked"
+    assert reopens(looked_fine, hold)
+    assert not reopens(looked_fine, warn)
+
+
+def test_apply_hold_keeps_another_modules_reason() -> None:
+    """A rules hold sets and clears its own reason; a B09 reason survives a rules hold being cleared."""
+    lot = Lot(gi_eligible=True, gi_hold_reason=None)
+    apply_hold(lot, ["yield_over_ceiling"])
+    assert (lot.gi_eligible, lot.gi_hold_reason) == (False, "flags: yield_over_ceiling")
+    apply_hold(lot, [])
+    assert (lot.gi_eligible, lot.gi_hold_reason) == (True, None)
+    lot.gi_eligible, lot.gi_hold_reason = False, "gi_recheck_failed"
+    apply_hold(lot, ["yield_over_ceiling"])
+    apply_hold(lot, [])
+    assert (lot.gi_eligible, lot.gi_hold_reason) == (False, "gi_recheck_failed")
 
 
 def _flag(severity: Severity, status: FlagStatus = FlagStatus.OPEN) -> Flag:
@@ -60,7 +99,7 @@ def _flag(severity: Severity, status: FlagStatus = FlagStatus.OPEN) -> Flag:
         details={},
         dedupe_key="k",
         status=status,
-        assigned_role=assignee(severity),
+        assigned_role=assignee(severity, "event_off_plot"),
         raised_at=datetime.now(UTC),
     )
 

@@ -92,6 +92,8 @@ class LotContext:
     declared_acres: Decimal | None = None
     # (ceiling kg/acre, warn margin %, hold margin %) from the Standards Profile; None when it has none.
     yield_limits: tuple[Decimal, Decimal, Decimal] | None = None
+    # `pass`, `warn` or `hold` from `quality.service.yield_outcome_for_crop`; None when it cannot be computed.
+    yield_outcome: str | None = None
     trail_overrides: tuple[ReadingFacts, ...] = ()
 
 

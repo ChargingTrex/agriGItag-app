@@ -457,11 +457,11 @@ class UndoWindowClosedError(AppError):
 
 
 class FlagNotOpenError(AppError):
-    """A flag was already resolved (cleared or fixed), or an escalated one is resolved again by an officer."""
+    """A flag was already resolved (cleared or fixed); only open or escalated flags can be resolved."""
 
     code, status, message_key = "flag_not_open", 409, "error.flag_not_open"
     message = "This flag is already resolved."
-    fix = "Reload the flag; if the problem is back, the next rule check raises it again."
+    fix = "Reload the flag; a later rule run reopens it if the problem comes back worse."
 
 
 class ResolutionForbiddenError(AppError):

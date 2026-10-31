@@ -120,8 +120,9 @@ async def get_flag(session: Session, user: Reader, flag_id: uuid.UUID) -> FlagOu
         "Records the review outcome (FR70): `looks_fine` → cleared, `fixed` → fixed, `escalated` → handed to "
         "the FPO admin. A coded `reason_code` is required. Field officers resolve info and warn flags; only "
         "an FPO admin resolves a `hold` or an escalated flag. Clearing the last hold of a lot makes it "
-        "eligible for GI batches again. If the problem is still there, the next rule check does not reopen "
-        "a resolved flag."
+        "eligible for GI batches again. A later rule run reopens the flag when the problem comes back worse "
+        "(higher severity); at the same severity a `looks_fine` decision stands. Open and escalated flags "
+        "whose rule no longer fires are closed by the system as `fixed` / `rule_passed`."
     ),
     responses={
         401: E401,

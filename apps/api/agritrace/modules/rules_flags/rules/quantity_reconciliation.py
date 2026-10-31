@@ -41,8 +41,12 @@ def _lot(ctx: LotContext) -> list[FlagCandidate]:
     Returns:
         One `quantity_mismatch` warn listing every broken link, or nothing.
     """
-    chain = {"harvested": ctx.harvested_kg, "packed": ctx.packed_kg, "received": ctx.received_kg}
-    chain["used"] = ctx.used_kg
+    chain = {
+        "harvested": ctx.harvested_kg,
+        "packed": ctx.packed_kg,
+        "received": ctx.received_kg,
+        "used": ctx.used_kg,
+    }
     steps = [(name, kg) for name, kg in chain.items() if kg is not None]
     problems = []
     for (prev, base), (name, kg) in zip(steps, steps[1:], strict=False):
@@ -66,6 +70,8 @@ def _batch(ctx: BatchContext) -> list[FlagCandidate]:
         One `batch_quantity_unattributed` warn when there are kilograms but no shares, or the two differ by
         more than 5 %; else nothing.
     """
+    # shortcut: normal grading loss above 5 % also warns here (B08 review P2-4); Architect-Gate ruling
+    #   pending on comparing shares with received kg instead, before B09 lets warns block publish.
     if not ctx.batch_kg:
         return []
     shares = ctx.shares_kg or Decimal(0)

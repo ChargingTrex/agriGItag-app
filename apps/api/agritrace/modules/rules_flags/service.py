@@ -74,6 +74,8 @@ RESOLVERS = (Role.FIELD_OFFICER, Role.FPO_ADMIN)
 DEAD_EVENTS = (EventStatus.UNDONE, EventStatus.SUPERSEDED)
 RULE_PASSED = "rule_passed"
 DEFAULT_BUFFER_M = 50.0  # plots without a GI tag or region still get some GPS-drift allowance (FR32)
+ADMIN_RULES = {"practice_tag_contradiction"}  # FR56: contradictions go to the FPO Admin whatever the severity
+SEVERITY_RANK = {Severity.INFO: 0, Severity.WARN: 1, Severity.HOLD: 2}
 HOLD_PREFIX = "flags: "  # marks a gi_hold_reason this module set, so it never clears one B09 set
 
 
@@ -93,16 +95,36 @@ def dedupe_key(candidate: FlagCandidate) -> str:
     return f"{candidate.rule_code}:{candidate.subject_id}:{digest}"
 
 
-def assignee(severity: Severity) -> Role:
+def assignee(severity: Severity, rule_code: str) -> Role:
     """Pick the role that reviews a flag (FR70).
 
     Args:
         severity: the flag's severity.
+        rule_code: the rule that raised it.
 
     Returns:
-        `fpo_admin` for a hold (it keeps a lot out of GI batches), else `field_officer`.
+        `fpo_admin` for a hold (it keeps a lot out of GI batches) and for practice-tag contradictions (FR56
+        "flagged for the FPO Admin"), else `field_officer`.
     """
-    return Role.FPO_ADMIN if severity == Severity.HOLD else Role.FIELD_OFFICER
+    # shortcut: the admin-reviewed rule list is code; make it configurable when B13 adds per-rule settings.
+    admin = severity == Severity.HOLD or rule_code in ADMIN_RULES
+    return Role.FPO_ADMIN if admin else Role.FIELD_OFFICER
+
+
+def reopens(flag: Flag, candidate: FlagCandidate) -> bool:
+    """Tell whether a closed flag must open again because its rule fired again.
+
+    Args:
+        flag: the stored flag, closed (cleared, fixed, or escalated-and-resolved).
+        candidate: the new finding with the same `dedupe_key`.
+
+    Returns:
+        True when the system closed it (`rule_passed`: the problem is back), or when the new severity is
+        higher than the one the reviewer closed (e.g. a looked-fine warn is now a hold). False when a
+        reviewer closed it and the severity is the same or lower.
+    """
+    worse = SEVERITY_RANK[candidate.severity] > SEVERITY_RANK[flag.severity]
+    return flag.resolution_reason_code == RULE_PASSED or worse
 
 
 async def store_flags(
@@ -125,9 +147,10 @@ async def store_flags(
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Inserts new flags; refreshes severity, details and (while open) the assignee of active ones; resolved
-        flags stay resolved (a reviewer's decision is not reopened); sets active flags in scope that were not
-        raised to `fixed` with reason `rule_passed`. All through the ORM, so `audit_log` rows are written.
+        Inserts new flags; refreshes severity, details and (while open) the assignee of active ones; reopens
+        closed ones per `reopens` (a reviewer's `looks_fine` at the same severity stays closed); sets active
+        flags in scope that were not raised to `fixed` with reason `rule_passed` (escalated ones too).
+        All through the ORM, so `audit_log` rows are written.
     """
     by_key = {dedupe_key(c): c for c in candidates}
     found = select(Flag).where(Flag.dedupe_key.in_(list(by_key))) if by_key else None
@@ -145,7 +168,7 @@ async def store_flags(
                 details=c.details,
                 dedupe_key=key,
                 status=FlagStatus.OPEN,
-                assigned_role=assignee(c.severity),
+                assigned_role=assignee(c.severity, c.rule_code),
                 raised_at=now,
             )
             try:
@@ -157,7 +180,11 @@ async def store_flags(
         elif flag.status in ACTIVE:
             flag.severity, flag.details = c.severity, c.details
             if flag.status == FlagStatus.OPEN:
-                flag.assigned_role = assignee(c.severity)
+                flag.assigned_role = assignee(c.severity, c.rule_code)
+        elif reopens(flag, c):
+            flag.status, flag.severity, flag.details = FlagStatus.OPEN, c.severity, c.details
+            flag.assigned_role, flag.raised_at = assignee(c.severity, c.rule_code), now
+            flag.resolved_by = flag.resolved_at = flag.resolution_reason_code = flag.resolution_note = None
     stale = select(Flag).where(
         Flag.subject_id.in_(set(subjects)),
         Flag.rule_code.in_(set(codes)),
@@ -177,16 +204,32 @@ async def _sync_lot_hold(session: AsyncSession, lot: Lot) -> None:
         lot: the lot.
 
     Side effects:
-        With an active hold: `gi_eligible = false`, `gi_hold_reason = "flags: <codes>"`. Without one, a hold
-        reason this module set is cleared and `gi_eligible` restored; a reason set by B09 is left alone.
+        As `apply_hold` with the lot's active hold codes.
     """
     query = select(Flag.rule_code).where(
         Flag.subject_id == lot.id, Flag.severity == Severity.HOLD, Flag.status.in_(ACTIVE)
     )
-    holds = sorted(set((await session.scalars(query)).all()))
+    apply_hold(lot, sorted(set((await session.scalars(query)).all())))
+
+
+def apply_hold(lot: Lot, holds: Sequence[str]) -> None:
+    """Set a lot's GI eligibility from the rule codes of its active holds, leaving other modules' holds alone.
+
+    Args:
+        lot: the lot.
+        holds: rule codes of its active hold flags (sorted), possibly empty.
+
+    Side effects:
+        With holds: `gi_eligible = false`, and `gi_hold_reason = "flags: <codes>"` unless another module (B09)
+        owns the reason, which is kept. Without holds: only a reason this module set is cleared, and then
+        `gi_eligible` is restored.
+    """
+    ours = lot.gi_hold_reason is None or lot.gi_hold_reason.startswith(HOLD_PREFIX)
     if holds:
-        lot.gi_eligible, lot.gi_hold_reason = False, HOLD_PREFIX + ", ".join(holds)
-    elif (lot.gi_hold_reason or "").startswith(HOLD_PREFIX):
+        lot.gi_eligible = False
+        if ours:
+            lot.gi_hold_reason = HOLD_PREFIX + ", ".join(holds)
+    elif ours and lot.gi_hold_reason is not None:
         lot.gi_eligible, lot.gi_hold_reason = True, None
 
 
@@ -351,6 +394,7 @@ async def _lot_context(session: AsyncSession, lot: Lot) -> LotContext:
     received = select(func.sum(LotIntake.received_kg)).where(LotIntake.lot_id == lot.id)
     used = select(func.sum(BatchShare.kg_contributed)).where(BatchShare.lot_id == lot.id)
     rule = await quality_service.yield_params_for_crop(session, lot.crop_id)
+    harvested = _kg(rows, EventType.HARVEST) or lot.harvested_kg
     limits = (
         (
             Decimal(str(rule.ceiling_kg_per_acre)),
@@ -367,12 +411,19 @@ async def _lot_context(session: AsyncSession, lot: Lot) -> LotContext:
         declared_tags=tuple((lot.practice_tags or {}).get("declared") or ()),
         input_categories=tuple(str(c) for c in categories),
         has_pest_event=any(e.event_type == EventType.PROBLEM for e, _ in rows),
-        harvested_kg=_kg(rows, EventType.HARVEST) or lot.harvested_kg,
+        harvested_kg=harvested,
         packed_kg=_kg(rows, EventType.PACKING) or lot.packed_kg,
         received_kg=await session.scalar(received),
         used_kg=await session.scalar(used),
         declared_acres=plot.declared_area_acres if plot else None,
         yield_limits=limits,
+        yield_outcome=(
+            await quality_service.yield_outcome_for_crop(
+                session, lot.crop_id, harvested, plot.declared_area_acres
+            )
+            if harvested is not None and plot is not None
+            else None
+        ),
         trail_overrides=await _overrides(session, QualityReading.lot_id == lot.id),
     )
 

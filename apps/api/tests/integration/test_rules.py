@@ -34,6 +34,7 @@ from agritrace.core.enums import (
     ChangeKind,
     EventSubject,
     EventType,
+    FlagStatus,
     InputCategory,
     LocationStatus,
     OrgKind,
@@ -256,6 +257,38 @@ async def _event(
     return event.id
 
 
+async def _correct(s: AsyncSession, w: World, event_id: uuid.UUID, payload: dict[str, Any]) -> None:
+    """Append a correction version to an event and point the event at it (append-only, FR25).
+
+    Args:
+        s: session (committed here).
+        w: the world.
+        event_id: the event.
+        payload: the corrected payload.
+    """
+    event = await s.get(Event, event_id)
+    assert event is not None and event.current_version_id is not None
+    previous = await s.get(EventVersion, event.current_version_id)
+    assert previous is not None
+    version = EventVersion(
+        id=uuid7(),
+        event_id=event_id,
+        version_no=previous.version_no + 1,
+        payload=payload,
+        occurred_on=previous.occurred_on,
+        device_time=previous.device_time,
+        server_received_at=NOW,
+        entered_by_user_id=w.officer,
+        change_kind=ChangeKind.CORRECT,
+        reason_code="wrong_quantity",
+        supersedes_version_id=previous.id,
+    )
+    s.add(version)
+    await s.flush()
+    event.current_version_id = version.id
+    await s.commit()
+
+
 async def _flags(s: AsyncSession, subject: uuid.UUID, code: str) -> list[Flag]:
     """Load every flag of one rule on one subject.
 
@@ -369,6 +402,36 @@ async def test_yield_on_one_acre_and_hold_clears_gi(world: World, kg: int, sever
             await service.resolve_flag(s, admin, flags[0].id, body)
             await s.commit()
             assert (lot.gi_eligible, lot.gi_hold_reason) == (True, None)
+
+
+async def test_hold_comes_back_after_auto_close(world: World) -> None:
+    """1,350 → 1,150 → 1,350 kg: the auto-closed hold comes back and GI is blocked again (review P1-1).
+
+    Hold first; then closed `rule_passed` with `gi_eligible` restored; then the same flag is a hold again.
+
+    Args:
+        world: the seeded FPO.
+    """
+    async with get_sessionmaker()() as s:
+        harvest = await _event(
+            s, world, EventType.HARVEST, "2026-02-14", {"quantity": {"value": 1350, "unit": "kg"}}
+        )
+        lot = await s.get(Lot, world.lot)
+        assert lot is not None
+        steps = [
+            (1350, FlagStatus.OPEN, False),
+            (1150, FlagStatus.FIXED, True),
+            (1350, FlagStatus.OPEN, False),
+        ]
+        for i, (kg, status, eligible) in enumerate(steps):
+            if i:
+                await _correct(s, world, harvest, {"quantity": {"value": kg, "unit": "kg"}})
+            await service.check_lot(s, world.lot)
+            [flag] = await _flags(s, world.lot, "yield_over_ceiling")
+            await s.refresh(flag)
+            await s.refresh(lot)
+            assert (flag.status, flag.severity, lot.gi_eligible) == (status, Severity.HOLD, eligible)
+        assert (flag.resolution_reason_code, lot.gi_hold_reason) == (None, "flags: yield_over_ceiling")
 
 
 @pytest.mark.parametrize("case", CASES["gi_check"]["cases"], ids=lambda c: c["name"])

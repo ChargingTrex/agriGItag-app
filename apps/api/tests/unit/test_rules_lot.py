@@ -6,13 +6,17 @@ none/warn/hold), FR50, FR55–FR57, FR60, FR68, PRD §12.2 (the reference lots' 
 Callers: pytest (`make test-unit`), no Docker.
 """
 
+import json
 import uuid
 from datetime import date
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
 from agritrace.core.enums import FlagSubject, Severity
+from agritrace.modules.quality import grade_engine
+from agritrace.modules.quality.schemas import StandardsProfileRules
 from agritrace.modules.rules_flags.rules import (
     event_order,
     moisture_trail_override,
@@ -33,6 +37,9 @@ SCHEMA = {
 ORGANIC = ("organic_fertilizer", "bio_fertilizer", "bio_fertilizer")
 LOT = uuid.uuid4()
 CHILLI = (Decimal(1000), Decimal(20), Decimal(30))  # ceiling kg/acre, warn %, hold %
+PROFILE = StandardsProfileRules.model_validate(
+    json.loads((Path(grade_engine.__file__).parent / "profiles" / "dry_chilli_agmark_v1.json").read_text())
+)
 
 
 def _event(kind: str, on: str) -> LotEvent:
@@ -92,7 +99,8 @@ def test_yield_on_one_acre(kg: int, expected: Severity | None) -> None:
         kg: harvested kilograms.
         expected: severity of `yield_over_ceiling`, or None for no flag.
     """
-    ctx = LotContext(LOT, harvested_kg=Decimal(kg), declared_acres=Decimal(1), yield_limits=CHILLI)
+    outcome = grade_engine.yield_outcome(PROFILE, kg, 1)  # what quality.service.yield_outcome_for_crop runs
+    ctx = LotContext(LOT, harvested_kg=Decimal(kg), declared_acres=Decimal(1), yield_outcome=outcome)
     assert [f.severity for f in yield_ceiling.run(ctx)] == ([expected] if expected else [])
 
 

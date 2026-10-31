@@ -12207,7 +12207,7 @@
     },
     "/v1/flags/{flag_id}/resolve": {
       "post": {
-        "description": "Records the review outcome (FR70): `looks_fine` \u2192 cleared, `fixed` \u2192 fixed, `escalated` \u2192 handed to the FPO admin. A coded `reason_code` is required. Field officers resolve info and warn flags; only an FPO admin resolves a `hold` or an escalated flag. Clearing the last hold of a lot makes it eligible for GI batches again. If the problem is still there, the next rule check does not reopen a resolved flag.",
+        "description": "Records the review outcome (FR70): `looks_fine` \u2192 cleared, `fixed` \u2192 fixed, `escalated` \u2192 handed to the FPO admin. A coded `reason_code` is required. Field officers resolve info and warn flags; only an FPO admin resolves a `hold` or an escalated flag. Clearing the last hold of a lot makes it eligible for GI batches again. A later rule run reopens the flag when the problem comes back worse (higher severity); at the same severity a `looks_fine` decision stands. Open and escalated flags whose rule no longer fires are closed by the system as `fixed` / `rule_passed`.",
         "operationId": "resolve_flag_v1_flags__flag_id__resolve_post",
         "parameters": [
           {

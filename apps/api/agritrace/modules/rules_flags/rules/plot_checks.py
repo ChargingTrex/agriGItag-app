@@ -33,13 +33,13 @@ def run(ctx: PlotContext) -> list[FlagCandidate]:
         ctx: the plot with its stored location status, pin method, accuracy, farmer taluk and areas.
 
     Returns:
-        Flags (subject: the plot): `plot_map_pin` (warn, unless a review accepted it), `plot_needs_review`
-        (warn: no region check or a rejected review), `plot_near_edge` (warn), `plot_outside_gi_region`
+        Flags (subject: the plot): `plot_map_pin` (warn, a map pin nobody reviewed yet), `plot_needs_review`
+        (warn: no region check, or a rejected review), `plot_near_edge` (warn), `plot_outside_gi_region`
         (hold), `gps_poor_accuracy` (info), `plot_taluk_outside_gi` (warn) and `plot_area_gap` (warn, walked
         area more than 20 % from declared).
     """
     found: list[tuple[str, Severity, dict[str, Any]]] = []
-    if ctx.pin_method == PinMethod.MAP_PIN and ctx.review_outcome != "accepted":
+    if ctx.pin_method == PinMethod.MAP_PIN and ctx.review_outcome is None:
         found.append(("plot_map_pin", Severity.WARN, {}))
     elif ctx.location_status == LocationStatus.NEEDS_REVIEW:
         found.append(("plot_needs_review", Severity.WARN, {"review_outcome": ctx.review_outcome}))

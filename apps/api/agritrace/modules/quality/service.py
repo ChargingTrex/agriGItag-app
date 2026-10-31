@@ -6,14 +6,15 @@ calibration at entry), FR51 (lab-certified, public note), FR68 (yield parameters
 idempotency), D-015 (profile JSON + one engine), backend-design.md §1 quality row, §3 (sync
 `kind=quality_reading` entries call `create_reading`), §4.
 Callers: `quality.router`; `quality.profiles.loader` (seed, B12); other modules through `__all__` only
-(D-004): events sync push (B06) `create_reading`; rules_flags (B08) `yield_params_for_crop`; lots_batches
-(B09) `lot_gate_passes`, `compute_grade_for_batch`; events bundle and publishing (B06, B10)
-`latest_profile_version_for_crop`.
+(D-004): events sync push (B06) `create_reading`; rules_flags (B08) `yield_params_for_crop`,
+`yield_outcome_for_crop`; lots_batches (B09) `lot_gate_passes`, `compute_grade_for_batch`; events bundle and
+publishing (B06, B10) `latest_profile_version_for_crop`.
 """
 
 import logging
 import uuid
 from collections.abc import Callable, Mapping, Sequence
+from decimal import Decimal
 from typing import Any, Literal
 
 from geoalchemy2 import WKTElement
@@ -70,6 +71,7 @@ __all__ = [
     "create_reading",
     "latest_profile_version_for_crop",
     "lot_gate_passes",
+    "yield_outcome_for_crop",
     "yield_params_for_crop",
 ]
 
@@ -200,6 +202,28 @@ async def yield_params_for_crop(session: AsyncSession, crop_id: uuid.UUID) -> Yi
     """
     version = await latest_profile_version_for_crop(session, crop_id)
     return _rules(version).yield_ if version else None
+
+
+async def yield_outcome_for_crop(
+    session: AsyncSession, crop_id: uuid.UUID, kg: Decimal, declared_acres: Decimal
+) -> Literal["pass", "warn", "hold"] | None:
+    """Run `grade_engine.yield_outcome` with the crop's current profile (FR68), for the B08 yield check.
+
+    Args:
+        session: database session.
+        crop_id: the crop.
+        kg: harvested kilograms.
+        declared_acres: declared plot area in acres.
+
+    Returns:
+        `pass`, `warn` or `hold`; None when no profile is published, it has no yield rule, or the area is
+        not positive.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+    """
+    version = await latest_profile_version_for_crop(session, crop_id)
+    return grade_engine.yield_outcome(_rules(version), kg, declared_acres) if version else None
 
 
 # ---------------------------------------------------------------------------------------------------------

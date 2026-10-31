@@ -41,6 +41,10 @@ def test_review_reasons() -> None:
         "plot_map_pin": Severity.WARN
     }
     assert _codes(pin_method=PinMethod.MAP_PIN, review_outcome="accepted") == {}
+    rejected = {"pin_method": PinMethod.MAP_PIN, "review_outcome": "rejected"}
+    assert _codes(**rejected, location_status=LocationStatus.NEEDS_REVIEW) == {
+        "plot_needs_review": Severity.WARN
+    }
     assert _codes(location_status=LocationStatus.OUTSIDE) == {"plot_outside_gi_region": Severity.HOLD}
     assert _codes(location_status=LocationStatus.NEAR_EDGE) == {"plot_near_edge": Severity.WARN}
     assert _codes(pin_accuracy_m=50.0) == {"gps_poor_accuracy": Severity.INFO}
