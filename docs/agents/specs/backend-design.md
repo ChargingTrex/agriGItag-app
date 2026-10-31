@@ -22,7 +22,7 @@ Companion to `docs/agents/plan-summary.md` §7.1. Where this file and the plan d
 | registry | fpos, processors, farmers, plots, plot_revisions, crops, gi_tags, gi_region_versions, inputs_master, villages, id_documents (flag-gated), producer_groups (flag-gated) | GET/POST /fpos, GET/POST/PATCH /farmers, POST /farmers/{id}/approve, POST /plots, GET /plots/{id}, POST /plots/{id}/correct, GET /crops, GET /gi-tags/{id}/region, POST /gi-tags/{id}/region-versions (super-admin), GET/POST /inputs, GET /villages | — | identity |
 | events | events, event_versions, evidence_photos, sync_cursors, reference_versions, sync_metrics | POST /sync/push, POST /sync/photos/confirm, GET /sync/pull, GET /sync/bundle, GET /sync/bundle/{part}, GET /sync/reference?since=, GET /lots/{id}/events, POST /events/{id}/versions, POST /events/{id}/undo | events.verify_photo, events.make_variants | identity, registry; enqueues rules.check_event |
 | rules_flags | flags | GET /flags, GET /flags/{id}, POST /flags/{id}/resolve | rules.check_event, rules.check_plot, rules.check_lot | registry (geo), events, quality (profile yield params), lots_batches models |
-| lots_batches | lots, lot_intakes, batches, batch_shares, batch_approvals | GET /lots, GET /lots/{id}, POST /lots/{id}/ready, GET /lots/{id}/qr, POST /intakes, POST /batches, GET /batches, GET /batches/{id}, POST /batches/{id}/grading/approve, POST /batches/{id}/final-packing, POST /batches/{id}/publish | — | registry, events, quality, rules_flags; enqueues publishing.build_page |
+| lots_batches | lots, lot_intakes, batches, batch_shares, batch_approvals | GET /lots, GET /lots/{id}, POST /lots/{id}/ready, GET /lots/{id}/qr, POST /intakes (QC officer or FPO admin, D-040), POST /batches, GET /batches, GET /batches/{id}, POST /batches/{id}/grading/approve, POST /batches/{id}/final-packing, POST /batches/{id}/publish | — | registry, events, quality, rules_flags; enqueues publishing.build_page |
 | quality | standards_profiles, standards_profile_versions, instruments, quality_readings, grade_computations | GET /standards-profiles, GET /standards-profiles/{id}/versions/{n}, POST /standards-profiles/{id}/versions, GET/POST /instruments, POST /quality-readings, GET /lots/{id}/readings, GET /batches/{id}/readings, POST /batches/{id}/grading, GET /batches/{id}/grade | — | registry, identity |
 | storage_monitoring (stub) | none | POST /probes, POST /probe-readings → 501 | — | — |
 | publishing | page_builds | POST /batches/{id}/rebuild, GET /batches/{id}/builds, GET /batches/{id}/qr.png, GET /batches/{id}/labels.pdf, GET /public/batches/{code} (dev proxy) | publishing.build_page | lots_batches, quality, registry, events (read via services) + `agritrace_page` |
@@ -118,7 +118,12 @@ Kinds `farmer` and `assist_session` and the optional per-entry `assist_session_i
 (D-031, D-032; implemented by B15): `farmer` is idempotent on `client_id`, officer/admin only, stored pending;
 `assist_session` goes through the idempotent `start_assist`; an entry's `assist_session_id` must belong to the caller
 (ended sessions accepted) and to the entry's farmer, and it records assist mode on that entry and its audit row.
-The `X-Assist-Session` header keeps working for online calls.
+The `X-Assist-Session` header keeps working for online calls. Kind `lot_intake` (rulings 2026-10-31b, D-040; B16):
+`data` = `IntakeIn` without `client_id` (the entry's `client_id` is the intake id), QC officer or FPO admin, handled by
+`lots_batches.create_intake` (absent `processor_id` → the FPO's only own processor; an `open`/`drying` lot passes the
+ready gate first); it writes `lot_intakes` and receives the lot, which an `intake` event version never does. The
+per-entry `assist_session_id` is checked against the lot's farmer on lot readings, refused on batch readings and
+batch events, and ignored on `farmer`, `flag_resolution`, `assist_session` and `lot_intake` (D-042).
 Response always 200 if the envelope parses; per-entry outcome:
 ```json
 { "server_time": "…", "results": [
