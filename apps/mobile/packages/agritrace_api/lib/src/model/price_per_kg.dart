@@ -10,7 +10,7 @@ import 'package:one_of/any_of.dart';
 
 part 'price_per_kg.g.dart';
 
-/// Price paid in INR per kg (optional).
+/// Price in INR per kg (optional, D-017).
 @BuiltValue()
 abstract class PricePerKg implements Built<PricePerKg, PricePerKgBuilder> {
   /// Any Of [String], [num]

@@ -12,6 +12,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(AssistSessionOut.serializer)
       ..add(AssistStartIn.serializer)
       ..add(AvgSalePricePerKg.serializer)
+      ..add(BatchIn.serializer)
+      ..add(BatchOut.serializer)
+      ..add(BatchStatus.serializer)
       ..add(BundleManifest.serializer)
       ..add(BundlePart.serializer)
       ..add(CeilingKgPerAcre.serializer)
@@ -48,10 +51,12 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FieldSpecStageEnum.serializer)
       ..add(FieldSpecTypeEnum.serializer)
       ..add(FieldSpecVisibilityEnum.serializer)
+      ..add(FinalPackingIn.serializer)
       ..add(FinalPackingPayload.serializer)
       ..add(FinalPackingVersion.serializer)
       ..add(FinalPackingVersionChangeKindEnum.serializer)
       ..add(FinalPackingVersionEventTypeEnum.serializer)
+      ..add(FlagBrief.serializer)
       ..add(FlagOut.serializer)
       ..add(FlagResolveIn.serializer)
       ..add(FlagResolveInResolutionEnum.serializer)
@@ -60,12 +65,14 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FpoIn.serializer)
       ..add(FpoOut.serializer)
       ..add(GeoPoint.serializer)
+      ..add(GiBlockReason.serializer)
       ..add(GiRegionOut.serializer)
       ..add(GiRegionVersionIn.serializer)
       ..add(GiRegionVersionInConfidenceEnum.serializer)
       ..add(GiRegionVersionOut.serializer)
       ..add(GradeOut.serializer)
       ..add(GradeStatus.serializer)
+      ..add(GradingApproveIn.serializer)
       ..add(GradingIn.serializer)
       ..add(GradingPayload.serializer)
       ..add(GradingVersion.serializer)
@@ -93,6 +100,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(InstrumentIn.serializer)
       ..add(InstrumentKind.serializer)
       ..add(InstrumentOut.serializer)
+      ..add(IntakeIn.serializer)
+      ..add(IntakeOut.serializer)
       ..add(IntakePayload.serializer)
       ..add(IntakeVersion.serializer)
       ..add(IntakeVersionChangeKindEnum.serializer)
@@ -107,6 +116,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(LocationStatus.serializer)
       ..add(LotGateInput.serializer)
       ..add(LotGateOutput.serializer)
+      ..add(LotIn.serializer)
+      ..add(LotOut.serializer)
+      ..add(LotStatus.serializer)
       ..add(Max.serializer)
       ..add(MeOut.serializer)
       ..add(MembershipOut.serializer)
@@ -129,11 +141,13 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PackingVersion.serializer)
       ..add(PackingVersionChangeKindEnum.serializer)
       ..add(PackingVersionEventTypeEnum.serializer)
+      ..add(PageBatchOut.serializer)
       ..add(PageConsentOut.serializer)
       ..add(PageEventOut.serializer)
       ..add(PageFarmerOut.serializer)
       ..add(PageFlagOut.serializer)
       ..add(PageInstrumentOut.serializer)
+      ..add(PageLotOut.serializer)
       ..add(PageNotificationOut.serializer)
       ..add(PagePlotOut.serializer)
       ..add(PageQualityReadingOut.serializer)
@@ -169,6 +183,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PlotOut.serializer)
       ..add(PolygonGeoJSON.serializer)
       ..add(PolygonGeoJSONTypeEnum.serializer)
+      ..add(PracticeTag.serializer)
+      ..add(PracticeTags.serializer)
       ..add(PricePerKg.serializer)
       ..add(ProblemPayload.serializer)
       ..add(ProblemPayloadProblemTypeEnum.serializer)
@@ -184,6 +200,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ProfileVersionInStatusEnum.serializer)
       ..add(ProfileVersionOut.serializer)
       ..add(ProfileVersionStatus.serializer)
+      ..add(PublishOut.serializer)
       ..add(PullChange.serializer)
       ..add(PullChangeEntityEnum.serializer)
       ..add(PullChangeOpEnum.serializer)
@@ -196,6 +213,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RangeOutput.serializer)
       ..add(ReadingSource.serializer)
       ..add(ReadingStage.serializer)
+      ..add(Reconciliation.serializer)
       ..add(ReferenceOut.serializer)
       ..add(ReferencePart.serializer)
       ..add(RefreshIn.serializer)
@@ -206,6 +224,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(SessionOut.serializer)
       ..add(SessionOutKindEnum.serializer)
       ..add(Severity.serializer)
+      ..add(ShareOut.serializer)
       ..add(SignedQuantityInput.serializer)
       ..add(SignedQuantityOutput.serializer)
       ..add(SowingPayload.serializer)
@@ -243,6 +262,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(YieldRuleInput.serializer)
       ..add(YieldRuleOutput.serializer)
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(BatchOut)]),
+          () => ListBuilder<BatchOut>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(BuiltList, const [
               const FullType(BuiltList, const [
@@ -268,6 +290,18 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(FarmerOut)]),
           () => ListBuilder<FarmerOut>())
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(FlagBrief)]),
+          () => ListBuilder<FlagBrief>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(FlagBrief)]),
+          () => ListBuilder<FlagBrief>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(GiBlockReason)]),
+          () => ListBuilder<GiBlockReason>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ShareOut)]),
+          () => ListBuilder<ShareOut>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(FlagOut)]),
           () => ListBuilder<FlagOut>())
       ..addBuilderFactory(
@@ -276,6 +310,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(InstrumentOut)]),
           () => ListBuilder<InstrumentOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(LotOut)]),
+          () => ListBuilder<LotOut>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(MembershipOut)]),
           () => ListBuilder<MembershipOut>())
@@ -324,6 +361,15 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(PlotOut)]),
           () => ListBuilder<PlotOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PracticeTag)]),
+          () => ListBuilder<PracticeTag>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PracticeTag)]),
+          () => ListBuilder<PracticeTag>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PracticeTag)]),
+          () => ListBuilder<PracticeTag>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(PullChange)]),
           () => ListBuilder<PullChange>())
@@ -380,6 +426,9 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltList, const [const FullType(StandardsProfileOut)]),
           () => ListBuilder<StandardsProfileOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => ListBuilder<String>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(String)]),
           () => ListBuilder<String>())

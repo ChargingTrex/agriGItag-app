@@ -277,6 +277,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List batches
+         * @description List the FPO's batches.
+         */
+        get: operations["list_batches_v1_batches_get"];
+        put?: never;
+        /**
+         * Merge received lots into a batch (idempotent on client_id)
+         * @description Creates the batch and super-lot codes and the lot shares (half-even to 3 dp, residual to the largest; sum 100.000). With `gi_label_requested` every lot is re-checked against the GI region (FR29): `gi_verified=false` with `gi_block_reasons` when any fails; the batch is still created.
+         */
+        post: operations["create_batch_v1_batches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a batch
+         * @description Read one batch.
+         */
+        get: operations["get_batch_v1_batches__batch_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/final-packing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign off final packing
+         * @description Sign off final packing.
+         */
+        post: operations["final_packing_v1_batches__batch_id__final_packing_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/batches/{batch_id}/grade": {
         parameters: {
             query?: never;
@@ -317,6 +381,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/batches/{batch_id}/grading/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve the batch grading
+         * @description Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing.
+         */
+        post: operations["approve_grading_v1_batches__batch_id__grading_approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish the public page (final sign-off)
+         * @description Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, `publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge.
+         */
+        post: operations["publish_v1_batches__batch_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/batches/{batch_id}/readings": {
         parameters: {
             query?: never;
@@ -331,6 +435,26 @@ export interface paths {
         get: operations["list_batch_readings_v1_batches__batch_id__readings_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/second-signoff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Second admin sign-off of a large batch
+         * @description Needed before publishing when `second_signoff_required` (`second_signoff_threshold_kg`).
+         */
+        post: operations["second_signoff_v1_batches__batch_id__second_signoff_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -997,6 +1121,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/intakes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive a lot at the processor (idempotent on client_id)
+         * @description Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched, send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).
+         */
+        post: operations["create_intake_v1_intakes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/lots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List lots
+         * @description List lots: a farmer's own, or the FPO's for other roles (e.g. `?status=received` for P03).
+         */
+        get: operations["list_lots_v1_lots_get"];
+        put?: never;
+        /**
+         * Open a lot (idempotent on client_id)
+         * @description Opens a season lot on a plot; fields per the tenant's `lot` field configuration (D-017).
+         */
+        post: operations["create_lot_v1_lots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/lots/{lot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a lot
+         * @description Read one lot in the caller's scope.
+         */
+        get: operations["get_lot_v1_lots__lot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/lots/{lot_id}/events": {
         parameters: {
             query?: never;
@@ -1031,6 +1219,26 @@ export interface paths {
         get: operations["list_lot_readings_v1_lots__lot_id__readings_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/lots/{lot_id}/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a lot ready for sale (moisture gate)
+         * @description Passes when the latest drying-end moisture reading meets `lot_gates.ready_for_sale`.
+         */
+        post: operations["mark_ready_v1_lots__lot_id__ready_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1529,6 +1737,149 @@ export interface components {
             /** @description Where the session started, if a fix was taken. */
             started_gps?: components["schemas"]["GeoPoint"] | null;
         };
+        /**
+         * BatchIn
+         * @description Merge received lots into a super-lot / batch (Stage 7, FR9, FR29).
+         */
+        BatchIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 made by the client; batch id and idempotency key.
+             */
+            client_id: string;
+            /**
+             * Gi Label Requested
+             * @description Ask to label the batch as GI (re-checked, FR29).
+             * @default false
+             */
+            gi_label_requested: boolean;
+            /**
+             * Lot Ids
+             * @description `received` lots of the caller's FPO, no repeats; each brings all it delivered here.
+             */
+            lot_ids: string[];
+            /**
+             * Processor Id
+             * Format: uuid
+             * @description Processor that received every lot.
+             */
+            processor_id: string;
+        };
+        /**
+         * BatchOut
+         * @description A batch with its shares, gate state and GI verdict.
+         */
+        BatchOut: {
+            /**
+             * Best Before Date
+             * @description Best-before date for the label (FR62).
+             */
+            best_before_date?: string | null;
+            /**
+             * Code
+             * @description 12-char batch code, e.g. `FGP8T4033HM7` (QR, public URL).
+             */
+            code: string;
+            /**
+             * Computed Grade
+             * @description Grade approved at the grading gate (FR48).
+             */
+            computed_grade?: string | null;
+            /**
+             * Created By
+             * Format: uuid
+             * @description Admin who created the batch.
+             */
+            created_by: string;
+            /**
+             * Crop Id
+             * Format: uuid
+             * @description Crop of every component lot.
+             */
+            crop_id: string;
+            /**
+             * Current Build No
+             * @description Latest public page build number; 0 before publishing.
+             */
+            current_build_no: number;
+            /**
+             * Flags
+             * @description Active flags found by this request's gate checks (POST routes); empty on GET.
+             */
+            flags?: components["schemas"]["FlagBrief"][];
+            /**
+             * Gi Block Reasons
+             * @description Why GI is blocked; empty when verified.
+             */
+            gi_block_reasons: components["schemas"]["GiBlockReason"][];
+            /**
+             * Gi Label Requested
+             * @description The admin asked for the GI label.
+             */
+            gi_label_requested: boolean;
+            /**
+             * Gi Verified
+             * @description GI label requested and every component lot passed the re-check.
+             */
+            gi_verified: boolean;
+            /** @description Graded quantity in kg (ceiling for packing). */
+            graded?: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Batch id.
+             */
+            id: string;
+            /**
+             * Pack Date
+             * @description Pack date for the label (FR62).
+             */
+            pack_date?: string | null;
+            /** @description Quantity in final packs in kg. */
+            packed?: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Processor Id
+             * Format: uuid
+             * @description Processor.
+             */
+            processor_id: string;
+            /**
+             * Second Signoff By
+             * @description Second admin who signed it off.
+             */
+            second_signoff_by?: string | null;
+            /**
+             * Second Signoff Required
+             * @description Total above the FPO's `second_signoff_threshold_kg` (Dataflow §4 gate 2).
+             */
+            second_signoff_required: boolean;
+            /**
+             * Shares
+             * @description Component lots and their shares.
+             */
+            shares: components["schemas"]["ShareOut"][];
+            /**
+             * Standards Profile Version Id
+             * @description Profile version graded on.
+             */
+            standards_profile_version_id?: string | null;
+            /** @description created → graded → packed → published. */
+            status: components["schemas"]["BatchStatus"];
+            /**
+             * Superlot Code
+             * @description Super-lot code, e.g. `COMBO_LOT_6C1DCCFE`.
+             */
+            superlot_code?: string | null;
+            /** @description Sum of the lots' intake kg (FR10). */
+            total_received?: components["schemas"]["Quantity-Output"] | null;
+        };
+        /**
+         * BatchStatus
+         * @description Batch lifecycle (Stages 7–10).
+         * @enum {string}
+         */
+        BatchStatus: "created" | "graded" | "packed" | "published";
         /** Body_import_farmers_v1_imports_farmers_post */
         Body_import_farmers_v1_imports_farmers_post: {
             /**
@@ -2319,6 +2670,26 @@ export interface components {
             visibility: "public" | "partner" | "internal";
         };
         /**
+         * FinalPackingIn
+         * @description FPO admin signs off final (retail) packing (Stage 9, FR62).
+         */
+        FinalPackingIn: {
+            /**
+             * Best Before Date
+             * Format: date
+             * @description Best-before date printed on the label.
+             */
+            best_before_date: string;
+            /**
+             * Pack Date
+             * Format: date
+             * @description Pack date printed on the label.
+             */
+            pack_date: string;
+            /** @description Quantity in final packs in kg; at most the graded quantity. */
+            packed: components["schemas"]["Quantity-Input"];
+        };
+        /**
          * FinalPackingPayload
          * @description Stage 9 final (retail) packing of a batch.
          */
@@ -2421,6 +2792,35 @@ export interface components {
              * @description 1 for a new event; each later version must be max + 1.
              */
             version_no: number;
+        };
+        /**
+         * FlagBrief
+         * @description An active rule flag found by the gate checks of this request (B08 `run_gate_checks`).
+         */
+        FlagBrief: {
+            /**
+             * Id
+             * Format: uuid
+             * @description Flag id; details at `GET /v1/flags/{id}`.
+             */
+            id: string;
+            /**
+             * Rule Code
+             * @description Rule, e.g. `quantity_mismatch`.
+             */
+            rule_code: string;
+            /** @description info, warn, or hold (a hold blocks approval and GI labelling). */
+            severity: components["schemas"]["Severity"];
+            /** @description open or escalated. */
+            status: components["schemas"]["FlagStatus"];
+            /**
+             * Subject Id
+             * Format: uuid
+             * @description Id of the flagged row.
+             */
+            subject_id: string;
+            /** @description Kind of row flagged. */
+            subject_type: components["schemas"]["FlagSubject"];
         };
         /**
          * FlagOut
@@ -2638,6 +3038,27 @@ export interface components {
             lon: number;
         };
         /**
+         * GiBlockReason
+         * @description Why a batch may not carry the GI label (FR29); it can still be traced as a normal batch.
+         */
+        GiBlockReason: {
+            /**
+             * Detail
+             * @description Hold reason, rule code or distance, when known.
+             */
+            detail?: string | null;
+            /**
+             * Lot Id
+             * @description Lot concerned; null for a batch-wide reason.
+             */
+            lot_id?: string | null;
+            /**
+             * Reason
+             * @description `crop_has_no_gi_tag`, `gi_region_missing`, `lot_on_hold`, `plot_location_<status>`, `plot_outside_gi_region` or `hold_flag`.
+             */
+            reason: string;
+        };
+        /**
          * GiRegionOut
          * @description The current region of a GI tag: version metadata plus a simplified outline (≤ 50 KB).
          */
@@ -2820,6 +3241,14 @@ export interface components {
          * @enum {string}
          */
         GradeStatus: "incomplete" | "ok" | "declared_above_computed";
+        /**
+         * GradingApproveIn
+         * @description FPO admin approves the latest grade computation (Stage 8, FR49).
+         */
+        GradingApproveIn: {
+            /** @description Graded quantity in kg; becomes the ceiling for final packing. */
+            graded: components["schemas"]["Quantity-Input"];
+        };
         /**
          * GradingIn
          * @description Grade a batch: the declared grade plus the readings to use (Dataflow Stage 8, FR48, FR49).
@@ -3465,6 +3894,123 @@ export interface components {
             serial_no: string;
         };
         /**
+         * IntakeIn
+         * @description A processor receives a ready lot, or a wrong intake is corrected (Stage 7, FR9, D-033).
+         */
+        IntakeIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 made by the client; intake id and idempotency key.
+             */
+            client_id: string;
+            /**
+             * Correction Reason
+             * @description Why the superseded intake was wrong.
+             */
+            correction_reason?: string | null;
+            /**
+             * Intake Moisture Reading Id
+             * @description Moisture reading (`moisture`, stage `intake`) of this lot (`POST /v1/quality-readings`)
+             */
+            intake_moisture_reading_id?: string | null;
+            /**
+             * Lot Id
+             * Format: uuid
+             * @description Lot received; must be `ready_for_sale`.
+             */
+            lot_id: string;
+            /**
+             * Price Per Kg
+             * @description Price in INR per kg (optional, D-017).
+             */
+            price_per_kg?: number | string | null;
+            /**
+             * Processor Id
+             * Format: uuid
+             * @description Receiving processor.
+             */
+            processor_id: string;
+            /** @description Quantity received, unit `kg`. */
+            received: components["schemas"]["Quantity-Input"];
+            /**
+             * Sale Date
+             * Format: date
+             * @description Date of sale, YYYY-MM-DD.
+             */
+            sale_date: string;
+            /**
+             * Supersedes Intake Id
+             * @description Correct this intake (the lot's current one, lot not yet batched); needs a reason.
+             */
+            supersedes_intake_id?: string | null;
+        };
+        /**
+         * IntakeOut
+         * @description A stored intake with its quantity chain and the flags the lot rules raised.
+         */
+        IntakeOut: {
+            /**
+             * Accepted By User Id
+             * Format: uuid
+             * @description Admin who accepted the lot.
+             */
+            accepted_by_user_id: string;
+            /**
+             * Correction Reason
+             * @description Why the superseded intake was wrong.
+             */
+            correction_reason?: string | null;
+            /**
+             * Flags
+             * @description Active flags on the lot after the intake; empty on a resend.
+             */
+            flags?: components["schemas"]["FlagBrief"][];
+            /**
+             * Id
+             * Format: uuid
+             * @description Intake id (the client id).
+             */
+            id: string;
+            /**
+             * Intake Moisture Reading Id
+             * @description Intake moisture reading.
+             */
+            intake_moisture_reading_id?: string | null;
+            /**
+             * Lot Id
+             * Format: uuid
+             * @description Lot received.
+             */
+            lot_id: string;
+            /**
+             * Price Per Kg
+             * @description Price in INR per kg.
+             */
+            price_per_kg?: string | null;
+            /**
+             * Processor Id
+             * Format: uuid
+             * @description Receiving processor.
+             */
+            processor_id: string;
+            /** @description Quantity received in kg. */
+            received: components["schemas"]["Quantity-Output"];
+            /** @description Strict chain harvested ≥ packed ≥ received at intake (FR60); the tolerant verdict is the `quantity_mismatch` flag. */
+            reconciliation?: components["schemas"]["Reconciliation"] | null;
+            /**
+             * Sale Date
+             * Format: date
+             * @description Date of sale.
+             */
+            sale_date: string;
+            /**
+             * Supersedes Intake Id
+             * @description Intake this row corrects, if any.
+             */
+            supersedes_intake_id?: string | null;
+        };
+        /**
          * IntakePayload
          * @description Stage 7 sale of a lot to the processor, as recorded on the lot's timeline.
          */
@@ -3759,6 +4305,109 @@ export interface components {
             /** @description Stage whose latest reading is checked. */
             stage: components["schemas"]["ReadingStage"];
         };
+        /**
+         * LotIn
+         * @description Open a season lot on a plot (Stage 4); fields follow `config/fields/lot.yaml` (D-017).
+         */
+        LotIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 made on the device; the lot id and idempotency key.
+             */
+            client_id: string;
+            /**
+             * Crop Id
+             * Format: uuid
+             * @description Crop grown.
+             */
+            crop_id: string;
+            /**
+             * Plot Id
+             * Format: uuid
+             * @description Plot the crop grows on; a farmer may only use their own.
+             */
+            plot_id: string;
+            /**
+             * Practice Tags Declared
+             * @description Farming practice the farmer declares (FR56), e.g. `[ipm]`.
+             */
+            practice_tags_declared?: components["schemas"]["PracticeTag"][];
+            /**
+             * Season Label
+             * @description Season, e.g. `2025-26 Rabi`.
+             */
+            season_label?: string | null;
+        };
+        /**
+         * LotOut
+         * @description A component lot with its lifecycle state and GI eligibility.
+         */
+        LotOut: {
+            /**
+             * Code
+             * @description Lot code `LOT` + 8 hex, e.g. `LOT0EF81415`.
+             */
+            code: string;
+            /**
+             * Crop Id
+             * Format: uuid
+             * @description Crop.
+             */
+            crop_id: string;
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Grower.
+             */
+            farmer_id: string;
+            /**
+             * Gi Eligible
+             * @description False while a hold keeps the lot out of GI batches (FR68, FR70).
+             */
+            gi_eligible: boolean;
+            /**
+             * Gi Hold Reason
+             * @description Why the lot is held out of GI batches.
+             */
+            gi_hold_reason?: string | null;
+            /** @description Harvested quantity in kg, filled at intake. */
+            harvested?: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description Lot id.
+             */
+            id: string;
+            /** @description On-farm packed quantity in kg, filled at intake. */
+            packed?: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Plot Id
+             * Format: uuid
+             * @description Plot harvested.
+             */
+            plot_id: string;
+            /** @description Declared and derived tags (FR56). */
+            practice_tags?: components["schemas"]["PracticeTags"] | null;
+            /**
+             * Ready At
+             * @description When the lot passed the ready-for-sale gate.
+             */
+            ready_at?: string | null;
+            /**
+             * Season Label
+             * @description Season label; empty when the tenant does not capture it.
+             */
+            season_label: string;
+            /** @description open → drying → ready_for_sale → received → batched → closed. */
+            status: components["schemas"]["LotStatus"];
+        };
+        /**
+         * LotStatus
+         * @description Component lot lifecycle (Stages 4–7).
+         * @enum {string}
+         */
+        LotStatus: "open" | "drying" | "ready_for_sale" | "received" | "batched" | "closed";
         /**
          * MeOut
          * @description Who is signed in, where, and on which device.
@@ -4100,6 +4749,24 @@ export interface components {
              */
             version_no: number;
         };
+        /** Page[BatchOut] */
+        Page_BatchOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["BatchOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
         /** Page[ConsentOut] */
         Page_ConsentOut_: {
             /**
@@ -4184,6 +4851,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["InstrumentOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[LotOut] */
+        Page_LotOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["LotOut"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -4959,6 +5644,34 @@ export interface components {
             type: "Polygon";
         };
         /**
+         * PracticeTag
+         * @description Farming practice label declared by the farmer or derived from inputs (FR56, PRD §5).
+         * @enum {string}
+         */
+        PracticeTag: "organic" | "inorganic" | "ipm";
+        /**
+         * PracticeTags
+         * @description Farming practice tags of a lot: what the farmer declared versus what the inputs used imply (FR56).
+         */
+        PracticeTags: {
+            /**
+             * Contradiction
+             * @description True when a declared tag conflicts with the derived ones (raises a flag).
+             * @default false
+             */
+            contradiction: boolean;
+            /**
+             * Declared
+             * @description Tags the farmer declared.
+             */
+            declared?: components["schemas"]["PracticeTag"][];
+            /**
+             * Derived
+             * @description Tags derived from the categories of inputs actually applied.
+             */
+            derived?: components["schemas"]["PracticeTag"][];
+        };
+        /**
          * ProblemPayload
          * @description A problem seen in the field (pest, disease, weather), reported with a photo.
          */
@@ -5245,6 +5958,39 @@ export interface components {
          * @enum {string}
          */
         ProfileVersionStatus: "draft" | "published" | "retired";
+        /**
+         * PublishOut
+         * @description A queued public page build (D-007); the worker writes the page.
+         */
+        PublishOut: {
+            /**
+             * Batch Id
+             * Format: uuid
+             * @description Batch published.
+             */
+            batch_id: string;
+            /**
+             * Build No
+             * @description Build number of this publish.
+             */
+            build_no: number;
+            /**
+             * Code
+             * @description Batch code (QR and public page).
+             */
+            code: string;
+            /**
+             * Page Build Id
+             * Format: uuid
+             * @description `page_builds` row; `GET /v1/batches/{id}/builds` (B10).
+             */
+            page_build_id: string;
+            /**
+             * Status
+             * @description `queued` until the build task writes the page.
+             */
+            status: string;
+        };
         /**
          * PullChange
          * @description One server-side change for the phone's local copy.
@@ -5558,6 +6304,25 @@ export interface components {
          */
         ReadingStage: "drying_end" | "intake" | "grading" | "storage";
         /**
+         * Reconciliation
+         * @description Per-lot quantity chain: harvested ≥ packed ≥ received by the processor ≥ used in batches (FR60).
+         */
+        Reconciliation: {
+            /** @description Sum of harvest event quantities; null if none. */
+            harvested?: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * In Order
+             * @description True when every recorded step is ≤ the one before it.
+             */
+            in_order: boolean;
+            /** @description On-farm packed quantity; null if not recorded. */
+            packed?: components["schemas"]["Quantity-Output"] | null;
+            /** @description Quantity the processor received at intake. */
+            received?: components["schemas"]["Quantity-Output"] | null;
+            /** @description Quantity of this lot used in batches. */
+            used?: components["schemas"]["Quantity-Output"] | null;
+        };
+        /**
          * ReferenceOut
          * @description Parts whose version differs from the ones the phone holds (plan §13 C2).
          */
@@ -5681,6 +6446,31 @@ export interface components {
          * @enum {string}
          */
         Severity: "info" | "warn" | "hold";
+        /**
+         * ShareOut
+         * @description A lot's share of a batch (FR60).
+         */
+        ShareOut: {
+            /** @description Kilograms of the lot in the batch (its intake kg). */
+            contributed: components["schemas"]["Quantity-Output"];
+            /**
+             * Farmer Id
+             * Format: uuid
+             * @description Grower of the lot.
+             */
+            farmer_id: string;
+            /**
+             * Lot Id
+             * Format: uuid
+             * @description Component lot.
+             */
+            lot_id: string;
+            /**
+             * Share Pct
+             * @description Percent of the batch, 3 decimals; the shares sum to 100.000.
+             */
+            share_pct: string;
+        };
         /**
          * SignedQuantity
          * @description A quantity that may be negative, used only for adjustments and differences.
@@ -6736,6 +7526,235 @@ export interface operations {
             };
         };
     };
+    list_batches_v1_batches_get: {
+        parameters: {
+            query?: {
+                /** @description Only batches in this state. */
+                status?: components["schemas"]["BatchStatus"] | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_BatchOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_batch_v1_batches_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchIn"];
+            };
+        };
+        responses: {
+            /** @description The batch already existed with this client_id. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description `not_found`: lot or processor. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_received`, `lot_not_received_by_processor`, `mixed_crops`, `lot_quantity_zero`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error` (repeated lot). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_batch_v1_batches__batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    final_packing_v1_batches__batch_id__final_packing_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FinalPackingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `grading_not_approved`, `packed_above_graded`, `open_hold_flag`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error` (unit not kg, best before earlier than pack date). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     get_batch_grade_v1_batches__batch_id__grade_get: {
         parameters: {
             query?: never;
@@ -6859,6 +7878,129 @@ export interface operations {
             };
         };
     };
+    approve_grading_v1_batches__batch_id__grading_approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GradingApproveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `batch_status`, `not_graded`, `grade_incomplete`, `declared_above_computed`, `open_hold_flag`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error` (unit not kg). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    publish_v1_batches__batch_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishOut"];
+                };
+            };
+            /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `already_published`, `grading_not_approved`, `final_packing_missing`, `second_signoff_missing`, `open_hold_flag`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_batch_readings_v1_batches__batch_id__readings_get: {
         parameters: {
             query?: {
@@ -6901,6 +8043,61 @@ export interface operations {
             };
             /** @description `not_found`: batch not in the caller's FPO. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    second_signoff_v1_batches__batch_id__second_signoff_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `same_approver`. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8443,6 +9640,234 @@ export interface operations {
             };
         };
     };
+    create_intake_v1_intakes_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IntakeIn"];
+            };
+        };
+        responses: {
+            /** @description The intake already existed with this client_id. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntakeOut"];
+                };
+            };
+            /** @description `not_found`: lot, processor, superseded intake or moisture reading. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_ready`, `lot_already_batched`, `intake_not_current`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_lots_v1_lots_get: {
+        parameters: {
+            query?: {
+                /** @description Only lots in this state. */
+                status?: components["schemas"]["LotStatus"] | null;
+                /** @description Only this farmer's lots. */
+                farmer_id?: string | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LotOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_lot_v1_lots_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LotIn"];
+            };
+        };
+        responses: {
+            /** @description The lot already existed with this client_id. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LotOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LotOut"];
+                };
+            };
+            /** @description `not_found`: plot or crop. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `client_id_conflict`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `field_required` or `validation_error`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_lot_v1_lots__lot_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Lot id. */
+                lot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LotOut"];
+                };
+            };
+            /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_lot_events_v1_lots__lot_id__events_get: {
         parameters: {
             query?: never;
@@ -8522,6 +9947,61 @@ export interface operations {
             };
             /** @description `not_found`: lot not visible to the caller. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    mark_ready_v1_lots__lot_id__ready_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Lot id. */
+                lot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LotOut"];
+                };
+            };
+            /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_status`, `moisture_gate_failed`. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
