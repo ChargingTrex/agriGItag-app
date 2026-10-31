@@ -50,7 +50,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B08 — Rules & flags — wave 4 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / r2 confirmed by Orchestrator — verifier: PENDING (merged conditionally 2026-10-31; 14 integration tests deferred)
 - [x] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: suite PASS (605) on the merged branch; device checks (< 20 s log, camera, GPS) → Q01
 - [ ] P02 — Flags & plot review — wave 4 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirm — verifier: PENDING (merged 2026-10-31; 57 Vitest green; live API deferred)
-- [ ] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: Opus (done, 3b79a5b) — reviewer: WEB r1 in progress — verifier:
+- [ ] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: Opus (round 2 in progress) — reviewer: WEB FAIL r1 (P2: stuck build locks Rebuild; timing test) — verifier:
 - [ ] **Gate G2 signed** (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G3 Mobile core
@@ -63,7 +63,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (2 rounds) — reviewer: MOB/SEC FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (724 on main); device checks → Q01
 - [ ] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / r2 one P2, patch confirmed by Orchestrator — verifier: Orchestrator-run suite (post-merge, see CHANGELOG); device checks → Q01
 - [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: — reviewer: — verifier:
-- [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
+- [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (done, a86e932) — reviewer: WEB r1 in progress — verifier:
 - [ ] P08 — Master data uploads: CSV import for farmers, villages, inputs with template download, dry- — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS-PENDING-STACK r1 — verifier: PENDING (merged 2026-10-31; 87 Vitest green on main; live API deferred)
 - [ ] **Gate G3 signed** (docs/agents/gates/G3.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
@@ -71,13 +71,13 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [ ] B10 — Publishing — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 8 integration tests deferred)
 - [ ] B11 — Reporting + stubs — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 11 integration tests deferred)
-- [ ] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
+- [ ] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (round 2 in progress) — reviewer: MOB FAIL r1 (P1: licence row; P2: "No" ignored on Android 8–12) — verifier:
 - [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (1 round) — reviewer: WEB PASS r1 — verifier: PENDING (merged 2026-10-31; 76 pytest + privacy lint + html-validate green; Lighthouse 3G re-run and print dialogs deferred)
 - [ ] **Gate G4 signed** (docs/agents/gates/G4.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G5 Pilot candidate
 
-- [ ] B12 — Demo seed, e2e, client generation — wave 7 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
+- [ ] B12 — Demo seed, e2e, client generation — wave 7 — worker: Opus (micro-patch in progress) — reviewer: BE PASS-PENDING-STACK r1 (P2: migrate before seed, idempotency by batch) — verifier:
 - [ ] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: — reviewer: — verifier:
 - [ ] P07 — Playwright e2e chain + axe — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer: — verifier:
