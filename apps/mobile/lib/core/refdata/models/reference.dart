@@ -37,7 +37,14 @@ class EventSchema {
 /// A crop from the `crops` bundle part.
 class Crop {
   /// Creates a crop.
-  const Crop({required this.id, required this.code, required this.nameEn, this.nameLocal, required this.eventSchema});
+  const Crop({
+    required this.id,
+    required this.code,
+    required this.nameEn,
+    this.nameLocal,
+    required this.eventSchema,
+    this.giTagId,
+  });
 
   /// Parses one crop object [j]. Throws: [TypeError] when a key is missing or has the wrong JSON type.
   factory Crop.fromJson(Map<String, dynamic> j) => Crop(
@@ -46,6 +53,7 @@ class Crop {
     nameEn: j['name_en'] as String,
     nameLocal: j['name_local'] as String?,
     eventSchema: EventSchema.fromJson(j['event_schema'] as Map<String, dynamic>? ?? const {}),
+    giTagId: j['gi_tag_id'] as String?,
   );
 
   /// Server crop id (UUID).
@@ -62,6 +70,10 @@ class Crop {
 
   /// Mandatory events and date-order tracks.
   final EventSchema eventSchema;
+
+  /// GI tag the crop is sold under (server `CropOut.gi_tag_id`), or null for a crop without one; the onboarding
+  /// wizard (M09) sends it as the plot's `gi_tag_id`.
+  final String? giTagId;
 }
 
 /// One row of the input master (FR56).

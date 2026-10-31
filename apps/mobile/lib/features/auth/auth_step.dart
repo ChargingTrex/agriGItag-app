@@ -4,7 +4,8 @@
 // Requirement: FR1, UserFlows §Log in once, §Design rules ("Tap, never type": a number pad, never a free-text box;
 //   "Big targets" 64 dp keys; "Language first" one-button switch), §When things go wrong (one short sentence, never an
 //   error code); D-024 error codes (docs/api/conventions.md "Authentication").
-// Callers: phone_screen.dart, otp_screen.dart, pin_screen.dart; test/widget/auth_screens_test.dart and goldens.
+// Callers: phone_screen.dart, otp_screen.dart, pin_screen.dart; onboarding start step (M09, DigitKeys only);
+//   test/widget/auth_screens_test.dart and goldens.
 
 import 'dart:math';
 
@@ -135,7 +136,7 @@ class AuthStep extends ConsumerWidget {
                   child: Text(prefix == null ? slots : '$prefix  $slots', style: theme.textTheme.displaySmall),
                 ),
               ),
-              _DigitKeys(value: value, length: length, onChanged: onChanged, deleteLabel: l10n.authDelete),
+              DigitKeys(value: value, length: length, onChanged: onChanged, deleteLabel: l10n.authDelete),
               if (action != null) ...[SizedBox(height: tokens.gap), action!],
               SizedBox(height: tokens.gap),
               FarmerButton(
@@ -157,14 +158,27 @@ class AuthStep extends ConsumerWidget {
 /// shortcut: own keypad because M05's NumberPad drops a leading zero (PIN 0123 becomes 123), groups a 10-digit
 /// phone Indian-style (98,76,54,3210) and cannot mask a PIN; swap to NumberPad when it gets fixed-length and
 /// obscure modes.
-class _DigitKeys extends StatelessWidget {
+class DigitKeys extends StatelessWidget {
   /// Creates the keys. [value] is the current digits; [length] the most digits; [onChanged] receives the new digits
   /// (null disables every key); [deleteLabel] is the spoken name of the delete key.
-  const _DigitKeys({required this.value, required this.length, required this.onChanged, required this.deleteLabel});
+  const DigitKeys({
+    super.key,
+    required this.value,
+    required this.length,
+    required this.onChanged,
+    required this.deleteLabel,
+  });
 
+  /// Digits typed so far.
   final String value;
+
+  /// Most digits accepted.
   final int length;
+
+  /// Receives the new digits; null disables every key.
   final ValueChanged<String>? onChanged;
+
+  /// Spoken name of the delete key.
   final String deleteLabel;
 
   /// Builds the grid. [context] supplies theme and tokens. Returns the widget; throws nothing.
@@ -173,16 +187,19 @@ class _DigitKeys extends StatelessWidget {
     final theme = Theme.of(context);
     final tokens = theme.extension<FarmerTokens>()!;
     final change = onChanged;
+    // MergeSemantics: the delete key's label must sit on the button's own tappable node (M09 a11y sweep).
     Widget key(String face, String? next, {String? label}) => Expanded(
-      child: Semantics(
-        label: label,
-        button: true,
-        child: FilledButton.tonal(
-          onPressed: change == null || next == null ? null : () => change(next),
-          style: FilledButton.styleFrom(minimumSize: Size.fromHeight(tokens.farmerTarget), padding: EdgeInsets.zero),
-          child: face == 'del'
-              ? const Icon(Icons.backspace_outlined, size: 32)
-              : Text(face, style: theme.textTheme.headlineMedium),
+      child: MergeSemantics(
+        child: Semantics(
+          label: label,
+          button: true,
+          child: FilledButton.tonal(
+            onPressed: change == null || next == null ? null : () => change(next),
+            style: FilledButton.styleFrom(minimumSize: Size.fromHeight(tokens.farmerTarget), padding: EdgeInsets.zero),
+            child: face == 'del'
+                ? const Icon(Icons.backspace_outlined, size: 32)
+                : Text(face, style: theme.textTheme.headlineMedium),
+          ),
         ),
       ),
     );

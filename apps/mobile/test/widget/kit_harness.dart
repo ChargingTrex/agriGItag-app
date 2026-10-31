@@ -53,18 +53,28 @@ class _FileAssetBundle extends CachingAssetBundle {
 class RecordingVoicePlayer extends VoicePlayer {
   /// Creates the player; every started clip path is appended to [played], or, when [failPlayback], every
   /// clip throws like an undecodable file (iOS and `.ogg`).
-  RecordingVoicePlayer._(this.played, {required bool failPlayback})
+  RecordingVoicePlayer._(this.played, this.heldEnds, {required bool failPlayback, required bool holdEnds})
     : super(
         bundle: _FileAssetBundle(),
-        playClip: (path) async => failPlayback ? throw Exception('cannot decode $path') : played.add(path),
+        // By default a clip "ends" as soon as it starts, so screens waiting for the end (M09 consent) go on at once;
+        // with holdEnds the test ends it by calling the callback from heldEnds.
+        playClip: (path, onEnd) async {
+          if (failPlayback) throw Exception('cannot decode $path');
+          played.add(path);
+          holdEnds ? heldEnds.add(onEnd) : onEnd();
+        },
       );
 
-  /// Creates a player with an empty [played] list; [failPlayback] makes every clip fail. Returns it; throws
-  /// nothing.
-  factory RecordingVoicePlayer({bool failPlayback = false}) => RecordingVoicePlayer._([], failPlayback: failPlayback);
+  /// Creates a player with empty [played] and [heldEnds] lists; [failPlayback] makes every clip fail; [holdEnds]
+  /// keeps each clip "playing" until the test calls its end callback. Returns it; throws nothing.
+  factory RecordingVoicePlayer({bool failPlayback = false, bool holdEnds = false}) =>
+      RecordingVoicePlayer._([], [], failPlayback: failPlayback, holdEnds: holdEnds);
 
   /// Asset paths of the clips started, in order.
   final List<String> played;
+
+  /// End callbacks of the clips still "playing" (only with holdEnds), in start order.
+  final List<void Function()> heldEnds;
 }
 
 /// Pumps [child] in the app shell and returns the voice player the widgets use.

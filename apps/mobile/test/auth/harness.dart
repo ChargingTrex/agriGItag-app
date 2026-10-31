@@ -118,7 +118,7 @@ ProviderContainer authContainer(
       appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://api.test')),
       appDatabaseProvider.overrideWithValue(database),
       // Silent voice: no platform audio player in tests, and no autoplay on screen entry.
-      voicePlayerProvider.overrideWithValue(VoicePlayer(bundle: rootBundle, playClip: (_) async {})),
+      voicePlayerProvider.overrideWithValue(VoicePlayer(bundle: rootBundle, playClip: (_, onEnd) async => onEnd())),
       voiceAutoplayProvider.overrideWithValue(false),
       apiClientProvider.overrideWith((ref) {
         final session = ref.read(sessionProvider.notifier);

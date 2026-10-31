@@ -242,6 +242,270 @@
   "@sessionEnded": {
     "description": "Shown on the phone step when the server ended the session (refresh token reused or the phone was signed out remotely)."
   },
+  "onboardTitle": "Add farmer",
+  "@onboardTitle": {
+    "description": "App bar title of the officer's onboarding wizard (UserFlows §Onboarding a farmer); at most two words."
+  },
+  "onboardStepOf": "{step} of {total}",
+  "@onboardStepOf": {
+    "description": "Step counter in the onboarding app bar.",
+    "placeholders": {
+      "step": {
+        "type": "int",
+        "example": "3"
+      },
+      "total": {
+        "type": "int",
+        "example": "9"
+      }
+    }
+  },
+  "onboardNext": "Next",
+  "@onboardNext": {
+    "description": "Button that moves to the next onboarding step; disabled while a required field is empty."
+  },
+  "onboardPhonePrompt": "Type the farmer's mobile number.",
+  "@onboardPhonePrompt": {
+    "description": "Onboarding step 1 prompt (voice clip id)."
+  },
+  "onboardConsentMessage": "We will save your name, photo, phone number, your field's location and photos of your farm work. Your FPO uses them to prove your chilli is genuine and to pay you. Your phone number and your exact field are never shown to buyers. Do you agree?",
+  "@onboardConsentMessage": {
+    "description": "Onboarding step 2: the consent message played as a recording and shown as text (FR41, CLAUDE.md §6). Version v1."
+  },
+  "onboardAgree": "I agree",
+  "@onboardAgree": {
+    "description": "The farmer's big consent button (onboarding step 2); at most two words."
+  },
+  "onboardWhoPrompt": "Take the farmer's photo, type the name and pick the language.",
+  "@onboardWhoPrompt": {
+    "description": "Onboarding step 3 prompt (voice clip id)."
+  },
+  "onboardTakePhoto": "Take photo",
+  "@onboardTakePhoto": {
+    "description": "Button that opens the camera for the farmer's photo; at most two words."
+  },
+  "onboardNameLabel": "Farmer's name",
+  "@onboardNameLabel": {
+    "description": "Label of the name box the officer types into (onboarding step 3)."
+  },
+  "onboardSurveyLabel": "Survey number (if known)",
+  "@onboardSurveyLabel": {
+    "description": "Label of the optional survey / patta number box (onboarding step 5, FR65)."
+  },
+  "onboardLocationPrompt": "Stand inside the field, then tap the button.",
+  "@onboardLocationPrompt": {
+    "description": "Onboarding step 4 prompt (voice clip id)."
+  },
+  "onboardInField": "In field",
+  "@onboardInField": {
+    "description": "The farmer's button 'I am standing in my field' (onboarding step 4), in at most two words."
+  },
+  "onboardPinSaved": "Location saved ({metres} m).",
+  "@onboardPinSaved": {
+    "description": "Shown once the plot pin is saved, with its GPS accuracy in metres.",
+    "placeholders": {
+      "metres": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "onboardNoFixYet": "No location yet. Move to open sky.",
+  "@onboardNoFixYet": {
+    "description": "Shown when 'Save anyway' is tapped before any GPS fix arrived."
+  },
+  "onboardLandPrompt": "How big is this field? Pick acres or cents.",
+  "@onboardLandPrompt": {
+    "description": "Onboarding step 5 prompt (voice clip id)."
+  },
+  "unitAcres": "Acres",
+  "@unitAcres": {
+    "description": "Unit card and stepper unit: acres (100 cents = 1 acre)."
+  },
+  "unitCents": "Cents",
+  "@unitCents": {
+    "description": "Unit card and stepper unit: cents (100 cents = 1 acre)."
+  },
+  "onboardBoundaryPrompt": "Walk along the edge of the field. Tap Stop at the start point.",
+  "@onboardBoundaryPrompt": {
+    "description": "Onboarding step 6 prompt (voice clip id)."
+  },
+  "onboardStartWalking": "Start walking",
+  "@onboardStartWalking": {
+    "description": "Starts recording GPS points of the walked boundary; at most two words."
+  },
+  "onboardStop": "Stop",
+  "@onboardStop": {
+    "description": "Stops recording the walked boundary."
+  },
+  "onboardWalkAgain": "Walk again",
+  "@onboardWalkAgain": {
+    "description": "Discards the walked boundary and starts again; at most two words."
+  },
+  "onboardDeclared": "Declared: {acres} acres",
+  "@onboardDeclared": {
+    "description": "Declared land size in acres beside the walked area.",
+    "placeholders": {
+      "acres": {
+        "type": "String",
+        "example": "1.00"
+      }
+    }
+  },
+  "onboardWalked": "Walked: {acres} acres",
+  "@onboardWalked": {
+    "description": "Walked boundary area in acres beside the declared size.",
+    "placeholders": {
+      "acres": {
+        "type": "String",
+        "example": "2.40"
+      }
+    }
+  },
+  "onboardAreaMismatch": "The walked area and the declared size differ by more than 20 %. The office will check it.",
+  "@onboardAreaMismatch": {
+    "description": "Mismatch note when walked and declared areas differ by more than 20 % (FR66)."
+  },
+  "onboardBoundaryCrosses": "The shape crosses itself, so it will not be saved. Walk again or tap Next.",
+  "@onboardBoundaryCrosses": {
+    "description": "Boundary step: the walked shape crosses itself (GPS jitter), so the boundary is left out of the plot (M09 review P1-1)."
+  },
+  "onboardLocationOff": "No location. Turn on location and tap again.",
+  "@onboardLocationOff": {
+    "description": "Location step: GPS permission refused or location off; the 'In field' button is back for a retry (M09 review P2-3)."
+  },
+  "onboardTooFewPoints": "Too few points. Walk the whole edge.",
+  "@onboardTooFewPoints": {
+    "description": "Shown after Stop when fewer than 3 GPS points were recorded."
+  },
+  "onboardWaterPrompt": "Is the field irrigated or rainfed? Where does the water come from?",
+  "@onboardWaterPrompt": {
+    "description": "Onboarding step 7 prompt (voice clip id), FR54."
+  },
+  "farmingIrrigated": "Irrigated",
+  "@farmingIrrigated": {
+    "description": "Farming type card: irrigated (FR54)."
+  },
+  "farmingRainfed": "Rainfed",
+  "@farmingRainfed": {
+    "description": "Farming type card: rainfed (FR54)."
+  },
+  "waterWell": "Well",
+  "@waterWell": {
+    "description": "Water source card: open well."
+  },
+  "waterBorewell": "Borewell",
+  "@waterBorewell": {
+    "description": "Water source card: borewell."
+  },
+  "waterCanal": "Canal",
+  "@waterCanal": {
+    "description": "Water source card: canal."
+  },
+  "waterTank": "Tank",
+  "@waterTank": {
+    "description": "Water source card: tank (village reservoir)."
+  },
+  "waterRain": "Rain only",
+  "@waterRain": {
+    "description": "Water source card: rain only."
+  },
+  "onboardSoilPrompt": "What is the soil like?",
+  "@onboardSoilPrompt": {
+    "description": "Soil step prompt (voice clip id); shown only when plot.soil_type is enabled."
+  },
+  "soilRed": "Red soil",
+  "@soilRed": {
+    "description": "Soil card: red soil."
+  },
+  "soilBlack": "Black soil",
+  "@soilBlack": {
+    "description": "Soil card: black (cotton) soil."
+  },
+  "soilSandy": "Sandy",
+  "@soilSandy": {
+    "description": "Soil card: sandy soil."
+  },
+  "soilAlluvial": "Alluvial",
+  "@soilAlluvial": {
+    "description": "Soil card: alluvial soil."
+  },
+  "onboardCropPrompt": "Which crop does this field grow?",
+  "@onboardCropPrompt": {
+    "description": "Onboarding step 8 prompt (voice clip id)."
+  },
+  "onboardNoCrops": "Crop list not downloaded yet.",
+  "@onboardNoCrops": {
+    "description": "Shown on the crop step before the reference bundle arrived."
+  },
+  "onboardGiInside": "Inside the GI area",
+  "@onboardGiInside": {
+    "description": "GI preview: the pin is inside (or at the edge of) the GI production area (D-006: preview only)."
+  },
+  "onboardGiReview": "Needs review",
+  "@onboardGiReview": {
+    "description": "GI preview: outside the GI area, or the outline is not downloaded; the office reviews it."
+  },
+  "onboardFarmerPhone": "Farmer's phone",
+  "@onboardFarmerPhone": {
+    "description": "Saves and goes to step 9 (set up the farmer's own phone); at most two words."
+  },
+  "onboardNoSmartphone": "No smartphone",
+  "@onboardNoSmartphone": {
+    "description": "Saves and stops after step 8: the farmer gets voice calls and SMS instead; at most two words."
+  },
+  "onboardSave": "Save",
+  "@onboardSave": {
+    "description": "Saves another plot of an already saved farmer."
+  },
+  "onboardPhoneTaken": "This number is already registered.",
+  "@onboardPhoneTaken": {
+    "description": "Save failure: the mobile number belongs to another farmer (farmer_phone_taken)."
+  },
+  "onboardHandoffPrompt": "Scan this code with the farmer's phone, sign in with the SMS code, then play the voice tour.",
+  "@onboardHandoffPrompt": {
+    "description": "Onboarding step 9 prompt (voice clip id)."
+  },
+  "onboardQrLabel": "Sign-in code for {phone}",
+  "@onboardQrLabel": {
+    "description": "Screen-reader label of the handoff QR code; it holds only the phone number.",
+    "placeholders": {
+      "phone": {
+        "type": "String",
+        "example": "+919876543210"
+      }
+    }
+  },
+  "onboardVoiceTour": "Voice tour",
+  "@onboardVoiceTour": {
+    "description": "Plays the 60-second voice tour on the farmer's phone; at most two words."
+  },
+  "onboardTour": "Welcome to AgriTrace. The big card at the top shows your next job. Tap it, take the photo, and tap the tick. The cloud shows entries waiting to send. Tap Call officer if you need help.",
+  "@onboardTour": {
+    "description": "Text of the 60-second voice tour played at handoff (onboarding step 9); the recording is the tour."
+  },
+  "onboardDone": "Done",
+  "@onboardDone": {
+    "description": "Closes the onboarding wizard and returns to the officer home."
+  },
+  "onboardSummary": "{name}: {count, plural, =1{1 field saved} other{{count} fields saved}}",
+  "@onboardSummary": {
+    "description": "Farmer summary after saving; count is the number of plots saved for this farmer.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Murugan"
+      },
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "onboardAnotherPlot": "Another plot",
+  "@onboardAnotherPlot": {
+    "description": "Starts the location-to-crop steps again for the same farmer ('Add another plot'); at most two words."
+  },
   "signOut": "Sign out",
   "@signOut": {
     "description": "Button that signs this phone out (settings, and the device-in-use sheet); at most two words."

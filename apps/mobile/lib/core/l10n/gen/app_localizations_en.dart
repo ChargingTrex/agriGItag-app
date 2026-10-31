@@ -176,6 +176,193 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionEnded => 'You were signed out. Please sign in again.';
 
   @override
+  String get onboardTitle => 'Add farmer';
+
+  @override
+  String onboardStepOf(int step, int total) {
+    return '$step of $total';
+  }
+
+  @override
+  String get onboardNext => 'Next';
+
+  @override
+  String get onboardPhonePrompt => 'Type the farmer\'s mobile number.';
+
+  @override
+  String get onboardConsentMessage =>
+      'We will save your name, photo, phone number, your field\'s location and photos of your farm work. Your FPO uses them to prove your chilli is genuine and to pay you. Your phone number and your exact field are never shown to buyers. Do you agree?';
+
+  @override
+  String get onboardAgree => 'I agree';
+
+  @override
+  String get onboardWhoPrompt => 'Take the farmer\'s photo, type the name and pick the language.';
+
+  @override
+  String get onboardTakePhoto => 'Take photo';
+
+  @override
+  String get onboardNameLabel => 'Farmer\'s name';
+
+  @override
+  String get onboardSurveyLabel => 'Survey number (if known)';
+
+  @override
+  String get onboardLocationPrompt => 'Stand inside the field, then tap the button.';
+
+  @override
+  String get onboardInField => 'In field';
+
+  @override
+  String onboardPinSaved(int metres) {
+    return 'Location saved ($metres m).';
+  }
+
+  @override
+  String get onboardNoFixYet => 'No location yet. Move to open sky.';
+
+  @override
+  String get onboardLandPrompt => 'How big is this field? Pick acres or cents.';
+
+  @override
+  String get unitAcres => 'Acres';
+
+  @override
+  String get unitCents => 'Cents';
+
+  @override
+  String get onboardBoundaryPrompt => 'Walk along the edge of the field. Tap Stop at the start point.';
+
+  @override
+  String get onboardStartWalking => 'Start walking';
+
+  @override
+  String get onboardStop => 'Stop';
+
+  @override
+  String get onboardWalkAgain => 'Walk again';
+
+  @override
+  String onboardDeclared(String acres) {
+    return 'Declared: $acres acres';
+  }
+
+  @override
+  String onboardWalked(String acres) {
+    return 'Walked: $acres acres';
+  }
+
+  @override
+  String get onboardAreaMismatch =>
+      'The walked area and the declared size differ by more than 20 %. The office will check it.';
+
+  @override
+  String get onboardBoundaryCrosses => 'The shape crosses itself, so it will not be saved. Walk again or tap Next.';
+
+  @override
+  String get onboardLocationOff => 'No location. Turn on location and tap again.';
+
+  @override
+  String get onboardTooFewPoints => 'Too few points. Walk the whole edge.';
+
+  @override
+  String get onboardWaterPrompt => 'Is the field irrigated or rainfed? Where does the water come from?';
+
+  @override
+  String get farmingIrrigated => 'Irrigated';
+
+  @override
+  String get farmingRainfed => 'Rainfed';
+
+  @override
+  String get waterWell => 'Well';
+
+  @override
+  String get waterBorewell => 'Borewell';
+
+  @override
+  String get waterCanal => 'Canal';
+
+  @override
+  String get waterTank => 'Tank';
+
+  @override
+  String get waterRain => 'Rain only';
+
+  @override
+  String get onboardSoilPrompt => 'What is the soil like?';
+
+  @override
+  String get soilRed => 'Red soil';
+
+  @override
+  String get soilBlack => 'Black soil';
+
+  @override
+  String get soilSandy => 'Sandy';
+
+  @override
+  String get soilAlluvial => 'Alluvial';
+
+  @override
+  String get onboardCropPrompt => 'Which crop does this field grow?';
+
+  @override
+  String get onboardNoCrops => 'Crop list not downloaded yet.';
+
+  @override
+  String get onboardGiInside => 'Inside the GI area';
+
+  @override
+  String get onboardGiReview => 'Needs review';
+
+  @override
+  String get onboardFarmerPhone => 'Farmer\'s phone';
+
+  @override
+  String get onboardNoSmartphone => 'No smartphone';
+
+  @override
+  String get onboardSave => 'Save';
+
+  @override
+  String get onboardPhoneTaken => 'This number is already registered.';
+
+  @override
+  String get onboardHandoffPrompt =>
+      'Scan this code with the farmer\'s phone, sign in with the SMS code, then play the voice tour.';
+
+  @override
+  String onboardQrLabel(String phone) {
+    return 'Sign-in code for $phone';
+  }
+
+  @override
+  String get onboardVoiceTour => 'Voice tour';
+
+  @override
+  String get onboardTour =>
+      'Welcome to AgriTrace. The big card at the top shows your next job. Tap it, take the photo, and tap the tick. The cloud shows entries waiting to send. Tap Call officer if you need help.';
+
+  @override
+  String get onboardDone => 'Done';
+
+  @override
+  String onboardSummary(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fields saved',
+      one: '1 field saved',
+    );
+    return '$name: $_temp0';
+  }
+
+  @override
+  String get onboardAnotherPlot => 'Another plot';
+
+  @override
   String get signOut => 'Sign out';
 
   @override
