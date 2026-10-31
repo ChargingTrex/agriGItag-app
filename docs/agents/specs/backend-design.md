@@ -108,8 +108,17 @@ Auth: Bearer access token + `X-Device-Id` + optional `X-Assist-Session`. Client 
     { "client_id": "…", "kind": "quality_reading", "data": { } },
     { "client_id": "…", "kind": "plot", "data": { } },
     { "client_id": "…", "kind": "consent", "data": { } },
-    { "client_id": "…", "kind": "flag_resolution", "data": { } } ] }
+    { "client_id": "…", "kind": "flag_resolution", "data": { } },
+    { "client_id": "…", "kind": "farmer", "data": { } },
+    { "client_id": "…", "kind": "assist_session", "data": { "farmer_id": "…", "started_at": "…", "started_gps": { } } },
+    { "client_id": "…", "kind": "consent", "assist_session_id": "…", "data": { } } ] }
 ```
+
+Kinds `farmer` and `assist_session` and the optional per-entry `assist_session_id` were added by rulings 2026-10-31
+(D-031, D-032; implemented by B15): `farmer` is idempotent on `client_id`, officer/admin only, stored pending;
+`assist_session` goes through the idempotent `start_assist`; an entry's `assist_session_id` must belong to the caller
+(ended sessions accepted) and to the entry's farmer, and it records assist mode on that entry and its audit row.
+The `X-Assist-Session` header keeps working for online calls.
 Response always 200 if the envelope parses; per-entry outcome:
 ```json
 { "server_time": "…", "results": [
@@ -161,4 +170,4 @@ Profile JSON (`standards_profile_versions.rules`), validated by `StandardsProfil
 Engine `grade_engine.compute(rules, readings) -> GradeResult`, pure: pick latest reading per parameter at `grading_stage`; missing required with non-null limits → `incomplete`; per parameter the best grade whose limits hold, else `fail_grade`, capped by `max_grade_for_source`; batch grade = worst per-parameter grade (FR48); `lab_certified` when any reading source=lab with NABL number. Parameters with `limits: null` are skipped and raise an `info` flag `profile_incomplete`. Plausibility at entry (FR50): range, instrument calibration, trail rule (override with reason → flag), unknown parameter, unit mismatch → 422.
 
 ## 5. Seed data (B12) — mirrors PRD §12 reference batch with its known problems
-FPO `VIRUDHAI_SCFC_VINOBA_BHAVA_FPO` (P Thottiyangulam, Tiruchuli, Virudhunagar, TN; FSSAI/GI numbers `DEMO-…`); crop VIRUDHUNAGAR SAMBA VATHAL / விருதுநகர் சம்பா வத்தல், GI 883; region v0 district outline and v1 taluk union from `infra/scripts/gi_boundary/build_virudhunagar.py` (D-019), buffer 150 m; inputs Organic Fertilizer Gold (Amul), Panjakavya, Azospirillum, Phospho Bacteria, Effective Micro Organism; users 1 admin, 1 field officer, 1 QC, 3 farmers with consents; lots `LOTD02DADB6` (packed 69 / used 100), `LOT3072CB6A` (140 / 200; nursery 2025-09-05 before ploughing 2025-09-30), `LOT0EF81415` (77.6 + 195 / 20); all declared Inorganic + IPM; batch `FGP8T4033HM7`, super-lot `COMBO_LOT_6C1DCCFE`, procured 320 kg, grading "A" 20 kg 2026-07-30 without readings. Expected flags: `quantity_mismatch` ×3, `practice_tag_contradiction` ×3, `ipm_without_pest_event` ×3, `yield_check_unavailable` ×2, no `event_out_of_order`, `batch_quantity_unattributed`; grade "A" → 422 `unknown_grade_for_profile`; approve → 409; publish → 409; after fixes publish succeeds (GI verified, shares 31.25/62.5/6.25, units everywhere).
+FPO `VIRUDHAI_SCFC_VINOBA_BHAVA_FPO` (P Thottiyangulam, Tiruchuli, Virudhunagar, TN; FSSAI/GI numbers `DEMO-…`); crop VIRUDHUNAGAR SAMBA VATHAL / விருதுநகர் சம்பா வத்தல், GI 883; region v0 district outline and v1 taluk union from `infra/scripts/gi_boundary/build_virudhunagar.py` (D-019), buffer 150 m; inputs Organic Fertilizer Gold (Amul), Panjakavya, Azospirillum, Phospho Bacteria, Effective Micro Organism; users 1 admin, 1 field officer, 1 QC, 3 farmers with consents; lots `LOTD02DADB6` (packed 69 / used 100), `LOT3072CB6A` (140 / 200; nursery 2025-09-05 before ploughing 2025-09-30), `LOT0EF81415` (77.6 + 195 / 20); all declared Inorganic + IPM; batch `FGP8T4033HM7`, super-lot `COMBO_LOT_6C1DCCFE`, procured 320 kg, grading "A" 20 kg 2026-07-30 without readings. Expected flags: `quantity_mismatch` ×3, `practice_tag_contradiction` ×3, `ipm_without_pest_event` ×3, `yield_check_unavailable` ×3 (no lot has a harvest quantity, PRD §12.2), no `event_out_of_order`, `grading_loss_high` ×1 (320 kg received → 20 kg graded = 93.75 % loss), no `batch_quantity_unattributed` (Σ shares 320 kg = received 320 kg) (Architect-Gate rulings 2026-10-31, D-030); warns never block publish, holds do; grade "A" → 422 `unknown_grade_for_profile`; approve → 409; publish → 409; after fixes publish succeeds (GI verified, shares 31.25/62.5/6.25, units everywhere).

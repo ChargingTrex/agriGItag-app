@@ -34,3 +34,6 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-027 | Tokens live in the platform keystore, not in SQLite | 2026-10-30 | Accepted | [D-027.md](docs/adr/D-027.md) |
 | D-028 | OTP auto-read via Android SMS User Consent prompt | 2026-10-31 | Accepted | [D-028.md](docs/adr/D-028.md) |
 | D-029 | Offline outbox is per user on a shared phone | 2026-10-31 | Accepted | [D-029.md](docs/adr/D-029.md) |
+| D-030 | Batch attribution (Σ shares vs received, 5 %) and grading loss (`grading_loss_high`, features.yaml limit) are separate warns | 2026-10-31 | Accepted | [D-030.md](docs/adr/D-030.md) |
+| D-031 | Offline-registered farmers sync as a `farmer` push kind; `FarmerIn.client_id` makes REST and sync idempotent | 2026-10-31 | Accepted | [D-031.md](docs/adr/D-031.md) |
+| D-032 | Assist context travels per sync entry (`assist_session` push kind + `SyncEntry.assist_session_id`), not only via the request header | 2026-10-31 | Accepted | [D-032.md](docs/adr/D-032.md) |

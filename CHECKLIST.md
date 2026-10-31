@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 27 % (16/60 items)
+Completion: 26 % (16/62 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -56,6 +56,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 ## G3 Mobile core
 
 - [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (in progress) — reviewer: — verifier:
+- [ ] B15 — Backend gaps from B08 review and M09 (grading-loss split D-030, `farmer` push kind + `client_id` D-031) — wave 5 — worker: — reviewer: — verifier:
 - [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: — reviewer: — verifier:
 - [ ] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (done, 1500e30) — reviewer: MOB r1 in progress — verifier:
 - [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: — reviewer: — verifier:
@@ -84,3 +85,4 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] Q04 — Backend verification: full pytest incl. e2e reference batch, locust p95, Schemathesis fuzz — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q05 — Release gate: benchmark sweep → `docs/agents/qa/benchmarks.json`, rubric, G5 report — wave 7 — worker: — reviewer: — verifier:
 - [ ] **Gate G5 signed** (docs/agents/gates/G5.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [ ] **G5 condition (rulings 2026-10-31 §4):** B15, M02 r2 and M09 r2 all merged before any field device runs onboarding or assist mode; offline onboarding push `[farmer, assist_session, consent, plot]` → 4 × accepted, replay → 4 × duplicate, online timeout then sync → one farmer
