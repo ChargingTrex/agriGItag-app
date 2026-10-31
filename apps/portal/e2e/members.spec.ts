@@ -2,12 +2,12 @@
  * Members end to end in MSW mock mode (no Docker): sign in with OTP + PIN, approve a pending farmer, see them
  * Active without a reload; open a plot and check the lazy map loads with the satellite layer off until asked.
  * Serves: plan §7.3 P01 acceptance "approve → active without reload", §13 D3 (satellite only on request),
- * FR8, FR28. Called by: `npm run e2e` (Playwright starts `npm run dev:mock` when PORTAL_URL is unset).
- * Against the real stack (PORTAL_URL set) the mock ids and codes do not exist: P07 owns that chain.
+ * FR8, FR28. Called by: `npm run e2e` (mock mode unless `E2E_LIVE=1`).
+ * Against the live stack (`E2E_LIVE=1`) the mock ids and codes do not exist: e2e/chain.spec.ts (P07) covers it.
  */
 import { expect, test, type Page } from '@playwright/test';
 
-test.skip(Boolean(process.env['PORTAL_URL']), 'mock-mode spec (MSW data and codes)');
+test.skip(process.env['E2E_LIVE'] === '1', 'mock-mode spec (MSW data and codes)');
 
 /**
  * Signs in as the mock FPO admin through the real login form.

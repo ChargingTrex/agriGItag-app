@@ -305,7 +305,8 @@ export function ReadyLotsPage() {
               const block = blockOf(lot);
               const label = block ? `Lot ${lot.code}: ${block}` : `Tick lot ${lot.code}`;
               return (
-                <TableRow key={lot.id} sx={block ? { '& td': { color: 'text.disabled' } } : {}}>
+                // text.secondary, not text.disabled: greyed rows stay readable (4.5:1, axe colour-contrast, P07).
+                <TableRow key={lot.id} sx={block ? { '& td': { color: 'text.secondary' } } : {}}>
                   <TableCell padding="checkbox">
                     {/* A disabled input fires no hover events, so the tooltip sits on a wrapper. */}
                     <Tooltip title={block ?? ''} describeChild>
