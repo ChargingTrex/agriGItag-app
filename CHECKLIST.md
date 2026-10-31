@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 22 % (13/59 items)
+Completion: 22 % (13/60 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -45,6 +45,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] M03 — Ref data + local preview rules (GI point-in-polygon + buffer, yield 20/30, event order, mo — wave 3 — worker: — reviewer: — verifier:
 - [ ] P01 — Members: approvals, roster, farmer/plot detail with MapLibre/OSM + GI outline — wave 3 — worker: — reviewer: — verifier:
 - [ ] P03 — Ready lots → Create batch: tick, running total, share %, greyed lots with reason, non-GI t — wave 3 — worker: — reviewer: — verifier:
+- [ ] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: — reviewer: — verifier:
 - [ ] B07 — Reference bundle + sync pull — wave 4 — worker: — reviewer: — verifier:
 - [ ] B08 — Rules & flags — wave 4 — worker: — reviewer: — verifier:
 - [ ] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: — reviewer: — verifier:
