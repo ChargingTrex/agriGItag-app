@@ -43,7 +43,7 @@ class AgriTraceApp extends ConsumerWidget {
       builder: (context, child) => MediaQuery.withClampedTextScaling(
         minScaleFactor: 1.0,
         maxScaleFactor: 1.5,
-        // DECISION D-034: the assist bar is drawn once, above the navigator, while a session runs.
+        // DECISION D-044: the assist bar is drawn once, above the navigator, while a session runs.
         //   ADV: every screen, sheet and dialog of assist mode sits under it, including later ones ("bar on every
         //   screen" by construction).
         //   COMPROMISE: the screens below lose the status-bar inset the bar takes.

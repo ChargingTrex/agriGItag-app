@@ -5,7 +5,8 @@
  * Serves: FR68/FR70 (a hold keeps the lot out of GI batches until an FPO admin clears it), FR61 (evidence
  * photos), Dataflow "Review & flags", plan §7.3 P02 acceptance "review held lot → cleared → tickable in P03".
  * Called by: src/AppRoutes.tsx (`/lots/:lotId`); `useLotHold`, `LotHoldState` and `EvidencePhotos` also by
- * FlagPage.tsx (and P03 later). Flags of lots link here through `SubjectLink`.
+ * FlagPage.tsx; `useLotHold` and `useHoldFlags` by src/features/batches/ReadyLotsPage.tsx (lot hint, plot holds).
+ * Flags of lots link here through `SubjectLink`.
  */
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -15,29 +16,27 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { Link as RouterLink, useParams } from 'react-router';
-import { unwrap } from '../../api/client';
+import { unwrap, type ApiClient } from '../../api/client';
 import { errorMessage } from '../../api/errors';
 import { useAuth } from '../../auth/AuthProvider';
-import { activeHolds, dayMonth, ruleText } from './flagModel';
+import { activeHolds, dayMonth, ruleText, type FlagOut } from './flagModel';
 import { FlagsTable } from './FlagsPage';
 
 /** Enough flags of one FPO for the pilot in one request (the API maximum). */
 const ONE_PAGE = 200;
 
 /**
- * The lot's active hold flags. Every flag query key starts with `flags`, so resolving any flag refreshes it.
- * @param lotId The lot.
- * @returns TanStack query whose `data` is `{ holds, complete }`: the lot's active holds, and false when a page
- *   was cut off, so an empty `holds` does not prove the lot is free (fail closed).
+ * Query options for every open and escalated hold flag of the FPO (one shared cache entry). Every flag query key
+ * starts with `flags`, so resolving any flag refreshes it.
+ * @param api The session's API client.
+ * @returns `queryKey` and `queryFn`; the data is the open page and the escalated page.
  */
-export function useLotHold(lotId: string) {
-  const { api } = useAuth();
-  // shortcut: the contract has no lot read with `gi_eligible` and no `subject_id` flag filter, so the hold is
-  // derived from the first 200 open and 200 escalated hold flags of the FPO (both statuses keep a lot held);
-  // read `lots.gi_eligible` once B09 exposes the lot.
-  return useQuery({
+function holdFlagsQuery(api: ApiClient) {
+  // shortcut: no `subject_id` flag filter, so holds come from the first 200 open and 200 escalated hold flags of
+  // the FPO (both statuses keep a lot held); `complete` says when a page was cut off.
+  return {
     queryKey: ['flags', 'holds'],
-    queryFn: ({ signal }) =>
+    queryFn: ({ signal }: { signal: AbortSignal }) =>
       Promise.all(
         (['open', 'escalated'] as const).map((status) =>
           unwrap(
@@ -48,13 +47,42 @@ export function useLotHold(lotId: string) {
           ),
         ),
       ),
-    select: (pages) => ({
-      holds: activeHolds(
-        pages.flatMap((page) => page.items),
-        lotId,
-      ),
-      complete: pages.every((page) => !page.has_more),
-    }),
+  };
+}
+
+/**
+ * Flattens the hold pages.
+ * @param pages The open and escalated pages.
+ * @returns `{ flags, complete }`: every active hold flag (lots, plots, events), and false when a page was cut off.
+ */
+const holdPages = (pages: readonly { items: FlagOut[]; has_more: boolean }[]) => ({
+  flags: pages.flatMap((page) => page.items),
+  complete: pages.every((page) => !page.has_more),
+});
+
+/**
+ * Every active hold flag of the FPO, whatever its subject. P03 reads the plot holds from it.
+ * @returns TanStack query whose `data` is `{ flags, complete }` (see `holdPages`).
+ */
+export function useHoldFlags() {
+  const { api } = useAuth();
+  return useQuery({ ...holdFlagsQuery(api), select: holdPages });
+}
+
+/**
+ * The lot's active hold flags, from the same cached query as `useHoldFlags`.
+ * @param lotId The lot.
+ * @returns TanStack query whose `data` is `{ holds, complete }`: the lot's active holds, and false when a page
+ *   was cut off, so an empty `holds` does not prove the lot is free (fail closed).
+ */
+export function useLotHold(lotId: string) {
+  const { api } = useAuth();
+  return useQuery({
+    ...holdFlagsQuery(api),
+    select: (pages) => {
+      const { flags, complete } = holdPages(pages);
+      return { holds: activeHolds(flags, lotId), complete };
+    },
   });
 }
 

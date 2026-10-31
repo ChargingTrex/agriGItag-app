@@ -4,7 +4,8 @@ Serves: Dataflow Stages 4–9 and §4 (approval gates), FR9–FR11, FR29, FR49, 
 D-020 (/v1, additive), D-033 (gates answer 409 `gate_not_met` listing every reason), backend-design.md §1
 lots_batches row.
 Callers: `agritrace.main.create_app` mounts `router` (module discovery, D-004); the mobile app (M07, M11)
-and the portal (P03, P04) through the generated clients (D-003).
+and the portal (P03, P04) through the generated clients (D-003). The lot QR uses `publishing.service.qr_png`
+(B10).
 """
 
 import uuid
@@ -29,6 +30,7 @@ from agritrace.modules.lots_batches.schemas import (
     LotOut,
     PublishOut,
 )
+from agritrace.modules.publishing import service as publishing_service
 
 router = APIRouter(tags=["lots_batches"])
 
@@ -153,6 +155,35 @@ async def get_lot(lot_id: LotId, session: Session, user: AnyRole) -> LotOut:
         NotFoundError: out of scope (404).
     """
     return service.lot_out(await service.get_lot(session, user, lot_id))
+
+
+@router.get(
+    "/lots/{lot_id}/qr",
+    response_class=Response,
+    summary="QR code of a lot",
+    description="PNG encoding the lot code (e.g. `LOT0EF81415`) for the bag tag scanned at intake.",
+    responses={
+        200: {"content": {"image/png": {}}, "description": "The QR image."},
+        **_errors(e404="`not_found`."),
+    },
+)
+async def lot_qr(lot_id: LotId, session: Session, user: AnyRole) -> Response:
+    """Return the lot QR image.
+
+    \f
+    Args:
+        lot_id: the lot.
+        session: database session.
+        user: the caller.
+
+    Returns:
+        The PNG.
+
+    Raises:
+        NotFoundError: out of scope (404).
+    """
+    lot = await service.get_lot(session, user, lot_id)
+    return Response(publishing_service.qr_png(lot.code), media_type="image/png")
 
 
 @router.post(

@@ -179,7 +179,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/qc',
         builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).roleQc),
       ),
-      // DECISION D-034: assist mode is this route scope: the farmer screens again, for the assisted farmer, open only
+      // DECISION D-044: assist mode is this route scope: the farmer screens again, for the assisted farmer, open only
       //   while that farmer's assist session runs (typed URL, app restarted → officer home).
       //   ADV: no copy of the farmer UI; every entry made here gets assistMode and the session (CLAUDE.md §6, D-032).
       //   COMPROMISE: routes exist twice and M07 screens must navigate through `farmerPath`.

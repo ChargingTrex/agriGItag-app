@@ -11,7 +11,8 @@ found at merge are recorded on the batch (`gi_block_reasons`).
 
 Serves: PRD §5 (Component Lot, Super Lot / Batch), Dataflow Stages 4–9 and §4, FR9–FR11, FR29, FR30, FR49,
 FR56, FR60, FR62, D-005, D-017 (`lot` fields, `second_signoff_threshold_kg`), backend-design.md §1–§2.
-Callers: `lots_batches.router` (which commits); no other module (`__all__` is empty).
+Callers: `lots_batches.router` (which commits); `publishing.service` and `publishing.router` use `reason`,
+`get_batch` and `enqueue_page_build` (rebuild, QR, B10).
 Functions flush but never commit, except `_refuse`, which commits the refreshed flags before raising.
 """
 
@@ -81,7 +82,7 @@ from agritrace.modules.registry.models import Crop, Farmer, Plot, Processor
 from agritrace.modules.rules_flags import service as rules_service
 from agritrace.modules.rules_flags.models import Flag
 
-__all__: list[str] = []
+__all__ = ["enqueue_page_build", "get_batch", "reason"]
 
 log = logging.getLogger(__name__)
 
