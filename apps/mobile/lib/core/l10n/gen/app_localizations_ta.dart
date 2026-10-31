@@ -368,6 +368,244 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
+  String get eventLandPreparation => 'நிலம் தயாரிப்பு';
+
+  @override
+  String get eventNursery => 'நாற்றங்கால்';
+
+  @override
+  String get eventSowing => 'நடவு';
+
+  @override
+  String get eventInputApplication => 'உரம், மருந்து';
+
+  @override
+  String get eventHarvest => 'அறுவடை';
+
+  @override
+  String get eventDrying => 'உலர்த்தல்';
+
+  @override
+  String get eventPacking => 'மூட்டை கட்டுதல்';
+
+  @override
+  String get eventProblem => 'பிரச்சனை';
+
+  @override
+  String get orderAskLandPreparation => 'நிலத்தை ஏற்கனவே தயார் செய்தீர்களா?';
+
+  @override
+  String get orderAskNursery => 'நாற்றங்கால் ஏற்கனவே அமைத்தீர்களா?';
+
+  @override
+  String get orderAskSowing => 'ஏற்கனவே நடவு செய்தீர்களா?';
+
+  @override
+  String get orderAskInputApplication => 'ஏற்கனவே உரம் அல்லது மருந்து போட்டீர்களா?';
+
+  @override
+  String get orderAskHarvest => 'ஏற்கனவே அறுவடை செய்தீர்களா?';
+
+  @override
+  String get orderAskDrying => 'ஏற்கனவே காய வைத்தீர்களா?';
+
+  @override
+  String get orderAskPacking => 'ஏற்கனவே மூட்டை கட்டினீர்களா?';
+
+  @override
+  String get orderAskProblem => 'பிரச்சனையை ஏற்கனவே தெரிவித்தீர்களா?';
+
+  @override
+  String get chooseEventTitle => 'பதிவு செய்';
+
+  @override
+  String get chooseEventPrompt => 'இன்று வயலில் என்ன செய்தீர்கள்?';
+
+  @override
+  String get choosePlotPrompt => 'எந்த வயல்?';
+
+  @override
+  String plotNumber(int number) {
+    return 'வயல் $number';
+  }
+
+  @override
+  String get nurseryPrompt => 'எந்த விதை? அல்லது விதைப் பாக்கெட்டைப் படம் எடுங்கள்.';
+
+  @override
+  String get seedPacket => 'விதைப் பாக்கெட்';
+
+  @override
+  String get inputPrompt => 'எத்தனை மூட்டை? பிறகு பொருளைத் தொடுங்கள்.';
+
+  @override
+  String get bagsPrompt => 'எத்தனை மூட்டை?';
+
+  @override
+  String get bagsUnit => 'மூட்டைகள்';
+
+  @override
+  String get next => 'அடுத்து';
+
+  @override
+  String get yieldWarn => 'இந்த வயலுக்கு வழக்கத்தை விட அதிகம்.';
+
+  @override
+  String get yieldHold => 'வழக்கத்தை விட மிக அதிகம். அலுவலர் சரிபார்ப்பார்.';
+
+  @override
+  String get dryingPrompt => 'காய வைக்கத் தொடங்குகிறீர்களா, அல்லது முடிந்ததா?';
+
+  @override
+  String get dryingStart => 'உலர்த்தல் தொடக்கம்';
+
+  @override
+  String get dryingDone => 'உலர்த்தல் முடிவு';
+
+  @override
+  String get problemPrompt => 'என்ன பிரச்சனை?';
+
+  @override
+  String get problemPest => 'பூச்சி';
+
+  @override
+  String get problemDisease => 'நோய்';
+
+  @override
+  String get problemWeather => 'மழை சேதம்';
+
+  @override
+  String get problemOther => 'மற்றவை';
+
+  @override
+  String get cameraPrompt => 'செய்த வேலையைப் படம் எடுங்கள்.';
+
+  @override
+  String get takePhoto => 'படம் எடு';
+
+  @override
+  String get photoSaving => 'படம் சேமிக்கப்படுகிறது';
+
+  @override
+  String get cameraOff => 'கேமரா இயங்கவில்லை. கேமராவை அனுமதித்து மீண்டும் முயலுங்கள்.';
+
+  @override
+  String get tryAgain => 'மீண்டும் முயல்';
+
+  @override
+  String get phoneFull => 'கைபேசி நிரம்பியுள்ளது. பதிவுகளை இப்போது அனுப்பவா?';
+
+  @override
+  String get sendNow => 'இப்போது அனுப்பு';
+
+  @override
+  String get noLot => 'உங்களுக்கு இன்னும் பயிர் பதிவு செய்யப்படவில்லை. கள அலுவலரை அழையுங்கள்.';
+
+  @override
+  String get goHome => 'முகப்பு';
+
+  @override
+  String get yes => 'ஆம்';
+
+  @override
+  String get no => 'இல்லை';
+
+  @override
+  String confirmPlain(String event) {
+    return '$event, இன்று. சரியா?';
+  }
+
+  @override
+  String confirmBags(String event, int bags) {
+    return '$event, $bags மூட்டை, இன்று. சரியா?';
+  }
+
+  @override
+  String confirmProduct(String event, String product, int bags) {
+    return '$event, $product, $bags மூட்டை, இன்று. சரியா?';
+  }
+
+  @override
+  String confirmChoice(String event, String choice) {
+    return '$event, $choice, இன்று. சரியா?';
+  }
+
+  @override
+  String get voiceNote => 'குரல் பதிவு';
+
+  @override
+  String get voiceStop => 'நிறுத்து';
+
+  @override
+  String get voiceAdded => 'குரல் சேர்ந்தது';
+
+  @override
+  String get micOff => 'மைக் இயங்கவில்லை. அனுமதித்து மீண்டும் முயலுங்கள்.';
+
+  @override
+  String get okay => 'சரி';
+
+  @override
+  String get recordFailed => 'பதிவு ஆகவில்லை. மீண்டும் பதிவு செய்யவா?';
+
+  @override
+  String get recordAgain => 'மீண்டும் பதிவு';
+
+  @override
+  String get savedTitle => 'சேமிக்கப்பட்டது';
+
+  @override
+  String get savedOnline => 'சேமிக்கப்பட்டது.';
+
+  @override
+  String get savedOffline => 'சேமிக்கப்பட்டது. சிக்னல் வந்ததும் அனுப்பப்படும்.';
+
+  @override
+  String get lotReady => 'விற்கத் தயார்.';
+
+  @override
+  String get undo => 'திரும்பப் பெறு';
+
+  @override
+  String get logAgain => 'மீண்டும்';
+
+  @override
+  String get keepDrying =>
+      'இன்னும் போதுமான அளவு காயவில்லை. தொடர்ந்து காய வையுங்கள்; அலுவலர் ஈரப்பதத்தைச் சரிபார்ப்பார்.';
+
+  @override
+  String get homeLog => 'பதிவு';
+
+  @override
+  String get homeSell => 'விற்பனை';
+
+  @override
+  String get homeMoney => 'பணம்';
+
+  @override
+  String get homeMyFarm => 'என் பண்ணை';
+
+  @override
+  String get homeNoTask => 'இப்போது செய்ய வேண்டியது இல்லை. இன்று செய்ததைப் பதிவு செய்யுங்கள்.';
+
+  @override
+  String homeNextTask(String event, String date) {
+    return 'அடுத்து: $event, $dateக்குள்';
+  }
+
+  @override
+  String get homeLogEvent => 'பதிவு செய்';
+
+  @override
+  String get taskDryingDone => 'உலர்த்தல் முடிவைப் பதிவு செய்யும் நேரம்';
+
+  @override
+  String get comingSoon => 'விரைவில் வரும்.';
+
+  @override
+  String get notFound => 'இந்தப் பக்கம் இல்லை.';
+
+  @override
   String get qcHomePrompt => 'பெறுவதற்கு லாட்டை ஸ்கேன் செய்யுங்கள், அல்லது தொகுப்பைத் தரம் பிரியுங்கள்.';
 
   @override

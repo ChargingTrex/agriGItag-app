@@ -5,11 +5,13 @@ crop and tenant), FR53, FR56, PLAN "Gap analysis" (ID capture, PIN login, SHG gr
 Callers: `agritrace.main` lifespan (`load`, refuses to start on invalid YAML), config router (GET
 /v1/config/*), registry service hooks (`create_farmer`, `create_plot`) and imports (templates,
 `validate_payload`), registry router feature gates; later events (B06), sync bundle (B07, `bundle_part`),
-publishing (B10, `public_fields`).
+publishing (B10, `public_fields`; `check_page_required` run by `agritrace.main` with the publishing
+module's `PAGE_REQUIRED_FIELDS`).
 """
 
 import hashlib
 import json
+from collections.abc import Mapping, Sequence
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -237,6 +239,35 @@ def parse(config_dir: Path) -> Config:
         _check_tenant(tenant, path, entities, features)
         tenants[tenant.fpo_code] = tenant
     return Config(entities=entities, features=features, tenants=tenants)
+
+
+def check_page_required(config: Config, required: Mapping[str, Sequence[str]]) -> None:
+    """Refuse a configuration that hides a field the public page schema requires (D-034 ruling).
+
+    Args:
+        config: the parsed configuration.
+        required: field names by entity that the public page always shows (publishing `PAGE_REQUIRED_FIELDS`).
+
+    Raises:
+        ConfigInvalid: a field file lacks such a field or does not mark it enabled and `public`, or a tenant
+            override disables or narrows it; the message names the file, the key and why.
+    """
+    # DECISION D-034: fields the public page schema requires are public for every tenant; narrowing one is a
+    #   start-up error, not a silently ignored override.
+    #   ADV: the YAML (D-017) and the page never disagree; the admin sees why at boot, not a failed build.
+    #   COMPROMISE: a tenant cannot hide farm area, farming type or grade readings without a schema change.
+    why = "the public page requires it (D-034), so it must stay enabled and `visibility: public`"
+    for entity, names in required.items():
+        specs = {f.name: f for f in config.entities[entity].fields} if entity in config.entities else {}
+        for name in names:
+            spec = specs.get(name)
+            if spec is None or not spec.enabled or spec.visibility != "public":
+                raise ConfigInvalid(f"fields/{entity}.yaml: fields.{entity}.{name}: {why}")
+        for code, tenant in config.tenants.items():
+            for name, override in tenant.fields.get(entity, {}).items():
+                hidden = override.enabled is False or override.visibility not in (None, "public")
+                if name in names and hidden:
+                    raise ConfigInvalid(f"tenants/{code}.yaml: fields.{entity}.{name}: {why}")
 
 
 @lru_cache

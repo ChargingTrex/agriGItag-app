@@ -742,6 +742,456 @@ abstract class AppLocalizations {
   /// **'இன்னும் அனுப்பப்படாத பதிவுகள்: {count}. அவை இந்தக் கைபேசியிலேயே இருக்கும்; அனுப்ப சிக்னல் பெறவும்.'**
   String unsentReminder(int count);
 
+  /// Event card: Stage 1 land preparation (ploughing). At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நிலம் தயாரிப்பு'**
+  String get eventLandPreparation;
+
+  /// Event card: nursery bed with the seed variety. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நாற்றங்கால்'**
+  String get eventNursery;
+
+  /// Event card: sowing or transplanting in the main field. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நடவு'**
+  String get eventSowing;
+
+  /// Event card: fertiliser or pesticide application. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'உரம், மருந்து'**
+  String get eventInputApplication;
+
+  /// Event card: a harvest round. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'அறுவடை'**
+  String get eventHarvest;
+
+  /// Event card: drying the crop on the farm. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'உலர்த்தல்'**
+  String get eventDrying;
+
+  /// Event card: packing the dried crop into bags. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'மூட்டை கட்டுதல்'**
+  String get eventPacking;
+
+  /// Event card: report a pest, disease or rain damage. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'பிரச்சனை'**
+  String get eventProblem;
+
+  /// Out-of-order question (F09) when land preparation is missing before this event. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நிலத்தை ஏற்கனவே தயார் செய்தீர்களா?'**
+  String get orderAskLandPreparation;
+
+  /// Out-of-order question (F09) when the nursery is missing before this event. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நாற்றங்கால் ஏற்கனவே அமைத்தீர்களா?'**
+  String get orderAskNursery;
+
+  /// Out-of-order question (F09) when sowing is missing, e.g. harvest before sowing. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏற்கனவே நடவு செய்தீர்களா?'**
+  String get orderAskSowing;
+
+  /// Out-of-order question (F09) when a fertiliser step is missing. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏற்கனவே உரம் அல்லது மருந்து போட்டீர்களா?'**
+  String get orderAskInputApplication;
+
+  /// Out-of-order question (F09) when the harvest is missing, e.g. drying before harvest. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏற்கனவே அறுவடை செய்தீர்களா?'**
+  String get orderAskHarvest;
+
+  /// Out-of-order question (F09) when drying is missing before packing. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏற்கனவே காய வைத்தீர்களா?'**
+  String get orderAskDrying;
+
+  /// Out-of-order question (F09) when packing is missing. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏற்கனவே மூட்டை கட்டினீர்களா?'**
+  String get orderAskPacking;
+
+  /// Out-of-order question (F09); problems are in no order track, kept for completeness. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'பிரச்சனையை ஏற்கனவே தெரிவித்தீர்களா?'**
+  String get orderAskProblem;
+
+  /// App bar title of the event grid (F04).
+  ///
+  /// In ta, this message translates to:
+  /// **'பதிவு செய்'**
+  String get chooseEventTitle;
+
+  /// Spoken sentence above the eight event cards (F04). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்று வயலில் என்ன செய்தீர்கள்?'**
+  String get chooseEventPrompt;
+
+  /// Spoken sentence above the field cards when the farmer has more than one active lot. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'எந்த வயல்?'**
+  String get choosePlotPrompt;
+
+  /// Card label of the farmer's n-th field (lot) in the field picker. At most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'வயல் {number}'**
+  String plotNumber(int number);
+
+  /// Spoken sentence above the seed variety cards (nursery). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'எந்த விதை? அல்லது விதைப் பாக்கெட்டைப் படம் எடுங்கள்.'**
+  String get nurseryPrompt;
+
+  /// Card: no variety chosen; the photo will show the seed packet instead. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'விதைப் பாக்கெட்'**
+  String get seedPacket;
+
+  /// Spoken sentence above the bags stepper and the product cards (fertiliser or spray). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'எத்தனை மூட்டை? பிறகு பொருளைத் தொடுங்கள்.'**
+  String get inputPrompt;
+
+  /// Spoken sentence above the bags stepper (harvest, packing). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'எத்தனை மூட்டை?'**
+  String get bagsPrompt;
+
+  /// Unit word under the bags stepper value (used when the field configuration has no label).
+  ///
+  /// In ta, this message translates to:
+  /// **'மூட்டைகள்'**
+  String get bagsUnit;
+
+  /// Button under the bags stepper that opens the camera. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'அடுத்து'**
+  String get next;
+
+  /// Orange note under the harvest stepper when the yield is 20-30 % above the field's ceiling (preview only; nothing is blocked).
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த வயலுக்கு வழக்கத்தை விட அதிகம்.'**
+  String get yieldWarn;
+
+  /// Orange note under the harvest stepper when the yield is more than 30 % above the ceiling: saved, reviewed by the officer.
+  ///
+  /// In ta, this message translates to:
+  /// **'வழக்கத்தை விட மிக அதிகம். அலுவலர் சரிபார்ப்பார்.'**
+  String get yieldHold;
+
+  /// Spoken sentence above the Start drying / Drying done buttons. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'காய வைக்கத் தொடங்குகிறீர்களா, அல்லது முடிந்ததா?'**
+  String get dryingPrompt;
+
+  /// Button: drying starts today (a reminder to log the end is set). At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'உலர்த்தல் தொடக்கம்'**
+  String get dryingStart;
+
+  /// Button: drying finished today. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'உலர்த்தல் முடிவு'**
+  String get dryingDone;
+
+  /// Spoken sentence above the problem kind cards. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'என்ன பிரச்சனை?'**
+  String get problemPrompt;
+
+  /// Problem kind card: insects or other pests. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'பூச்சி'**
+  String get problemPest;
+
+  /// Problem kind card: plant disease. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நோய்'**
+  String get problemDisease;
+
+  /// Problem kind card: rain, wind or other weather damage. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'மழை சேதம்'**
+  String get problemWeather;
+
+  /// Problem kind card: anything else. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'மற்றவை'**
+  String get problemOther;
+
+  /// Spoken sentence above the camera preview (F06). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'செய்த வேலையைப் படம் எடுங்கள்.'**
+  String get cameraPrompt;
+
+  /// Shutter button under the camera preview. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'படம் எடு'**
+  String get takePhoto;
+
+  /// Screen-reader label of the progress ring while the photo is compressed.
+  ///
+  /// In ta, this message translates to:
+  /// **'படம் சேமிக்கப்படுகிறது'**
+  String get photoSaving;
+
+  /// Shown when camera access is refused or the camera fails (never an error code). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'கேமரா இயங்கவில்லை. கேமராவை அனுமதித்து மீண்டும் முயலுங்கள்.'**
+  String get cameraOff;
+
+  /// Button that opens the camera again. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீண்டும் முயல்'**
+  String get tryAgain;
+
+  /// Sheet when the photo or entry cannot be stored (UserFlows: low storage). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'கைபேசி நிரம்பியுள்ளது. பதிவுகளை இப்போது அனுப்பவா?'**
+  String get phoneFull;
+
+  /// Button on the phone-full sheet that starts sending saved entries. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இப்போது அனுப்பு'**
+  String get sendNow;
+
+  /// Shown when the farmer has no active lot to log an event on. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'உங்களுக்கு இன்னும் பயிர் பதிவு செய்யப்படவில்லை. கள அலுவலரை அழையுங்கள்.'**
+  String get noLot;
+
+  /// Button that returns to the farmer home screen. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'முகப்பு'**
+  String get goHome;
+
+  /// Yes button (out-of-order question). At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஆம்'**
+  String get yes;
+
+  /// No button (out-of-order question). At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இல்லை'**
+  String get no;
+
+  /// Confirm screen sentence read aloud for events without a quantity. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'{event}, இன்று. சரியா?'**
+  String confirmPlain(String event);
+
+  /// Confirm screen sentence with the number of bags (harvest, packing). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'{event}, {bags} மூட்டை, இன்று. சரியா?'**
+  String confirmBags(String event, int bags);
+
+  /// Confirm screen sentence for fertiliser or spray: product name (FPO master data) and bags. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'{event}, {product}, {bags} மூட்டை, இன்று. சரியா?'**
+  String confirmProduct(String event, String product, int bags);
+
+  /// Confirm screen sentence with the chosen seed variety or problem kind. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'{event}, {choice}, இன்று. சரியா?'**
+  String confirmChoice(String event, String choice);
+
+  /// Button that records up to 30 seconds of voice for a problem report. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'குரல் பதிவு'**
+  String get voiceNote;
+
+  /// Button that stops the voice note recording. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நிறுத்து'**
+  String get voiceStop;
+
+  /// Button state after a voice note was recorded; a tap records it again. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'குரல் சேர்ந்தது'**
+  String get voiceAdded;
+
+  /// Sheet when microphone access is refused. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'மைக் இயங்கவில்லை. அனுமதித்து மீண்டும் முயலுங்கள்.'**
+  String get micOff;
+
+  /// Button that closes an information sheet. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரி'**
+  String get okay;
+
+  /// Sheet when the voice note recording failed. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'பதிவு ஆகவில்லை. மீண்டும் பதிவு செய்யவா?'**
+  String get recordFailed;
+
+  /// Button that records the voice note again. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீண்டும் பதிவு'**
+  String get recordAgain;
+
+  /// App bar title of the saved screen (F08).
+  ///
+  /// In ta, this message translates to:
+  /// **'சேமிக்கப்பட்டது'**
+  String get savedTitle;
+
+  /// Saved screen sentence when nothing waits to send. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'சேமிக்கப்பட்டது.'**
+  String get savedOnline;
+
+  /// Saved screen sentence next to the grey cloud while entries wait to send (UserFlows: no signal). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'சேமிக்கப்பட்டது. சிக்னல் வந்ததும் அனுப்பப்படும்.'**
+  String get savedOffline;
+
+  /// Saved screen sentence after packing when the lot became ready to sell. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'விற்கத் தயார்.'**
+  String get lotReady;
+
+  /// Button that undoes the entry just saved (allowed for 24 hours). At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'திரும்பப் பெறு'**
+  String get undo;
+
+  /// Button on the saved screen after sowing: log a second sowing round. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீண்டும்'**
+  String get logAgain;
+
+  /// Sheet after packing when the last moisture reading is above the limit (or missing): the lot is not ready to sell. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்னும் போதுமான அளவு காயவில்லை. தொடர்ந்து காய வையுங்கள்; அலுவலர் ஈரப்பதத்தைச் சரிபார்ப்பார்.'**
+  String get keepDrying;
+
+  /// Home button: log a farm event. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'பதிவு'**
+  String get homeLog;
+
+  /// Home button: show the QR code to sell a lot. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'விற்பனை'**
+  String get homeSell;
+
+  /// Home button: payments and benefits. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'பணம்'**
+  String get homeMoney;
+
+  /// Home button: the farmer's fields and crops. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'என் பண்ணை'**
+  String get homeMyFarm;
+
+  /// Home card sentence when no task is due. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இப்போது செய்ய வேண்டியது இல்லை. இன்று செய்ததைப் பதிவு செய்யுங்கள்.'**
+  String get homeNoTask;
+
+  /// Home card sentence for the next task; date reads like "14 Feb".
+  ///
+  /// In ta, this message translates to:
+  /// **'அடுத்து: {event}, {date}க்குள்'**
+  String homeNextTask(String event, String date);
+
+  /// Button of the home card when no task is due: opens the event grid. At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'பதிவு செய்'**
+  String get homeLogEvent;
+
+  /// Voice prompt id of the local reminder task created by "Start drying".
+  ///
+  /// In ta, this message translates to:
+  /// **'உலர்த்தல் முடிவைப் பதிவு செய்யும் நேரம்'**
+  String get taskDryingDone;
+
+  /// Spoken sentence on screens that a later update fills in. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'விரைவில் வரும்.'**
+  String get comingSoon;
+
+  /// Page for a link that does not exist; a Home button follows. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தப் பக்கம் இல்லை.'**
+  String get notFound;
+
   /// Spoken prompt of the QC home screen (M11).
   ///
   /// In ta, this message translates to:

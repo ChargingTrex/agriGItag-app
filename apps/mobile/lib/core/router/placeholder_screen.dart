@@ -1,9 +1,12 @@
-// Placeholder screens: each role home shows its title and the language switch; /settings shows the sign-out button.
+// Placeholder screens: each role home shows its title, a spoken "coming soon" and the language switch; /settings shows
+// the language switch and the sign-out button; unknown routes show a farmer-friendly "not here" page.
 // Requirement: plan §7.2 M00 (placeholder screens showing the role name; locale switch re-renders the
 //   sample screen in Tamil), UserFlows §Design rules "Language first" (switched with one button); M06 sign-out
 //   (UserFlows §Who uses what: shared family phones; §When things go wrong: unsent entries stay, the cloud reminds).
-// Callers: app_router.dart routes /home, /officer, /assist/:farmerId and /settings (M11 replaced /qc). Replaced by the real
-//   feature screens in M07 (farmer home), M08 (settings), M10 (officer, assist), M11 (QC).
+//   UserFlows §When things go wrong (never an error code: one picture, one sentence read aloud, one button).
+// Callers: app_router.dart routes /officer, /assist/:farmerId, /home/{sell,money,farm}, /settings and its
+//   errorBuilder (NotFoundScreen). Replaced by the real feature screens in M08 (sell, money, settings), M09 (my farm),
+//   M10 (officer, assist); M11 replaced /qc with the QC home.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,10 +15,14 @@ import 'package:go_router/go_router.dart';
 import '../db/providers.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../theme/farmer_tokens.dart';
+import '../voice/voice_player.dart';
+import '../widgets/call_officer_button.dart';
 import '../widgets/farmer_button.dart';
+import '../widgets/voice_prompt_bar.dart';
 import 'session.dart';
 
-/// A one-job screen: the [title] in large type and one language-switch [FarmerButton]; a gear opens /settings.
+/// A one-job screen: the [title] in large type, a spoken "coming soon" and one language-switch [FarmerButton]; a gear
+/// opens /settings.
 class PlaceholderScreen extends ConsumerWidget {
   /// Creates the screen. [title] is the already-localised screen name (e.g. the role name).
   const PlaceholderScreen({super.key, required this.title});
@@ -33,6 +40,11 @@ class PlaceholderScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
+        // Pushed from the farmer home (Sell, Money, My farm): a 56 dp back button, not Material's 48 dp one.
+        leading: Navigator.of(context).canPop()
+            ? BackButton(style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget)))
+            : null,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             // 56 dp: the farmer minimum (Material's default is 48 dp).
@@ -50,12 +62,13 @@ class PlaceholderScreen extends ConsumerWidget {
           children: [
             Text(title, style: Theme.of(context).textTheme.headlineMedium),
             SizedBox(height: tokens.gap),
+            VoicePromptBar(promptId: 'comingSoon', text: l10n.comingSoon),
+            SizedBox(height: tokens.gap),
             FarmerButton(
               icon: Icons.translate,
               label: l10n.switchLanguage,
               onPressed: () => ref.read(sessionProvider.notifier).setLocale(session.locale == tamil ? english : tamil),
-              // shortcut: no voice clip yet, so the speaker slot is disabled; M05 wires the prompt player.
-              onSpeak: null,
+              onSpeak: () => playPrompt(ref, context, 'switchLanguage'),
             ),
           ],
         ),
@@ -106,6 +119,16 @@ class _SettingsPlaceholderState extends ConsumerState<SettingsPlaceholder> {
                     ),
             ),
             FarmerButton(
+              icon: Icons.translate,
+              label: l10n.switchLanguage,
+              onPressed: () {
+                final notifier = ref.read(sessionProvider.notifier);
+                notifier.setLocale(ref.read(sessionProvider).locale == tamil ? english : tamil);
+              },
+              onSpeak: () => playPrompt(ref, context, 'switchLanguage'),
+            ),
+            SizedBox(height: tokens.gap),
+            FarmerButton(
               icon: Icons.logout,
               label: l10n.signOut,
               onPressed: _busy
@@ -119,11 +142,46 @@ class _SettingsPlaceholderState extends ConsumerState<SettingsPlaceholder> {
                         if (mounted) setState(() => _busy = false);
                       }
                     },
-              // shortcut: no voice clip yet, so the speaker slot is disabled; M05 wires the prompt player.
-              onSpeak: null,
+              onSpeak: () => playPrompt(ref, context, 'signOut'),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Farmer-friendly page for a route that does not exist: one picture, one sentence read aloud, one Home button
+/// (the role redirect sends `/` to the caller's home). Never go_router's English "Page Not Found".
+class NotFoundScreen extends ConsumerWidget {
+  /// Creates the page.
+  const NotFoundScreen({super.key});
+
+  /// Builds the page. [context] supplies theme and strings; [ref] plays the button prompt. Returns it; throws nothing.
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final tokens = Theme.of(context).extension<FarmerTokens>()!;
+    final gap = SizedBox(height: tokens.gap);
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.appTitle), automaticallyImplyLeading: false),
+      body: ListView(
+        padding: EdgeInsets.all(tokens.gap),
+        children: [
+          Icon(Icons.wrong_location, size: 96, color: tokens.attention.color),
+          gap,
+          VoicePromptBar(promptId: 'notFound', text: l10n.notFound),
+          gap,
+          FarmerButton(
+            icon: Icons.home,
+            label: l10n.goHome,
+            onPressed: () => context.go('/'),
+            onSpeak: () => playPrompt(ref, context, 'goHome'),
+            prominent: true,
+          ),
+          gap,
+          const CallFieldOfficerButton(),
+        ],
       ),
     );
   }

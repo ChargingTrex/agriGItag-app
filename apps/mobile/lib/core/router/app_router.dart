@@ -2,7 +2,10 @@
 // Requirement: plan §7.2 M00 and M06 ("farmer never reaches officer routes"), D-013, UserFlows §"Who uses
 //   what" (a farmer only ever sees the farmer screens; the field officer can act for a farmer).
 //   M06 wires the real sign-in screens (UserFlows §Log in once) and the /settings placeholder with sign-out;
-//   M09 adds /officer/onboard (UserFlows §Onboarding a farmer); M11 puts the QC home on /qc (UserFlows §Grade a batch).
+//   M09 adds /officer/onboard (UserFlows §Onboarding a farmer).
+//   M07 adds the farmer home and event routes (UserFlows §Farmer home screen, §Logging a farm event; F17 deep link
+//   `/log/<eventType>`) and a farmer-friendly page for unknown routes (UserFlows §When things go wrong).
+//   M11 puts the QC home on /qc (UserFlows §Grade a batch).
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
 //   test/widget/router_test.dart.
 
@@ -15,6 +18,13 @@ import 'package:agritrace_api/agritrace_api.dart' show PinRequiredOut;
 import '../../features/auth/otp_screen.dart';
 import '../../features/auth/phone_screen.dart';
 import '../../features/auth/pin_screen.dart';
+import '../../features/event_log/choose_event_screen.dart';
+import '../../features/event_log/confirm_screen.dart';
+import '../../features/event_log/event_flow_screen.dart';
+import '../../features/event_log/event_log_controller.dart';
+import '../../features/event_log/farm_event.dart';
+import '../../features/event_log/saved_screen.dart';
+import '../../features/farmer_home/farmer_home_screen.dart';
 import '../../features/onboarding_farmer/onboarding_wizard.dart';
 import '../../features/qc_home/qc_home_screen.dart';
 import '../l10n/gen/app_localizations.dart';
@@ -23,10 +33,10 @@ import 'session.dart';
 
 /// Route prefixes each role may open; the first entry is the role's home.
 /// A signed-out user (null role) may only open /auth (phone, /auth/otp, /auth/pin); every signed-in role may open
-/// /settings (sign-out; M08 replaces the placeholder).
+/// /settings (sign-out; M08 replaces the placeholder). A farmer's event flow lives under /log (F04–F07, deep links).
 const Map<Role?, List<String>> allowedPrefixes = {
   null: ['/auth'],
-  Role.farmer: ['/home', '/settings'],
+  Role.farmer: ['/home', '/log', '/settings'],
   Role.fieldOfficer: ['/officer', '/assist', '/settings'],
   Role.qc: ['/qc', '/settings'],
 };
@@ -55,6 +65,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/auth',
     refreshListenable: role,
     redirect: (context, state) => redirectFor(role.value, state.matchedLocation),
+    errorBuilder: (context, _) => const NotFoundScreen(),
     routes: [
       // The OTP and PIN steps need what the previous step returned (`extra`); without it (deep link, restored
       // route) they fall back to the phone step.
@@ -77,7 +88,53 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (context, _) => const SettingsPlaceholder()),
       GoRoute(
         path: '/home',
-        builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).roleFarmer),
+        builder: (context, _) => const FarmerHomeScreen(),
+        routes: [
+          // Only reachable right after a save; a restored or typed URL goes home.
+          GoRoute(
+            path: 'saved',
+            redirect: (context, _) => ref.read(eventLogProvider).savedEntryId == null ? '/home' : null,
+            builder: (context, _) => const SavedScreen(),
+          ),
+          // Placeholders until M08 (Sell, Money) and M09 (My farm).
+          GoRoute(
+            path: 'sell',
+            builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeSell),
+          ),
+          GoRoute(
+            path: 'money',
+            builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeMoney),
+          ),
+          GoRoute(
+            path: 'farm',
+            builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeMyFarm),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/log',
+        builder: (context, _) => const ChooseEventScreen(),
+        routes: [
+          // F17: `/log/harvest` preselects the event; an unknown event type falls back to the event grid.
+          GoRoute(
+            path: ':eventType',
+            redirect: (context, state) => FarmEvent.fromWire(state.pathParameters['eventType']) == null ? '/log' : null,
+            // Keyed by event: going from /log/packing to /log/harvest must start a new flow, not reuse the state.
+            builder: (context, state) {
+              final event = FarmEvent.fromWire(state.pathParameters['eventType'])!;
+              return EventFlowScreen(key: ValueKey(event), event: event);
+            },
+            routes: [
+              GoRoute(
+                path: 'confirm',
+                // Confirm needs a photo in the draft; without one (restored route) go back to the camera.
+                redirect: (context, state) =>
+                    ref.read(eventLogProvider).photo == null ? '/log/${state.pathParameters['eventType']}' : null,
+                builder: (context, _) => const ConfirmScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/officer',

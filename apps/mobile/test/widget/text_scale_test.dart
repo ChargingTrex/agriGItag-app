@@ -20,7 +20,7 @@ void main() {
       await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const AgriTraceApp()));
       await tester.pumpAndSettle();
 
-      final scaler = MediaQuery.textScalerOf(tester.element(find.text('விவசாயி')));
+      final scaler = MediaQuery.textScalerOf(tester.element(find.text('பதிவு')));
       expect(scaler.scale(10), moreOrLessEquals(expected));
     });
   }
