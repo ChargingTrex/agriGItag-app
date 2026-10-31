@@ -822,4 +822,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unitGram => 'g';
+
+  @override
+  String get qcLotUnverified =>
+      'Not on this phone yet: farmer and weight come from the farmer\'s QR and are not checked. Sync to check.';
 }

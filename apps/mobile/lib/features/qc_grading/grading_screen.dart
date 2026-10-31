@@ -7,7 +7,7 @@
 //   with a number pad ... The app calculates the grade and shows it in large type with the standard it used"),
 //   FR42-FR50 (readings, source caps, profile, grade computation, declared vs computed, plausibility), Dataflow
 //   Stage 8, PLAN §7.2 M11 ("4 readings → grade + standard edition; missing → grey"), D-006 (phone preview, server
-//   authority), D-015 (profile JSON), D-017 (`event_grading` field config), D-034 (batch subject).
+//   authority), D-015 (profile JSON), D-017 (`event_grading` field config), D-036 (batch subject).
 // Callers: batch_list_screen.dart (a batch "To grade"); test/features/qc/*.
 
 import 'package:decimal/decimal.dart';
@@ -49,7 +49,9 @@ class _GradingScreenState extends ConsumerState<GradingScreen> {
   final _gradingId = const Uuid().v7();
   final _values = <String, String>{};
   String? _selected;
-  String? _source;
+  // FR42: each reading keeps its own source (instrument id or visual), e.g. a meter for moisture, visual counts
+  // for broken pods.
+  final _sources = <String, String>{};
   String? _declared;
   bool _saved = false;
   bool _saving = false;
@@ -77,8 +79,9 @@ class _GradingScreenState extends ConsumerState<GradingScreen> {
     return qcScaffold(context, l10n.qcBatchLine(widget.batch.code, widget.batch.totalKg ?? '–'), body);
   }
 
-  /// Reading source of the current choice: `visual` for "Visual", else `instrument`. Throws nothing.
-  String get _sourceKind => _source == visualSource ? visualSource : 'instrument';
+  /// Reading source of parameter [code]: `visual` when "Visual" was picked for it, else `instrument` (also the
+  /// preview's assumption before a source is picked). Throws nothing.
+  String _kindOf(String code) => _sources[code] == visualSource ? visualSource : 'instrument';
 
   /// The form for [rules], field [config] and [meters]. [context] supplies tokens, locale and strings. Returns the
   /// widget; throws nothing.
@@ -94,11 +97,17 @@ class _GradingScreenState extends ConsumerState<GradingScreen> {
       final value = parseTyped(_values[p.code]);
       if (value == null) continue;
       // Before a source is picked the preview assumes a meter; the source check runs once one is picked.
-      final reading = Reading(parameterCode: p.code, value: value, unit: p.unit, stage: 'grading', source: _sourceKind);
+      final reading = Reading(
+        parameterCode: p.code,
+        value: value,
+        unit: p.unit,
+        stage: 'grading',
+        source: _kindOf(p.code),
+      );
       final violation = checkPlausibility(
         rules,
         reading,
-      ).where((v) => _source != null || v.code != 'source_not_allowed').firstOrNull;
+      ).where((v) => _sources[p.code] != null || v.code != 'source_not_allowed').firstOrNull;
       if (violation == null) {
         valid.add(reading);
       } else {
@@ -127,6 +136,9 @@ class _GradingScreenState extends ConsumerState<GradingScreen> {
     final declaredShown = fieldShown(config, 'declared_grade');
     final gradedKg = parseTyped(_values[_gradedKg]);
     final anyReading = params.any((p) => parseTyped(_values[p.code]) != null);
+    final noSource = params.any((p) => parseTyped(_values[p.code]) != null && _sources[p.code] == null);
+    final selected = _selected ?? fields.firstOrNull?.name ?? '';
+    final selectedParam = params.where((p) => p.code == selected).firstOrNull;
     String? blocker;
     if (fieldRequired(config, _gradedKg) && gradedKg == null) {
       blocker = l10n.qcFillRequired(l10n.qcGradedWeight);
@@ -134,7 +146,7 @@ class _GradingScreenState extends ConsumerState<GradingScreen> {
       blocker = l10n.qcFillRequired(l10n.qcDeclaredGrade);
     } else if (problems.isNotEmpty) {
       blocker = problems.values.first.text;
-    } else if (anyReading && _source == null) {
+    } else if (noSource) {
       blocker = l10n.qcPickMeter;
     } else if (!anyReading && gradedKg == null && _declared == null && params.isNotEmpty) {
       blocker = l10n.qcFillRequired(parameterLabel(params.first, locale));
@@ -155,21 +167,29 @@ class _GradingScreenState extends ConsumerState<GradingScreen> {
       blocker: blocker == null ? null : (glyph: tokens.todo, text: blocker),
       onSave: _saving ? null : () => _save(rules, valid, gradedKg),
       children: [
-        InstrumentPicker(
-          instruments: meters,
-          selected: _source,
-          today: DateTime.now(),
-          allowVisual: true,
-          onSelected: (id) => setState(() => _source = id),
-        ),
-        SizedBox(height: tokens.gap),
         QcNumberForm(
           fields: fields,
           values: _values,
-          selected: _selected ?? fields.first.name,
+          selected: selected,
           onSelect: (name) => setState(() => _selected = name),
           onChanged: (name, v) => setState(() => _values[name] = v),
         ),
+        // The source of the selected reading, offered as the profile allows it (FR44: e.g. no visual moisture).
+        if (selectedParam != null) ...[
+          SizedBox(height: tokens.gap),
+          InstrumentPicker(
+            instruments: !selectedParam.sourcesAllowed.contains('instrument')
+                ? const []
+                : [
+                    for (final m in meters)
+                      if (selectedParam.code != 'moisture' || m.kind == 'moisture_meter') m,
+                  ],
+            selected: _sources[selectedParam.code],
+            today: DateTime.now(),
+            allowVisual: selectedParam.sourcesAllowed.contains(visualSource),
+            onSelected: (id) => setState(() => _sources[selectedParam.code] = id),
+          ),
+        ],
         SizedBox(height: tokens.gap),
         _preview(context, rules, result),
         if (declaredShown) ...[
@@ -256,8 +276,8 @@ class _GradingScreenState extends ConsumerState<GradingScreen> {
               value: r.value,
               unit: r.unit,
               methodRef: rules.parameter(r.parameterCode)?.methodRef,
-              source: _sourceKind,
-              instrumentId: _source == visualSource ? null : _source,
+              source: _kindOf(r.parameterCode),
+              instrumentId: _kindOf(r.parameterCode) == visualSource ? null : _sources[r.parameterCode],
               now: now,
             ),
           ),
@@ -275,7 +295,7 @@ class _GradingScreenState extends ConsumerState<GradingScreen> {
         ),
       ], now);
       if (mounted) setState(() => _saved = true);
-    } on Exception {
+    } on Object {
       if (mounted) setState(() => _failed = true);
     } finally {
       if (mounted) setState(() => _saving = false);

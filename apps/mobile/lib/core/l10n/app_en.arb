@@ -1253,5 +1253,9 @@
   "unitGram": "g",
   "@unitGram": {
     "description": "Unit: grams."
+  },
+  "qcLotUnverified": "Not on this phone yet: farmer and weight come from the farmer's QR and are not checked. Sync to check.",
+  "@qcLotUnverified": {
+    "description": "Lot card line when the lot is known only from the farmer's Sell QR (checksum, not a signature)."
   }
 }

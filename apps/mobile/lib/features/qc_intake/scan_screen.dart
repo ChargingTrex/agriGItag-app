@@ -2,10 +2,8 @@
 //   opens with the lot card. Fallback when the camera cannot read it: pick the lot from the lots ready to sell.
 // Requirement: UserFlows §Selling to the FPO step 2 ("scans the QR with the QC app. The lot, farmer and packed
 //   quantity appear"), §Design rules ("Tap, never type", "Works with no signal"), PLAN §7.2 M11 ("scan → lot"; M08's
-//   QR is `{lotId, farmerId, packedKg, sig}`), D-034.
+//   QR is `{lotId, farmerId, packedKg, sig}`), D-036.
 // Callers: qc_home/qc_home_screen.dart ("Receive lot"); test/features/qc/*.
-
-import 'dart:convert';
 
 import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
@@ -21,6 +19,7 @@ import '../../core/widgets/farmer_button.dart';
 import '../../core/widgets/voice_prompt_bar.dart';
 import '../qc_home/qc_common.dart';
 import 'intake_screen.dart';
+import 'sell_qr.dart';
 
 /// Builds the camera view that reports every decoded code to the callback; tests replace it with a fake.
 typedef QrScannerBuilder = Widget Function(ValueChanged<String> onCode);
@@ -49,33 +48,43 @@ final readyLotsProvider = FutureProvider.autoDispose<List<QcLot>>((ref) async {
 
 /// Resolves a scanned code [raw] to a lot, using the local Lots table of [db] first.
 ///
-/// [raw] is M08's QR JSON `{lotId, farmerId, packedKg, sig}` or a bare lot id. A lot on the phone gives its own
-/// farmer, packed kg and crop; a lot not pulled yet is still shown from the QR's own fields. Returns null when the
-/// code names no lot this phone knows and carries no farmer and packed kg (e.g. a lot code `LOT0EF81415`, which the
-/// local Lots table does not hold). Throws what Drift throws.
+/// [raw] is M08's Sell QR (`decodeSellQr`: JSON with a checksum) or a bare lot id. A lot on the phone gives its own
+/// farmer, packed kg and crop. A lot not pulled yet is shown from the QR's fields but marked unverified: the
+/// checksum only catches typos, so the farmer and packed weight are not trusted until sync. Returns null for a JSON
+/// payload whose checksum fails (forged or mistyped), and for a code that names no lot this phone knows (e.g. a lot
+/// code `LOT0EF81415`, which the local Lots table does not hold). Throws what Drift throws.
 Future<QcLot?> resolveLot(AppDatabase db, String raw) async {
-  Object? decoded;
-  try {
-    decoded = jsonDecode(raw);
-  } on FormatException {
-    decoded = null;
-  }
-  // shortcut: the QR's `sig` is not verified (M08 defines the signing key); the server re-checks the lot on push.
-  final qr = decoded is Map ? decoded : null;
-  final lotId = qr == null ? raw.trim() : qr['lotId'];
-  if (lotId is! String || lotId.isEmpty) return null;
+  final qr = decodeSellQr(raw);
+  final looksJson = raw.trimLeft().startsWith('{');
+  if (looksJson && qr == null) return null;
+  final lotId = qr?.lotId ?? raw.trim();
+  if (lotId.isEmpty) return null;
   final lot = await (db.select(db.lots)..where((l) => l.lotId.equals(lotId))).getSingleOrNull();
   if (lot != null) return _cardOf(db, lot.lotId, lot.farmerId, lot.kgPacked, lot.cropId);
-  final farmerId = qr?['farmerId'], packed = qr?['packedKg'];
-  if (farmerId is! String || packed is! num) return null;
-  return _cardOf(db, lotId, farmerId, packed.toDouble(), null);
+  if (qr == null) return null;
+  return _cardOf(db, lotId, qr.farmerId, qr.packedKg, null, unverified: true);
 }
 
 /// The lot card for [lotId] of [farmerId] with [packedKg] kg and crop [cropId], with the farmer's name from [db]
-/// when the farmer is stored on this phone. Returns it; throws what Drift throws.
-Future<QcLot> _cardOf(AppDatabase db, String lotId, String farmerId, double packedKg, String? cropId) async {
+/// when the farmer is stored on this phone; [unverified] marks a card built from the QR alone. Returns it; throws
+/// what Drift throws.
+Future<QcLot> _cardOf(
+  AppDatabase db,
+  String lotId,
+  String farmerId,
+  double packedKg,
+  String? cropId, {
+  bool unverified = false,
+}) async {
   final farmer = await (db.select(db.farmers)..where((f) => f.farmerId.equals(farmerId))).getSingleOrNull();
-  return QcLot(lotId: lotId, farmerId: farmerId, farmerName: farmer?.name, packedKg: packedKg, cropId: cropId);
+  return QcLot(
+    lotId: lotId,
+    farmerId: farmerId,
+    farmerName: farmer?.name,
+    packedKg: packedKg,
+    cropId: cropId,
+    unverified: unverified,
+  );
 }
 
 /// The scanner screen with the "Pick lot" fallback.
@@ -90,6 +99,8 @@ class ScanScreen extends ConsumerStatefulWidget {
 
 class _ScanScreenState extends ConsumerState<ScanScreen> {
   bool _busy = false;
+  // The camera is unmounted while the intake check is open, so Back with the QR still in view does not reopen it.
+  bool _paused = false;
   bool _notFound = false;
   bool _picking = false;
 
@@ -102,7 +113,10 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     final lot = await resolveLot(ref.read(appDatabaseProvider), raw);
     if (!mounted) return;
     setState(() => _notFound = lot == null);
-    if (lot != null) await _open(lot);
+    if (lot != null) {
+      setState(() => _paused = true);
+      await _open(lot);
+    }
     _busy = false;
   }
 
@@ -135,10 +149,23 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
           else ...[
             AspectRatio(
               aspectRatio: 1,
-              child: ClipRRect(borderRadius: BorderRadius.circular(12), child: ref.watch(qrScannerProvider)(_onCode)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: _paused
+                    ? Center(
+                        child: IconButton.filledTonal(
+                          style: IconButton.styleFrom(minimumSize: const Size.square(96)),
+                          iconSize: 56,
+                          tooltip: l10n.qcScanPrompt,
+                          icon: const Icon(Icons.qr_code_scanner),
+                          onPressed: () => setState(() => _paused = false),
+                        ),
+                      )
+                    : ref.watch(qrScannerProvider)(_onCode),
+              ),
             ),
             gap,
-            // DECISION D-034: the fallback is a list of the lots ready to sell, not a typed lot code.
+            // DECISION D-036: the fallback is a list of the lots ready to sell, not a typed lot code.
             //   ADV: no typing; works offline; the local Lots table has no lot-code column to match a typed code.
             //   COMPROMISE: a lot not pulled to this phone yet cannot be picked (its QR still works).
             FarmerButton(

@@ -3,7 +3,7 @@
 //   grading (missing → grey, visual moisture refused, out of range, no standard, Bluetooth row disabled), batch list
 //   (no signal → sentence + Try again, empty), packing (graded weight unknown, required by config).
 // Requirement: PLAN §7.2 M11 tests ("widget tests for each screen state"); UserFlows §Selling to the FPO, §Grade a
-//   batch; FR44, FR50; D-017, D-034.
+//   batch; FR44, FR50; D-017, D-036.
 // Callers: flutter test (CI mobile job).
 
 import 'dart:convert';
@@ -14,7 +14,9 @@ import 'package:agritrace/features/qc_grading/grading_screen.dart';
 import 'package:agritrace/features/qc_home/qc_common.dart';
 import 'package:agritrace/features/qc_intake/intake_screen.dart';
 import 'package:agritrace/features/qc_intake/scan_screen.dart';
+import 'package:agritrace/features/qc_intake/sell_qr.dart';
 import 'package:agritrace/features/qc_packing/packing_screen.dart';
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,6 +34,18 @@ void main() {
       await tapOn(tester, find.text('Fake scan'));
       expect(find.text('This lot is not on this phone. Sync and scan again.'), findsOneWidget);
       expect(find.byType(IntakeScreen), findsNothing);
+    });
+
+    testWidgets('Back from the intake shows a paused camera, so a QR still in view does not reopen it', (tester) async {
+      final f = await pumpQc(tester, const ScanScreen());
+      f.scanned = lotQr;
+      await tapOn(tester, find.text('Fake scan'));
+      expect(find.byType(IntakeScreen), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Fake scan'), findsNothing);
+      await tapOn(tester, find.byIcon(Icons.qr_code_scanner));
+      expect(find.text('Fake scan'), findsOneWidget);
     });
 
     testWidgets('"Pick lot" lists the ready lots; a tap opens the intake check', (tester) async {
@@ -55,15 +69,20 @@ void main() {
     testWidgets('QR of a stored lot, bare id, QR of a lot not pulled yet, lot code', (tester) async {
       final f = await pumpQc(tester, const SizedBox());
       final stored = (await tester.runAsync(() => resolveLot(f.db, lotQr)))!;
-      expect([stored.farmerName, stored.packedKg, stored.cropId], ['Murugan', 200, cropId]);
+      expect([stored.farmerName, stored.packedKg, stored.cropId, stored.unverified], ['Murugan', 200, cropId, false]);
       expect((await tester.runAsync(() => resolveLot(f.db, lotId)))!.lotId, lotId);
-      final fromQr = (await tester.runAsync(
-        () => resolveLot(f.db, jsonEncode({'lotId': 'other', 'farmerId': 'f-9', 'packedKg': 75.5, 'sig': 'x'})),
-      ))!;
+      final other = {'lotId': 'other', 'farmerId': 'f-9', 'packedKg': 75.5, 'sig': sellQrSig('other', 'f-9', 75.5)};
+      final fromQr = (await tester.runAsync(() => resolveLot(f.db, jsonEncode(other))))!;
       expect(
-        [fromQr.lotId, fromQr.farmerId, fromQr.farmerName, fromQr.packedKg, fromQr.cropId],
-        ['other', 'f-9', null, 75.5, null],
+        [fromQr.lotId, fromQr.farmerId, fromQr.farmerName, fromQr.packedKg, fromQr.cropId, fromQr.unverified],
+        ['other', 'f-9', null, 75.5, null, true],
       );
+      // Forged: the packed weight raised after the QR was made, so the M08 checksum no longer matches.
+      final forged = jsonEncode({...other, 'packedKg': 95.5});
+      expect(await tester.runAsync(() => resolveLot(f.db, forged)), isNull);
+      expect(decodeSellQr(forged), isNull);
+      // A stored lot with a wrong checksum is refused too, rather than trusted by id.
+      expect(await tester.runAsync(() => resolveLot(f.db, jsonEncode({...other, 'lotId': lotId}))), isNull);
       expect(await tester.runAsync(() => resolveLot(f.db, 'LOT0EF81415')), isNull);
       expect(await tester.runAsync(() => resolveLot(f.db, jsonEncode({'lotId': 'other'}))), isNull);
       expect(await tester.runAsync(() => resolveLot(f.db, '42')), isNull);
@@ -118,18 +137,21 @@ void main() {
   });
 
   group('grading', () {
-    testWidgets('missing moisture → grey preview; visual moisture refused; out of range blocks', (tester) async {
+    testWidgets('missing moisture → grey preview; a source per reading; out of range blocks', (tester) async {
       await pumpQc(tester, const GradingScreen(batch: toGrade));
-      await tapOn(tester, tile('extraneous matter'));
+      await tapOn(tester, tileOf('extraneous_matter'));
       await typeDigits(tester, '1');
       expect(find.text('No grade yet. Missing: Moisture'), findsOneWidget);
       expect(tester.widget<Icon>(find.byIcon(Icons.hourglass_empty)).color, pendingGlyph.color);
-      await tapOn(tester, find.text('Visual'));
-      await tapOn(tester, tile('Moisture'));
+      expect(find.text('Pick the instrument to save the reading.'), findsOneWidget);
+      await tapOn(tester, sourceOf('visual'));
+      // Moisture offers no "Visual" (FR44) and keeps its own source: the visual pick above was for extraneous matter.
+      await tapOn(tester, tileOf('moisture'));
+      expect(sourceOf('visual'), findsNothing);
       await typeDigits(tester, '10');
-      expect(find.text('Not accepted from this source. Use a meter or a lab.'), findsWidgets);
+      expect(find.text('Pick the instrument to save the reading.'), findsOneWidget);
       expect(enabled(tester, 'Save'), isFalse);
-      await tapOn(tester, find.text('Delmhorst G-7'));
+      await tapOn(tester, sourceOf(meterId));
       expect(find.text('Grade: Special'), findsOneWidget);
       await typeDigits(tester, '00'); // 1000 %
       expect(find.text('Outside 0 to 100 %: check the reading.'), findsWidgets);
@@ -139,6 +161,34 @@ void main() {
     testWidgets('no standard on the phone → one sentence', (tester) async {
       await pumpQc(tester, const GradingScreen(batch: toGrade), standards: false);
       expect(find.text('The grading standard is not on this phone. Sync first.'), findsOneWidget);
+    });
+  });
+
+  group('instruments', () {
+    testWidgets('meters come from the API, are cached, and stay when offline', (tester) async {
+      var online = true;
+      final f = await pumpQc(
+        tester,
+        const IntakeScreen(lot: _lot),
+        instruments: false,
+        fetchInstruments: () async {
+          if (!online) throw DioException(requestOptions: RequestOptions(path: '/v1/instruments'));
+          return [
+            InstrumentsCompanion.insert(
+              instrumentId: 'm-1',
+              kind: 'moisture_meter',
+              label: 'Wile 55 SN-9',
+              calibrationDueDate: DateTime(2099, 1, 1),
+            ),
+          ];
+        },
+      );
+      expect(find.text('Wile 55 SN-9'), findsOneWidget);
+      online = false;
+      f.container.invalidate(qcInstrumentsProvider);
+      await tester.pumpAndSettle();
+      expect(find.text('Wile 55 SN-9'), findsOneWidget);
+      expect((await tester.runAsync(() => f.db.select(f.db.instruments).get()))!.single.instrumentId, 'm-1');
     });
   });
 

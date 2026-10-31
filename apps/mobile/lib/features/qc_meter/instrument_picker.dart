@@ -60,7 +60,8 @@ class InstrumentPicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(l10n.qcMeter, style: Theme.of(context).textTheme.titleMedium),
-        if (instruments.isEmpty) CheckLine(check: (glyph: tokens.todo, text: l10n.qcNoMeter)),
+        // With "Visual" offered an empty meter list is not a dead end, so the sentence is shown only without it.
+        if (instruments.isEmpty && !allowVisual) CheckLine(check: (glyph: tokens.todo, text: l10n.qcNoMeter)),
         for (final i in instruments)
           if (calibrationExpired(i, today)) ...[
             _row(context, Icons.speed, i.label, null, null),
@@ -89,6 +90,8 @@ class InstrumentPicker extends StatelessWidget {
   Widget _row(BuildContext context, IconData icon, String title, String? subtitle, String? value) {
     final isSelected = value != null && value == selected;
     return ListTile(
+      // Keyed by value so tests find a row in either language.
+      key: value == null ? null : ValueKey('qcSource-$value'),
       contentPadding: EdgeInsets.zero,
       minTileHeight: 56,
       leading: Icon(icon, size: 32),

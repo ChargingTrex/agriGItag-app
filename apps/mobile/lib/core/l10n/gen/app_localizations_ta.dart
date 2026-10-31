@@ -817,4 +817,8 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get unitGram => 'கி';
+
+  @override
+  String get qcLotUnverified =>
+      'இந்தப் போனில் இன்னும் இல்லை: விவசாயி, எடை விவசாயியின் QR-இலிருந்து வந்தவை, சரிபார்க்கப்படவில்லை. சரிபார்க்க ஒத்திசையுங்கள்.';
 }

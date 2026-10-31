@@ -19,6 +19,7 @@ import 'package:agritrace/features/qc_home/qc_common.dart';
 import 'package:agritrace/features/qc_home/qc_home_screen.dart';
 import 'package:agritrace/features/qc_intake/intake_screen.dart';
 import 'package:agritrace/features/qc_intake/scan_screen.dart';
+import 'package:agritrace/features/qc_intake/sell_qr.dart';
 import 'package:agritrace/features/qc_packing/packing_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' show OrderingTerm, Value, driftRuntimeOptions;
@@ -45,7 +46,12 @@ const meterId = '0192f000-0000-7000-8000-0000000000e1';
 const expiredMeterId = '0192f000-0000-7000-8000-0000000000e2';
 
 /// M08's QR for the stored lot.
-final lotQr = jsonEncode({'lotId': lotId, 'farmerId': farmerId, 'packedKg': 200, 'sig': 'x'});
+final lotQr = jsonEncode({
+  'lotId': lotId,
+  'farmerId': farmerId,
+  'packedKg': 200,
+  'sig': sellQrSig(lotId, farmerId, 200),
+});
 
 /// A batch waiting for grading (320 kg received).
 const toGrade = QcBatch(
@@ -88,7 +94,8 @@ class QcFixture {
 ///
 /// [locale], [size] and [textScale] set the screen; [fieldConfig] maps a FieldConfig entity to its JSON value;
 /// [standards] stores the chilli profile; [instruments] stores the two meters; [batches] is the batch list (null: no
-/// signal); [pushed] shows [screen] as a pushed route (route chrome measured). Side effects: changes the test view
+/// signal); [fetchInstruments] is the instruments API (default: no signal, so the stored meters are used);
+/// [pushed] shows [screen] as a pushed route (route chrome measured). Side effects: changes the test view
 /// (reset at tear-down); the database is closed at tear-down. Returns after the first frames settled.
 Future<QcFixture> pumpQc(
   WidgetTester tester,
@@ -100,6 +107,7 @@ Future<QcFixture> pumpQc(
   bool standards = true,
   bool instruments = true,
   List<QcBatch>? batches = const [toGrade, toPack],
+  InstrumentFetcher? fetchInstruments,
   bool pushed = false,
 }) async {
   tester.view
@@ -198,6 +206,9 @@ Future<QcFixture> pumpQc(
           ),
         ),
       ),
+      qcInstrumentFetcherProvider.overrideWithValue(
+        fetchInstruments ?? () async => throw DioException(requestOptions: RequestOptions(path: '/v1/instruments')),
+      ),
       qcBatchesProvider.overrideWith(
         (ref) async => batches ?? (throw DioException(requestOptions: RequestOptions(path: '/v1/batches'))),
       ),
@@ -244,6 +255,18 @@ Future<void> tapOn(WidgetTester tester, Finder finder) async {
 
 /// The QC form tile of field [name] (payload key or parameter code), in any language. Returns the finder.
 Finder tileOf(String name) => find.byKey(ValueKey('qcTile-$name'));
+
+/// The instrument-picker row of [value] (an instrument id or `visual`), in any language. Returns the finder.
+Finder sourceOf(String value) => find.byKey(ValueKey('qcSource-$value'));
+
+/// The four pilot grading readings: parameter code, typed value and source (the meter for moisture, visual for the
+/// counted defects, as an officer records them, FR42).
+const gradingReadings = [
+  ('moisture', '10.5', meterId),
+  ('extraneous_matter', '1', 'visual'),
+  ('unripe_marked_fruits', '2', 'visual'),
+  ('broken_fruits', '3', 'visual'),
+];
 
 /// Types [digits] (digits and '.') on the visible number pad. Returns when done; throws when a key is missing.
 Future<void> typeDigits(WidgetTester tester, String digits) async {
@@ -318,15 +341,10 @@ Future<void> fillShot(WidgetTester tester, QcShot shot) async {
       await tapOn(tester, find.text('Delmhorst G-7'));
       await tester.ensureVisible(tileOf('received'));
     case QcShot.grading:
-      await tapOn(tester, find.text('Delmhorst G-7'));
-      for (final (code, value) in [
-        ('moisture', '10.5'),
-        ('extraneous_matter', '1'),
-        ('unripe_marked_fruits', '2'),
-        ('broken_fruits', '3'),
-      ]) {
+      for (final (code, value, source) in gradingReadings) {
         await tapOn(tester, tileOf(code));
         await typeDigits(tester, value);
+        await tapOn(tester, sourceOf(source));
       }
       await tester.ensureVisible(find.byKey(const ValueKey('qcGradePreview')));
     case QcShot.packing:

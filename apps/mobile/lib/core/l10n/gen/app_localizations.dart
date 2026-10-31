@@ -1557,6 +1557,12 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'கி'**
   String get unitGram;
+
+  /// Lot card line when the lot is known only from the farmer's Sell QR (checksum, not a signature).
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தப் போனில் இன்னும் இல்லை: விவசாயி, எடை விவசாயியின் QR-இலிருந்து வந்தவை, சரிபார்க்கப்படவில்லை. சரிபார்க்க ஒத்திசையுங்கள்.'**
+  String get qcLotUnverified;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

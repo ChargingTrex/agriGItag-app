@@ -2,7 +2,7 @@
 //   tap opens the grading form or the packing screen.
 // Requirement: UserFlows §FPO admin and QC flows ("Create a batch (FPO admin, web portal) ... a batch ID and QR are
 //   generated"; "Grade a batch (QC officer, mobile app)"), Dataflow Stages 8-9 (grading and final packing are batch
-//   events), PLAN §7.2 M11, D-034 (batches come from the API; readings and events are still saved offline).
+//   events), PLAN §7.2 M11, D-036 (batches come from the API; readings and events are still saved offline).
 // Callers: qc_home/qc_home_screen.dart ("Grade batch"); test/features/qc/*.
 
 import 'package:agritrace_api/agritrace_api.dart' show BatchStatus;
@@ -22,17 +22,23 @@ import 'grading_screen.dart';
 
 /// Batches to grade or pack, from `GET /v1/batches` through the generated client (D-003).
 ///
-/// DECISION D-034: the phone keeps no batch table; the batch list is read online, while the grading readings and the
+/// DECISION D-036: the phone keeps no batch table; the batch list is read online, while the grading readings and the
 ///   grading / final-packing events are saved offline through the outbox like every other entry.
 ///   ADV: grading lands on the batch the grade engine reads (readings with `batch_id`), with no new Drift table,
 ///   migration or pull entity; batches are created on the portal, so a QC officer grading one has just been online.
-///   COMPROMISE: with no signal the list cannot open (one sentence and "Try again"); first page (50 batches) only.
+///   COMPROMISE: with no signal the list cannot open (one sentence and "Try again"); the first 50 batches of each
+///   status only (`shortcut:` follow the cursor when an FPO has more waiting).
 /// Fails with [DioException] (no signal, or an API error) and passes on any other error of the call.
 final qcBatchesProvider = FutureProvider.autoDispose<List<QcBatch>>((ref) async {
-  final page = (await ref.read(apiClientProvider).api.getLotsBatchesApi().listBatchesV1BatchesGet()).data!;
+  final api = ref.read(apiClientProvider).api.getLotsBatchesApi();
+  // The server filters by status, so batches to grade are never hidden behind page 1 of all batches.
+  final pages = [
+    for (final status in [BatchStatus.created, BatchStatus.graded])
+      (await api.listBatchesV1BatchesGet(status: status)).data!,
+  ];
   return [
-    for (final b in page.items)
-      if (b.status == BatchStatus.created || b.status == BatchStatus.graded)
+    for (final page in pages)
+      for (final b in page.items)
         QcBatch(
           id: b.id,
           code: b.code,

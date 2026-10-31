@@ -4,7 +4,7 @@
 //   schemas in packages/openapi/openapi.json, and the event wire form against the M02 push builder.
 // Requirement: PLAN §7.2 M11 acceptance ("scan → lot; 230 vs 200 → orange; 11.5 → orange; 4 readings → grade +
 //   standard edition") and tests ("a scripted flow test asserting the saved payloads match the server schemas");
-//   UserFlows §Selling to the FPO, §Grade a batch; FR42, FR49, FR50; D-005, D-014, D-034.
+//   UserFlows §Selling to the FPO, §Grade a batch; FR42, FR49, FR50; D-005, D-014, D-036.
 // Callers: flutter test (CI mobile job).
 
 import 'dart:convert';
@@ -36,6 +36,11 @@ void expectSchema(Map<String, Object?> payload, String name, {Set<String> sentEl
     reason: '$name needs ${required.difference(payload.keys.toSet())}',
   );
 }
+
+/// Asserts that [value] is one of the values of server enum [name], so a renamed server enum fails here. Throws a
+/// test failure otherwise.
+void expectEnum(Object? value, String name) =>
+    expect((_schemas[name] as Map)['enum'] as List, contains(value), reason: '$value is not a $name');
 
 /// Asserts that [q] is a server `Quantity` with [unit] and decimal-text value [value]. Throws a test failure otherwise.
 void expectQuantity(Object? q, String value, String unit) {
@@ -93,6 +98,8 @@ void main() {
     final reading = saved['quality_reading']!.single, intake = saved['intake']!.single;
     final r = payloadOf(reading), i = payloadOf(intake);
     expectSchema(r, 'QualityReadingIn', sentElsewhere: {'client_id'});
+    expectEnum(r['stage'], 'ReadingStage');
+    expectEnum(r['source'], 'ReadingSource');
     expect(r['lot_id'], lotId);
     expect(r['stage'], 'intake');
     expect(r['parameter_code'], 'moisture');
@@ -145,15 +152,13 @@ void main() {
     // Missing readings → grey preview listing them.
     expect(find.text('No grade yet. Missing: Moisture'), findsOneWidget);
 
-    await tapOn(tester, find.text('Delmhorst G-7'));
-    for (final (label, value) in [
-      ('Moisture', '10.5'),
-      ('extraneous matter', '1'),
-      ('unripe marked fruits', '2'),
-      ('broken fruits', '3'),
-    ]) {
-      await tapOn(tester, tile(label));
+    // Moisture: only meters are offered (the profile allows instrument or lab, and only moisture meters measure it).
+    await tapOn(tester, tileOf('moisture'));
+    expect(sourceOf('visual'), findsNothing);
+    for (final (code, value, source) in gradingReadings) {
+      await tapOn(tester, tileOf(code));
       await typeDigits(tester, value);
+      await tapOn(tester, sourceOf(source));
     }
     expect(find.text('Grade: Standard'), findsOneWidget);
     expect(
@@ -176,9 +181,13 @@ void main() {
     for (final r in readings) {
       final p = payloadOf(r);
       expectSchema(p, 'QualityReadingIn', sentElsewhere: {'client_id'});
+      expectEnum(p['stage'], 'ReadingStage');
+      expectEnum(p['source'], 'ReadingSource');
+      // FR42: the meter for moisture, visual for the counted defects; each reading keeps its own source.
+      final meter = p['parameter_code'] == 'moisture';
       expect(
         [p['batch_id'], p['lot_id'], p['stage'], p['source'], p['instrument_id']],
-        [toGrade.id, null, 'grading', 'instrument', meterId],
+        [toGrade.id, null, 'grading', meter ? 'instrument' : 'visual', meter ? meterId : null],
       );
       expect(r.lotId, isNull);
     }

@@ -174,6 +174,8 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
             row(l10n.qcLot, shortId(lot.lotId)),
             row(l10n.qcFarmer, lot.farmerName ?? shortId(lot.farmerId)),
             row(l10n.qcPacked, '${kgText(lot.packedKg)} ${l10n.unitKg}'),
+            if (lot.unverified)
+              CheckLine(check: (glyph: Theme.of(context).extension<FarmerTokens>()!.todo, text: l10n.qcLotUnverified)),
           ],
         ),
       ),
@@ -269,13 +271,14 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
             if (received != null) 'received': quantity(received, 'kg'),
             if (price != null) 'price_per_kg': price.toString(),
             'moisture_reading_id': ?reading?.id,
-            // shortcut: processor_id is left out (the phone has no processor list; the server knows the FPO's
-            //   processor from the intake route). Add a processor picker if a tenant makes it required.
+            // shortcut: this is the lot-timeline intake event; the lot is received (lot_intakes, status received)
+            //   only by POST /v1/intakes (FPO admin, with processor_id and sale_date). Until B09 links them, the
+            //   admin also records the intake on the portal (M11 review r1 P2-2, Architect-Gate).
           },
         ),
       ], now);
       if (mounted) setState(() => _saved = true);
-    } on Exception {
+    } on Object {
       if (mounted) setState(() => _failed = true);
     } finally {
       if (mounted) setState(() => _saving = false);

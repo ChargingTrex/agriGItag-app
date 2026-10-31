@@ -9,12 +9,15 @@
 
 import 'dart:convert';
 
+import 'package:agritrace_api/agritrace_api.dart' show InstrumentKind, standardSerializers;
 import 'package:decimal/decimal.dart';
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' show OrderingTerm, Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/api/api_client.dart';
 import '../../core/db/database.dart';
 import '../../core/db/providers.dart';
 import '../../core/l10n/gen/app_localizations.dart';
@@ -32,8 +35,19 @@ import '../onboarding_farmer/onboarding_notifier.dart' show FieldRules;
 class QcLot {
   /// Creates the lot. [lotId] is the server lot id; [farmerId] its farmer; [farmerName] the name when the farmer is
   /// on this phone; [packedKg] the farmer's packed quantity in kg; [cropId] the crop, null when only the QR knew the
-  /// lot. Throws nothing.
-  const QcLot({required this.lotId, required this.farmerId, this.farmerName, required this.packedKg, this.cropId});
+  /// lot; [unverified] marks a lot known only from the farmer's QR (its farmer and packed weight are not checked).
+  /// Throws nothing.
+  const QcLot({
+    required this.lotId,
+    required this.farmerId,
+    this.farmerName,
+    required this.packedKg,
+    this.cropId,
+    this.unverified = false,
+  });
+
+  /// True when the lot is not on this phone and the card shows the QR's own farmer and packed weight.
+  final bool unverified;
 
   /// Server lot id (UUID).
   final String lotId;
@@ -408,9 +422,58 @@ final qcStandardsProvider = FutureProvider.autoDispose.family<StandardsRules?, S
   return id == null ? null : repo.standards(id);
 });
 
-/// Instruments registered for the FPO, as stored on the phone. Throws what Drift throws on a broken database.
-final qcInstrumentsProvider = FutureProvider.autoDispose<List<Instrument>>((ref) {
+/// Fetches the FPO's active instruments from the API as rows of the local Instruments table; tests replace it.
+typedef InstrumentFetcher = Future<List<InstrumentsCompanion>> Function();
+
+/// `GET /v1/instruments?active=true`, every page, through the generated client (D-003). A meter without a
+/// calibration due date is left out: the server refuses its readings (FR50). Throws [DioException] without signal or
+/// on an API error.
+final qcInstrumentFetcherProvider = Provider<InstrumentFetcher>(
+  (ref) => () async {
+    final api = ref.read(apiClientProvider).api.getQualityApi();
+    final rows = <InstrumentsCompanion>[];
+    String? cursor;
+    do {
+      final page = (await api.listInstrumentsV1InstrumentsGet(active: true, cursor: cursor)).data!;
+      for (final i in page.items) {
+        final due = i.calibrationDueOn;
+        if (due == null) continue;
+        rows.add(
+          InstrumentsCompanion.insert(
+            instrumentId: i.id,
+            kind: standardSerializers.serializeWith(InstrumentKind.serializer, i.kind)! as String,
+            label: '${i.makeModel} ${i.serialNo}',
+            calibrationDueDate: due.toDateTime(),
+          ),
+        );
+      }
+      cursor = page.hasMore ? page.nextCursor : null;
+    } while (cursor != null);
+    return rows;
+  },
+);
+
+/// Instruments registered for the FPO: refreshed from the API when there is signal, else the rows cached on the
+/// phone by the last online visit.
+///
+/// DECISION D-036: the QC screens mirror `GET /v1/instruments` into the Instruments table themselves, the same online
+///   way as the batch list, until a reference-bundle part and an M02 mirror serve instruments.
+///   ADV: meters (with calibration due dates) reach a real phone now; offline the cached rows still work.
+///   COMPROMISE: the cache is refreshed only when a QC screen opens online; a meter registered or recalibrated while
+///   the phone stays offline is missing or shows the old due date (the server re-checks every reading).
+/// Throws what Drift throws on a broken database; any [DioException] falls back to the cache.
+final qcInstrumentsProvider = FutureProvider.autoDispose<List<Instrument>>((ref) async {
   final db = ref.read(appDatabaseProvider);
+  try {
+    final rows = await ref.read(qcInstrumentFetcherProvider)();
+    // Replaced whole, so a meter the FPO deactivated disappears; the table is a cache, not a record (not append-only).
+    await db.transaction(() async {
+      await db.delete(db.instruments).go();
+      await db.batch((b) => b.insertAll(db.instruments, rows));
+    });
+  } on DioException {
+    // No signal or an API error: keep using the cached rows.
+  }
   return (db.select(db.instruments)..orderBy([(i) => OrderingTerm(expression: i.label)])).get();
 });
 

@@ -3,7 +3,7 @@
 //   Save writes the `final_packing` event on the batch for the outbox.
 // Requirement: Dataflow Stage 9 / §4 gate "final packing ≤ graded kg", FR58 (quantities with units), PLAN §7.2 M11
 //   (final packing), D-017 (`event_final_packing` field config), D-033 (the server's `packed_above_graded` gate
-//   decides; the phone only previews), D-034 (batch subject).
+//   decides; the phone only previews), D-036 (batch subject).
 // Callers: grading_screen.dart ("Pack" after saving), batch_list_screen.dart (a batch "To pack"); test/features/qc/*.
 
 import 'package:flutter/material.dart';
@@ -147,7 +147,7 @@ class _PackingScreenState extends ConsumerState<PackingScreen> {
         ),
       ], now);
       if (mounted) setState(() => _saved = true);
-    } on Exception {
+    } on Object {
       if (mounted) setState(() => _failed = true);
     } finally {
       if (mounted) setState(() => _saving = false);
