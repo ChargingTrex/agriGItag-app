@@ -3,7 +3,7 @@
 Quality parameters are not payload fields: they are quality readings (`kind=quality_reading`, FR42), and
 the event only points at them. Requiredness is field configuration (D-017, B13).
 
-Serves: Dataflow Stages 7–9, FR3, FR58, D-014.
+Serves: Dataflow Stages 7–9, FR3, FR58, D-014, D-040 (an `intake` event is a timeline note only).
 Callers: `events.schemas`, tests/unit/test_events_payloads.py.
 """
 
@@ -17,13 +17,21 @@ from agritrace.modules.events.payloads.farm import Payload
 
 
 class IntakePayload(Payload):
-    """Stage 7 sale of a lot to the processor, as recorded on the lot's timeline."""
+    """Stage 7 sale of a lot to the processor, as a note on the lot's timeline only.
 
-    processor_id: uuid.UUID | None = Field(None, description="Processor that received the lot.")
-    received: Quantity | None = Field(None, description="Quantity received, unit `kg`.")
-    price_per_kg: Decimal | None = Field(None, ge=0, description="Price paid in INR per kg (optional).")
+    It does not receive the lot: no `lot_intakes` row, no status change (D-040). To receive a lot use push
+    kind `lot_intake` or `POST /v1/intakes`.
+    """
+
+    processor_id: uuid.UUID | None = Field(
+        None, description="Processor named in the note (the lot is received only by `lot_intake`)."
+    )
+    received: Quantity | None = Field(
+        None, description="Quantity noted, unit `kg` (not used for shares or reconciliation)."
+    )
+    price_per_kg: Decimal | None = Field(None, ge=0, description="Price noted in INR per kg (optional).")
     moisture_reading_id: uuid.UUID | None = Field(
-        None, description="Client id of the intake moisture reading taken at the gate."
+        None, description="Client id of the intake moisture reading taken at the gate (note only)."
     )
 
 

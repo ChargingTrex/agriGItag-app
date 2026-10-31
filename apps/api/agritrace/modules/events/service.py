@@ -8,7 +8,8 @@ Serves: FR3, FR4 (offline sync), FR6 (farmer undo), FR25 (immutable events, corr
 FR26 (GPS at submission), FR59 (person vs system entries), FR61 (evidence photos), FR63 (date-ordered
 timeline), FR69 (`entered_remotely` in assist mode), Arch §Offline-first, backend-design.md §3 (binding),
 plan §13 A3, A4, F1, CLAUDE.md §6 (assist mode recorded), D-005, D-011, D-014; B15: push kinds `farmer`
-(D-031) and `assist_session`, per-entry `assist_session_id` (D-032).
+(D-031) and `assist_session`, per-entry `assist_session_id` (D-032); B16: push kind `lot_intake` (D-040),
+assist session per kind (D-042).
 Callers: `events.router`, `events.sync_router`, `events.pull_service` (`event_outs`);
 tests/unit/test_events_service.py, tests/integration/test_sync.py. No other module calls it yet (`__all__` is
 empty).
@@ -71,6 +72,7 @@ from agritrace.modules.events.schemas import (
 )
 from agritrace.modules.identity import service as identity_service
 from agritrace.modules.identity.models import ConsentRecord
+from agritrace.modules.lots_batches import service as lots_batches_service
 from agritrace.modules.lots_batches.models import Batch, Lot
 from agritrace.modules.quality import service as quality_service
 from agritrace.modules.registry import service as registry_service
@@ -278,7 +280,8 @@ async def _check_subject(session: AsyncSession, user: CurrentUser, v: AnyEventVe
         v: the version.
 
     Raises:
-        ForbiddenError: viewers; farmers on batches; an assist session for another farmer (403).
+        ForbiddenError: viewers; farmers on batches; an assist session for another farmer, or any assist
+            session on a batch event (403, D-042).
         NotFoundError: lot or batch not in the caller's FPO, or a farmer's lot of someone else (404).
         ValidationFailedError: `plot_id` is not the lot's plot, or is set on a batch event (422).
     """
@@ -298,6 +301,8 @@ async def _check_subject(session: AsyncSession, user: CurrentUser, v: AnyEventVe
     else:
         if user.role == Role.FARMER:
             raise ForbiddenError(details={"reason": "farmers cannot record batch events"})
+        if user.on_behalf_of_farmer_id is not None:  # D-042: a batch belongs to many farmers
+            raise ForbiddenError("A batch event cannot be recorded in assist mode.")
         batch = await session.get(Batch, v.batch_id)
         if batch is None or batch.fpo_id != user.fpo_id:
             raise NotFoundError(details={"batch_id": str(v.batch_id)})
@@ -838,6 +843,40 @@ async def _push_assist_session(
     )
 
 
+async def _push_lot_intake(session: AsyncSession, user: CurrentUser, entry: SyncEntry, _: str) -> SyncResult:
+    """Handle `kind=lot_intake` with lots_batches' `create_intake_from_sync`, then commit (D-040).
+
+    Args:
+        session: database session.
+        user: the caller, with no assist context (`_entry_caller` clears it for this kind).
+        entry: the entry; its `client_id` is the intake id, `data` is `IntakeIn` without `client_id`.
+        _: app version (unused).
+
+    Returns:
+        `accepted` (lot received now) or `duplicate` (this FPO already has the intake id for this lot);
+        `server_id` is the intake id.
+
+    Raises:
+        AppError: every error of `lots_batches.service.create_intake_from_sync` (`validation_error`,
+            `forbidden`, `field_required`, `client_id_conflict`, `not_found`, `gate_not_met`).
+
+    Side effects:
+        Commits the intake, the lot's new state and the flags the lot rules refreshed.
+    """
+    # DECISION D-040: the QC phone receives a lot through a push kind backed by the intake service.
+    #   ADV: one intake record (shares, reconciliation, public page read `lot_intakes`), offline intake at
+    #     the collection centre, the house push-kind pattern; the server re-runs weight, moisture and rules.
+    #   COMPROMISE: one more kind in the server, the spec and both clients; an `intake` event version stays
+    #     a timeline note that receives nothing.
+    intake, _flags, created = await lots_batches_service.create_intake_from_sync(
+        session, user, {**entry.data, "client_id": str(entry.client_id)}
+    )
+    await session.commit()
+    return SyncResult(
+        client_id=entry.client_id, status="accepted" if created else "duplicate", server_id=intake.id
+    )
+
+
 Handler = Callable[[AsyncSession, CurrentUser, SyncEntry, str], Awaitable[SyncResult]]
 HANDLERS: dict[str, Handler] = {
     "event_version": _push_event_version,
@@ -847,7 +886,11 @@ HANDLERS: dict[str, Handler] = {
     "flag_resolution": _push_flag_resolution,
     "farmer": _push_farmer,
     "assist_session": _push_assist_session,
+    "lot_intake": _push_lot_intake,
 }
+
+
+NO_ASSIST_KINDS = frozenset({"farmer", "flag_resolution", "assist_session", "lot_intake"})
 
 
 def _rejected(client_id: uuid.UUID, error: AppError) -> SyncResult:
@@ -873,14 +916,19 @@ async def _entry_caller(session: AsyncSession, user: CurrentUser, entry: SyncEnt
         entry: the entry.
 
     Returns:
-        The caller with the entry's assist context (none for `farmer`, the session's farmer for an entry
-        with `assist_session_id`), or None when the request's caller applies.
+        The caller with the entry's assist context (none for the kinds in `NO_ASSIST_KINDS`, the session's
+        farmer for an entry with `assist_session_id`), or None when the request's caller applies.
 
     Raises:
         AssistSessionInvalidError: `entry.assist_session_id` is not one of the caller's sessions.
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
-    if entry.kind == "farmer":  # D-031: onboarding is the officer's own task, never assist mode
+    # DECISION D-042: these kinds are the officer's own task (D-031 for `farmer`): assist context is dropped
+    #   with no session lookup, whether it comes from the entry or from the header.
+    #   ADV: audit rows never name a farmer the record does not belong to; M10 may attach the session to
+    #     every assisted entry without spurious offline rejections.
+    #   COMPROMISE: the field is silently ignored on these kinds, so a phone bug there goes unnoticed.
+    if entry.kind in NO_ASSIST_KINDS:
         return dataclasses.replace(user, on_behalf_of_farmer_id=None, assist_session_id=None)
     if entry.assist_session_id is None:
         return None

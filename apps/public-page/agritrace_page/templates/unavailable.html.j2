@@ -1,0 +1,26 @@
+{#- Unavailable batch page (W03). Purpose: what a buyer sees when a scanned code has no live page:
+    not yet published, withdrawn, or unknown. Carries no batch data, only the code (if given).
+    Requirements: W03 "unpublished/404 variant"; FR15 (page served from storage, so the builder or the
+    CDN serves this file); User Flows §Design rules (Tamil first); CLAUDE.md §6 (nothing personal).
+    Caller: agritrace_page.render.render_unavailable, with code (str | None) and reason. -#}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{ plain("unavailable.title") }}</title>
+<link rel="icon" href="data:,">
+<style>{% include "page.css" %}</style>
+</head>
+<body>
+<main>
+<section>
+<h1>{{ t("unavailable.title") }}</h1>
+<p>{{ t("unavailable." ~ reason) }}</p>
+{% if code %}<p>{{ t("batch_code") }}: <strong>{{ code }}</strong></p>
+{% endif %}
+</section>
+</main>
+</body>
+</html>
