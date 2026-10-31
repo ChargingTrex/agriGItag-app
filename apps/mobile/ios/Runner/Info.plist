@@ -17,6 +17,12 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AgriTrace takes a photo as proof of each farm activity.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>AgriTrace records where each farm activity happened, with its photo.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AgriTrace records a short voice note when you report a crop problem.</string>
 	<key>CFBundleName</key>
 	<string>agritrace</string>
 	<key>CFBundlePackageType</key>
