@@ -57,9 +57,9 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / PASS-PENDING-STACK r2 — verifier: PENDING (merged conditionally 2026-10-31; 8 integration tests deferred)
 - [ ] B15 — Backend gaps from B08 review and M09 (grading-loss split D-030, `farmer` push kind + `client_id` D-031, assist_session kind D-032) — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 22 integration tests deferred)
-- [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: Opus (done, 2576902) — reviewer: MOB r1 in progress — verifier:
+- [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: Opus (micro-patch in progress) — reviewer: MOB PASS r1 (P2: History owner filter, fixed before merge) — verifier:
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
-- [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
+- [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (done, 1f1c583) — reviewer: MOB/SEC r1 in progress — verifier:
 - [ ] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (round 2 in progress) — reviewer: MOB FAIL r1 (P1: Instruments table never filled) — verifier:
 - [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: — reviewer: — verifier:
 - [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: — reviewer: — verifier:
@@ -69,9 +69,9 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 ## G4 Portal + Publish
 
 - [ ] B10 — Publishing — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 8 integration tests deferred)
-- [ ] B11 — Reporting + stubs — wave 6 — worker: Opus (done, af77b23) — reviewer: BE r1 in progress — verifier:
+- [ ] B11 — Reporting + stubs — wave 6 — worker: Opus (micro-patch in progress) — reviewer: BE PASS-PENDING-STACK r1 (P2: scrub audit diffs, fixed before merge) — verifier:
 - [ ] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: — reviewer: — verifier:
-- [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: — reviewer: — verifier:
+- [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] **Gate G4 signed** (docs/agents/gates/G4.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G5 Pilot candidate
