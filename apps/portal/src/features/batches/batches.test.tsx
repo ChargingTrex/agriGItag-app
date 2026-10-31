@@ -9,10 +9,24 @@ import userEvent from '@testing-library/user-event';
 import axe from 'axe-core';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
-import { MOCK_FPO_ID, MOCK_REF_LOT_IDS, MOCK_USER_ID, mockState } from '../../mocks/handlers';
+import {
+  MOCK_FPO_ID,
+  MOCK_REF_LOT_IDS,
+  MOCK_UNPACKED_LOT_ID,
+  MOCK_USER_ID,
+  mockState,
+} from '../../mocks/handlers';
 import { renderApp } from '../../test/render';
 import { server } from '../../test/setup';
-import { lotBlock, signoffBlock, splitShares, toGrams, type LotOut } from './batchModel';
+import {
+  giReasonText,
+  holdText,
+  lotBlock,
+  signoffBlock,
+  splitShares,
+  toGrams,
+  type LotOut,
+} from './batchModel';
 
 /**
  * Asserts that axe finds no violations in the rendered page (colour contrast needs layout, absent in jsdom).
@@ -79,20 +93,63 @@ describe('splitShares (same rounding as lots_batches/shares.py)', () => {
     ]);
     expect([...pct.values()]).toEqual(['1.562', '98.438']);
   });
+
+  it('residual can be negative and lands on the first largest lot: {1×7} → 14.284 / 14.286 ×6', () => {
+    const pct = splitShares(Array.from({ length: 7 }, (_, i) => [String(i), 1000] as const));
+    expect([...pct.values()]).toEqual(['14.284', ...Array<string>(6).fill('14.286')]);
+  });
+
+  it('residual on a middle tie {3,7,7,1} → 16.667 / 38.888 / 38.889 / 5.556', () => {
+    const pct = splitShares([
+      ['a', 3000],
+      ['b', 7000],
+      ['c', 7000],
+      ['d', 1000],
+    ]);
+    expect([...pct.values()]).toEqual(['16.667', '38.888', '38.889', '5.556']);
+  });
 });
 
-describe('lotBlock and signoffBlock', () => {
+describe('lotBlock, GI texts and signoffBlock', () => {
   const lot = mockState.lots[0] as LotOut;
 
   it('names every reason a lot cannot be ticked', () => {
     expect(lotBlock(lot, false)).toBeNull();
     expect(lotBlock({ ...lot, status: 'batched' }, false)).toBe('Already in a batch.');
     expect(lotBlock({ ...lot, status: 'drying' }, true)).toMatch(/^Not ready/);
-    expect(lotBlock({ ...lot, packed: null }, false)).toMatch(/No packed weight/);
+    // No packing event: the server batches it from intake kg, so it stays tickable.
+    expect(lotBlock({ ...lot, packed: null }, false)).toBeNull();
     expect(lotBlock({ ...lot, gi_eligible: false }, false)).toBe(
+      'Not GI eligible. It can only go into a non-GI batch.',
+    );
+    expect(
+      lotBlock({ ...lot, gi_eligible: false, gi_hold_reason: 'flags: yield_over_ceiling' }, false),
+    ).toBe('On hold: Yield above the ceiling. It can only go into a non-GI batch.');
+    expect(lotBlock({ ...lot, gi_eligible: false }, true)).toBeNull();
+    // B08 leaves the lot GI eligible for plot holds; the plot's hold flags grey it.
+    expect(lotBlock(lot, false, ['plot_outside_gi_region'])).toBe(
       'Outside the GI region. It can only go into a non-GI batch.',
     );
-    expect(lotBlock({ ...lot, gi_eligible: false }, true)).toBeNull();
+    expect(lotBlock(lot, false, ['plot_needs_review'])).toBe(
+      'Plot on hold: Plot needs review. It can only go into a non-GI batch.',
+    );
+    expect(lotBlock(lot, true, ['plot_outside_gi_region'])).toBeNull();
+  });
+
+  it('turns hold reasons and GI block reasons into labels', () => {
+    expect(holdText(null)).toBe('');
+    expect(holdText('yield_over_ceiling')).toBe('Yield above the ceiling');
+    expect(holdText('4200 m outside')).toBe('4200 m outside');
+    expect(giReasonText({ reason: 'lot_on_hold', detail: 'flags: yield_over_ceiling' })).toBe(
+      'A lot is on hold: On hold: Yield above the ceiling.',
+    );
+    expect(giReasonText({ reason: 'plot_outside_gi_region' })).toBe('Plot outside the GI region');
+    expect(giReasonText({ reason: 'plot_location_needs_review' })).toBe(
+      'Plot location needs review',
+    );
+    expect(giReasonText({ reason: 'hold_flag', detail: 'yield_over_ceiling' })).toBe(
+      'Open hold flag: Yield above the ceiling',
+    );
   });
 
   it('lets only another FPO admin sign off', () => {
@@ -133,14 +190,19 @@ describe('Ready lots page', () => {
     renderApp('/ready-lots', true);
     await screen.findByRole('table', { name: 'Ready lots' });
 
-    const outOfGi = screen.getByRole('checkbox', {
+    // The lot is `gi_eligible` (as B08 leaves it); its plot's open `plot_outside_gi_region` hold greys it.
+    expect(mockState.lots.find((l) => l.code === 'VSV-0006-L1')?.gi_eligible).toBe(true);
+    const outOfGi = await screen.findByRole('checkbox', {
       name: /^Lot VSV-0006-L1: Outside the GI region/,
     });
     expect(outOfGi).toBeDisabled();
+    const reason = 'Outside the GI region. It can only go into a non-GI batch.';
+    // Shown in the row as well, for sighted keyboard users.
+    expect(
+      within(screen.getByRole('row', { name: /VSV-0006-L1/ })).getByText(reason, { selector: 'p' }),
+    ).toBeInTheDocument();
     await user.hover(outOfGi.closest('span[title], span[aria-describedby]') ?? outOfGi);
-    expect(await screen.findByRole('tooltip')).toHaveTextContent(
-      'Outside the GI region (plot outside the GI region). It can only go into a non-GI batch.',
-    );
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(reason);
     const held = screen.getByRole('checkbox', {
       name: /^Lot VSV-0010-L2: On hold: Yield above the ceiling/,
     });
@@ -280,6 +342,47 @@ describe('Ready lots page', () => {
         .map((li) => li.textContent),
     ).toEqual(['The lot was received by another processor.', 'mixed crops']);
     expect(screen.getByText('The conditions for this step are not met yet.')).toBeInTheDocument();
+  });
+
+  it('a received lot without packed weight can be ticked and is sent; the share preview steps aside', async () => {
+    addProcessor();
+    const user = userEvent.setup();
+    await tickReferenceBatch(user);
+    await user.click(screen.getByRole('checkbox', { name: 'Tick lot VSV-0008-L1' }));
+    const row = screen.getByRole('row', { name: /VSV-0008-L1/ });
+    expect(within(row).getAllByText('—')).toHaveLength(2);
+    expect(screen.getByRole('row', { name: /VSV-0001-L1/ })).not.toHaveTextContent('%');
+    expect(
+      screen.getByText(/shares are computed from the weight received at intake/),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Create batch' }));
+    await screen.findByRole('heading', { name: /^Batch FGP/ });
+    expect(mockState.batches[0]?.shares.map((s) => s.lot_id)).toContain(MOCK_UNPACKED_LOT_ID);
+  });
+
+  it('greys Create for a non-admin with the reason', async () => {
+    mockState.roles = ['field_officer'];
+    renderApp('/ready-lots', true);
+    expect(await screen.findByText('Only an FPO admin can create a batch.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create batch' })).toBeDisabled();
+  });
+
+  it('says to reload when the batch was already created under this client_id', async () => {
+    addProcessor();
+    server.use(
+      http.post('/v1/batches', () =>
+        HttpResponse.json(
+          { error: { code: 'client_id_conflict', message: 'client_id_conflict', details: null } },
+          { status: 409 },
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    await tickReferenceBatch(user);
+    await user.click(screen.getByRole('button', { name: 'Create batch' }));
+    expect(
+      await screen.findByText('This batch was already created; reload the page and try again.'),
+    ).toBeInTheDocument();
   });
 
   it('points to the Processors page when no processor is registered', async () => {

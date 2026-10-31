@@ -1,12 +1,12 @@
 /**
  * Pure rules of the Ready lots screen: the share % preview (same arithmetic as the server), the running total,
- * and why a lot cannot be ticked.
+ * why a lot cannot be ticked, GI reason texts and who may sign off.
  * Serves: FR60 (each farmer's share of the batch), FR9 (lots merged into a batch), FR29 (out-of-GI lots stay
  * out of a GI batch), User Flows §"Create a batch" steps 2–3, plan §7.3 P03 ({100,200,20} → 31.25/62.5/6.25).
- * Called by: src/features/batches/ReadyLotsPage.tsx; tests in batches.test.tsx.
+ * Called by: src/features/batches/ReadyLotsPage.tsx, BatchPage.tsx, src/mocks/handlers.ts; tests in batches.test.tsx.
  */
 import type { components } from '../../api/generated/schema';
-import { ruleText } from '../flags/flagModel';
+import { RULES, ruleText } from '../flags/flagModel';
 
 export type LotOut = components['schemas']['LotOut'];
 export type BatchOut = components['schemas']['BatchOut'];
@@ -60,27 +60,71 @@ export function splitShares(lots: readonly (readonly [string, number])[]): Map<s
 }
 
 /**
+ * Readable text of a GI hold reason: B08 writes "flags: <rule codes>" on a held lot; any other text is shown as is.
+ * @param reason `LotOut.gi_hold_reason` or a `GiBlockReason.detail`.
+ * @returns "On hold: Yield above the ceiling." for a flags reason, a known rule label for a bare rule code, else
+ *   the text itself (empty for none).
+ */
+export function holdText(reason: string | null | undefined): string {
+  if (!reason) return '';
+  if (reason.startsWith('flags: ')) {
+    return `On hold: ${reason
+      .slice(7)
+      .split(', ')
+      .map((code) => ruleText(code).en)
+      .join(', ')}.`;
+  }
+  return RULES[reason] ? ruleText(reason).en : reason;
+}
+
+/**
  * Why a lot cannot be ticked for the batch being built.
  * @param lot The lot.
  * @param nonGi True when the admin builds a non-GI batch (out-of-GI and held lots are then allowed).
- * @returns Null when the lot can be ticked, else the reason shown in the row's tooltip.
+ * @param plotHolds Rule codes of the active hold flags on the lot's plot (B08 keeps the lot `gi_eligible` for
+ *   those, e.g. `plot_outside_gi_region`), from `useHoldFlags`.
+ * @returns Null when the lot can be ticked, else the reason shown in the row and its tooltip.
  */
-export function lotBlock(lot: LotOut, nonGi: boolean): string | null {
+export function lotBlock(
+  lot: LotOut,
+  nonGi: boolean,
+  plotHolds: readonly string[] = [],
+): string | null {
   if (lot.status === 'batched') return 'Already in a batch.';
   if (lot.status !== 'received') return 'Not ready: record the intake at the processor first.';
-  if (!lot.packed || toGrams(lot.packed.value) <= 0)
-    return 'No packed weight recorded for this lot yet.';
-  if (nonGi || lot.gi_eligible) return null;
-  const reason = lot.gi_hold_reason ?? '';
-  // B08 writes "flags: <rule codes>" for a hold; any other text is a GI reason from B09.
-  const why = reason.startsWith('flags: ')
-    ? `On hold: ${reason
-        .slice(7)
-        .split(', ')
-        .map((code) => ruleText(code).en)
-        .join(', ')}.`
-    : `Outside the GI region${reason ? ` (${reason})` : ''}.`;
-  return `${why} It can only go into a non-GI batch.`;
+  if (nonGi) return null;
+  const only = 'It can only go into a non-GI batch.';
+  if (plotHolds.includes('plot_outside_gi_region')) return `Outside the GI region. ${only}`;
+  if (plotHolds.length > 0) {
+    return `Plot on hold: ${plotHolds.map((code) => ruleText(code).en).join(', ')}. ${only}`;
+  }
+  if (lot.gi_eligible) return null;
+  return `${holdText(lot.gi_hold_reason) || 'Not GI eligible.'} ${only}`;
+}
+
+/** Labels of B09's GI block reason codes (`GiBlockReason.reason`) that are not rule codes. */
+const GI_REASONS: Readonly<Record<string, string>> = {
+  crop_has_no_gi_tag: 'The crop has no GI tag',
+  gi_region_missing: 'No GI region is set for the crop',
+  lot_on_hold: 'A lot is on hold',
+  hold_flag: 'Open hold flag',
+};
+
+/**
+ * One GI block reason of a batch as a sentence.
+ * @param r The reason from `BatchOut.gi_block_reasons`.
+ * @param r.reason B09 reason code, e.g. `lot_on_hold` or `plot_location_needs_review`.
+ * @param r.detail Hold reason, rule code or distance, when known.
+ * @returns Label plus readable detail, e.g. "A lot is on hold: On hold: Yield above the ceiling."
+ */
+export function giReasonText(r: { reason: string; detail?: string | null }): string {
+  const label =
+    GI_REASONS[r.reason] ??
+    (r.reason.startsWith('plot_location_')
+      ? `Plot location ${r.reason.slice(14).replaceAll('_', ' ')}`
+      : ruleText(r.reason).en);
+  const detail = holdText(r.detail);
+  return detail ? `${label}: ${detail}` : label;
 }
 
 /**
@@ -95,10 +139,7 @@ export function signoffBlock(
   userId: string | undefined,
   roles: readonly string[],
 ): string | null {
-  // DECISION D-006: the portal greys the button as a preview; the server re-checks (403 for the role,
-  //   409 `gate_not_met` reason `same_approver` for the creator).
-  //   ADV: the creator sees at once that another admin must act.
-  //   COMPROMISE: the rule exists twice (here and in lots_batches/service.py); keep them in step.
+  // UI mirror only; the server re-checks (403 role, 409 `gate_not_met` reason `same_approver`).
   if (!roles.includes('fpo_admin')) return 'Only an FPO admin can sign off a batch.';
   if (userId === undefined) return 'Checking who you are…';
   if (userId === batch.created_by) {

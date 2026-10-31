@@ -23,7 +23,7 @@ import { useParams } from 'react-router';
 import { unwrap } from '../../api/client';
 import { errorMessage } from '../../api/errors';
 import { useAuth } from '../../auth/AuthProvider';
-import { signoffBlock, formatKg, toGrams, type BatchOut } from './batchModel';
+import { formatKg, giReasonText, signoffBlock, toGrams, type BatchOut } from './batchModel';
 import { GateReasons, useFarmerNames } from './ReadyLotsPage';
 
 /**
@@ -121,10 +121,7 @@ export function BatchPage() {
           This batch cannot carry the GI label:
           <ul aria-label="GI reasons">
             {b.gi_block_reasons.map((r, i) => (
-              <li key={`${r.reason}-${String(i)}`}>
-                {r.reason.replaceAll('_', ' ')}
-                {r.detail ? `: ${r.detail}` : ''}
-              </li>
+              <li key={`${r.reason}-${String(i)}`}>{giReasonText(r)}</li>
             ))}
           </ul>
         </Alert>

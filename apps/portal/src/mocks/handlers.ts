@@ -71,8 +71,14 @@ export const MOCK_FARMER_COUNT = 57;
 export const MOCK_USER_ID = 'a0000000-0000-7000-8000-000000000001';
 /** The PRD §12 reference lots, received, GI eligible: 100, 200 and 20 kg. */
 export const MOCK_REF_LOT_IDS = [lotId(1), lotId(2), lotId(3)] as const;
-/** A received lot whose plot is outside the GI region (B09 reason on the lot). */
+/** A received lot whose plot is outside the GI region: the lot stays `gi_eligible`, the plot carries the hold. */
 export const MOCK_OUT_OF_GI_LOT_ID = lotId(4);
+/** The plot of MOCK_OUT_OF_GI_LOT_ID, with an open `plot_outside_gi_region` hold flag (B08 plot check). */
+export const MOCK_OUT_OF_GI_PLOT_ID = '7c3e9b1a-2d4f-4a6b-8c0d-9e1f2a3b4c60';
+/** Open hold flag on MOCK_OUT_OF_GI_PLOT_ID. */
+export const MOCK_PLOT_HOLD_FLAG_ID = 'f0000000-0000-7000-8000-000000000007';
+/** A received lot with no packing event (the server batches it from intake kg). */
+export const MOCK_UNPACKED_LOT_ID = lotId(6);
 /** A lot that is ready for sale but has no intake yet. */
 export const MOCK_WAITING_LOT_ID = lotId(5);
 
@@ -135,9 +141,9 @@ function seedFeatures(): Schemas['Features'] {
 }
 
 /**
- * Builds the seed lots: the reference trio, the held lot (MOCK_LOT_ID), an out-of-GI lot and one without
- * intake.
- * @returns Six lots of MOCK_FPO_ID.
+ * Builds the seed lots: the reference trio, the held lot (MOCK_LOT_ID), a lot on an out-of-GI plot, one without
+ * intake and one without a packing event.
+ * @returns Seven lots of MOCK_FPO_ID.
  */
 function seedLots(): LotOut[] {
   /**
@@ -172,11 +178,9 @@ function seedLots(): LotOut[] {
       gi_eligible: false,
       gi_hold_reason: 'flags: yield_over_ceiling',
     }),
-    lot(MOCK_OUT_OF_GI_LOT_ID, 6, '50', {
-      gi_eligible: false,
-      gi_hold_reason: 'plot outside the GI region',
-    }),
+    lot(MOCK_OUT_OF_GI_LOT_ID, 6, '50', { plot_id: MOCK_OUT_OF_GI_PLOT_ID }),
     lot(MOCK_WAITING_LOT_ID, 7, '80', { status: 'ready_for_sale' }),
+    lot(MOCK_UNPACKED_LOT_ID, 8, '40', { packed: null }),
   ];
 }
 
@@ -270,7 +274,7 @@ function seedPlots(): PlotOut[] {
 
 /**
  * Builds the seed flags, newest first, one or more per rule family the detail page renders.
- * @returns Six flags of MOCK_FPO_ID.
+ * @returns Seven flags of MOCK_FPO_ID.
  */
 function seedFlags(): FlagOut[] {
   const base = {
@@ -365,6 +369,17 @@ function seedFlags(): FlagOut[] {
         hold_margin_pct: '30',
       },
       raised_at: '2026-02-14T03:00:00Z',
+    },
+    {
+      ...base,
+      id: MOCK_PLOT_HOLD_FLAG_ID,
+      subject_type: 'plot',
+      subject_id: MOCK_OUT_OF_GI_PLOT_ID,
+      rule_code: 'plot_outside_gi_region',
+      severity: 'hold',
+      assigned_role: 'fpo_admin',
+      details: { distance_m: 4200 },
+      raised_at: '2026-02-13T03:00:00Z',
     },
   ];
 }
@@ -703,10 +718,24 @@ export const handlers = [
         lot_id: lot.id,
       }));
     if (reasons.length > 0) return fail(409, 'gate_not_met', { reasons });
-    const grams = chosen.map((lot) => [lot.id, toGrams(lot.packed?.value ?? 0)] as const);
+    // Stand-in for intake kg: packed, else harvested (the mock keeps no intake rows).
+    const grams = chosen.map(
+      (lot) => [lot.id, toGrams(lot.packed?.value ?? lot.harvested?.value ?? 0)] as const,
+    );
     const pct = splitShares(grams);
     const total = grams.reduce((sum, [, g]) => sum + g, 0);
-    const blocked = chosen.filter((lot) => !lot.gi_eligible);
+    /**
+     * GI re-check as B09 `_gi_check`: whether the lot's plot carries an active hold flag.
+     * @param lot The lot.
+     * @returns True when the plot is held.
+     */
+    const plotHeld = (lot: LotOut) =>
+      mockState.flags.some(
+        (f) =>
+          f.subject_id === lot.plot_id &&
+          f.severity === 'hold' &&
+          (f.status === 'open' || f.status === 'escalated'),
+      );
     const batch: BatchOut = {
       id: input.client_id,
       code: `FGP${String(mockState.batches.length + 1).padStart(9, '0')}`,
@@ -717,13 +746,14 @@ export const handlers = [
       status: 'created',
       current_build_no: 0,
       gi_label_requested: input.gi_label_requested,
-      gi_verified: input.gi_label_requested && blocked.length === 0,
+      gi_verified: input.gi_label_requested && !chosen.some((l) => !l.gi_eligible || plotHeld(l)),
       gi_block_reasons: input.gi_label_requested
-        ? blocked.map((lot) => ({
-            reason: 'lot_on_hold',
-            lot_id: lot.id,
-            detail: lot.gi_hold_reason,
-          }))
+        ? chosen.flatMap((lot) => [
+            ...(lot.gi_eligible
+              ? []
+              : [{ reason: 'lot_on_hold', lot_id: lot.id, detail: lot.gi_hold_reason }]),
+            ...(plotHeld(lot) ? [{ reason: 'plot_outside_gi_region', lot_id: lot.id }] : []),
+          ])
         : [],
       second_signoff_required: total > toGrams(mockState.features.second_signoff_threshold_kg),
       second_signoff_by: null,

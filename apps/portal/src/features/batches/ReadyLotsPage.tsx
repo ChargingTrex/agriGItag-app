@@ -31,7 +31,7 @@ import { useCursorList } from '../../api/cursor';
 import { ApiError, errorMessage } from '../../api/errors';
 import type { components } from '../../api/generated/schema';
 import { useAuth } from '../../auth/AuthProvider';
-import { useLotHold } from '../flags/LotPage';
+import { useHoldFlags, useLotHold } from '../flags/LotPage';
 import { ruleText } from '../flags/flagModel';
 import { formatKg, lotBlock, splitShares, toGrams, type LotOut } from './batchModel';
 
@@ -94,6 +94,12 @@ export function GateReasons({ error }: { error: unknown }) {
   //   before retrying.
   //   ADV: one round trip shows the whole list; the codes are stable for tests.
   //   COMPROMISE: reason texts are the server's English `message`; Tamil reason texts wait for a shared table.
+  // A resend under the same `client_id` with another processor: the first create went through.
+  if (error instanceof ApiError && error.code === 'client_id_conflict') {
+    return (
+      <Alert severity="error">This batch was already created; reload the page and try again.</Alert>
+    );
+  }
   const reasons =
     error instanceof ApiError && error.code === 'gate_not_met'
       ? ((error.details as { reasons?: GateReason[] } | undefined)?.reasons ?? [])
@@ -114,7 +120,7 @@ export function GateReasons({ error }: { error: unknown }) {
 
 /**
  * Secondary hint from P02's hold-flag hook: names the lot's active hold flags. Greying itself follows the
- * server's `gi_eligible`; this only explains it (or warns early when B08 has not synced the lot yet).
+ * server's `gi_eligible` and the plot holds; this only explains it (or warns early when B08 has not synced yet).
  * @param props Component props.
  * @param props.lotId The lot.
  * @returns A caption naming the holds, or nothing.
@@ -135,7 +141,7 @@ function HoldHint({ lotId }: { lotId: string }) {
  * @returns Lots table, running total with share preview, batch options and the Create button.
  */
 export function ReadyLotsPage() {
-  const { api } = useAuth();
+  const { api, session } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const received = useLots('received');
@@ -157,13 +163,30 @@ export function ReadyLotsPage() {
   //   ADV: a double click or a resend after a lost answer returns the same batch (200), never a second one.
   //   COMPROMISE: after a refused create the same id is reused, which is fine because nothing was stored.
   const [clientId] = useState(() => crypto.randomUUID());
+  // B08 raises `plot_outside_gi_region` (and other plot holds) on the plot and leaves the lot `gi_eligible`, so
+  // plot holds come from the hold flags the hint already loads (no extra request).
+  const holdFlags = useHoldFlags();
+  const plotHolds = new Map<string, string[]>();
+  for (const flag of holdFlags.data?.flags ?? []) {
+    if (flag.subject_type === 'plot') {
+      plotHolds.set(flag.subject_id, [...(plotHolds.get(flag.subject_id) ?? []), flag.rule_code]);
+    }
+  }
+  /**
+   * Why a lot cannot be ticked now.
+   * @param lot The lot.
+   * @returns The reason, or null.
+   */
+  const blockOf = (lot: LotOut) => lotBlock(lot, nonGi, plotHolds.get(lot.plot_id));
 
   // Tick order is the order sent to the server, so a tie for the rounding residual lands on the same lot.
   const selected = ticked.flatMap((id) => {
     const lot = lots.find((l) => l.id === id);
-    return lot?.packed && !lotBlock(lot, nonGi) ? [[id, toGrams(lot.packed.value)] as const] : [];
+    return lot && !blockOf(lot) ? [[id, lot.packed ? toGrams(lot.packed.value) : 0] as const] : [];
   });
-  const shares = splitShares(selected);
+  // A lot without a packing event is still batched (from intake kg) but leaves no basis for a preview.
+  const previewable = selected.every(([, grams]) => grams > 0);
+  const shares = previewable ? splitShares(selected) : new Map<string, string>();
   const totalGrams = selected.reduce((sum, [, grams]) => sum + grams, 0);
   const thresholdKg = features.data?.second_signoff_threshold_kg;
   const needsSignoff = thresholdKg !== undefined && totalGrams > toGrams(thresholdKg);
@@ -188,8 +211,10 @@ export function ReadyLotsPage() {
     onError: () => queryClient.invalidateQueries({ queryKey: ['lots'] }),
   });
 
-  const createBlock =
-    selected.length === 0
+  // UI mirror only; the server re-checks the role (403).
+  const createBlock = !session?.roles.includes('fpo_admin')
+    ? 'Only an FPO admin can create a batch.'
+    : selected.length === 0
       ? 'Tick at least one lot.'
       : !processorId
         ? 'Choose the processor.'
@@ -214,6 +239,11 @@ export function ReadyLotsPage() {
       {received.isSuccess && waiting.isSuccess && lots.length === 0 && (
         <Typography color="text.secondary">No lot has been received yet.</Typography>
       )}
+      {holdFlags.data?.complete === false && (
+        <Alert severity="warning">
+          Not every hold flag was loaded; the server re-checks GI when you create the batch.
+        </Alert>
+      )}
       {lots.length > 0 && (
         <Table size="small" aria-label="Ready lots">
           <TableHead>
@@ -228,7 +258,7 @@ export function ReadyLotsPage() {
           </TableHead>
           <TableBody>
             {lots.map((lot) => {
-              const block = lotBlock(lot, nonGi);
+              const block = blockOf(lot);
               const label = block ? `Lot ${lot.code}: ${block}` : `Tick lot ${lot.code}`;
               return (
                 <TableRow key={lot.id} sx={block ? { '& td': { color: 'text.disabled' } } : {}}>
@@ -248,7 +278,15 @@ export function ReadyLotsPage() {
                     </Tooltip>
                   </TableCell>
                   <TableCell>{farmerName(lot.farmer_id)}</TableCell>
-                  <TableCell>{lot.code}</TableCell>
+                  <TableCell>
+                    {lot.code}
+                    {/* Visible too: the tooltip alone is out of reach for sighted keyboard users. */}
+                    {block && (
+                      <Typography variant="caption" component="p">
+                        {block}
+                      </Typography>
+                    )}
+                  </TableCell>
                   <TableCell align="right">
                     {lot.packed ? formatKg(toGrams(lot.packed.value)) : '—'}
                   </TableCell>
@@ -261,7 +299,11 @@ export function ReadyLotsPage() {
                     <HoldHint lotId={lot.id} />
                   </TableCell>
                   <TableCell align="right">
-                    {shares.has(lot.id) ? `${shares.get(lot.id) ?? ''} %` : ''}
+                    {shares.has(lot.id)
+                      ? `${shares.get(lot.id) ?? ''} %`
+                      : selected.some(([id]) => id === lot.id)
+                        ? '—'
+                        : ''}
                   </TableCell>
                 </TableRow>
               );
@@ -295,8 +337,9 @@ export function ReadyLotsPage() {
             <strong>{formatKg(totalGrams)}</strong>
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Shares are a preview from packed weight; the batch keeps the shares of the weight
-            received at intake.
+            {previewable
+              ? 'Shares are a preview from packed weight; the batch keeps the shares of the weight received at intake.'
+              : 'A ticked lot has no packed weight: shares are computed from the weight received at intake when you create the batch.'}
           </Typography>
           {needsSignoff && (
             <Alert severity="info">
@@ -313,7 +356,7 @@ export function ReadyLotsPage() {
                 }}
               />
             }
-            label="Non-GI batch (allows lots outside the GI region or on hold; no GI label)"
+            label="Non-GI batch (allows lots outside the GI region or on hold; no GI label; held lots block publishing until their hold is resolved)"
           />
           <TextField
             select
