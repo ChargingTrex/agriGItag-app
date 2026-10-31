@@ -19,11 +19,16 @@ export type ApiClient = Client<paths>;
 
 /**
  * Creates a client that sends the bearer token and reports 401 responses.
- * @param accessToken Current access token, or null when signed out (no Authorization header is sent).
- * @param onUnauthorized Called on every 401 response so the session can be cleared and the guard redirects.
+ * @param getToken Returns the current access token, or null when signed out (no Authorization header is
+ *   sent). Read per request, so a query refetched right after a refresh already carries the new token.
+ * @param onUnauthorized Called on every 401 response with the token that request carried, so the session can
+ *   be recovered or cleared.
  * @returns The typed client. Requests go to the page's own origin (paths already start with `/v1`, D-020).
  */
-export function createApiClient(accessToken: string | null, onUnauthorized: () => void): ApiClient {
+export function createApiClient(
+  getToken: () => string | null,
+  onUnauthorized: (token: string) => void,
+): ApiClient {
   const client = createClient<paths>({ baseUrl: window.location.origin });
   client.use({
     /**
@@ -33,18 +38,22 @@ export function createApiClient(accessToken: string | null, onUnauthorized: () =
      * @returns The same request with an Authorization header when signed in.
      */
     onRequest({ request }) {
-      if (accessToken) request.headers.set('Authorization', `Bearer ${accessToken}`);
+      const token = getToken();
+      if (token) request.headers.set('Authorization', `Bearer ${token}`);
       return request;
     },
     /**
-     * Reports 401 responses. The access token is refreshed before it expires (AuthProvider), so a 401 here
-     * means the device was signed out or revoked: the session ends rather than retrying.
+     * Reports 401 responses. AuthProvider's handler tries the refresh cookie once and signs out only when
+     * that is refused (revoked or signed-out device).
      * @param params Middleware parameters.
+     * @param params.request The request that was answered (its Authorization header names the token).
      * @param params.response The incoming response.
      * @returns The response unchanged.
      */
-    onResponse({ response }) {
-      if (response.status === 401) onUnauthorized();
+    onResponse({ request, response }) {
+      if (response.status === 401) {
+        onUnauthorized(request.headers.get('Authorization')?.replace(/^Bearer /, '') ?? '');
+      }
       return response;
     },
   });

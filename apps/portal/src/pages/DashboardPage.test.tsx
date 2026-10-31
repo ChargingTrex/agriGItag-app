@@ -15,7 +15,7 @@ describe('DashboardPage', () => {
     expect(await screen.findByText(/API reachable/)).toHaveTextContent('database ok');
   });
 
-  it('signs out on a 401 and shows the sign-in page', async () => {
+  it('signs out when a 401 persists after one refresh, and shows the sign-in page', async () => {
     server.use(
       http.get('/v1/healthz', () =>
         HttpResponse.json(

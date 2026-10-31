@@ -6,7 +6,8 @@
  * Called by: src/AppRoutes.tsx (`/members`); `FarmerStatusChip` and `useApproveFarmer` also by
  * src/features/members/FarmerPage.tsx.
  *
- * Not offered because the B03 contract has no endpoint for it (TODO.md "B03/P01"): rejecting a registration,
+ * Not offered because the B03 contract has no endpoint for it yet (B14 outputs 1, 2 and 4; TODO.md
+ * "B14/P01"): rejecting a registration,
  * the masked phone with an audited reveal (`FarmerOut` carries no phone), server-side village/name search and
  * `?fields=` on `GET /v1/farmers`.
  */

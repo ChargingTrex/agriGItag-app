@@ -1,5 +1,5 @@
 /**
- * Bounding box of a GeoJSON geometry, used to keep map tiles inside the FPO's GI area.
+ * Bounding boxes for the plot map: of a GeoJSON geometry, and of the GI area plus the plot pin.
  * Serves: plan §13 D3 (cache map tiles for the FPO area), FR28 (GI region outline). Called by:
  * src/features/members/PlotMap.tsx.
  */
@@ -34,4 +34,22 @@ export function bbox(geometry: Record<string, unknown>, padDeg = 0): BBox | null
   visit(geometry['coordinates']);
   if (box[0] === Infinity) return null;
   return [box[0] - padDeg, box[1] - padDeg, box[2] + padDeg, box[3] + padDeg];
+}
+
+/**
+ * The area the plot map may show and load tiles for: the GI region's box widened to include the plot pin,
+ * then padded, so a plot far outside the region (the ones reviewers open from a flag, FR70) stays on screen.
+ * @param pin Plot pin, WGS84.
+ * @param pin.lat Latitude.
+ * @param pin.lon Longitude.
+ * @param region GI region geometry, or null when none is loaded (then the map is not limited).
+ * @param padDeg Degrees added on every side.
+ * @returns `[west, south, east, north]`, or null without a region.
+ */
+export function plotArea(
+  pin: { lat: number; lon: number },
+  region: Record<string, unknown> | null,
+  padDeg: number,
+): BBox | null {
+  return region ? bbox({ coordinates: [region['coordinates'], [pin.lon, pin.lat]] }, padDeg) : null;
 }

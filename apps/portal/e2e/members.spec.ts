@@ -23,7 +23,15 @@ async function signIn(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Sign in' }).click();
 }
 
+// Tile servers are never contacted from tests (OSM tile policy, no network dependency); the `request`
+// event still fires for an aborted request, so "satellite tiles only after the click" stays checkable.
+test.beforeEach(async ({ page }) => {
+  await page.route(/tile\.openstreetmap\.org|tiles\.maps\.eox\.at/, (route) => route.abort());
+});
+
 test('login → members → approve: the farmer becomes Active without a reload', async ({ page }) => {
+  const urls: string[] = [];
+  page.on('request', (request) => urls.push(request.url()));
   await page.goto('/members');
   await signIn(page);
 
@@ -38,6 +46,8 @@ test('login → members → approve: the farmer becomes Active without a reload'
   const roster = page.getByRole('table', { name: 'All members' });
   await expect(roster.getByRole('row', { name: /Muthu Kumar/ })).toContainText('Active');
   expect(navigations).toBe(0);
+  // The map code is a lazy chunk: the Members screen never downloads it.
+  expect(urls.filter((url) => /PlotMap|maplibre/.test(url))).toEqual([]);
 });
 
 test('plot page: the map chunk loads lazily and satellite tiles wait for the toggle', async ({
@@ -54,6 +64,8 @@ test('plot page: the map chunk loads lazily and satellite tiles wait for the tog
   const toggle = page.getByRole('button', { name: 'Show satellite view' });
   await expect(toggle).toBeEnabled({ timeout: 20_000 });
   expect(hosts).not.toContain('tiles.maps.eox.at');
+  const zoomIn = await page.locator('.maplibregl-ctrl-zoom-in').boundingBox();
+  expect(Math.min(zoomIn?.width ?? 0, zoomIn?.height ?? 0)).toBeGreaterThanOrEqual(48);
 
   await toggle.click();
   await expect(page.getByRole('button', { name: 'Hide satellite view' })).toBeVisible();

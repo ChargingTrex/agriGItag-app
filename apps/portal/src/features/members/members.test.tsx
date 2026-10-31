@@ -16,7 +16,7 @@ import {
 } from '../../mocks/handlers';
 import { renderApp } from '../../test/render';
 import { server } from '../../test/setup';
-import { bbox } from './geo';
+import { bbox, plotArea } from './geo';
 
 vi.mock('./PlotMap', () => ({
   /**
@@ -185,5 +185,24 @@ describe('bbox', () => {
     expect(bbox(geometry)).toEqual([77.7, 9.3, 78.3, 9.8]);
     expect(bbox(geometry, 0.5)).toEqual([77.2, 8.8, 78.8, 10.3]);
     expect(bbox({ type: 'Polygon', coordinates: [] })).toBeNull();
+  });
+
+  it('plotArea widens the GI box to a pin far outside it, so the plot stays on the map', () => {
+    const region = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [77.7, 9.3],
+          [78.3, 9.3],
+          [78.3, 9.8],
+          [77.7, 9.3],
+        ],
+      ],
+    };
+    const [west, south, east, north] = plotArea({ lat: 10.4, lon: 76.9 }, region, 0.1) ?? [];
+    expect([west, south, east, north].map((n) => Number(n?.toFixed(6)))).toEqual([
+      76.8, 9.2, 78.4, 10.5,
+    ]);
+    expect(plotArea({ lat: 9.5, lon: 78 }, null, 0.1)).toBeNull();
   });
 });

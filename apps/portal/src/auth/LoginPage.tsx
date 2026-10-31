@@ -205,6 +205,18 @@ export function LoginPage() {
             }}
           />
         )}
+        {(step.kind === 'pin' || step.kind === 'confirm') && (
+          // The pin token lives 5 minutes; after that only a new SMS code helps.
+          <Button
+            fullWidth
+            sx={{ mt: 1 }}
+            onClick={() => {
+              setStep({ kind: 'phone' });
+            }}
+          >
+            Start again
+          </Button>
+        )}
       </Paper>
     </Container>
   );

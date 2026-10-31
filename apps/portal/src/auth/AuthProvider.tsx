@@ -1,6 +1,6 @@
 /**
  * Session state for the portal: who is signed in, sign-in/sign-out, silent refresh through the httpOnly
- * cookie, and the API client bound to the access token.
+ * cookie (before expiry, and once after a 401), and the API client bound to the access token.
  * Serves: FR14 role-based access, D-024 session model, D-022 web transport, plan §7.3 P00 (auth guard) and
  * P01 (final B02 contract). Called by: src/AppProviders.tsx (provider), src/auth/RequireAuth.tsx,
  * src/auth/LoginPage.tsx, src/layout/AppLayout.tsx and screens (`useAuth`).
@@ -12,10 +12,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { createApiClient, type ApiClient } from '../api/client';
+import { ApiError } from '../api/errors';
 import { logout, refreshSession, type SessionOut } from './authApi';
 
 /** A signed-in session exactly as the API returned it (`refresh_token` is null on the web). */
@@ -23,6 +25,8 @@ export type Session = SessionOut;
 
 /** Refresh this many seconds before the access token expires. */
 const REFRESH_EARLY_S = 60;
+/** A 401 for a token that a recovery obtained less than this long ago means the server rejects it outright. */
+const LOOP_WINDOW_MS = 10_000;
 
 /** What `useAuth` returns. */
 export interface AuthContextValue {
@@ -32,7 +36,7 @@ export interface AuthContextValue {
   signIn: (session: Session) => void;
   /** Signs the device out on the server, clears the session and every cached query. */
   signOut: () => void;
-  /** Typed API client that sends the current token. */
+  /** Typed API client that sends the current token; a 401 tries the refresh cookie once, then signs out. */
   api: ApiClient;
 }
 
@@ -47,56 +51,109 @@ const AuthContext = createContext<AuthContextValue | null>(null);
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  // DECISION D-024: the access token lives only in React state (memory); nothing goes to web storage.
+  // DECISION D-024: the access token lives only in memory (React state plus a ref); nothing goes to web storage.
   //   ADV: an XSS payload cannot read a stored token, and the 15-minute token dies with the tab; the refresh
   //   token is an httpOnly cookie (D-022) that restores the session after a reload.
   //   COMPROMISE: every page load costs one `POST /v1/auth/refresh` before the first screen renders.
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+  // The API client reads the token from here per request, so refetches never use a replaced token.
+  const tokenRef = useRef<string | null>(null);
 
-  const signIn = useCallback((next: Session) => {
+  /**
+   * Stores a session (or null) in state and in the ref the API client reads.
+   * @param next The new session, or null when signed out.
+   */
+  const store = useCallback((next: Session | null) => {
+    tokenRef.current = next?.access_token ?? null;
     setSession(next);
   }, []);
 
+  // One recovery per rejected token: concurrent 401s share it (and one logout), and a token that a recovery
+  // obtained moments ago and that still gets a 401 ends the session instead of looping.
+  const recoveringFor = useRef<string | null>(null);
+  const recovered = useRef<{ token: string; at: number } | null>(null);
+
   const signOut = useCallback(() => {
     // Best effort: a dead token (the usual reason for signing out) cannot log out anyway.
-    if (session) void logout(session.access_token).catch(() => undefined);
-    setSession(null);
+    if (tokenRef.current) void logout(tokenRef.current).catch(() => undefined);
+    store(null);
     queryClient.clear();
-  }, [session, queryClient]);
+  }, [queryClient, store]);
+
+  /**
+   * Ends the session when the server rejected the refresh; keeps it on a network error (the next call or
+   * timer tries again), so a Wi-Fi blip or a waking laptop does not sign the user out.
+   * @param error Whatever `refreshSession` rejected with.
+   */
+  const endIfRejected = useCallback(
+    (error: unknown) => {
+      if (error instanceof ApiError) signOut();
+      else recoveringFor.current = null;
+    },
+    [signOut],
+  );
+
+  /**
+   * Handles a 401 from a data call: tries the refresh cookie once (single-flight), then refetches.
+   * Signs out only when the refresh itself is refused, or when a freshly recovered token is refused too.
+   * @param token The access token the rejected request carried.
+   */
+  const recover = useCallback(
+    (token: string) => {
+      // A 401 for a token that is no longer current (signed out, or already replaced) needs nothing.
+      if (token !== tokenRef.current || recoveringFor.current === token) return;
+      if (
+        recovered.current?.token === token &&
+        Date.now() - recovered.current.at < LOOP_WINDOW_MS
+      ) {
+        signOut();
+        return;
+      }
+      recoveringFor.current = token;
+      refreshSession().then((next) => {
+        recovered.current = { token: next.access_token, at: Date.now() };
+        store(next);
+        void queryClient.invalidateQueries();
+      }, endIfRejected);
+    },
+    [queryClient, signOut, endIfRejected, store],
+  );
 
   useEffect(() => {
     let live = true;
     refreshSession().then(
       (next) => {
-        if (live) setSession(next);
+        if (live) store(next);
       },
       () => {
-        if (live) setSession(null);
+        if (live) store(null);
       },
     );
     return () => {
       live = false;
     };
-  }, []);
+  }, [store]);
 
   useEffect(() => {
     if (!session) return;
     const timer = setTimeout(
       () => {
-        refreshSession().then(setSession, signOut);
+        refreshSession().then(store, endIfRejected);
       },
       Math.max(session.expires_in - REFRESH_EARLY_S, 1) * 1000,
     );
     return () => {
       clearTimeout(timer);
     };
-  }, [session, signOut]);
+  }, [session, endIfRejected, store]);
 
-  const api = useMemo(
-    () => createApiClient(session?.access_token ?? null, signOut),
-    [session, signOut],
+  const getToken = useCallback(() => tokenRef.current, []);
+  // eslint-disable-next-line react-hooks/refs -- the client calls getToken per request, never during render
+  const api = useMemo(() => createApiClient(getToken, recover), [getToken, recover]);
+  const value = useMemo(
+    () => ({ session, signIn: store, signOut, api }),
+    [session, store, signOut, api],
   );
-  const value = useMemo(() => ({ session, signIn, signOut, api }), [session, signIn, signOut, api]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

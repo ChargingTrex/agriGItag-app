@@ -30,7 +30,7 @@ export const MOCK_PIN = '1234';
 export const MOCK_LOCKED_PIN = '0000';
 /** Ten-digit number of an office user signing in for the first time (`pin_set: false`). */
 export const MOCK_NEW_USER_PHONE = '9000000001';
-/** Access token of a mock session. */
+/** Prefix of mock access tokens; each refresh issues a new one (`mock-access-token-<n>`), like the real API. */
 export const MOCK_ACCESS_TOKEN = 'mock-access-token';
 export const MOCK_FPO_ID = '0b9d6a52-3f7e-4c1a-9a51-6d3c1f0e2a10';
 export const MOCK_GI_TAG_ID = '5a1f3c2e-8d4b-4e6a-b7c9-1e2d3f4a5b6c';
@@ -161,7 +161,9 @@ async function body(request: Request): Promise<Record<string, unknown>> {
  * @returns True when signed in.
  */
 const authed = (request: Request) =>
-  request.headers.get('Authorization') === `Bearer ${MOCK_ACCESS_TOKEN}`;
+  request.headers.get('Authorization')?.startsWith(`Bearer ${MOCK_ACCESS_TOKEN}`) === true;
+
+let issued = 0;
 
 export const handlers = [
   http.get('/v1/healthz', () => HttpResponse.json<Health>({ db: 'ok', redis: 'ok', s3: 'ok' })),
@@ -196,7 +198,9 @@ export const handlers = [
     return HttpResponse.json(session);
   }),
   http.post('/v1/auth/refresh', () =>
-    mockState.signedIn ? HttpResponse.json(session) : fail(401, 'unauthorized'),
+    mockState.signedIn
+      ? HttpResponse.json({ ...session, access_token: `${MOCK_ACCESS_TOKEN}-${String(++issued)}` })
+      : fail(401, 'unauthorized'),
   ),
   http.post('/v1/auth/logout', () => {
     mockState.signedIn = false;

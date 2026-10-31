@@ -95,7 +95,7 @@ export function FarmerPage() {
         <Typography id="plots-heading" component="h2" variant="h6" gutterBottom>
           Plots
         </Typography>
-        {/* TODO(B03/P01): list the farmer's plots once the API offers a per-farmer plot list. */}
+        {/* TODO(B14 output 3): list the farmer's plots from GET /v1/farmers/{id}/plots. */}
         <Alert severity="info">
           Plots open from their flags or links for now; the per-farmer plot list arrives with the
           registry update. "Add another plot" is done in the mobile app by the farmer or field

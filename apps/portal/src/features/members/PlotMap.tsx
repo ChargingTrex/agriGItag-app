@@ -18,12 +18,13 @@ import {
 } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-import { bbox } from './geo';
+import { MIN_TARGET_PX } from '../../theme';
+import { plotArea } from './geo';
 
 // MapLibre looks for its worker next to its own module; Vite renames chunks, so point it at the emitted file.
 setWorkerUrl(workerUrl);
 
-/** Degrees of margin around the GI outline that tiles may still be loaded for (about 11 km). */
+/** Degrees of margin around the GI outline and the pin that tiles may still be loaded for (about 11 km). */
 const AREA_PAD_DEG = 0.1;
 
 // Sentinel-2 cloudless 2016 (EOX) is CC BY 4.0, unlike the later NC-licensed years.
@@ -74,7 +75,8 @@ function osmStyle(bounds: RasterSourceSpecification['bounds'] | null): StyleSpec
  * @returns A 420 px map with a satellite toggle button above it.
  */
 export default function PlotMap(props: PlotMapProps) {
-  const { pin, region } = props;
+  const { region } = props;
+  const { lat, lon } = props.pin;
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const [ready, setReady] = useState(false);
@@ -82,21 +84,21 @@ export default function PlotMap(props: PlotMapProps) {
 
   useEffect(() => {
     if (!container.current) return;
-    const area = region ? bbox(region, AREA_PAD_DEG) : null;
+    const area = plotArea({ lat, lon }, region, AREA_PAD_DEG);
     // DECISION D-018: MapLibre GL with plain OSM raster tiles, no map SDK, plugin or vector tile service.
     //   ADV: BSD-3 library, no API key or vendor account; `bounds` + `maxBounds` keep tile requests (and the
-    //   browser's tile cache) to the FPO area (plan §13 D3); outline and pin are ordinary GeoJSON layers.
-    //   COMPROMISE: ~300 KB gz chunk plus a ~150 KB gz worker (lazy, so only plot pages pay it); tile.openstreetmap.org's usage policy
-    //   allows light use only, so production needs its own tile host or a provider (TODO.md).
+    //   browser's tile cache) to the FPO area plus the pin (plan §13 D3); outline and pin are GeoJSON layers.
+    //   COMPROMISE: ~300 KB gz chunk plus a ~150 KB gz worker (lazy, so only plot pages pay it);
+    //   tile.openstreetmap.org allows light use only, so production needs its own tile host (TODO.md).
     const map = new MapLibreMap({
       container: container.current,
       style: osmStyle(area),
-      center: [pin.lon, pin.lat],
+      center: [lon, lat],
       zoom: 14,
       ...(area ? { maxBounds: area } : {}),
     });
     map.addControl(new NavigationControl({ showCompass: false }));
-    new Marker({ color: '#2e7d32' }).setLngLat([pin.lon, pin.lat]).addTo(map);
+    new Marker({ color: '#2e7d32' }).setLngLat([lon, lat]).addTo(map);
     map.on('load', () => {
       if (region) {
         map.addSource('gi-region', {
@@ -119,7 +121,7 @@ export default function PlotMap(props: PlotMapProps) {
       setReady(false);
       setSatellite(false);
     };
-  }, [pin.lat, pin.lon, region]);
+  }, [lat, lon, region]);
 
   /**
    * Shows or hides the satellite layer; its tiles are requested only after the first click (plan §13 D3).
@@ -156,7 +158,13 @@ export default function PlotMap(props: PlotMapProps) {
         ref={container}
         role="region"
         aria-label="Plot map"
-        sx={{ height: 420, borderRadius: 1, overflow: 'hidden' }}
+        sx={{
+          height: 420,
+          borderRadius: 1,
+          overflow: 'hidden',
+          // MapLibre's zoom buttons are 29 px; office targets are 48 px (theme MIN_TARGET_PX).
+          '& .maplibregl-ctrl-group button': { width: MIN_TARGET_PX, height: MIN_TARGET_PX },
+        }}
       />
     </Box>
   );
