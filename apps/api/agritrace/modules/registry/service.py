@@ -9,9 +9,10 @@ revisions, location label), Architect-Gate F7 (a `users` row for every farmer wi
 D-019; B13: field-config hooks on farmer and plot creation, plots.gi_tag_id, flag-gated ID documents
 and producer groups (PLAN "Gap analysis"); B14 (portal gaps found by P01, PLAN gap analysis "Members",
 FR8, FR14, FR53, FR70): masked phone and audited reveal, reject, farmer plot list, farmer search and
-`?fields=`, FPO bounding box.
-Callers: registry router; other modules through `__all__` only (D-004): events sync push (B06, plots
-captured offline), rules_flags (B08, `event_within_plot`, `locate_point`), lots_batches (B09, GI
+`?fields=`, FPO bounding box. B15: farmer `client_id` and the sync `farmer` kind (D-031), the plot assist
+farmer check (D-032).
+Callers: registry router; other modules through `__all__` only (D-004): events sync push (B06, plots and,
+B15, farmers captured offline), rules_flags (B08, `event_within_plot`, `locate_point`), lots_batches (B09, GI
 re-check), publishing (B10, `format_address`), events bundle (B07, `simplify_region`).
 Functions flush but never commit: the caller owns the transaction (the router commits per request; the
 sync push commits per entry).
@@ -110,6 +111,7 @@ from agritrace.modules.registry.schemas import (
 __all__ = [
     "GeoResult",
     "area_gap",
+    "create_farmer_from_sync",
     "create_plot_from_sync",
     "enqueue_plot_check",
     "event_within_plot",
@@ -711,7 +713,7 @@ async def _address_with_village(
 
 
 async def create_farmer(session: AsyncSession, user: CurrentUser, body: FarmerIn) -> FarmerOut:
-    """Onboard a farmer in the caller's FPO, pending admin approval (Stage 0).
+    """Onboard a farmer in the caller's FPO, pending admin approval (Stage 0); idempotent on `client_id`.
 
     With a phone number the farmer gets (or is linked to) a `users` row and a `farmer` membership, also
     when `no_smartphone` is set, so SMS reaches them and the phone has exactly one home (Architect-Gate F7).
@@ -719,12 +721,13 @@ async def create_farmer(session: AsyncSession, user: CurrentUser, body: FarmerIn
     Args:
         session: open database session.
         user: the caller (field officer or FPO admin).
-        body: the farmer.
+        body: the farmer; `client_id`, when given, becomes its id.
 
     Returns:
-        The stored farmer, status `pending`.
+        The stored farmer, status `pending`; the earlier one when `client_id` is already this FPO's farmer.
 
     Raises:
+        ClientIdConflictError: `client_id` is another FPO's farmer.
         FarmerPhoneTakenError: another farmer of this FPO already has this phone.
         ValidationFailedError: unknown `village_id`.
         FieldRequiredError: a field the tenant's configuration requires is missing (`field_required`).
@@ -735,8 +738,19 @@ async def create_farmer(session: AsyncSession, user: CurrentUser, body: FarmerIn
     # DECISION D-017: the tenant's fields/farmer.yaml decides which fields are captured and required.
     #   ADV: no requiredness hard-coded; a disabled field is dropped (stored as its schema default).
     #   COMPROMISE: one extra read (the FPO code) per onboarding; PATCH /farmers is not checked yet.
-    data = fieldconfig.validate_payload("farmer", await fpo_code(session, user.fpo_id), body.model_dump())
-    body = FarmerIn.model_validate(data)
+    # DECISION D-031: the phone's UUIDv7 is the farmer id, checked before anything else (like plots, D-005).
+    #   ADV: a retried onboarding (online timeout, then sync) returns the stored farmer instead of a second
+    #     farmer or `farmer_phone_taken`; consent and plot entries keep pointing at the same id.
+    #   COMPROMISE: a resend returns the stored farmer even when its fields differ (no conflict check).
+    if body.client_id is not None and (existing := await session.get(Farmer, body.client_id)) is not None:
+        if existing.fpo_id != user.fpo_id:
+            raise ClientIdConflictError(details={"client_id": str(body.client_id)})
+        return await _farmer_view(session, existing)
+    # The id is transport, not a configurable field: fields/farmer.yaml forbids unknown keys.
+    data = fieldconfig.validate_payload(
+        "farmer", await fpo_code(session, user.fpo_id), body.model_dump(exclude={"client_id"})
+    )
+    body = FarmerIn.model_validate(data | {"client_id": body.client_id})
     user_id = None
     if body.phone:
         account = await session.scalar(select(User).where(User.phone == body.phone))
@@ -755,6 +769,7 @@ async def create_farmer(session: AsyncSession, user: CurrentUser, body: FarmerIn
             session.add(Membership(user_id=account.id, fpo_id=user.fpo_id, role=Role.FARMER))
         user_id = account.id
     farmer = Farmer(
+        id=body.client_id or uuid7(),
         fpo_id=user.fpo_id,
         user_id=user_id,
         code=await _new_farmer_code(session, user.fpo_id),
@@ -771,6 +786,38 @@ async def create_farmer(session: AsyncSession, user: CurrentUser, body: FarmerIn
     await session.flush()
     await session.refresh(farmer)
     return farmer_out(farmer, body.phone)
+
+
+async def create_farmer_from_sync(
+    session: AsyncSession, current_user: CurrentUser, data: Mapping[str, Any]
+) -> tuple[FarmerOut, bool]:
+    """Onboard a farmer from the raw `data` of a sync push `farmer` entry (D-031; no schemas import).
+
+    Args:
+        session: open database session.
+        current_user: the caller, without assist context (the `farmer` kind ignores it).
+        data: the entry data, shaped like `FarmerIn` (with `client_id` = the entry's client id).
+
+    Returns:
+        (the farmer, True if created now / False if this FPO already had it).
+
+    Raises:
+        ForbiddenError: the caller is not a field officer or FPO admin.
+        ValidationFailedError: the data does not match `FarmerIn` (`validation_error`, 422).
+        AppError: every error of `create_farmer`.
+
+    Side effects:
+        Same as `create_farmer`; the caller commits.
+    """
+    if current_user.role not in (Role.FIELD_OFFICER, Role.FPO_ADMIN):
+        raise ForbiddenError(details={"reason": "farmers are onboarded by a field officer or FPO admin"})
+    try:
+        body = FarmerIn.model_validate(data)
+    except ValidationError as e:
+        details = [{"loc": err["loc"], "msg": err["msg"], "type": err["type"]} for err in e.errors()]
+        raise ValidationFailedError(details=details) from e
+    created = await session.get(Farmer, body.client_id) is None
+    return await create_farmer(session, current_user, body), created
 
 
 async def update_farmer(
@@ -916,6 +963,7 @@ async def create_plot(session: AsyncSession, user: CurrentUser, body: PlotIn) ->
 
     Raises:
         NotFoundError: the farmer is missing, another FPO's, or (farmer caller) someone else.
+        ForbiddenError: in assist mode, `farmer_id` is not the assisted farmer (D-032).
         ClientIdConflictError: the id belongs to another FPO's or another farmer's plot.
         PlotLockedError: the id exists with a different pin or size (corrections go through an admin).
         ValidationFailedError: declared size unit not acre/cent, or zero; unknown `gi_tag_id`.
@@ -926,6 +974,8 @@ async def create_plot(session: AsyncSession, user: CurrentUser, body: PlotIn) ->
         Inserts a `plots` row (audited; the reference-version trigger bumps the `plots` bundle part).
         The caller enqueues `rules.check_plot` after commit (`enqueue_plot_check`).
     """
+    if user.on_behalf_of_farmer_id is not None and body.farmer_id != user.on_behalf_of_farmer_id:
+        raise ForbiddenError("The assist session is for another farmer.")  # same rule as consent and events
     declared = to_acres(body.declared_area)
     existing = await session.get(Plot, body.client_id)
     if existing is not None:

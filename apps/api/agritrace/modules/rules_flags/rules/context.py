@@ -99,11 +99,13 @@ class LotContext:
 
 @dataclass(frozen=True, slots=True)
 class BatchContext:
-    """A batch with its farmer shares, output quantity and latest grade computation."""
+    """A batch with its shares, received and output quantities, loss limit and latest grade computation."""
 
     batch_id: uuid.UUID
     shares_kg: Decimal | None = None  # sum of batch_shares.kg_contributed; None when no share exists
-    batch_kg: Decimal | None = None  # packed, else graded, else received quantity of the batch
+    batch_kg: Decimal | None = None  # output of the batch: packed, else graded quantity (D-030)
+    received_kg: Decimal | None = None  # batches.total_received_kg (B09 fills it from the lots' intakes)
+    grading_loss_warn_pct: int = 15  # features.yaml `grading_loss_warn_pct` for the batch's FPO (D-030)
     profile_incomplete: tuple[str, ...] = ()
     trail_overrides: tuple[ReadingFacts, ...] = ()
 

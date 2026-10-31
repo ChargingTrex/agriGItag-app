@@ -36,6 +36,7 @@ from agritrace.core.errors import (
     ResolutionForbiddenError,
     ValidationFailedError,
 )
+from agritrace.core.fieldconfig import features_for
 from agritrace.core.schemas import GeoPoint, Page
 from agritrace.core.time import utcnow
 from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto
@@ -460,7 +461,7 @@ async def _check_lot(session: AsyncSession, lot: Lot) -> set[uuid.UUID]:
 
 
 async def _check_batch(session: AsyncSession, batch: Batch) -> set[uuid.UUID]:
-    """Run the batch rules and store their flags.
+    """Run the batch rules (grading loss limit from the FPO's `features_for`, D-030) and store their flags.
 
     Args:
         session: database session (flushed, not committed).
@@ -484,7 +485,11 @@ async def _check_batch(session: AsyncSession, batch: Batch) -> set[uuid.UUID]:
     ctx = BatchContext(
         batch_id=batch.id,
         shares_kg=await session.scalar(shares),
-        batch_kg=batch.packed_kg or batch.graded_kg or batch.total_received_kg,
+        batch_kg=batch.packed_kg or batch.graded_kg,
+        received_kg=batch.total_received_kg,
+        grading_loss_warn_pct=features_for(
+            await registry_service.fpo_code(session, batch.fpo_id)
+        ).grading_loss_warn_pct,
         profile_incomplete=tuple(
             code for code, r in per_parameter.items() if (r or {}).get("outcome") == "profile_incomplete"
         ),

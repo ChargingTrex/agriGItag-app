@@ -6,7 +6,8 @@ payload), rendered in OpenAPI as `oneOf` with a discriminator.
 Serves: FR3 (structured event fields), FR4 and Arch §Offline-first (sync envelope, three clocks, client
 UUIDs), FR25/FR59 (corrections and undo as versions), FR26 (GPS at submission), FR61 (evidence photos),
 FR63 (lot timeline), backend-design.md §3 (binding sync protocol), plan §13 A3, A4, C2 (reference bundles with
-per-part delta), F1, D-005, D-011, D-014, D-016.
+per-part delta), F1, D-005, D-011, D-014, D-016, D-031/D-032 (`farmer` and `assist_session` kinds, per-entry
+assist session).
 Callers: `events.router`, `events.sync_router`, `events.service`, `events.evidence`, `events.bundle_service`,
 `events.pull_service`; tests.
 """
@@ -255,16 +256,28 @@ class SyncEntry(BaseModel):
     """One offline entry; `data` is validated per entry, so one bad entry never rejects the batch."""
 
     client_id: uuid.UUID = Field(
-        description="Id of the record created (event version, reading, plot, consent); idempotency key."
+        description="Id of the record created (event version, reading, plot, consent, farmer, assist "
+        "session); idempotency key."
     )
-    kind: Literal["event_version", "quality_reading", "plot", "consent", "flag_resolution"] = Field(
-        description="What `data` holds."
-    )
+    kind: Literal[
+        "event_version", "quality_reading", "plot", "consent", "flag_resolution", "farmer", "assist_session"
+    ] = Field(description="What `data` holds.")
     data: dict[str, Any] = Field(
         description="`event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: "
         "`QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: "
-        "`FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id). "
+        "`FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id); "
+        "`farmer`: `FarmerIn` (field officer or FPO admin; stored `pending`, D-031); `assist_session`: "
+        "`AssistStartIn` without `client_id` (field officer only, D-032). "
         "Otherwise the entry's `client_id` is used as the record's id."
+    )
+    assist_session_id: uuid.UUID | None = Field(
+        None,
+        description="Assist session this entry was captured in (D-032): one of the caller's sessions, "
+        "open or ended, pushed earlier as an `assist_session` entry or started online. Records assist "
+        "mode for this entry only (event version, audit row, consent witness); the entry's farmer must "
+        "be the session's (`forbidden` otherwise); unknown or another officer's → "
+        "`assist_session_invalid`. When absent, the `X-Assist-Session` header applies. Ignored on "
+        "`farmer` entries.",
     )
 
 

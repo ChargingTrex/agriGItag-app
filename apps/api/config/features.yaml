@@ -21,3 +21,6 @@ sync_push_max_entries: 50
 sync_push_max_bytes: 262144
 # Not wired yet: identity reads OTP_DAILY_CAP from the environment (core/config.py); listed for clients.
 otp_daily_cap: 10
+# Read by rules_flags `_check_batch` (D-030): `grading_loss_high` warns when a batch's packed (else graded)
+# kilograms are more than this many percent below its received kilograms. A guess; calibrate after season 1.
+grading_loss_warn_pct: 15

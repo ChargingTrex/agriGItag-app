@@ -7,17 +7,20 @@ undo, three clocks stamped, photos registered as `pending_upload` with presigned
 Serves: FR3, FR4 (offline sync), FR6 (farmer undo), FR25 (immutable events, corrections with reason),
 FR26 (GPS at submission), FR59 (person vs system entries), FR61 (evidence photos), FR63 (date-ordered
 timeline), FR69 (`entered_remotely` in assist mode), Arch §Offline-first, backend-design.md §3 (binding),
-plan §13 A3, A4, F1, CLAUDE.md §6 (assist mode recorded), D-005, D-011, D-014.
+plan §13 A3, A4, F1, CLAUDE.md §6 (assist mode recorded), D-005, D-011, D-014; B15: push kinds `farmer`
+(D-031) and `assist_session`, per-entry `assist_session_id` (D-032).
 Callers: `events.router`, `events.sync_router`, `events.pull_service` (`event_outs`);
 tests/unit/test_events_service.py, tests/integration/test_sync.py. No other module calls it yet (`__all__` is
 empty).
 """
 
 import asyncio
+import dataclasses
 import inspect
 import logging
 import uuid
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextvars import Token
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
@@ -30,12 +33,13 @@ from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import storage, task_names
-from agritrace.core.audit import AUDIT_LOG
-from agritrace.core.auth import CurrentUser
+from agritrace.core.audit import AUDIT_LOG, AuditContext, reset_audit_context, set_audit_context
+from agritrace.core.auth import CurrentUser, assist_session_farmer
 from agritrace.core.config import get_settings
 from agritrace.core.enums import ChangeKind, EventStatus, PhotoStatus, Role
 from agritrace.core.errors import (
     AppError,
+    AssistSessionInvalidError,
     ClientIdConflictError,
     ForbiddenError,
     NotFoundError,
@@ -764,6 +768,64 @@ async def _push_flag_resolution(
     return SyncResult(client_id=entry.client_id, status=status, server_id=flag_id)
 
 
+async def _push_farmer(session: AsyncSession, user: CurrentUser, entry: SyncEntry, _: str) -> SyncResult:
+    """Handle `kind=farmer` with registry's service, then commit (D-031).
+
+    Args:
+        session: database session.
+        user: the caller, with no assist context (`push` clears it for this kind).
+        entry: the entry; its `client_id` is the farmer id.
+        _: app version (unused).
+
+    Returns:
+        `accepted` (stored `pending` now) or `duplicate` (this FPO already has the id).
+
+    Raises:
+        AppError: every error of `registry.service.create_farmer_from_sync` (`forbidden`, `validation_error`,
+            `client_id_conflict`, `farmer_phone_taken`, `field_required`).
+
+    Side effects:
+        Commits the farmer and its `users` / `memberships` / `audit_log` rows.
+    """
+    # DECISION D-031: offline onboarding is a push kind idempotent on the phone's farmer id, like plots.
+    #   ADV: one outbox path (batching, retry, per-entry result); consent and plot entries keep the id.
+    #   COMPROMISE: one more kind in the server, both clients and the spec; a rejected farmer leaves its
+    #     consent and plot entries rejected too, for the officer to fix.
+    farmer, created = await registry_service.create_farmer_from_sync(
+        session, user, {**entry.data, "client_id": str(entry.client_id)}
+    )
+    await session.commit()
+    return SyncResult(
+        client_id=entry.client_id, status="accepted" if created else "duplicate", server_id=farmer.id
+    )
+
+
+async def _push_assist_session(
+    session: AsyncSession, user: CurrentUser, entry: SyncEntry, _: str
+) -> SyncResult:
+    """Handle `kind=assist_session` with identity's `start_assist` (it commits; D-032).
+
+    Args:
+        session: database session.
+        user: the caller.
+        entry: the entry; its `client_id` is the session id.
+        _: app version (unused).
+
+    Returns:
+        `accepted` (session stored now) or `duplicate` (this officer already started it for this farmer).
+
+    Raises:
+        AppError: every error of `identity.service.start_assist_from_sync` (`forbidden`, `validation_error`,
+            `not_found`, `conflict`).
+    """
+    row, created = await identity_service.start_assist_from_sync(
+        session, user, {**entry.data, "client_id": str(entry.client_id)}
+    )
+    return SyncResult(
+        client_id=entry.client_id, status="accepted" if created else "duplicate", server_id=row.id
+    )
+
+
 Handler = Callable[[AsyncSession, CurrentUser, SyncEntry, str], Awaitable[SyncResult]]
 HANDLERS: dict[str, Handler] = {
     "event_version": _push_event_version,
@@ -771,6 +833,8 @@ HANDLERS: dict[str, Handler] = {
     "plot": _push_plot,
     "consent": _push_consent,
     "flag_resolution": _push_flag_resolution,
+    "farmer": _push_farmer,
+    "assist_session": _push_assist_session,
 }
 
 
@@ -786,6 +850,60 @@ def _rejected(client_id: uuid.UUID, error: AppError) -> SyncResult:
     """
     body = ErrorBody(code=error.code, message=error.detail_message, details=error.details)
     return SyncResult(client_id=client_id, status="rejected", error=body)
+
+
+async def _entry_caller(session: AsyncSession, user: CurrentUser, entry: SyncEntry) -> CurrentUser | None:
+    """Work out the caller for one entry when its assist context differs from the request's (D-031, D-032).
+
+    Args:
+        session: database session.
+        user: the caller of the request (assist context from `X-Assist-Session`, if sent).
+        entry: the entry.
+
+    Returns:
+        The caller with the entry's assist context (none for `farmer`, the session's farmer for an entry
+        with `assist_session_id`), or None when the request's caller applies.
+
+    Raises:
+        AssistSessionInvalidError: `entry.assist_session_id` is not one of the caller's sessions.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+    """
+    if entry.kind == "farmer":  # D-031: onboarding is the officer's own task, never assist mode
+        return dataclasses.replace(user, on_behalf_of_farmer_id=None, assist_session_id=None)
+    if entry.assist_session_id is None:
+        return None
+    farmer_id = await assist_session_farmer(session, entry.assist_session_id, user.user_id)
+    if farmer_id is None:
+        raise AssistSessionInvalidError(details={"assist_session_id": str(entry.assist_session_id)})
+    return dataclasses.replace(
+        user, on_behalf_of_farmer_id=farmer_id, assist_session_id=entry.assist_session_id
+    )
+
+
+def _stamp_audit(caller: CurrentUser) -> Token[AuditContext | None]:
+    """Make the audit context carry this entry's assist fields, keeping the request's actor, device and id.
+
+    Args:
+        caller: the entry's caller from `_entry_caller`.
+
+    Returns:
+        The token that restores the request's audit context (`reset_audit_context`).
+
+    Side effects:
+        Sets the audit context variable twice (the first set only reads the request's context back).
+    """
+    token = set_audit_context(AuditContext())
+    previous = token.old_value
+    if not isinstance(previous, AuditContext):  # no request context (e.g. called outside a request)
+        previous = AuditContext(actor_user_id=caller.user_id, device_id=caller.device_id)
+    set_audit_context(
+        dataclasses.replace(
+            previous,
+            on_behalf_of_farmer_id=caller.on_behalf_of_farmer_id,
+            assist_session_id=caller.assist_session_id,
+        )
+    )
+    return token
 
 
 async def push(session: AsyncSession, user: CurrentUser, body: SyncPushIn) -> SyncPushOut:
@@ -805,11 +923,18 @@ async def push(session: AsyncSession, user: CurrentUser, body: SyncPushIn) -> Sy
 
     Side effects:
         Commits each accepted entry; stores `metrics[]` in `sync_metrics` and the device's last push time.
+        Sets the audit context per entry with its own assist context and restores the request's after it.
     """
+    # DECISION D-032: assist context travels with each entry (`assist_session_id`), not with the request.
+    #   ADV: one push mixes farmers; sessions minted offline work; CLAUDE.md §6 holds for offline entries.
+    #   COMPROMISE: one session read per assisted entry; ended sessions are accepted on this path only.
     results = []
     for entry in body.entries:
+        token = None
         try:
-            results.append(await HANDLERS[entry.kind](session, user, entry, body.app_version))
+            caller = await _entry_caller(session, user, entry)
+            token = _stamp_audit(caller) if caller else None
+            results.append(await HANDLERS[entry.kind](session, caller or user, entry, body.app_version))
         except AppError as e:
             await session.rollback()
             results.append(_rejected(entry.client_id, e))
@@ -818,6 +943,9 @@ async def push(session: AsyncSession, user: CurrentUser, body: SyncPushIn) -> Sy
             if (mapped := append_only_error(e)) is None:
                 raise
             results.append(_rejected(entry.client_id, mapped))
+        finally:
+            if token is not None:
+                reset_audit_context(token)
     await _store_metrics(session, user, body)
     return SyncPushOut(server_time=utcnow(), results=results)
 

@@ -199,6 +199,10 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B08 shortcuts: thresholds are module constants (pin radius 200 m, GPS accuracy 30 m, clock skew 10 min, quantity 5 %, default drift buffer 50 m without a GI region); move them to `config/features.yaml` (D-017) if a tenant needs other values. Only harvest/packing quantities in `kg` count.
 - [ ] B08: no periodic sweep (Celery beat) yet: lost `rules.check_*` enqueues are caught on the next check of the same lot/batch (trail overrides are swept then). `GET /v1/flags` has no subject filter (P02 may want `subject_id`) and no `?fields=`.
 - [ ] B08: integration tests `apps/api/tests/integration/test_rules.py` written, not run (Docker down); the Verifier runs them with `make test`.
+- [ ] B15: integration tests `apps/api/tests/integration/test_sync_b15.py` (acceptance lines 5–12) and the updated `test_rules.py::test_reference_lot_flag_set` (line 4) written, not run (Docker down); the Verifier runs them with `make test`.
+- [ ] B15 → Orchestrator (acceptance line 5): `[farmer F, consent(F), plot(F)]` by an officer cannot give 3 × `accepted`: ruling §4 keeps `_check_writer`, so an officer's consent without `assist_session_id` stays `forbidden`. The test asserts accepted / rejected `forbidden` / accepted (and duplicates on replay); line 8 covers the 4 × accepted path with the session. Amend line 5 or rule otherwise.
+- [ ] B15 → B12/M02: Dart and TS clients not regenerated (outside B15's paths): `SyncEntry.kind` gains `farmer` / `assist_session`, `SyncEntry.assist_session_id`, `FarmerIn.client_id`, `Features.grading_loss_warn_pct`. Run `make clients` at merge.
+- [ ] B15: a resent farmer `client_id` returns the stored farmer even when the body differs (no conflict check, D-031 compromise); concurrent first sends of the same id hit the primary key and the loser is rejected (retry → `duplicate`).
 
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).

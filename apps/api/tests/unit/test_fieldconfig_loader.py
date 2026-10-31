@@ -137,6 +137,18 @@ def test_features_and_public_fields() -> None:
     """Defaults apply without a tenant file; public fields never include phone or exact location."""
     assert fieldconfig.features_for("NO_FILE_FPO").producer_groups is False
     assert fieldconfig.features_for(DEMO).boundary_walk is True
+    assert fieldconfig.features_for("NO_FILE_FPO").grading_loss_warn_pct == 15
+
+
+def test_tenant_overrides_grading_loss_limit(config_dir: Path) -> None:
+    """B15 acceptance (D-030): a tenant's `grading_loss_warn_pct: 5` wins for that FPO only.
+
+    Args:
+        config_dir: the writable config copy.
+    """
+    _replace(config_dir / TENANT, "features:", "features:\n  grading_loss_warn_pct: 5")
+    assert fieldconfig.features_for(DEMO).grading_loss_warn_pct == 5
+    assert fieldconfig.features_for("NO_FILE_FPO").grading_loss_warn_pct == 15
     assert "phone" not in fieldconfig.public_fields("farmer", None)
     assert {"pin", "land_record_ref", "walked_boundary"}.isdisjoint(fieldconfig.public_fields("plot", None))
     part = fieldconfig.bundle_part(DEMO)
