@@ -127,7 +127,7 @@ Single presigned PUT (15-min expiry, SHA-256 and Content-Type bound; D-011). `PO
 `{ "changes": [ { "entity": "flag | lot | event | intake | notification | photo_pending", "op": "upsert", "data": { } } ], "next_cursor": "…", "has_more": false }`; scoped to the caller (farmer) or the FPO's farmers (officer).
 
 ### Reference bundles
-`GET /v1/sync/bundle` → manifest of parts {plots, crops, inputs, standards, gi_region, farmer_profile, villages, fields (B13), prompts, images} with `version` and `etag`. `GET /v1/sync/bundle/{part}` honours `If-None-Match` → 304. `GET /v1/sync/reference?since=<version>` returns only parts newer than `since` (plan §13 C2). `standards` carries only `lot_gates`, `yield`, `parameters[].plausible` and `limits`; `gi_region` carries simplified geometry (≤ 50 KB) + buffer.
+`GET /v1/sync/bundle` → manifest of parts {plots, crops, inputs, standards, gi_region, farmer_profile, villages, fields (B13), prompts, images} with `version` and `etag`. `GET /v1/sync/bundle/{part}` honours `If-None-Match` → 304. `GET /v1/sync/reference?since=<version>` returns only parts newer than `since` (plan §13 C2). `standards` carries the **full** `standards_profile_versions.rules` JSON for each active profile version (Orchestrator decision 2026-10-31 after M03: the on-device grade preview needs `grades`, `fail_grade`, `trail_rules`, `lab_certified_requires` and the per-parameter fields; the JSON is a few KB); `gi_region` carries simplified geometry (≤ 50 KB) + buffer.
 
 ## 4. Grade computation (B05, mirrored by mobile M03)
 

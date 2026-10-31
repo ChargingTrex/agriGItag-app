@@ -24,6 +24,7 @@ x-app-env: &app-env
   PUBLIC_BASE_URL: http://localhost:${S3_PORT:-4566}/public-pages
   JWT_SECRET: dev-only-change-me
   OTP_DEV_CODE: "123456"
+  SMS_PROVIDER: console
 
 services:
   db:

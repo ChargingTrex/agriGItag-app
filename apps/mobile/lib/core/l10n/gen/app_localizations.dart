@@ -141,6 +141,120 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'குரல் கேள்'**
   String get playVoice;
+
+  /// Status badge text next to the green tick: the task or entry is done (server confirmed). At most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'முடிந்தது'**
+  String get statusDone;
+
+  /// Status badge text next to the orange circle: still to do. At most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'செய்ய வேண்டும்'**
+  String get statusTodo;
+
+  /// Status badge text next to the red triangle: something needs attention. At most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'கவனம் தேவை'**
+  String get statusAttention;
+
+  /// Screen-reader label of the big minus button of a quantity stepper.
+  ///
+  /// In ta, this message translates to:
+  /// **'குறை'**
+  String get stepperLess;
+
+  /// Screen-reader label of the big plus button of a quantity stepper.
+  ///
+  /// In ta, this message translates to:
+  /// **'கூட்டு'**
+  String get stepperMore;
+
+  /// Screen-reader label of the number pad's backspace key (removes the last digit).
+  ///
+  /// In ta, this message translates to:
+  /// **'அழி'**
+  String get numberPadDelete;
+
+  /// Screen-reader label of the number pad's decimal point key.
+  ///
+  /// In ta, this message translates to:
+  /// **'புள்ளி'**
+  String get numberPadPoint;
+
+  /// Screen-reader label of the greyed speaker when no recorded clip exists for this screen; the text is shown instead.
+  ///
+  /// In ta, this message translates to:
+  /// **'குரல் இல்லை'**
+  String get voiceMissing;
+
+  /// Label of the button on every farmer screen that phones the farmer's field officer. At most two words. Also the voice prompt id of its recorded clip.
+  ///
+  /// In ta, this message translates to:
+  /// **'அலுவலரை அழை'**
+  String get callOfficer;
+
+  /// Label of the big tick on the confirm screen: the farmer agrees the entry is right and saves it. At most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரி'**
+  String get confirmCorrect;
+
+  /// Label of the button that discards the photo and opens the camera again. At most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீண்டும் எடு'**
+  String get retake;
+
+  /// Screen-reader label of the grey cloud: this many entries are saved on the phone and not yet sent.
+  ///
+  /// In ta, this message translates to:
+  /// **'{count} அனுப்பக் காத்திருக்கிறது'**
+  String cloudPending(int count);
+
+  /// Screen-reader label of the green tick that replaces the cloud when nothing is waiting to send.
+  ///
+  /// In ta, this message translates to:
+  /// **'அனைத்தும் அனுப்பப்பட்டது'**
+  String get cloudAllSent;
+
+  /// Assist-mode top bar: the field officer is entering data on behalf of this farmer.
+  ///
+  /// In ta, this message translates to:
+  /// **'இவருக்காகப் பதிவு: {name}'**
+  String loggingFor(String name);
+
+  /// Sentence under the filling GPS ring while the location is not yet accurate. Also the voice prompt id of its recorded clip.
+  ///
+  /// In ta, this message translates to:
+  /// **'தொலைபேசியை உயர்த்திப் பிடியுங்கள், உங்கள் இடத்தைத் தேடுகிறது'**
+  String get gpsHold;
+
+  /// Sentence under the GPS ring once it turns green (accuracy 20 m or better).
+  ///
+  /// In ta, this message translates to:
+  /// **'இடம் கிடைத்தது'**
+  String get gpsFound;
+
+  /// Current GPS accuracy under the ring, in whole metres.
+  ///
+  /// In ta, this message translates to:
+  /// **'± {metres} மீ'**
+  String gpsAccuracy(int metres);
+
+  /// Button shown 60 seconds into a weak GPS fix: saves the location with its low accuracy (flagged for the field officer). At most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'இப்படியே சேமி'**
+  String get saveAnyway;
+
+  /// Error sheet sentence when the photo is too dark or blurry (UserFlows §When things go wrong). Also a voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'புகைப்படம் தெளிவாக இல்லை. மீண்டும் எடுக்கவா?'**
+  String get photoNotClear;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

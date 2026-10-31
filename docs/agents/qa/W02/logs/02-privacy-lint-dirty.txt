@@ -1,0 +1,83 @@
+$ python3 infra/scripts/privacy-lint.py qa/fixtures/privacy/dirty --canary CANARY-FARMER-7F3A
+qa/fixtures/privacy/dirty/README:1:24: phone: <redacted>
+qa/fixtures/privacy/dirty/app.js:2:18: phone: <redacted>
+qa/fixtures/privacy/dirty/area.geojson:4:5: polygon: "type": "LineString"
+qa/fixtures/privacy/dirty/area.geojson:5:20: polygon: [ [ 78.133, 9.559 ], [ 78.134
+qa/fixtures/privacy/dirty/data.json:2:4: sensitive_label: patta
+qa/fixtures/privacy/dirty/data.json:3:13: coordinate_precision: lat": 9.55981
+qa/fixtures/privacy/dirty/data.json:4:16: polygon: "type": "Polygon"
+qa/fixtures/privacy/dirty/export.csv:2:6: phone: <redacted>
+qa/fixtures/privacy/dirty/farm.yaml:2:3: sensitive_label: phone
+qa/fixtures/privacy/dirty/farm.yaml:2:10: phone: <redacted>
+qa/fixtures/privacy/dirty/feed.ndjson:1:13: coordinate_precision: lat": 9.5598061
+qa/fixtures/privacy/dirty/index.html:5:23: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:6:10: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:7:7: aadhaar: <redacted>
+qa/fixtures/privacy/dirty/index.html:8:4: sensitive_label: Survey no.
+qa/fixtures/privacy/dirty/index.html:9:40: coordinate_precision: 9.559806,78.133521
+qa/fixtures/privacy/dirty/index.html:10:35: temp_path: temp_uploads
+qa/fixtures/privacy/dirty/index.html:11:18: temp_path: /tmp/
+qa/fixtures/privacy/dirty/index.html:12:13: canary: <redacted>
+qa/fixtures/privacy/dirty/index.html:13:19: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:14:9: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:15:7: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:16:19: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:17:16: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:18:14: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:19:11: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:20:11: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:21:14: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:22:7: aadhaar: <redacted>
+qa/fixtures/privacy/dirty/index.html:23:9: coordinate_precision: POINT(78.1335214
+qa/fixtures/privacy/dirty/index.html:24:40: coordinate_precision: 9.5598061%2C78.1335214
+qa/fixtures/privacy/dirty/index.html:25:16: sensitive_label: பட்டா
+qa/fixtures/privacy/dirty/index.html:26:9: sensitive_label: சிட்டா
+qa/fixtures/privacy/dirty/index.html:27:4: sensitive_label: சர்வே எண்
+qa/fixtures/privacy/dirty/index.html:28:8: sensitive_label: தொலைபேசி
+qa/fixtures/privacy/dirty/index.html:29:4: sensitive_label: அலைபேசி
+qa/fixtures/privacy/dirty/index.html:29:13: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:30:4: sensitive_label: ஆதார்
+qa/fixtures/privacy/dirty/index.html:30:10: aadhaar: <redacted>
+qa/fixtures/privacy/dirty/index.html:31:4: sensitive_label: S.F. No.
+qa/fixtures/privacy/dirty/index.html:32:4: sensitive_label: Sy. No.
+qa/fixtures/privacy/dirty/index.html:33:16: sensitive_label: Phone
+qa/fixtures/privacy/dirty/index.html:34:4: sensitive_label: Survey Number
+qa/fixtures/privacy/dirty/index.html:35:4: sensitive_label: Patta No.
+qa/fixtures/privacy/dirty/index.html:36:4: sensitive_label: பட்டா எண்
+qa/fixtures/privacy/dirty/index.html:37:24: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:38:12: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:39:12: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:40:11: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:41:11: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:42:9: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:43:4: sensitive_label: S.F. No.
+qa/fixtures/privacy/dirty/index.html:44:4: sensitive_label: Patta No.
+qa/fixtures/privacy/dirty/index.html:45:4: sensitive_label: Survey No.
+qa/fixtures/privacy/dirty/index.html:46:4: sensitive_label: சர்வே எண்
+qa/fixtures/privacy/dirty/index.html:47:4: sensitive_label: Sy. No.
+qa/fixtures/privacy/dirty/index.html:48:4: sensitive_label: Survey No.
+qa/fixtures/privacy/dirty/index.html:49:4: sensitive_label: Patta No.
+qa/fixtures/privacy/dirty/index.html:50:4: sensitive_label: R.S. No.
+qa/fixtures/privacy/dirty/index.html:51:4: sensitive_label: T.S. No.
+qa/fixtures/privacy/dirty/index.html:52:16: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:53:10: phone: <redacted>
+qa/fixtures/privacy/dirty/index.html:54:42: coordinate_precision: lat=9.559806
+qa/fixtures/privacy/dirty/index.html:55:45: coordinate_precision: 17/9.559806/78.133521
+qa/fixtures/privacy/dirty/index.html:56:13: coordinate_precision: 9.5598061°
+qa/fixtures/privacy/dirty/index.html:57:4: coordinate_precision: 9°33&#39;35
+qa/fixtures/privacy/dirty/index.html:58:8: coordinate_precision: 9.5598061 78.1335214
+qa/fixtures/privacy/dirty/pretty.json:5:7: coordinate_precision: 78.1335214
+qa/fixtures/privacy/dirty/pretty.json:6:7: coordinate_precision: 9.5598061
+qa/fixtures/privacy/dirty/pretty.json:9:11: polygon: [ [ 78.1335, 9.5598 ], [ 78.134
+qa/fixtures/privacy/dirty/pretty.json:11:7: coordinate_precision: 78.1335
+qa/fixtures/privacy/dirty/pretty.json:12:7: coordinate_precision: 9.5598
+qa/fixtures/privacy/dirty/pretty.json:15:7: coordinate_precision: 78.134, 9.5598
+qa/fixtures/privacy/dirty/pretty.json:16:7: coordinate_precision: 9.5598
+qa/fixtures/privacy/dirty/pretty.json:19:7: coordinate_precision: 78.134, 9.5602
+qa/fixtures/privacy/dirty/pretty.json:20:7: coordinate_precision: 9.5602
+qa/fixtures/privacy/dirty/pretty.json:24:10: coordinate_precision: 78.1335214
+qa/fixtures/privacy/dirty/pretty.json:25:10: coordinate_precision: 9.5598061
+qa/fixtures/privacy/dirty/w01/index.html:50:110: sensitive_label: Mobile
+qa/fixtures/privacy/dirty/w01/index.html:50:118: phone: <redacted>
+privacy-lint: 80 hit(s) in 10 file(s) scanned, 0 non-text skipped
+exit=1

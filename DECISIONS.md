@@ -31,3 +31,5 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-025 | BM-03 "3G" means Lighthouse's built-in 3G preset | 2026-10-30 | Accepted | [D-025.md](docs/adr/D-025.md) |
 | D-024 | Phone + OTP + PIN session model | 2026-10-29 | Accepted | [D-024.md](docs/adr/D-024.md) |
 | D-026 | Drift stores dates as ISO-8601 text with ms precision | 2026-10-30 | Accepted | [D-026.md](docs/adr/D-026.md) |
+| D-027 | Tokens live in the platform keystore, not in SQLite | 2026-10-30 | Accepted | [D-027.md](docs/adr/D-027.md) |
+| D-028 | OTP auto-read via Android SMS User Consent prompt | 2026-10-31 | Accepted | [D-028.md](docs/adr/D-028.md) |

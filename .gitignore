@@ -31,3 +31,8 @@ qa/robot/results/
 
 # Agent worktrees and local Claude state
 .claude/
+
+# Gradle / Android build outputs
+apps/mobile/android/build/
+apps/mobile/android/app/build/
+apps/mobile/android/.gradle/
