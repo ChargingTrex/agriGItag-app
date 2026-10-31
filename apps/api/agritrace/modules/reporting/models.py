@@ -1,7 +1,7 @@
 """reporting table: anonymous scans of public batch pages.
 
 Serves: FR20 (scan analytics: number and geography of scans per batch), Dataflow Stage 10.
-Callers: reporting service and router (B10: `POST /public/scans`, FPO dashboard) through `models`
+Callers: reporting service and router (B11: `POST /public/scans`, FPO dashboard) through `models`
 (D-004), alembic/env.py, migration 0001.
 """
 
