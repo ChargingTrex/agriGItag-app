@@ -7,7 +7,10 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- allowBackup=false (D-027, flutter_secure_storage): a restored backup cannot decrypt Keystore-protected tokens
+         and would crash sign-in; a reinstall or a new phone signs in again and pulls history from the server. -->
     <application
+        android:allowBackup="false"
         android:label="AgriTrace"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

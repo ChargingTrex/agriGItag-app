@@ -69,18 +69,164 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 [*HealthApi*](doc/HealthApi.md) | [**healthzV1HealthzGet**](doc/HealthApi.md#healthzv1healthzget) | **GET** /v1/healthz | Healthz
 [*HealthApi*](doc/HealthApi.md) | [**reachableV1HealthzHead**](doc/HealthApi.md#reachablev1healthzhead) | **HEAD** /v1/healthz | Reachable
+[*IdentityApi*](doc/IdentityApi.md) | [**assistEndV1AssistEndPost**](doc/IdentityApi.md#assistendv1assistendpost) | **POST** /v1/assist/end | Assist End
+[*IdentityApi*](doc/IdentityApi.md) | [**assistStartV1AssistStartPost**](doc/IdentityApi.md#assiststartv1assiststartpost) | **POST** /v1/assist/start | Assist Start
+[*IdentityApi*](doc/IdentityApi.md) | [**consentCreateV1ConsentsPost**](doc/IdentityApi.md#consentcreatev1consentspost) | **POST** /v1/consents | Consent Create
+[*IdentityApi*](doc/IdentityApi.md) | [**consentListV1FarmersFarmerIdConsentsGet**](doc/IdentityApi.md#consentlistv1farmersfarmeridconsentsget) | **GET** /v1/farmers/{farmer_id}/consents | Consent List
+[*IdentityApi*](doc/IdentityApi.md) | [**consentRevokeV1ConsentsConsentIdRevokePost**](doc/IdentityApi.md#consentrevokev1consentsconsentidrevokepost) | **POST** /v1/consents/{consent_id}/revoke | Consent Revoke
+[*IdentityApi*](doc/IdentityApi.md) | [**logoutV1AuthLogoutPost**](doc/IdentityApi.md#logoutv1authlogoutpost) | **POST** /v1/auth/logout | Logout
+[*IdentityApi*](doc/IdentityApi.md) | [**meV1MeGet**](doc/IdentityApi.md#mev1meget) | **GET** /v1/me | Me
+[*IdentityApi*](doc/IdentityApi.md) | [**otpRequestV1AuthOtpRequestPost**](doc/IdentityApi.md#otprequestv1authotprequestpost) | **POST** /v1/auth/otp/request | Otp Request
+[*IdentityApi*](doc/IdentityApi.md) | [**otpVerifyV1AuthOtpVerifyPost**](doc/IdentityApi.md#otpverifyv1authotpverifypost) | **POST** /v1/auth/otp/verify | Otp Verify
+[*IdentityApi*](doc/IdentityApi.md) | [**pinSetV1AuthPinPost**](doc/IdentityApi.md#pinsetv1authpinpost) | **POST** /v1/auth/pin | Pin Set
+[*IdentityApi*](doc/IdentityApi.md) | [**pinVerifyV1AuthPinVerifyPost**](doc/IdentityApi.md#pinverifyv1authpinverifypost) | **POST** /v1/auth/pin/verify | Pin Verify
+[*IdentityApi*](doc/IdentityApi.md) | [**refreshV1AuthRefreshPost**](doc/IdentityApi.md#refreshv1authrefreshpost) | **POST** /v1/auth/refresh | Refresh
+[*QualityApi*](doc/QualityApi.md) | [**createInstrumentV1InstrumentsPost**](doc/QualityApi.md#createinstrumentv1instrumentspost) | **POST** /v1/instruments | Register an instrument
+[*QualityApi*](doc/QualityApi.md) | [**createQualityReadingV1QualityReadingsPost**](doc/QualityApi.md#createqualityreadingv1qualityreadingspost) | **POST** /v1/quality-readings | Record a quality reading
+[*QualityApi*](doc/QualityApi.md) | [**createStandardsProfileVersionV1StandardsProfilesProfileIdVersionsPost**](doc/QualityApi.md#createstandardsprofileversionv1standardsprofilesprofileidversionspost) | **POST** /v1/standards-profiles/{profile_id}/versions | Create a Standards Profile version (super-admin)
+[*QualityApi*](doc/QualityApi.md) | [**getBatchGradeV1BatchesBatchIdGradeGet**](doc/QualityApi.md#getbatchgradev1batchesbatchidgradeget) | **GET** /v1/batches/{batch_id}/grade | Get a batch&#39;s latest grade
+[*QualityApi*](doc/QualityApi.md) | [**getStandardsProfileVersionV1StandardsProfilesProfileIdVersionsVersionNoGet**](doc/QualityApi.md#getstandardsprofileversionv1standardsprofilesprofileidversionsversionnoget) | **GET** /v1/standards-profiles/{profile_id}/versions/{version_no} | Get one Standards Profile version
+[*QualityApi*](doc/QualityApi.md) | [**gradeBatchV1BatchesBatchIdGradingPost**](doc/QualityApi.md#gradebatchv1batchesbatchidgradingpost) | **POST** /v1/batches/{batch_id}/grading | Grade a batch
+[*QualityApi*](doc/QualityApi.md) | [**listBatchReadingsV1BatchesBatchIdReadingsGet**](doc/QualityApi.md#listbatchreadingsv1batchesbatchidreadingsget) | **GET** /v1/batches/{batch_id}/readings | List a batch&#39;s quality readings
+[*QualityApi*](doc/QualityApi.md) | [**listInstrumentsV1InstrumentsGet**](doc/QualityApi.md#listinstrumentsv1instrumentsget) | **GET** /v1/instruments | List the FPO&#39;s instruments
+[*QualityApi*](doc/QualityApi.md) | [**listLotReadingsV1LotsLotIdReadingsGet**](doc/QualityApi.md#listlotreadingsv1lotslotidreadingsget) | **GET** /v1/lots/{lot_id}/readings | List a lot&#39;s quality readings
+[*QualityApi*](doc/QualityApi.md) | [**listStandardsProfilesV1StandardsProfilesGet**](doc/QualityApi.md#liststandardsprofilesv1standardsprofilesget) | **GET** /v1/standards-profiles | List Standards Profiles
+[*RegistryApi*](doc/RegistryApi.md) | [**approveFarmerV1FarmersFarmerIdApprovePost**](doc/RegistryApi.md#approvefarmerv1farmersfarmeridapprovepost) | **POST** /v1/farmers/{farmer_id}/approve | Approve a pending farmer
+[*RegistryApi*](doc/RegistryApi.md) | [**correctPlotV1PlotsPlotIdCorrectPost**](doc/RegistryApi.md#correctplotv1plotsplotidcorrectpost) | **POST** /v1/plots/{plot_id}/correct | Correct a plot with a reason
+[*RegistryApi*](doc/RegistryApi.md) | [**createFarmerV1FarmersPost**](doc/RegistryApi.md#createfarmerv1farmerspost) | **POST** /v1/farmers | Onboard a farmer
+[*RegistryApi*](doc/RegistryApi.md) | [**createFpoV1FposPost**](doc/RegistryApi.md#createfpov1fpospost) | **POST** /v1/fpos | Create an FPO
+[*RegistryApi*](doc/RegistryApi.md) | [**createInputV1InputsPost**](doc/RegistryApi.md#createinputv1inputspost) | **POST** /v1/inputs | Add an input
+[*RegistryApi*](doc/RegistryApi.md) | [**createPlotV1PlotsPost**](doc/RegistryApi.md#createplotv1plotspost) | **POST** /v1/plots | Register a plot (idempotent on client_id)
+[*RegistryApi*](doc/RegistryApi.md) | [**createProcessorV1ProcessorsPost**](doc/RegistryApi.md#createprocessorv1processorspost) | **POST** /v1/processors | Register a processor
+[*RegistryApi*](doc/RegistryApi.md) | [**createRegionVersionV1GiTagsGiTagIdRegionVersionsPost**](doc/RegistryApi.md#createregionversionv1gitagsgitagidregionversionspost) | **POST** /v1/gi-tags/{gi_tag_id}/region-versions | Upload a GI region version (super-admin)
+[*RegistryApi*](doc/RegistryApi.md) | [**getFarmerV1FarmersFarmerIdGet**](doc/RegistryApi.md#getfarmerv1farmersfarmeridget) | **GET** /v1/farmers/{farmer_id} | Read a farmer
+[*RegistryApi*](doc/RegistryApi.md) | [**getPlotV1PlotsPlotIdGet**](doc/RegistryApi.md#getplotv1plotsplotidget) | **GET** /v1/plots/{plot_id} | Read a plot
+[*RegistryApi*](doc/RegistryApi.md) | [**getRegionV1GiTagsGiTagIdRegionGet**](doc/RegistryApi.md#getregionv1gitagsgitagidregionget) | **GET** /v1/gi-tags/{gi_tag_id}/region | Current GI region (simplified)
+[*RegistryApi*](doc/RegistryApi.md) | [**listCropsV1CropsGet**](doc/RegistryApi.md#listcropsv1cropsget) | **GET** /v1/crops | List crops
+[*RegistryApi*](doc/RegistryApi.md) | [**listFarmersV1FarmersGet**](doc/RegistryApi.md#listfarmersv1farmersget) | **GET** /v1/farmers | List the FPO&#39;s farmers
+[*RegistryApi*](doc/RegistryApi.md) | [**listFposV1FposGet**](doc/RegistryApi.md#listfposv1fposget) | **GET** /v1/fpos | List FPOs (super-admin: all; others: own)
+[*RegistryApi*](doc/RegistryApi.md) | [**listInputsV1InputsGet**](doc/RegistryApi.md#listinputsv1inputsget) | **GET** /v1/inputs | List the input master list
+[*RegistryApi*](doc/RegistryApi.md) | [**listProcessorsV1ProcessorsGet**](doc/RegistryApi.md#listprocessorsv1processorsget) | **GET** /v1/processors | List processors
+[*RegistryApi*](doc/RegistryApi.md) | [**listVillagesV1VillagesGet**](doc/RegistryApi.md#listvillagesv1villagesget) | **GET** /v1/villages | Search the village directory
+[*RegistryApi*](doc/RegistryApi.md) | [**updateFarmerV1FarmersFarmerIdPatch**](doc/RegistryApi.md#updatefarmerv1farmersfarmeridpatch) | **PATCH** /v1/farmers/{farmer_id} | Change a farmer&#39;s profile
 
 
 ## Documentation For Models
 
+ - [Address](doc/Address.md)
+ - [AssistEndIn](doc/AssistEndIn.md)
+ - [AssistSessionOut](doc/AssistSessionOut.md)
+ - [AssistStartIn](doc/AssistStartIn.md)
+ - [CeilingKgPerAcre](doc/CeilingKgPerAcre.md)
+ - [ConsentIn](doc/ConsentIn.md)
+ - [ConsentOut](doc/ConsentOut.md)
+ - [ConsentType](doc/ConsentType.md)
+ - [CropOut](doc/CropOut.md)
+ - [DeviceOut](doc/DeviceOut.md)
  - [ErrorBody](doc/ErrorBody.md)
  - [ErrorEnvelope](doc/ErrorEnvelope.md)
+ - [FarmerIn](doc/FarmerIn.md)
+ - [FarmerOut](doc/FarmerOut.md)
+ - [FarmerPatch](doc/FarmerPatch.md)
+ - [FarmerStatus](doc/FarmerStatus.md)
+ - [FarmingType](doc/FarmingType.md)
+ - [FpoIn](doc/FpoIn.md)
+ - [FpoOut](doc/FpoOut.md)
+ - [GeoPoint](doc/GeoPoint.md)
+ - [GiRegionOut](doc/GiRegionOut.md)
+ - [GiRegionVersionIn](doc/GiRegionVersionIn.md)
+ - [GiRegionVersionOut](doc/GiRegionVersionOut.md)
+ - [GradeOut](doc/GradeOut.md)
+ - [GradeStatus](doc/GradeStatus.md)
+ - [GradingIn](doc/GradingIn.md)
  - [Health](doc/Health.md)
+ - [HoldMarginPct](doc/HoldMarginPct.md)
+ - [InputCategory](doc/InputCategory.md)
+ - [InputIn](doc/InputIn.md)
+ - [InputOut](doc/InputOut.md)
+ - [InstrumentIn](doc/InstrumentIn.md)
+ - [InstrumentKind](doc/InstrumentKind.md)
+ - [InstrumentOut](doc/InstrumentOut.md)
+ - [IrrigationSource](doc/IrrigationSource.md)
+ - [LabCertifiedRequires](doc/LabCertifiedRequires.md)
+ - [LocationStatus](doc/LocationStatus.md)
+ - [LotGateInput](doc/LotGateInput.md)
+ - [LotGateOutput](doc/LotGateOutput.md)
+ - [Max](doc/Max.md)
+ - [MeOut](doc/MeOut.md)
+ - [MembershipOut](doc/MembershipOut.md)
+ - [Min](doc/Min.md)
+ - [MultiPolygonGeoJSON](doc/MultiPolygonGeoJSON.md)
+ - [OrgKind](doc/OrgKind.md)
+ - [OtpRequestIn](doc/OtpRequestIn.md)
+ - [OtpVerifyIn](doc/OtpVerifyIn.md)
+ - [PackSize](doc/PackSize.md)
+ - [PageConsentOut](doc/PageConsentOut.md)
+ - [PageFarmerOut](doc/PageFarmerOut.md)
+ - [PageInstrumentOut](doc/PageInstrumentOut.md)
+ - [PageQualityReadingOut](doc/PageQualityReadingOut.md)
+ - [PageStandardsProfileOut](doc/PageStandardsProfileOut.md)
+ - [PageVillageOut](doc/PageVillageOut.md)
+ - [ParameterInput](doc/ParameterInput.md)
+ - [ParameterOutput](doc/ParameterOutput.md)
+ - [ParameterResult](doc/ParameterResult.md)
+ - [PinChangeIn](doc/PinChangeIn.md)
+ - [PinIn](doc/PinIn.md)
+ - [PinMethod](doc/PinMethod.md)
+ - [PinRequiredOut](doc/PinRequiredOut.md)
+ - [PlotCorrection](doc/PlotCorrection.md)
+ - [PlotIn](doc/PlotIn.md)
+ - [PlotOut](doc/PlotOut.md)
+ - [PolygonGeoJSON](doc/PolygonGeoJSON.md)
+ - [ProcessorIn](doc/ProcessorIn.md)
+ - [ProcessorOut](doc/ProcessorOut.md)
+ - [ProfileVersionIn](doc/ProfileVersionIn.md)
+ - [ProfileVersionOut](doc/ProfileVersionOut.md)
+ - [ProfileVersionStatus](doc/ProfileVersionStatus.md)
+ - [QualityReadingIn](doc/QualityReadingIn.md)
+ - [QualityReadingOut](doc/QualityReadingOut.md)
+ - [QuantityInput](doc/QuantityInput.md)
+ - [QuantityOutput](doc/QuantityOutput.md)
+ - [RangeInput](doc/RangeInput.md)
+ - [RangeOutput](doc/RangeOutput.md)
+ - [ReadingSource](doc/ReadingSource.md)
+ - [ReadingStage](doc/ReadingStage.md)
+ - [RefreshIn](doc/RefreshIn.md)
+ - [RegionCheckOut](doc/RegionCheckOut.md)
+ - [ResponseOtpVerifyV1AuthOtpVerifyPost](doc/ResponseOtpVerifyV1AuthOtpVerifyPost.md)
+ - [Role](doc/Role.md)
+ - [SessionOut](doc/SessionOut.md)
+ - [SignedQuantityInput](doc/SignedQuantityInput.md)
+ - [SignedQuantityOutput](doc/SignedQuantityOutput.md)
+ - [StandardRef](doc/StandardRef.md)
+ - [StandardsProfileOut](doc/StandardsProfileOut.md)
+ - [StandardsProfileRulesInput](doc/StandardsProfileRulesInput.md)
+ - [StandardsProfileRulesOutput](doc/StandardsProfileRulesOutput.md)
+ - [StandardsScheme](doc/StandardsScheme.md)
+ - [Tolerance](doc/Tolerance.md)
+ - [ToleranceBufferM](doc/ToleranceBufferM.md)
+ - [TrailRuleInput](doc/TrailRuleInput.md)
+ - [TrailRuleOutput](doc/TrailRuleOutput.md)
+ - [UserOut](doc/UserOut.md)
+ - [Value](doc/Value.md)
+ - [Value1](doc/Value1.md)
+ - [VillageOut](doc/VillageOut.md)
+ - [WarnMarginPct](doc/WarnMarginPct.md)
+ - [YieldRuleInput](doc/YieldRuleInput.md)
+ - [YieldRuleOutput](doc/YieldRuleOutput.md)
 
 
 ## Documentation For Authorization
 
-Endpoints do not require authorization.
+
+Authentication schemes defined for the API:
+### AccessToken
+
+- **Type**: HTTP Bearer Token authentication
+
+### PinToken
+
+- **Type**: HTTP Bearer Token authentication
 
 
 ## Author

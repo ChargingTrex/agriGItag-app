@@ -2249,16 +2249,16 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   /// FPO the user belongs to (UUID); every API call is scoped to it.
   final String fpoId;
 
-  /// Stable id of this install, sent as `X-Device-Id`.
+  /// Stable id of this install (UUID, also kept in the keystore), sent in `POST /v1/auth/otp/verify`.
   final String deviceId;
 
-  /// Short-lived bearer token.
+  /// Unused since M06 (D-027): always `''`; the access token is in the keystore. Dropped at the next schema bump.
   final String accessToken;
 
-  /// Token that obtains a new [accessToken].
+  /// Unused since M06 (D-027): always `''`; the refresh token is in the keystore. Dropped at the next schema bump.
   final String refreshToken;
 
-  /// Hash of the optional quick-unlock PIN; null when no PIN is set.
+  /// Unused (always null): the office PIN is checked by the server only (D-024). Dropped at the next schema bump.
   final String? pinHash;
 
   /// UI language code, `ta` (default) or `en` (D-016).
@@ -7307,6 +7307,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final TasksDao tasksDao = TasksDao(this as AppDatabase);
   late final FlagsDao flagsDao = FlagsDao(this as AppDatabase);
   late final FieldConfigDao fieldConfigDao = FieldConfigDao(this as AppDatabase);
+  late final SessionDao sessionDao = SessionDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables => allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override

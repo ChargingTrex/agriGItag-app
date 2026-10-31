@@ -10,6 +10,9 @@ import 'package:agritrace_api/src/auth/basic_auth.dart';
 import 'package:agritrace_api/src/auth/bearer_auth.dart';
 import 'package:agritrace_api/src/auth/oauth.dart';
 import 'package:agritrace_api/src/api/health_api.dart';
+import 'package:agritrace_api/src/api/identity_api.dart';
+import 'package:agritrace_api/src/api/quality_api.dart';
+import 'package:agritrace_api/src/api/registry_api.dart';
 
 class AgritraceApi {
   static const String basePath = r'http://localhost';
@@ -135,5 +138,23 @@ class AgritraceApi {
   /// by doing that all interceptors will not be executed
   HealthApi getHealthApi() {
     return HealthApi(dio, serializers);
+  }
+
+  /// Get IdentityApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  IdentityApi getIdentityApi() {
+    return IdentityApi(dio, serializers);
+  }
+
+  /// Get QualityApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  QualityApi getQualityApi() {
+    return QualityApi(dio, serializers);
+  }
+
+  /// Get RegistryApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  RegistryApi getRegistryApi() {
+    return RegistryApi(dio, serializers);
   }
 }
