@@ -27,7 +27,7 @@ class SellQr {
   /// The `sig` check value of this payload: base64url (no padding) of the first 8 bytes of SHA-256 over
   /// `lotId|farmerId|packedKg` with packedKg written with one decimal (`300.0`). Throws nothing.
   ///
-  /// DECISION D-034: `sig` is an unkeyed checksum, not an HMAC; authenticity comes from the server's lot record.
+  /// DECISION D-035: `sig` is an unkeyed checksum, not an HMAC; authenticity comes from the server's lot record.
   ///   ADV: no secret has to be shared between the farmer's phone and the QC phone (none exists: M06 keeps only
   ///   per-install tokens), it is checkable offline by M11 in three lines and catches a garbled or hand-typed payload.
   ///   COMPROMISE: anyone can compute it, so it proves nothing about who made the QR; M11 must look the lot up and

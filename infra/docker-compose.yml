@@ -94,7 +94,11 @@ services:
     ports: ["127.0.0.1:${MQTT_PORT:-1883}:1883"]
 
   api:
-    build: ../apps/api
+    build: &api-build
+      context: ../apps/api
+      # The API depends on the page renderer by path (B10); the Dockerfile copies it from this context.
+      additional_contexts:
+        public-page: ../apps/public-page
     image: agritrace-api:dev
     environment: *app-env
     ports: ["${API_PORT:-8000}:8000"]
@@ -109,7 +113,7 @@ services:
       retries: 20
 
   worker:
-    build: ../apps/api
+    build: *api-build
     image: agritrace-api:dev
     command: celery -A agritrace.worker worker --loglevel=INFO
     environment: *app-env

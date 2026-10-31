@@ -155,6 +155,30 @@ def test_tenant_overrides_grading_loss_limit(config_dir: Path) -> None:
     assert fieldconfig.features_for("NO_FILE_FPO").grading_loss_warn_pct == 15
 
 
+async def test_app_refuses_tenant_hiding_a_page_required_field(
+    config_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-034 ruling: the shipped YAML keeps page fields public; a tenant narrowing farm area stops start-up.
+
+    Args:
+        config_dir: the writable config copy.
+        monkeypatch: pytest monkeypatch.
+    """
+    from agritrace.modules.publishing.builder import PAGE_REQUIRED_FIELDS
+
+    fieldconfig.check_page_required(fieldconfig.load(), PAGE_REQUIRED_FIELDS)  # shipped config passes
+    monkeypatch.setenv("JWT_SECRET", "unit-test-secret")
+    get_settings.cache_clear()
+    narrowed = "  plot:\n    declared_area:\n      visibility: partner\n"  # joins the soil_type override
+    _replace(config_dir / TENANT, "  plot:\n", narrowed)
+    fieldconfig.load.cache_clear()
+    app = create_app()
+    with pytest.raises(ConfigInvalid, match=rf"{TENANT}: fields.plot.declared_area: the public page"):
+        async with app.router.lifespan_context(app):
+            pass  # pragma: no cover - never reached
+    get_settings.cache_clear()
+
+
 def test_public_fields_honour_tenant_hiding(config_dir: Path) -> None:
     """A tenant that disables a field or narrows it to internal removes it from the public page.
 

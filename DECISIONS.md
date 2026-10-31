@@ -38,4 +38,5 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-031 | Offline-registered farmers sync as a `farmer` push kind; `FarmerIn.client_id` makes REST and sync idempotent | 2026-10-31 | Accepted | [D-031.md](docs/adr/D-031.md) |
 | D-032 | Assist context travels per sync entry (`assist_session` push kind + `SyncEntry.assist_session_id`), not only via the request header | 2026-10-31 | Accepted | [D-032.md](docs/adr/D-032.md) |
 | D-033 | Lifecycle gates answer one 409 listing every unmet reason; gate records are append-only | 2026-10-31 | Accepted | [D-033.md](docs/adr/D-033.md) |
-| D-034 | Sell QR `sig` is an unkeyed SHA-256 checksum, not an HMAC; authenticity comes from the server's lot record | 2026-10-31 | Accepted | [D-034.md](docs/adr/D-034.md) |
+| D-034 | Public page publishing: W01 schema is the allow-list (page-required fields are public in YAML and no tenant may narrow them; tenant YAML hides optional fields only), WebP-only photo copies in public-pages, 60 s / immutable cache policy, Pillow labels | 2026-10-31 | Accepted | [D-034.md](docs/adr/D-034.md) |
+| D-035 | Sell QR `sig` is an unkeyed SHA-256 checksum, not an HMAC; authenticity comes from the server's lot record | 2026-10-31 | Accepted | [D-035.md](docs/adr/D-035.md) |
