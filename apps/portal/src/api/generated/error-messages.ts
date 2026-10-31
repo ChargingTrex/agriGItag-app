@@ -27,6 +27,7 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   otp_locked: "Too many wrong codes.",
   pin_locked: "Too many wrong PINs; try again in 5 minutes.",
   plot_locked: "The plot location is locked after onboarding.",
+  public_record_invalid: "The public page could not be built from this batch's data.",
   stale_version: "This event was changed since your copy; the version number is not the next one.",
   undo_window_closed: "Entries can be undone only within 24 hours.",
   import_too_large: "The file is too large to import.",

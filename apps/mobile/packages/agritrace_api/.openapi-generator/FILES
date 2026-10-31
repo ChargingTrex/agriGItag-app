@@ -9,6 +9,7 @@ doc/AvgSalePricePerKg.md
 doc/BatchIn.md
 doc/BatchOut.md
 doc/BatchStatus.md
+doc/BuildOut.md
 doc/BundleManifest.md
 doc/BundlePart.md
 doc/CeilingKgPerAcre.md
@@ -114,6 +115,7 @@ doc/PackSize.md
 doc/PackingPayload.md
 doc/PackingVersion.md
 doc/PageBatchOut.md
+doc/PageBuildOut.md
 doc/PageConsentOut.md
 doc/PageEventOut.md
 doc/PageFarmerOut.md
@@ -157,6 +159,7 @@ doc/ProfileVersionIn.md
 doc/ProfileVersionOut.md
 doc/ProfileVersionStatus.md
 doc/PublishOut.md
+doc/PublishingApi.md
 doc/PullChange.md
 doc/PullOut.md
 doc/QualityApi.md
@@ -215,6 +218,7 @@ lib/src/api/health_api.dart
 lib/src/api/identity_api.dart
 lib/src/api/lots_batches_api.dart
 lib/src/api/notifications_api.dart
+lib/src/api/publishing_api.dart
 lib/src/api/quality_api.dart
 lib/src/api/registry_api.dart
 lib/src/api_util.dart
@@ -232,6 +236,7 @@ lib/src/model/avg_sale_price_per_kg.dart
 lib/src/model/batch_in.dart
 lib/src/model/batch_out.dart
 lib/src/model/batch_status.dart
+lib/src/model/build_out.dart
 lib/src/model/bundle_manifest.dart
 lib/src/model/bundle_part.dart
 lib/src/model/ceiling_kg_per_acre.dart
@@ -331,6 +336,7 @@ lib/src/model/pack_size.dart
 lib/src/model/packing_payload.dart
 lib/src/model/packing_version.dart
 lib/src/model/page_batch_out.dart
+lib/src/model/page_build_out.dart
 lib/src/model/page_consent_out.dart
 lib/src/model/page_event_out.dart
 lib/src/model/page_farmer_out.dart

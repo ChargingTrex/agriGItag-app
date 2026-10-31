@@ -974,6 +974,68 @@ class LotsBatchesApi {
     );
   }
 
+  /// QR code of a lot
+  /// PNG encoding the lot code (e.g. &#x60;LOT0EF81415&#x60;) for the bag tag scanned at intake.
+  ///
+  /// Parameters:
+  /// * [lotId] - Lot id.
+  /// * [xAssistSession] - Open assist session id (field officer entering data for a farmer).
+  /// * [xRequestId] - Client request id, copied to audit rows.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future]
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<void>> lotQrV1LotsLotIdQrGet({
+    required String lotId,
+    String? xAssistSession,
+    String? xRequestId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/lots/{lot_id}/qr'.replaceAll(
+        '{' r'lot_id' '}',
+        encodeQueryParameter(_serializers, lotId, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        r'x-assist-session': xAssistSession,
+        r'x-request-id': xRequestId,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'AccessToken',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return _response;
+  }
+
   /// Mark a lot ready for sale (moisture gate)
   /// Passes when the latest drying-end moisture reading meets &#x60;lot_gates.ready_for_sale&#x60;.
   ///

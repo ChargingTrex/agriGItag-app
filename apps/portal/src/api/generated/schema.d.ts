@@ -321,6 +321,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/batches/{batch_id}/builds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the public page builds of a batch
+         * @description Oldest first. A `failed` build carries `error` (`public_record_invalid` with field paths).
+         */
+        get: operations["list_builds_v1_batches__batch_id__builds_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/batches/{batch_id}/final-packing": {
         parameters: {
             query?: never;
@@ -401,6 +421,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/batches/{batch_id}/labels.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Printable pack labels of a packed batch
+         * @description A4 sheet of 8 labels: QR, product, batch, net kg, pack and best-before dates, FSSAI (FR62).
+         */
+        get: operations["batch_labels_v1_batches__batch_id__labels_pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/batches/{batch_id}/publish": {
         parameters: {
             query?: never;
@@ -421,6 +461,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/batches/{batch_id}/qr.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * QR code of the batch's public page
+         * @description PNG encoding `{PUBLIC_BASE_URL}/b/<code>` (FR12).
+         */
+        get: operations["batch_qr_v1_batches__batch_id__qr_png_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/batches/{batch_id}/readings": {
         parameters: {
             query?: never;
@@ -435,6 +495,26 @@ export interface paths {
         get: operations["list_batch_readings_v1_batches__batch_id__readings_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/rebuild": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rebuild the public page of a published batch
+         * @description Queues a new build (`build_no` + 1) after a correction; earlier builds and their S3 object versions are kept. Poll `GET /batches/{id}/builds` for `built` or `failed`.
+         */
+        post: operations["rebuild_v1_batches__batch_id__rebuild_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1205,6 +1285,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/lots/{lot_id}/qr": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * QR code of a lot
+         * @description PNG encoding the lot code (e.g. `LOT0EF81415`) for the bag tag scanned at intake.
+         */
+        get: operations["lot_qr_v1_lots__lot_id__qr_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/lots/{lot_id}/readings": {
         parameters: {
             query?: never;
@@ -1397,6 +1497,26 @@ export interface paths {
          * @description Create a producer group (FPO admin); 404 `feature_disabled` while the flag is off.
          */
         post: operations["create_producer_group_v1_producer_groups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/batches/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Latest public page of a batch (development proxy)
+         * @description No sign-in. Serves `batches/<code>/index.html` from public-pages so the portal preview and testers can open a page without the CDN. 404 in production, where the CDN serves the bucket.
+         */
+        get: operations["public_page_v1_public_batches__code__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1903,6 +2023,71 @@ export interface components {
              * @description CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.
              */
             file: string;
+        };
+        /**
+         * BuildOut
+         * @description One build of a batch's public page.
+         */
+        BuildOut: {
+            /**
+             * Batch Id
+             * Format: uuid
+             * @description Batch the page is for.
+             */
+            batch_id: string;
+            /**
+             * Build No
+             * @description Build number per batch, 1 upwards; each publish or rebuild adds one.
+             */
+            build_no: number;
+            /**
+             * Built At
+             * @description When the page was written (FR17); null until built.
+             */
+            built_at: string | null;
+            /**
+             * Error
+             * @description On `failed`: `{code: public_record_invalid, details: [{loc, msg, type}]}`; values are never echoed.
+             */
+            error: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Generation
+             * @description Generation stamp shown in the page footer and data.json.
+             */
+            generation: number;
+            /**
+             * Html Key
+             * @description public-pages key of index.html, e.g. `batches/<code>/index.html`.
+             */
+            html_key: string | null;
+            /**
+             * Id
+             * Format: uuid
+             * @description `page_builds` row id.
+             */
+            id: string;
+            /**
+             * Json Key
+             * @description public-pages key of data.json.
+             */
+            json_key: string | null;
+            /**
+             * Qr Key
+             * @description public-pages key of qr.png.
+             */
+            qr_key: string | null;
+            /**
+             * Status
+             * @description `queued`, `built`, `failed` (see `error`) or `superseded` (a newer build ran first).
+             */
+            status: string;
+            /**
+             * Trigger
+             * @description What asked for it: `publish` or `rebuild`.
+             */
+            trigger: string;
         };
         /**
          * BundleManifest
@@ -4771,6 +4956,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["BatchOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[BuildOut] */
+        Page_BuildOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["BuildOut"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -7702,6 +7905,57 @@ export interface operations {
             };
         };
     };
+    list_builds_v1_batches__batch_id__builds_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_BuildOut_"];
+                };
+            };
+            /** @description `not_found`: no such batch in your FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     final_packing_v1_batches__batch_id__final_packing_post: {
         parameters: {
             query?: never;
@@ -7961,6 +8215,61 @@ export interface operations {
             };
         };
     };
+    batch_labels_v1_batches__batch_id__labels_pdf_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The label sheet. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description `not_found`: no such batch in your FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `gate_not_met` with `details.reasons[]`: `final_packing_missing`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     publish_v1_batches__batch_id__publish_post: {
         parameters: {
             query?: never;
@@ -7998,6 +8307,52 @@ export interface operations {
             };
             /** @description `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `already_published`, `grading_not_approved`, `final_packing_missing`, `second_signoff_missing`, `open_hold_flag`. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    batch_qr_v1_batches__batch_id__qr_png_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The QR image. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": unknown;
+                };
+            };
+            /** @description `not_found`: no such batch in your FPO. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8058,6 +8413,61 @@ export interface operations {
             };
             /** @description `not_found`: batch not in the caller's FPO. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    rebuild_v1_batches__batch_id__rebuild_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuildOut"];
+                };
+            };
+            /** @description `not_found`: no such batch in your FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `gate_not_met` with `details.reasons[]`: `not_published`. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9929,6 +10339,52 @@ export interface operations {
             };
         };
     };
+    lot_qr_v1_lots__lot_id__qr_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Lot id. */
+                lot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The QR image. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": unknown;
+                };
+            };
+            /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_lot_readings_v1_lots__lot_id__readings_get: {
         parameters: {
             query?: {
@@ -10373,6 +10829,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProducerGroupOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    public_page_v1_public_batches__code__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Batch code, e.g. FGP8T4033HM7. */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": unknown;
+                };
+            };
+            /** @description `not_found`: no page built for this code. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */
