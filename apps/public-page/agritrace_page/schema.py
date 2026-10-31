@@ -12,7 +12,7 @@ the backend page builder (B10) builds a ``PublicBatchRecord`` and the portal pre
 
 import datetime as dt
 import re
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, get_args
 
 from pydantic import (
     AfterValidator,
@@ -240,19 +240,26 @@ class Event(BaseModel):
         return self
 
 
+# Stage literals are listed in field order, so their position is the crop-cycle order.
+_STAGE_ORDER = {stage: n for n, stage in enumerate(get_args(Stage))}
+
+
 def _by_date(events: list[Event]) -> list[Event]:
-    """Order events by date, then instance number (FR63; PRD §12.2 'instances out of order').
+    """Order events by date, stage, then instance (FR63; PRD §12.2 'instances out of order').
+
+    Same-day events of different stages keep the crop-cycle order B10 sends (B10 report risk),
+    e.g. harvest before drying, instead of being reordered by instance number.
 
     Args:
         events: Events in any order.
 
     Returns:
-        A new list in ascending (date, instance_no) order.
+        A new list in ascending (date, stage order, instance_no) order.
 
     Raises:
         Nothing.
     """
-    return sorted(events, key=lambda e: (e.date, e.instance_no))
+    return sorted(events, key=lambda e: (e.date, _STAGE_ORDER[e.stage], e.instance_no))
 
 
 Timeline = Annotated[list[Event], AfterValidator(_by_date)]
@@ -395,6 +402,21 @@ class PublicBatchRecord(BaseModel):
     # https only: the value goes into an href, so a javascript: or http: URL must not reach it.
     boundary_map_url: str | None = Field(
         None, pattern=r"^https://\S+$", description="GI boundary map image URL, https (FR30)."
+    )
+    # W03: set by the builder from PUBLIC_BASE_URL (B10 follow-up). http is allowed because the
+    # local base URL is LocalStack's http endpoint; the scheme pattern still keeps javascript: out.
+    public_url: str | None = Field(
+        None,
+        pattern=r"^https?://\S+$",
+        description="Public page URL the pack QR encodes ({PUBLIC_BASE_URL}/b/<code>); used for "
+        "og:url and the printed link. Null hides both.",
+    )
+    # No quotes, brackets or backslash: the value also sits in a CSS url('...') in a style attr.
+    qr_url: str | None = Field(
+        None,
+        pattern=r"^https?://[^\s'\"()\\]+$",
+        description="Absolute URL of this batch's qr.png; used for og:image and the printed QR. "
+        "Null hides both.",
     )
     grade: Grade = Field(description="Computed grade block (FR51).")
     processor: Processor = Field(description="Processor block (FR16, FR62).")

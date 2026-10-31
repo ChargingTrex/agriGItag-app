@@ -4,9 +4,13 @@
 //   cannot delete"; "Colour plus shape"; dates read "14 Feb"), §When things go wrong (Wrong entry: "Undo" button on
 //   the entry for 24 hours; after that only the field officer can correct); plan §7.2 M08 acceptance (undo at
 //   24 h − 1 min works, + 1 min absent); CLAUDE.md §6 (undo adds a version, nothing is deleted); FR6.
-// Callers: app_router.dart routes `/home/history` and `/home/history/:entryId` (farmer home "History" button).
+//   M10 assist mode: the same screens under `/assist/:farmerId/history`, listing the assisted farmer's entries, with no
+//   Undo (the server lets only the farmer who entered an event undo it; officers correct, FR6).
+// Callers: app_router.dart routes `/home/history` and `/home/history/:entryId` and their assist copies (farmer home
+//   "History" button).
 
-import 'package:drift/drift.dart' show BooleanExpressionOperators, ComparableExpr, OrderingTerm, Value, notExistsQuery;
+import 'package:drift/drift.dart'
+    show BooleanExpressionOperators, ComparableExpr, Constant, OrderingTerm, Value, notExistsQuery;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,10 +37,10 @@ import '../event_log/farm_event.dart';
 /// Only entries entered by the signed-in user are listed (D-029): on a shared phone the next user must not undo the
 /// previous user's entry, because the undo row would be sent under that user's identity.
 ///
-/// shortcut: an officer assisting a farmer sees the entries the officer entered, for every farmer; filter by farmer
-///   when M10 nests History under `/assist/:farmerId`.
+/// While an officer assists (M10), only the assisted farmer's entries that this officer entered are listed.
 final historyProvider = StreamProvider<List<Entry>>((ref) {
   final db = ref.watch(appDatabaseProvider);
+  final assist = ref.watch(assistFarmerProvider);
   final newer = db.alias(db.entries, 'newer');
   final query = db.select(db.entries)
     ..where(
@@ -44,6 +48,7 @@ final historyProvider = StreamProvider<List<Entry>>((ref) {
           e.entryType.isIn([for (final f in FarmEvent.values) f.wireName]) &
           e.status.equalsValue(EntryStatus.undone).not() &
           e.enteredByUserId.isInQuery(db.selectOnly(db.sessionTable)..addColumns([db.sessionTable.userId])) &
+          (assist == null ? const Constant(true) : e.farmerId.equals(assist.farmerId)) &
           notExistsQuery(
             db.select(newer)..where((n) => n.rootId.equalsExp(e.rootId) & n.version.isBiggerThan(e.version)),
           ),
@@ -102,7 +107,7 @@ class HistoryScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [Text(farmerDate(context, e.deviceTime)), entryBadge(e, l10n)],
                 ),
-                onTap: () => context.push('/home/history/${e.entryId}'),
+                onTap: () => context.push(farmerPath(ref, '/home/history/${e.entryId}')),
               ),
             ),
           ],
@@ -157,7 +162,7 @@ class _HistoryDetailScreenState extends ConsumerState<HistoryDetailScreen> {
     } on StateError {
       // Window closed or the entry changed meanwhile: nothing to undo any more.
     }
-    if (mounted) context.go('/home/history');
+    if (mounted) context.go(farmerPath(ref, '/home/history'));
   }
 
   /// Builds picture, sentence, badge, Undo (or the "officer corrects" sentence) and Call officer. [context] supplies
@@ -173,6 +178,8 @@ class _HistoryDetailScreenState extends ConsumerState<HistoryDetailScreen> {
     final event = FarmEvent.fromWire(e.entryType)!;
     // The window is checked when the screen builds; EntriesDao.undo checks it again at the tap.
     final canUndo = e.status != EntryStatus.rejected && ref.read(clockProvider)().isBefore(e.undoDeadline);
+    // Assist mode: no Undo and no "only the officer corrects" line; the officer corrects through the flags (FR6).
+    final assisting = ref.watch(assistFarmerProvider) != null;
     final gap = SizedBox(height: tokens.gap);
     return Scaffold(
       appBar: farmerAppBar(context, event.label(l10n)),
@@ -188,7 +195,9 @@ class _HistoryDetailScreenState extends ConsumerState<HistoryDetailScreen> {
           gap,
           Align(alignment: Alignment.centerLeft, child: entryBadge(e, l10n)),
           gap,
-          if (canUndo)
+          if (assisting)
+            const SizedBox.shrink()
+          else if (canUndo)
             FarmerButton(
               icon: Icons.undo,
               label: l10n.undo,

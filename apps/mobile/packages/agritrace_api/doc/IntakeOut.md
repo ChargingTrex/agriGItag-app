@@ -8,7 +8,7 @@ import 'package:agritrace_api/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**acceptedByUserId** | **String** | Admin who accepted the lot. | 
+**acceptedByUserId** | **String** | QC officer or FPO admin who accepted the lot. | 
 **correctionReason** | **String** | Why the superseded intake was wrong. | [optional] 
 **flags** | [**BuiltList&lt;FlagBrief&gt;**](FlagBrief.md) | Active flags on the lot after the intake; empty on a resend. | [optional] 
 **id** | **String** | Intake id (the client id). | 

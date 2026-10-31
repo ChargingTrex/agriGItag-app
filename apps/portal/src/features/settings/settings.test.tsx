@@ -8,6 +8,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import axe from 'axe-core';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
+import { MOCK_FIELDS } from '../../mocks/handlers';
 import { renderApp } from '../../test/render';
 import { server } from '../../test/setup';
 
@@ -31,7 +32,8 @@ describe('Settings', () => {
 
     const fields = await screen.findByRole('table', { name: 'Fields captured' });
     expect(within(fields).getByText('Mobile number')).toBeInTheDocument();
-    expect(within(fields).getAllByRole('row')).toHaveLength(4);
+    const fieldCount = Object.values(MOCK_FIELDS).flat().length;
+    expect(within(fields).getAllByRole('row')).toHaveLength(fieldCount + 1);
     // No editable control on the page: no update route exists yet.
     expect(screen.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
 

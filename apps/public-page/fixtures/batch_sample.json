@@ -16,6 +16,8 @@
   "gi_verified": true,
   "gi_verification_note": "All 3 lot locations are inside the GI 883 production area.",
   "boundary_map_url": "https://static.example/gi/883/boundary-v1.webp",
+  "public_url": "https://pages.example/b/FGP8T4033HM7",
+  "qr_url": "https://pages.example/batches/FGP8T4033HM7/qr.png",
   "grade": {
     "grade": "Standard",
     "standard_name": "AGMARK Dry Chillies & Capsicums",

@@ -29,7 +29,6 @@ import { useCursorList } from '../../api/cursor';
 import { errorMessage } from '../../api/errors';
 import type { components } from '../../api/generated/schema';
 import { useAuth } from '../../auth/AuthProvider';
-import { dayMonth } from '../flags/flagModel';
 
 type AuditRow = components['schemas']['AuditRow'];
 
@@ -76,6 +75,22 @@ export const istMidnight = (date: string, addDays = 0) =>
   new Date(Date.parse(`${date}T00:00:00+05:30`) + addDays * 86_400_000).toISOString();
 
 /**
+ * When an audit row was written, with year and time in India, e.g. "14 Feb 2026, 09:30".
+ * @param iso ISO 8601 timestamp.
+ * @returns The en-IN date and 24-hour time.
+ */
+export const auditTime = (iso: string) =>
+  new Date(iso).toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Kolkata',
+  });
+
+/**
  * One diff value as text: strings as stored (so `[hidden]` reads `[hidden]`), anything else as JSON, cut short.
  * @param value A JSON value from `diff`.
  * @returns Display text.
@@ -109,7 +124,7 @@ function DiffList({ diff }: { diff: AuditRow['diff'] }) {
           </div>
         ))}
       </Box>
-      {diff['change_kind'] === 'correct' && !('reason_code' in diff) && (
+      {diff['change_kind'] === 'correct' && !('reason_code' in diff || 'reason_text' in diff) && (
         <Typography variant="body2" color="text.secondary">
           Reason: not in the audit log yet; see the entry history on the lot.
         </Typography>
@@ -225,7 +240,7 @@ export function AuditLogPage() {
         <Table size="small" aria-label="Audit log">
           <TableHead>
             <TableRow>
-              <TableCell>Date</TableCell>
+              <TableCell>When</TableCell>
               {/* shortcut: actors show as user ids; AuditRow has no actor name and no users endpoint
                   exists (TODO.md B11 → P06). */}
               <TableCell>Actor</TableCell>
@@ -237,7 +252,9 @@ export function AuditLogPage() {
           <TableBody>
             {list.items.map((row) => (
               <TableRow key={row.id} sx={{ verticalAlign: 'top' }}>
-                <TableCell>{dayMonth(row.at)}</TableCell>
+                <TableCell>
+                  <time dateTime={row.at}>{auditTime(row.at)}</time>
+                </TableCell>
                 <TableCell>
                   {row.actor_user_id ?? 'System'}
                   {row.on_behalf_of_farmer_id && (

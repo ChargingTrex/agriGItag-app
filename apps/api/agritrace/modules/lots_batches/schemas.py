@@ -1,7 +1,8 @@
 """Request and response models of the lots_batches routes: lots, intakes, batches and their gates.
 
 Serves: PRD §5 (Component Lot, Super Lot / Batch), Dataflow Stages 4–9 and §4 (approval gates), FR9–FR11,
-FR29, FR56, FR58 (every quantity carries its unit), FR60, FR62, D-005 (client ids), D-020 (/v1, additive).
+FR29, FR56, FR58 (every quantity carries its unit), FR60, FR62, D-005 (client ids), D-020 (/v1, additive),
+D-040 (`IntakeIn.processor_id` optional; the same model is the `data` of push kind `lot_intake`).
 Callers: `lots_batches.router` and `lots_batches.service`; the OpenAPI document (generated clients, D-003).
 Other modules may not import this file (D-004).
 """
@@ -90,8 +91,15 @@ class IntakeIn(BaseModel):
     """A processor receives a ready lot, or a wrong intake is corrected (Stage 7, FR9, D-033)."""
 
     client_id: uuid.UUID = Field(description="UUIDv7 made by the client; intake id and idempotency key.")
-    lot_id: uuid.UUID = Field(description="Lot received; must be `ready_for_sale`.")
-    processor_id: uuid.UUID = Field(description="Receiving processor.")
+    lot_id: uuid.UUID = Field(
+        description="Lot received; `ready_for_sale`, or `open`/`drying` with a drying-end moisture that "
+        "passes the ready gate (run here, D-040)."
+    )
+    processor_id: uuid.UUID | None = Field(
+        None,
+        description="Receiving processor (own or shared); absent → the FPO's only own processor (D-040), "
+        "zero or several own processors → `field_required`.",
+    )
     sale_date: date = Field(description="Date of sale, YYYY-MM-DD.")
     received: Kg = Field(description="Quantity received, unit `kg`.")
     price_per_kg: Decimal | None = Field(None, ge=0, description="Price in INR per kg (optional, D-017).")
@@ -131,7 +139,7 @@ class IntakeOut(BaseModel):
     received: Quantity = Field(description="Quantity received in kg.")
     price_per_kg: Decimal | None = Field(None, description="Price in INR per kg.")
     intake_moisture_reading_id: uuid.UUID | None = Field(None, description="Intake moisture reading.")
-    accepted_by_user_id: uuid.UUID = Field(description="Admin who accepted the lot.")
+    accepted_by_user_id: uuid.UUID = Field(description="QC officer or FPO admin who accepted the lot.")
     reconciliation: Reconciliation | None = Field(
         None,
         description="Strict chain harvested ≥ packed ≥ received at intake (FR60); the tolerant verdict is "

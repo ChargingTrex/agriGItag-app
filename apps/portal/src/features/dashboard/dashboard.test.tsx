@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import axe from 'axe-core';
 import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it } from 'vitest';
+import { MOCK_VILLAGES } from '../../mocks/dashboardHandlers';
 import { MOCK_FPO_ID } from '../../mocks/handlers';
 import { renderApp } from '../../test/render';
 import { server } from '../../test/setup';
@@ -120,6 +121,29 @@ describe('Dashboard', () => {
     await user.selectOptions(screen.getByRole('combobox', { name: 'Block' }), 'Sattur');
     expect(screen.getByRole('combobox', { name: 'Village' })).toHaveValue('');
     expect(await screen.findAllByText('0 done · 0 in progress · 0 not started')).toHaveLength(7);
+  });
+
+  it('reads every page of the villages master for the place filters', async () => {
+    const pages: (string | null)[] = [];
+    server.use(
+      http.get('/v1/villages', ({ request }) => {
+        const cursor = new URL(request.url).searchParams.get('cursor');
+        pages.push(cursor);
+        const village = {
+          ...(MOCK_VILLAGES[0] as (typeof MOCK_VILLAGES)[number]),
+          id: cursor ? '20000000-0000-4000-8000-000000000099' : MOCK_VILLAGES[0]?.id,
+          name_en: cursor ? 'Watrap' : 'Aruppukottai',
+          block: cursor ? 'Watrap' : 'Aruppukottai',
+        };
+        return HttpResponse.json({ items: [village], next_cursor: 'p2', has_more: !cursor });
+      }),
+    );
+    renderApp('/', true);
+    await waitFor(() => {
+      const blocks = within(screen.getByRole('combobox', { name: 'Block' })).getAllByRole('option');
+      expect(blocks.map((o) => o.textContent)).toEqual(['All blocks', 'Aruppukottai', 'Watrap']);
+    });
+    expect(pages).toEqual([null, 'p2']);
   });
 
   it('keeps a hidden column hidden after a reload and asks only for shown fields', async () => {

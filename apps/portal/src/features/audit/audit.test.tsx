@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { MOCK_CORRECTION_VERSION_ID, MOCK_OFFICER_ID } from '../../mocks/dashboardHandlers';
 import { MOCK_USER_ID, mockState } from '../../mocks/handlers';
 import { renderApp } from '../../test/render';
-import { diffText, istMidnight } from './AuditLogPage';
+import { auditTime, diffText, istMidnight } from './AuditLogPage';
 
 /**
  * Body rows of the audit table.
@@ -29,7 +29,7 @@ describe('Audit log', () => {
     await screen.findByRole('table', { name: 'Audit log' });
     expect(rows()).toHaveLength(3);
     const [correction, plot, farmer] = rows() as [HTMLElement, HTMLElement, HTMLElement];
-    expect(correction).toHaveTextContent('14 Mar');
+    expect(correction).toHaveTextContent('14 Mar 2026, 11:00');
     expect(within(plot).getByText('[hidden]')).toBeInTheDocument();
     expect(plot).toHaveTextContent('declared area acres: ["0.4","0.5"]');
     expect(within(farmer).getByText('[redacted]')).toBeInTheDocument();
@@ -99,9 +99,10 @@ describe('Audit log', () => {
     expect(await screen.findByText('Your role does not allow this action.')).toBeInTheDocument();
   });
 
-  it('istMidnight converts India dates; diffText keeps strings and shortens long JSON', () => {
+  it('istMidnight converts India dates; auditTime shows year and time; diffText keeps strings and shortens long JSON', () => {
     expect(istMidnight('2026-02-14')).toBe('2026-02-13T18:30:00.000Z');
     expect(istMidnight('2026-02-14', 1)).toBe('2026-02-14T18:30:00.000Z');
+    expect(auditTime('2026-02-14T04:00:00Z')).toBe('14 Feb 2026, 09:30');
     expect(diffText('[hidden]')).toBe('[hidden]');
     expect(diffText(2)).toBe('2');
     expect(diffText('x'.repeat(200).split(''))).toHaveLength(120);

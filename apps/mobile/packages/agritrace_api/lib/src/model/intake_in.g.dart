@@ -18,7 +18,7 @@ class _$IntakeIn extends IntakeIn {
   @override
   final PricePerKg? pricePerKg;
   @override
-  final String processorId;
+  final String? processorId;
   @override
   final QuantityInput received;
   @override
@@ -35,7 +35,7 @@ class _$IntakeIn extends IntakeIn {
       this.intakeMoistureReadingId,
       required this.lotId,
       this.pricePerKg,
-      required this.processorId,
+      this.processorId,
       required this.received,
       required this.saleDate,
       this.supersedesIntakeId})
@@ -185,8 +185,7 @@ class IntakeInBuilder implements Builder<IntakeIn, IntakeInBuilder> {
             lotId: BuiltValueNullFieldError.checkNotNull(
                 lotId, r'IntakeIn', 'lotId'),
             pricePerKg: _pricePerKg?.build(),
-            processorId: BuiltValueNullFieldError.checkNotNull(
-                processorId, r'IntakeIn', 'processorId'),
+            processorId: processorId,
             received: received.build(),
             saleDate: BuiltValueNullFieldError.checkNotNull(
                 saleDate, r'IntakeIn', 'saleDate'),

@@ -16,7 +16,7 @@ part 'intake_out.g.dart';
 /// A stored intake with its quantity chain and the flags the lot rules raised.
 ///
 /// Properties:
-/// * [acceptedByUserId] - Admin who accepted the lot.
+/// * [acceptedByUserId] - QC officer or FPO admin who accepted the lot.
 /// * [correctionReason] - Why the superseded intake was wrong.
 /// * [flags] - Active flags on the lot after the intake; empty on a resend.
 /// * [id] - Intake id (the client id).
@@ -30,7 +30,7 @@ part 'intake_out.g.dart';
 /// * [supersedesIntakeId] - Intake this row corrects, if any.
 @BuiltValue()
 abstract class IntakeOut implements Built<IntakeOut, IntakeOutBuilder> {
-  /// Admin who accepted the lot.
+  /// QC officer or FPO admin who accepted the lot.
   @BuiltValueField(wireName: r'accepted_by_user_id')
   String get acceptedByUserId;
 

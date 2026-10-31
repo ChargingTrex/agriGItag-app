@@ -23,6 +23,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { green } from '@mui/material/colors';
 import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { unwrap } from '../../api/client';
@@ -141,14 +142,24 @@ function FilterBar({ filters, onChange }: { filters: Filters; onChange: (f: Filt
     queryKey: ['crops'],
     queryFn: ({ signal }) => unwrap(api.GET('/v1/crops', { signal })),
   });
-  // shortcut: districts and blocks come from the first 200 villages of the master (the pilot imports one
-  //   district); add a places endpoint or query per district when the master grows past that.
+  // shortcut: the whole villages master is read page by page (a district's LGD import is ~600 rows, 3 pages) to
+  //   build the district and block lists; add a places endpoint when the master holds many districts.
   const villages = useQuery({
     queryKey: ['villages', 'all'],
-    queryFn: ({ signal }) =>
-      unwrap(api.GET('/v1/villages', { params: { query: { limit: 200 } }, signal })),
+    queryFn: async ({ signal }) => {
+      const all: Schemas['VillageOut'][] = [];
+      let cursor: string | undefined;
+      do {
+        const page = await unwrap(
+          api.GET('/v1/villages', { params: { query: { limit: 200, cursor } }, signal }),
+        );
+        all.push(...page.items);
+        cursor = page.has_more ? (page.next_cursor ?? undefined) : undefined;
+      } while (cursor);
+      return all;
+    },
   });
-  const all = villages.data?.items ?? [];
+  const all = villages.data ?? [];
   const inDistrict = all.filter((v) => !filters.district || v.district === filters.district);
   const inBlock = inDistrict.filter((v) => !filters.block || v.block === filters.block);
 
@@ -249,10 +260,10 @@ function Section({ id, title, children }: { id: string; title: string; children:
   );
 }
 
-/** Segment colours: one green ramp for progress, grey for not started (dataviz: sequential + neutral). */
+/** Segment colours: one green ramp for progress (green 300 is ΔE 24 from done), grey for not started. */
 const SEGMENTS = [
   ['done', 'Done', 'primary.main'],
-  ['in_progress', 'In progress', 'primary.light'],
+  ['in_progress', 'In progress', green[300]],
   ['not_started', 'Not started', 'grey.300'],
 ] as const;
 
@@ -605,13 +616,13 @@ export function DashboardPage() {
       </Typography>
       <FilterBar filters={filters} onChange={setFilters} />
       <Typography variant="body2" color="text.secondary">
-        Filters narrow completeness, stage progress, land area and the farmer table; finished goods,
-        scans and sync health are for the whole FPO.
+        Crop and place filters narrow completeness, stage progress and the farmer table; land area
+        follows the place filters only; finished goods, scans and sync health are for the whole FPO.
       </Typography>
       {dashboard.isPending && <LinearProgress aria-label="Loading dashboard" />}
       {dashboard.isError && <Alert severity="error">{errorMessage(dashboard.error)}</Alert>}
       {dashboard.isSuccess && <DashboardSections data={dashboard.data} />}
-      <FarmerTable fpoId={fpoId} filters={filters} />
+      <FarmerTable key={fpoId} fpoId={fpoId} filters={filters} />
     </Stack>
   );
 }

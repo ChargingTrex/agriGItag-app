@@ -187,6 +187,11 @@ jobs:
         run: tools/check_output.sh out/site
       - name: HTML validation, 0 errors
         run: npm run validate
+      - name: Unavailable page (W03), the CDN 404 for unknown codes, validated and privacy-linted
+        run: |
+          uv run python -m agritrace_page unavailable unknown out/unavailable
+          npx --no-install html-validate out/unavailable
+          tools/check_output.sh out/unavailable
       - name: Size budgets, CSS < 12 KB, JS < 4 KB, HTML+CSS+JS < 100 KB (plan §13 E1, BM-16)
         run: uv run python -m agritrace_page check out/site
       - name: Lighthouse CI 3G (BM-03), runner's Chrome

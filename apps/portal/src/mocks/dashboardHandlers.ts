@@ -1,6 +1,7 @@
 /**
- * MSW handlers for the P06 screens: villages master, FPO dashboard and its farmer table, audit log, FPO read and
- * field config. Kept apart from handlers.ts so P04/P08 merges touch one spread line, not this seed.
+ * MSW handlers for the P06 screens: villages master, FPO dashboard and its farmer table, audit log and FPO read
+ * (`/v1/config/fields` and `/features` come from handlers.ts). Kept apart from handlers.ts so P04/P08 merges
+ * touch one spread line, not this seed.
  * Serves: plan §7.3 P06 (MSW for every endpoint the screens call), FR13, FR20, FR25, FR62, plan §13 F1.
  * Called by: src/test/setup.ts and src/mocks/browser.ts (spread after `handlers`); tests import the MOCK_*
  * constants.
@@ -322,39 +323,6 @@ export const dashboardHandlers = [
       gi_authorised_user_no: 'DEMO-GI-AU-883',
       public_show_farmer_names: false,
       bbox: null,
-    });
-  }),
-  http.get('/v1/config/fields', ({ request }) => {
-    if (!authed(request)) return fail(401, 'unauthorized');
-    /**
-     * One field spec.
-     * @param name Payload key.
-     * @param en English label.
-     * @param required Whether a payload needs it.
-     * @param visibility Who may see it.
-     * @returns A `FieldSpec`.
-     */
-    const field = (
-      name: string,
-      en: string,
-      required: boolean,
-      visibility: Schemas['FieldSpec']['visibility'],
-    ): Schemas['FieldSpec'] => ({
-      name,
-      label: { en, ta: en },
-      required,
-      enabled: true,
-      visibility,
-      stage: 'onboarding',
-      type: 'text',
-      core: required,
-    });
-    return HttpResponse.json({
-      farmer: [
-        field('name', 'Name', true, 'public'),
-        field('phone', 'Mobile number', true, 'internal'),
-      ],
-      plot: [field('declared_area', 'Farm area', true, 'public')],
     });
   }),
 ];
