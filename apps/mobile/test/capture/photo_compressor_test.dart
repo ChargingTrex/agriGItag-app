@@ -32,6 +32,7 @@ int count(Uint8List hay, List<int> needle) {
 
 void main() {
   late Directory dir;
+  late Directory outDir;
   late File source;
   final fix = LocationFix(
     lat: 9.559806,
@@ -43,15 +44,18 @@ void main() {
 
   setUp(() {
     dir = Directory.systemTemp.createTempSync('m04_compress');
-    source = File('test/fixtures/capture_12mp.jpg').copySync('${dir.path}/IMG_0001.jpg');
+    // The camera's file sits in a purgeable cache folder; outputs must go to app storage instead.
+    final cache = Directory('${dir.path}/cache')..createSync();
+    source = File('test/fixtures/capture_12mp.jpg').copySync('${cache.path}/IMG_0001.jpg');
+    outDir = Directory('${dir.path}/support/media');
   });
   tearDown(() => dir.deleteSync(recursive: true));
 
   test('12 MP fixture → ≤ 350 KB, long edge 1600, stable sha256, ~10 KB thumbnail', () async {
     final sw = Stopwatch()..start();
-    final a = await const PhotoCompressor().compress(source, fix: fix);
+    final a = await const PhotoCompressor().compress(source, outDir: outDir, fix: fix);
     final ms = sw.elapsedMilliseconds;
-    final b = await const PhotoCompressor().compress(source, fix: fix);
+    final b = await const PhotoCompressor().compress(source, outDir: outDir, fix: fix);
     // Recorded in docs/agents/reports/M04.md.
     // ignore: avoid_print
     print(
@@ -69,10 +73,18 @@ void main() {
     expect(File(a.thumbPath).lengthSync(), lessThan(16 * 1024));
   });
 
+  test('both outputs land in outDir (created if missing), never beside the camera file', () async {
+    final r = await const PhotoCompressor().compress(source, outDir: outDir);
+    expect(r.path, '${outDir.path}/IMG_0001_1600.jpg');
+    expect(r.thumbPath, '${outDir.path}/IMG_0001_thumb.jpg');
+    expect(File(r.path).existsSync() && File(r.thumbPath).existsSync(), isTrue);
+    expect(source.parent.listSync().map((e) => e.path), [source.path]);
+  });
+
   test('ladder steps quality down until the photo fits', () async {
-    final first = await const PhotoCompressor().compress(source);
+    final first = await const PhotoCompressor().compress(source, outDir: outDir);
     expect(first.jpegQuality, 80);
-    final smaller = await const PhotoCompressor().compress(source, maxBytes: first.bytes.length - 1);
+    final smaller = await const PhotoCompressor().compress(source, outDir: outDir, maxBytes: first.bytes.length - 1);
     expect(smaller.jpegQuality, lessThan(80));
     expect(smaller.bytes.length, lessThan(first.bytes.length));
   });
@@ -82,7 +94,7 @@ void main() {
     expect(count(src, makerNoteSentinel.codeUnits), greaterThan(0), reason: 'fixture must carry a MakerNote');
     expect(count(src, [0xFF, 0xD8, 0xFF]), 2, reason: 'fixture must carry an IFD1 thumbnail');
 
-    final out = (await const PhotoCompressor().compress(source, fix: fix)).bytes;
+    final out = (await const PhotoCompressor().compress(source, outDir: outDir, fix: fix)).bytes;
 
     // Byte level: no maker note payload, no second embedded JPEG (thumbnail), no device strings.
     expect(count(out, makerNoteSentinel.codeUnits), 0);
@@ -93,9 +105,11 @@ void main() {
     expect(count(out, [0x92, 0x7C]), 0, reason: 'no MakerNote tag id');
 
     // Parse the APP1 TIFF directly: decodeJpg would apply and drop the Orientation tag.
-    final app1 = count(out.sublist(0, 4), [0xFF, 0xD8, 0xFF, 0xE1]);
-    expect(app1, 1, reason: 'APP1 Exif right after SOI');
-    final exif = ExifData.fromInputBuffer(InputBuffer(out.sublist(12), bigEndian: true));
+    // Marker order: SOI, JFIF APP0, then APP1 Exif.
+    expect(out.sublist(0, 4), [0xFF, 0xD8, 0xFF, 0xE0]);
+    final app1At = 4 + (out[4] << 8 | out[5]);
+    expect(out.sublist(app1At, app1At + 2), [0xFF, 0xE1]);
+    final exif = ExifData.fromInputBuffer(InputBuffer(out.sublist(app1At + 10), bigEndian: true));
     expect(exif.imageIfd.keys.toSet(), {0x0112, 0x8769, 0x8825});
     expect(exif.imageIfd[0x0112]!.toInt(), 1);
     expect(exif.exifIfd.keys.toSet(), {0x9003, 0x9011, 0x9291});
@@ -125,6 +139,14 @@ void main() {
     );
     expect(fresh.exifIfd[0x9003].toString(), '2026:03:01 07:05:09');
     expect(fresh.directories['ifd0']!.sub.keys, isNot(contains('gps')));
+
+    // Camera wrote the local time but no offset: the offset comes from capturedAt, the time stays the camera's.
+    final noOffset = ExifData()..exifIfd[0x9003] = IfdValueAscii('2026:02:14 09:30:15');
+    final filled = ExifData.fromInputBuffer(
+      InputBuffer(rw.buildTiff(noOffset, capturedAt: DateTime.utc(2026, 2, 14, 4, 0, 15)), bigEndian: true),
+    );
+    expect(filled.exifIfd[0x9003].toString(), '2026:02:14 09:30:15');
+    expect(filled.exifIfd[0x9011].toString(), '+00:00');
   });
 
   test('TIFF sub-IFDs end with a zero next-IFD pointer (TIFF 6.0 §2)', () {

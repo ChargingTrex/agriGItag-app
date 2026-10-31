@@ -3,8 +3,9 @@
 // Requirement: PLAN §13 B1 (1600 px, q≈80 stepping down to ≤ 350 KB) and B2 (EXIF kept set), Arch
 //   §Offline-first ("Photos made light": ~300 KB, originals not kept), FR3, FR26, FR61, UserFlows §The photo
 //   is the proof, mobile-design.md §3 (keep ~10 KB thumbnail after upload).
-// Callers: M07 event capture (after CameraCapture.take; stores the result in the Media table and deletes the
-//   camera original); test/capture/photo_compressor_test.dart.
+// Callers: M07 event capture (after CameraCapture.take; passes `outDir` = getApplicationSupportDirectory()/media
+//   via path_provider, never the camera cache, stores the result in the Media table and deletes the camera
+//   original); test/capture/photo_compressor_test.dart.
 
 import 'dart:io';
 import 'dart:math';
@@ -33,7 +34,7 @@ class CompressedPhoto {
     required this.quality,
   });
 
-  /// Path of the written evidence JPEG (`<source>_1600.jpg`).
+  /// Path of the written evidence JPEG (`<outDir>/<source name>_1600.jpg`).
   final String path;
 
   /// The evidence JPEG bytes, exactly as written to [path] and uploaded (D-011).
@@ -48,7 +49,7 @@ class CompressedPhoto {
   /// SHA-256 of [bytes], lowercase hex; sent with the upload and checked by the server.
   final String sha256;
 
-  /// Path of the ~10 KB thumbnail JPEG (`<source>_thumb.jpg`) kept after the full photo is purged.
+  /// Path of the ~10 KB thumbnail JPEG (`<outDir>/<source name>_thumb.jpg`) kept after the full photo is purged.
   final String thumbPath;
 
   /// JPEG quality the ladder settled on (80 when the first try fit).
@@ -65,10 +66,12 @@ class PhotoCompressor {
 
   /// Compresses the JPEG at [source] in a background isolate (`compute`), so the UI thread never decodes.
   ///
-  /// [capturedAt] fills DateTimeOriginal when the camera wrote none; [fix] becomes the GPS block (FR26).
-  /// [maxBytes] is the size limit (PLAN §13 B1: 350 KB; tests lower it to exercise the ladder).
-  /// Returns the [CompressedPhoto]. Side effects: writes `<source>_1600.jpg` and `<source>_thumb.jpg` next to
-  /// [source]; leaves [source] in place for the caller to delete.
+  /// [outDir] receives both outputs and must be storage the OS never purges (app support, not the camera's
+  /// cache/tmp folder where [source] lives): an entry can wait days offline before upload (mobile-design §3).
+  /// [capturedAt] fills DateTimeOriginal (and OffsetTimeOriginal) when the camera wrote none; [fix] becomes
+  /// the GPS block (FR26). [maxBytes] is the size limit (PLAN §13 B1: 350 KB; tests lower it for the ladder).
+  /// Returns the [CompressedPhoto]. Side effects: writes `<name>_1600.jpg` and `<name>_thumb.jpg` into
+  /// [outDir] (created if missing); leaves [source] in place for the caller to delete.
   /// Throws: [FileSystemException] if [source] cannot be read or the outputs written; [FormatException] if
   /// [source] is not a decodable JPEG.
   ///
@@ -78,15 +81,16 @@ class PhotoCompressor {
   ///   (evidence is never dropped for size; the PUT just takes longer).
   Future<CompressedPhoto> compress(
     File source, {
+    required Directory outDir,
     DateTime? capturedAt,
     LocationFix? fix,
     int maxBytes = kPhotoMaxBytes,
-  }) => compute(_compress, (source.path, capturedAt, fix, maxBytes));
+  }) => compute(_compress, (source.path, outDir.path, capturedAt, fix, maxBytes));
 
-  /// Isolate body of [compress]; [job] is (source path, capturedAt, fix, maxBytes). Returns the result.
-  /// Side effects and throws as for [compress].
-  static CompressedPhoto _compress((String, DateTime?, LocationFix?, int) job) {
-    final (path, capturedAt, fix, maxBytes) = job;
+  /// Isolate body of [compress]; [job] is (source path, outDir path, capturedAt, fix, maxBytes). Returns the
+  /// result. Side effects and throws as for [compress].
+  static CompressedPhoto _compress((String, String, DateTime?, LocationFix?, int) job) {
+    final (path, outDir, capturedAt, fix, maxBytes) = job;
     final input = File(path).readAsBytesSync();
     final info = JpegDecoder().startDecode(input);
     if (info == null) throw FormatException('not a JPEG', path);
@@ -111,7 +115,8 @@ class PhotoCompressor {
       if (bytes.length <= maxBytes) break;
     }
 
-    final stem = path.replaceFirst(RegExp(r'\.[^./\\]*$'), '');
+    Directory(outDir).createSync(recursive: true);
+    final stem = '$outDir/${File(path).uri.pathSegments.last.replaceFirst(RegExp(r'\.[^.]*$'), '')}';
     final outPath = '${stem}_1600.jpg';
     final thumbPath = '${stem}_thumb.jpg';
     File(outPath).writeAsBytesSync(bytes, flush: true);

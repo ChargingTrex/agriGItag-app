@@ -2,7 +2,7 @@
 // Requirement: PLAN §13 B2 (keep EXIF DateTimeOriginal + GPS + orientation; strip thumbnails and maker notes),
 //   FR26 (GPS and time recorded with the photo), FR61 (server checks photo time and GPS against the event),
 //   UserFlows §The photo is the proof.
-// Callers: photo_compressor.dart (inside its isolate); test/capture/exif_rewriter_test.dart.
+// Callers: photo_compressor.dart (inside its isolate); test/capture/photo_compressor_test.dart (EXIF tests).
 
 import 'dart:convert';
 import 'dart:typed_data';
@@ -32,8 +32,9 @@ class ExifRewriter {
 
   /// Builds the TIFF body of the new EXIF block (big-endian) from [source], keeping only the allowed tags.
   ///
-  /// [source] is the EXIF read from the camera file (may be empty). [capturedAt] is written as
-  /// DateTimeOriginal/OffsetTimeOriginal when [source] has none. [fix], when given, replaces any source GPS
+  /// [source] is the EXIF read from the camera file (may be empty). [capturedAt] fills DateTimeOriginal when
+  /// [source] has none, and OffsetTimeOriginal when [source] has none (the phone's zone, which the camera's
+  /// local DateTimeOriginal also uses), so the server's FR61 time check never sees a zoneless time. [fix], when given, replaces any source GPS
   /// block (the camera plugin writes none; FR26 wants the event-time fix). Orientation is always written as 1
   /// because the compressor bakes rotation into the pixels. Everything else (MakerNote, IFD1 thumbnail, Make,
   /// Model, Software, …) is dropped by construction. Returns the TIFF bytes; throws nothing.
@@ -42,9 +43,9 @@ class ExifRewriter {
       for (final tag in _keptExifTags)
         if (source.exifIfd[tag] case final v?) tag: _copy(v),
     };
-    if (!exif.containsKey(0x9003) && capturedAt != null) {
-      exif[0x9003] = _ascii(_exifDateTime(capturedAt));
-      exif[0x9011] = _ascii(_offset(capturedAt.timeZoneOffset));
+    if (capturedAt != null) {
+      exif.putIfAbsent(0x9003, () => _ascii(_exifDateTime(capturedAt)));
+      exif.putIfAbsent(0x9011, () => _ascii(_offset(capturedAt.timeZoneOffset)));
     }
     final gps = fix != null
         ? _gpsFrom(fix)
@@ -55,18 +56,20 @@ class ExifRewriter {
     return _tiff(exif, gps);
   }
 
-  /// Inserts an APP1 "Exif" segment holding [tiff] right after the SOI marker of [jpeg] (which must carry no
-  /// APP1 of its own). Returns the new JPEG bytes. Throws [FormatException] when [jpeg] does not start with SOI.
+  /// Inserts an APP1 "Exif" segment holding [tiff] into [jpeg] (which must carry no APP1 of its own): after
+  /// the JFIF APP0 segment when there is one (JFIF wants APP0 first; Exif readers scan markers), else right
+  /// after SOI. Returns the new JPEG bytes. Throws [FormatException] when [jpeg] does not start with SOI.
   Uint8List splice(Uint8List jpeg, Uint8List tiff) {
-    if (jpeg.length < 2 || jpeg[0] != 0xFF || jpeg[1] != 0xD8) throw const FormatException('not a JPEG');
+    if (jpeg.length < 6 || jpeg[0] != 0xFF || jpeg[1] != 0xD8) throw const FormatException('not a JPEG');
+    final at = jpeg[2] == 0xFF && jpeg[3] == 0xE0 ? 4 + (jpeg[4] << 8 | jpeg[5]) : 2;
     final segLen = 2 + 6 + tiff.length;
     return (BytesBuilder(copy: false)
-          ..add(jpeg.sublist(0, 2))
+          ..add(jpeg.sublist(0, at))
           ..add([0xFF, 0xE1, segLen >> 8, segLen & 0xFF])
           ..add(ascii.encode('Exif'))
           ..add([0, 0])
           ..add(tiff)
-          ..add(jpeg.sublist(2)))
+          ..add(jpeg.sublist(at)))
         .takeBytes();
   }
 

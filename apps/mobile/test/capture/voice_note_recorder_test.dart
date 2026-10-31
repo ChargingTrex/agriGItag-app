@@ -1,5 +1,5 @@
 // Tests for VoiceNoteRecorder with a fake record plugin and fake_async's clock: 30 s cap, manual stop,
-//   microphone refusal as a typed result.
+//   microphone refusal as a typed result, stop failure as RecorderFailed, the AAC-LC branch, dispose.
 // Requirement: UserFlows §Problem (30-second voice note), M04 brief item 6.
 // Callers: `flutter test test/capture`.
 
@@ -13,11 +13,21 @@ import 'package:record/record.dart';
 
 /// Fake plugin: records the config, writes a small file on stop. Unused members fall to noSuchMethod.
 class FakeRecorder implements AudioRecorder {
-  /// Creates the fake; [allowed] is the microphone permission answer.
-  FakeRecorder({this.allowed = true});
+  /// Creates the fake; [allowed] is the microphone permission answer, [opus] the Opus encoder support,
+  /// [failStop] makes [stop] throw like the plugin after an audio interruption.
+  FakeRecorder({this.allowed = true, this.opus = true, this.failStop = false});
 
   /// Microphone permission answer.
   final bool allowed;
+
+  /// Whether the Opus encoder is reported as supported.
+  final bool opus;
+
+  /// Whether [stop] throws.
+  final bool failStop;
+
+  /// Whether [dispose] ran.
+  bool disposed = false;
 
   /// Config passed to [start].
   RecordConfig? config;
@@ -32,7 +42,7 @@ class FakeRecorder implements AudioRecorder {
   Future<bool> hasPermission({bool request = true}) async => allowed;
 
   @override
-  Future<bool> isEncoderSupported(AudioEncoder encoder) async => true;
+  Future<bool> isEncoderSupported(AudioEncoder encoder) async => opus;
 
   @override
   Future<void> start(RecordConfig config, {required String path}) async {
@@ -43,9 +53,13 @@ class FakeRecorder implements AudioRecorder {
   @override
   Future<String?> stop() async {
     stops++;
+    if (failStop) throw Exception('PlatformException(record, interrupted)');
     File(path!).writeAsBytesSync(List.filled(1000, 7));
     return path;
   }
+
+  @override
+  Future<void> dispose() async => disposed = true;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -95,6 +109,44 @@ void main() {
       fa.flushMicrotasks();
       expect(note!.duration, const Duration(seconds: 12));
     });
+  });
+
+  test('plugin stop failure completes result with RecorderFailed (cap path and manual path)', () {
+    fakeAsync((fa) {
+      final rec = VoiceNoteRecorder(recorder: FakeRecorder(failStop: true));
+      rec.start(dir.path, 'n3');
+      fa.flushMicrotasks();
+      Object? err;
+      rec.result.then<void>(
+        (_) {},
+        onError: (Object e) {
+          err = e;
+        },
+      );
+      fa.elapse(const Duration(seconds: 30));
+      expect(err, isA<RecorderFailed>());
+      Object? again;
+      rec.stop().then<void>(
+        (_) {},
+        onError: (Object e) {
+          again = e;
+        },
+      );
+      fa.flushMicrotasks();
+      expect(again, isA<RecorderFailed>(), reason: 'later stop returns the same failure, never hangs');
+    });
+  });
+
+  test('without Opus support records AAC-LC into .m4a; dispose releases the plugin', () async {
+    final fake = FakeRecorder(opus: false);
+    final rec = VoiceNoteRecorder(recorder: fake);
+    expect(await rec.start(dir.path, 'n4'), VoiceStart.recording);
+    expect(fake.config!.encoder, AudioEncoder.aacLc);
+    expect(fake.config!.bitRate, 32000);
+    expect(fake.path, endsWith('n4.m4a'));
+    await rec.stop();
+    await rec.dispose();
+    expect(fake.disposed, isTrue);
   });
 
   test('microphone refused → micDenied, nothing recorded', () async {
