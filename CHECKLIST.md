@@ -44,7 +44,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M02 — Sync engine (outbox, triggers incl. reachability probe, timeouts 10 s/30 s, retry only on  — wave 3 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite PASS (401); device/network runs → Q01 (BM-11..15); server half of the r2 line → Verifier with B15
 - [x] M03 — Ref data + local preview rules (GI point-in-polygon + buffer, yield 20/30, event order, mo — wave 3 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 + r2 confirm — verifier: Orchestrator-run rules suite PASS (63/63 parity)
 - [ ] P01 — Members: approvals, roster, farmer/plot detail with MapLibre/OSM + GI outline — wave 3 — worker: Opus (2 rounds) — reviewer: WEB PASS r1 + r2 confirm — verifier: PENDING (acceptance line 'masked phone + audited reveal' waits on B14; live API deferred)
-- [ ] P03 — Ready lots → Create batch: tick, running total, share %, greyed lots with reason, non-GI t — wave 3 — worker: — reviewer: — verifier:
+- [ ] P03 — Ready lots → Create batch: tick, running total, share %, greyed lots with reason, non-GI t — wave 3 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
 - [ ] B07 — Reference bundle + sync pull — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK r1 + r2 confirm — verifier: PENDING (merged conditionally 2026-10-31; 7 integration tests deferred)
 - [ ] B08 — Rules & flags — wave 4 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / r2 confirmed by Orchestrator — verifier: PENDING (merged conditionally 2026-10-31; 14 integration tests deferred)
@@ -59,8 +59,8 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B15 — Backend gaps from B08 review and M09 (grading-loss split D-030, `farmer` push kind + `client_id` D-031, assist_session kind D-032) — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 22 integration tests deferred)
 - [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: — reviewer: — verifier:
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
-- [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: — reviewer: — verifier:
-- [ ] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: — reviewer: — verifier:
+- [ ] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
+- [ ] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: — reviewer: — verifier:
 - [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: — reviewer: — verifier:
 - [ ] P08 — Master data uploads: CSV import for farmers, villages, inputs with template download, dry- — wave 5 — worker: — reviewer: — verifier:
@@ -68,7 +68,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G4 Portal + Publish
 
-- [ ] B10 — Publishing — wave 6 — worker: — reviewer: — verifier:
+- [ ] B10 — Publishing — wave 6 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] B11 — Reporting + stubs — wave 6 — worker: — reviewer: — verifier:
 - [ ] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: — reviewer: — verifier:
 - [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: — reviewer: — verifier:
