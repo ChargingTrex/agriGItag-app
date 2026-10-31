@@ -1,0 +1,25 @@
+$ CHROME_PATH="/Users/fi-it/Library/Caches/ms-playwright/chromium-1248/chrome-mac-x64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" /tmp/w02rv/bin/robot --outputdir /tmp/w02robot qa/robot/public/page.robot
+==============================================================================
+Page :: Public batch page: render, privacy lint, HTML validity, size budget...
+==============================================================================
+Privacy Lint Passes The Clean Fixture And Catches The Dirty One ::... | PASS |
+------------------------------------------------------------------------------
+Fixture Renders Valid HTML :: html-validate (.htmlvalidate.mjs: st... | PASS |
+------------------------------------------------------------------------------
+Crop Name Is Bilingual :: The heading shows the fixture's Tamil cr... | PASS |
+------------------------------------------------------------------------------
+Every Quantity Carries A Unit :: Every <data class="q"> reads "<nu... | PASS |
+------------------------------------------------------------------------------
+Events Are In Date Order :: In every timeline (each lot, processin... | PASS |
+------------------------------------------------------------------------------
+No Temp Uploads Or Non Evidence Paths :: No temporary path anywher... | PASS |
+------------------------------------------------------------------------------
+Built Fixture Passes Privacy Lint With Canaries :: tools/check_out... | PASS |
+------------------------------------------------------------------------------
+Injected Phone Number Fails Privacy Lint :: A copy of the build wi... | PASS |
+------------------------------------------------------------------------------
+Initial HTML CSS And JS Are Under 100 KB :: `python -m agritrace_p... | PASS |
+------------------------------------------------------------------------------
+Lighthouse 3G Performance Is At Least 90 With LCP At Most 2 s :: l... | PASS |
+------------------------------------------------------------------------------
+Lighthouse Normal 4G Transfers Under 100 KB With LCP At Most 2.5 s... 

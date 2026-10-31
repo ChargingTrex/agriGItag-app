@@ -8,4 +8,17 @@ Healthcheck passed!
 Started a web server on port 55850...
 Running Lighthouse 3 time(s) on http://localhost:55850/index.html
 Run #1...done.
-Run #2...
+Run #2...done.
+Run #3...done.
+Done running Lighthouse!
+
+Checking assertions against 1 URL(s), 3 total run(s)
+
+All results processed!
+
+Dumping 3 reports to disk at /Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/lhci/4g...
+Done writing reports to disk.
+
+Done running autorun.
+exit=0
+Sat Oct 31 11:45:52 IST 2026
