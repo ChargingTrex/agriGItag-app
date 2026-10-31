@@ -435,12 +435,14 @@ async def test_farmer_table_pages_and_fields(world: tuple[World, AsyncClient]) -
 
 
 async def test_audit_log_search_is_fpo_scoped(world: tuple[World, AsyncClient]) -> None:
-    """The lot's create row is found by entity; FPO B's lot rows never appear; user rows are not listed."""
+    """The lot's create row is found by entity; FPO B's rows never appear; users not listed; pins hidden."""
     w, client = world
     rows = (await client.get("/v1/audit-log", params={"entity_id": str(w.lot_complete)})).json()["items"]
     assert [r["action"] for r in rows] == ["create"] and rows[0]["entity_type"] == "lots"
     assert "device_id" not in rows[0] and "gps" not in rows[0]
     assert (await client.get("/v1/audit-log", params={"entity_id": str(w.lot_other)})).json()["items"] == []
+    plots = (await client.get("/v1/audit-log", params={"entity_type": "plots"})).json()["items"]
+    assert len(plots) == 2 and all(r["diff"]["pin"] == "[hidden]" for r in plots)  # B11-r1 P2-1
     by_type = (await client.get("/v1/audit-log", params={"entity_type": "users", "limit": 200})).json()
     assert by_type["items"] == []
 

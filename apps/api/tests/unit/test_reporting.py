@@ -59,12 +59,24 @@ class FakeValkey:
 
 
 class FakeSession:
-    """Stand-in session that records added rows and commits."""
+    """Stand-in session recording added rows and commits; every batch code is known unless told otherwise."""
 
     def __init__(self) -> None:
         """Start empty."""
         self.added: list[Any] = []
         self.commits = 0
+        self.batch_id: uuid.UUID | None = uuid.uuid4()
+
+    async def scalar(self, *_: Any) -> uuid.UUID | None:
+        """Answer the batch-code lookup.
+
+        Args:
+            *_: the statement (ignored).
+
+        Returns:
+            `batch_id` (None = unknown code).
+        """
+        return self.batch_id
 
     def add(self, row: Any) -> None:
         """Record a row.
@@ -99,10 +111,34 @@ def test_csv_cell_neutralises_formulas_and_writes_iso_dates() -> None:
     """`=`, `+`, `-`, `@` get a quote prefix; dates are ISO 8601; None is empty."""
     assert service.csv_cell("=HYPERLINK(1)") == "'=HYPERLINK(1)"
     assert service.csv_cell("@cmd") == "'@cmd"
+    assert service.csv_cell("+1") == "'+1"
+    assert service.csv_cell("-1") == "'-1"
+    assert service.csv_cell("\t=x") == "'\t=x"
+    assert service.csv_cell("\r=x") == "'\r=x"
     assert service.csv_cell("plain") == "plain"
     assert service.csv_cell(None) == ""
     assert service.csv_cell(date(2026, 2, 14)) == "2026-02-14"
     assert service.csv_cell(datetime(2026, 2, 14, 9, 30, tzinfo=UTC)) == "2026-02-14T09:30:00+00:00"
+
+
+def test_scrub_hides_locations_at_any_depth() -> None:
+    """B11-r1 P2-1: plot pins, boundaries, survey refs and photo EXIF GPS in diffs read `[hidden]`."""
+    diff = {
+        "pin": "POINT(77.96 9.58)",
+        "walked_boundary": "POLYGON((...))",
+        "land_record_ref": "SY 12/3",
+        "declared_area_acres": "1.5",
+        "photos": [{"client_id": "p1", "exif_gps": {"lat": 9.58, "lon": 77.96}}],
+        "status": ["needs_review", "confirmed"],
+    }
+    assert service.scrub(diff) == {
+        "pin": "[hidden]",
+        "walked_boundary": "[hidden]",
+        "land_record_ref": "[hidden]",
+        "declared_area_acres": "1.5",
+        "photos": [{"client_id": "p1", "exif_gps": "[hidden]"}],
+        "status": ["needs_review", "confirmed"],
+    }
 
 
 async def test_limiter_allows_100_per_window_then_429_and_resets() -> None:
@@ -172,10 +208,47 @@ async def test_scans_101st_in_a_minute_is_429(
 
 
 async def test_scan_rejects_a_malformed_code(api: tuple[AsyncClient, FakeSession, dict[str, Any]]) -> None:
-    """A code with a slash or over 32 characters → 422 before any write."""
+    """Not 12 Crockford base32 characters (slash, wrong length, I or U) → 422 before any write."""
     client, session, _ = api
-    assert (await client.post("/v1/public/scans", params={"batch_code": "a/b"})).status_code == 422
-    assert (await client.post("/v1/public/scans", params={"batch_code": "A" * 33})).status_code == 422
+    for bad in ("a/b", "A" * 33, "FGP8T4033HM", "FGP8T4033HMI", "FGP8T4033HMU"):
+        assert (await client.post("/v1/public/scans", params={"batch_code": bad})).status_code == 422, bad
+    assert session.added == []
+
+
+async def test_unknown_codes_are_limited_to_10_a_minute(
+    api: tuple[AsyncClient, FakeSession, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B11-r1 P3-3: codes no batch has are stored at most 10 times a minute per address, then 429."""
+    client, session, _ = api
+    session.batch_id = None
+    monkeypatch.setattr(service, "utcnow", lambda: datetime(2026, 10, 31, 9, 40, 5, tzinfo=UTC))
+    for _ in range(10):
+        assert (
+            await client.post("/v1/public/scans", params={"batch_code": "AAAABBBBCCCC"})
+        ).status_code == 204
+    assert (await client.post("/v1/public/scans", params={"batch_code": "AAAABBBBCCCC"})).status_code == 429
+    assert len(session.added) == 10
+
+
+async def test_scan_without_valkey_is_204_and_not_stored(
+    api: tuple[AsyncClient, FakeSession, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B11-r1 P3-2: Valkey down → the beacon still gets 204, nothing is stored, no 500."""
+    client, session, _ = api
+
+    async def down(*_: Any) -> int:
+        """Fail like an unreachable Valkey.
+
+        Args:
+            *_: ignored.
+
+        Raises:
+            RedisError: always.
+        """
+        raise service.RedisError("connection refused")
+
+    monkeypatch.setattr(FakeValkey, "incr", down)
+    assert (await client.post("/v1/public/scans", params={"batch_code": "FGP8T4033HM7"})).status_code == 204
     assert session.added == []
 
 

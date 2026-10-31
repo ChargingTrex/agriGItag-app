@@ -128,7 +128,8 @@ Every error response, whatever the status, has this body:
   (D-011) with its SHA-256 checked by object storage.
 - Other JSON bodies should stay well under 256 KB.
 - `POST /v1/public/scans?batch_code=<code>` (no sign-in, no body, D-038) accepts at most **100 requests per minute
-  per client IP**; the 101st → 429 `rate_limited` with `details.retry_after_s`. Only a hash of the User-Agent is stored.
+  per client IP** (10 for codes no batch has); then 429 `rate_limited` with `details.retry_after_s`. `batch_code` is
+  12 Crockford base32 characters (else 422). Only a hash of the User-Agent is stored.
 
 ## Sync (offline-first, backend-design.md §3)
 

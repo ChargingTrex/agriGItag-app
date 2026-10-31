@@ -413,7 +413,7 @@
         "type": "object"
       },
       "AuditRow": {
-        "description": "One `audit_log` row; device id and GPS are left out (conventions.md: device ids are not listed).",
+        "description": "One `audit_log` row; device id and GPS columns are left out, location values in `diff` are hidden.",
         "properties": {
           "action": {
             "description": "`create`, `update`, `delete` or a named action such as `event.correct`.",
@@ -454,7 +454,7 @@
           },
           "diff": {
             "additionalProperties": true,
-            "description": "What changed, as stored; secret columns read `[redacted]`.",
+            "description": "What changed, as stored; secret columns read `[redacted]`, location, boundary and land-record values (`pin`, `walked_boundary`, `land_record_ref`, `exif_gps`, ...) read `[hidden]`.",
             "title": "Diff",
             "type": "object"
           },
@@ -1364,7 +1364,7 @@
             "type": "array"
           },
           "sync_health": {
-            "description": "Sync timings by network type, last 7 days.",
+            "description": "Sync timings by network type, last 7 days, from devices of the FPO's members; a member of several FPOs is counted in each.",
             "items": {
               "$ref": "#/components/schemas/SyncHealthRow"
             },
@@ -11706,7 +11706,7 @@
     },
     "/v1/audit-log": {
       "get": {
-        "description": "Audit rows about the caller's FPO's records (D-039), newest first, filtered by actor, entity and time. Diffs are returned as stored (secret columns read `[redacted]`); device ids and GPS are not listed. FPO admin only.",
+        "description": "Audit rows about the caller's FPO's records (D-039), newest first, filtered by actor, entity and time. Diffs are returned as stored except that secret columns read `[redacted]` and location, boundary and land-record values (`pin`, `walked_boundary`, `land_record_ref`, `exif_gps`, `gps`, `started_gps`, `boundary`) read `[hidden]`; device ids and the row's GPS are not listed. FPO admin only.",
         "operationId": "search_audit_log_v1_audit_log_get",
         "parameters": [
           {
@@ -19972,7 +19972,7 @@
     },
     "/v1/public/scans": {
       "post": {
-        "description": "Called by the public batch page when it opens. No body and no sign-in, so a static page can send it with `navigator.sendBeacon` without a CORS preflight (D-038). Stores the batch code, the time and a hash of the User-Agent; the IP address is never stored. More than 100 scans per minute from one address \u2192 429 `rate_limited` with `details.retry_after_s`.",
+        "description": "Called by the public batch page when it opens. No body and no sign-in, so a static page can send it with `navigator.sendBeacon` without a CORS preflight (D-038). Stores the batch code, the time and a hash of the User-Agent; the IP address is never stored. `batch_code` must be a 12-character Crockford base32 code. More than 100 scans per minute from one address, or more than 10 of codes no batch has, \u2192 429 `rate_limited` with `details.retry_after_s`. While Valkey is down scans are not counted (204).",
         "operationId": "post_scan_v1_public_scans_post",
         "parameters": [
           {
@@ -19982,9 +19982,7 @@
             "required": true,
             "schema": {
               "description": "Scanned batch code.",
-              "maxLength": 32,
-              "minLength": 1,
-              "pattern": "^[0-9A-Za-z_]+$",
+              "pattern": "^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{12}$",
               "title": "Batch Code",
               "type": "string"
             }

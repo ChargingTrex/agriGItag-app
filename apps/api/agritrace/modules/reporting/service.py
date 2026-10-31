@@ -14,13 +14,16 @@ import csv
 import hashlib
 import io
 import json
+import logging
 import uuid
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
+from functools import cache
 from typing import Any
 
 from redis.asyncio import Redis
+from redis.exceptions import RedisError
 from sqlalchemy import ColumnElement, Select, and_, case, exists, extract, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
@@ -59,6 +62,8 @@ from agritrace.modules.rules_flags.service import ACTIVE, DEAD_EVENTS
 
 __all__: list[str] = []
 
+log = logging.getLogger(__name__)
+
 # P06 stage tiles in farm order; nursery and inputs are tiles too, although they run beside the main track.
 STAGES = (
     EventType.LAND_PREPARATION,
@@ -76,9 +81,14 @@ FINISHED_ROWS = (
     100  # shortcut: newest 100 batches in the dashboard; add a paginated list when an FPO has more
 )
 SCAN_LIMIT = 100  # scans per client IP per window (B11 acceptance)
+UNKNOWN_SCAN_LIMIT = 10  # scans of codes no batch has, per client IP per window (junk rows, D-038)
 SCAN_WINDOW_S = 60
 # The quantity a CSV row shows: the first of these payload keys present (event payloads, D-014).
 QUANTITY_KEYS = ("quantity", "received", "sown_area", "cultivated_area", "nursery_area", "affected_area")
+# Diff and payload keys whose values are locations or land records; shown as `[hidden]` (B11-r1 P2-1).
+HIDDEN_KEYS = frozenset(
+    {"pin", "walked_boundary", "land_record_ref", "exif_gps", "gps", "started_gps", "boundary"}
+)
 CSV_COLUMNS = (
     "subject_type",
     "subject_code",
@@ -198,31 +208,60 @@ def csv_cell(value: Any) -> str:
     return f"'{text}" if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
 
 
-async def limit_scans(redis: Redis, client_ip: str, now: float) -> None:
+def scrub(value: Any) -> Any:
+    """Hide location and land-record values anywhere in a stored diff or payload (CLAUDE.md §6).
+
+    Args:
+        value: a JSON value (dict, list or scalar) as stored in `audit_log.diff` or a payload.
+
+    Returns:
+        A copy in which the value of every `HIDDEN_KEYS` key, at any depth, reads `[hidden]`; the key
+        stays, so a reader still sees that it changed.
+    """
+    if isinstance(value, dict):
+        return {k: "[hidden]" if k in HIDDEN_KEYS else scrub(v) for k, v in value.items()}
+    return [scrub(v) for v in value] if isinstance(value, list) else value
+
+
+@cache
+def _log_valkey_down() -> None:
+    """Warn once per process that scans are not being counted.
+
+    Side effects:
+        One WARNING log line (cached, so later calls do nothing).
+    """
+    log.warning("Valkey unreachable: public page scans are not counted until it is back")
+
+
+async def limit_scans(
+    redis: Redis, client_ip: str, now: float, kind: str = "scans", limit: int = SCAN_LIMIT
+) -> None:
     """Count one scan against the caller's per-minute budget (fixed window, D-038).
 
     Args:
         redis: Valkey client.
         client_ip: the caller's address; only a hash of it reaches Valkey.
         now: current Unix time in seconds.
+        kind: budget name in the key: `scans` (every scan) or `unknown` (codes no batch has).
+        limit: hits allowed per window for this budget.
 
     Raises:
-        RateLimitedError: more than `SCAN_LIMIT` scans from this address in the current window
+        RateLimitedError: more than `limit` hits on this budget from this address in the current window
             (`rate_limited`, 429, `details.retry_after_s` = seconds to the next window).
         redis.exceptions.RedisError: Valkey unreachable.
 
     Side effects:
-        Increments `ratelimit:scans:<ip hash>:<window>` in Valkey; the key expires after one window.
+        Increments `ratelimit:<kind>:<ip hash>:<window>` in Valkey; the key expires after one window.
     """
     # DECISION D-038: fixed one-minute window per IP hash in Valkey, a few lines on redis-py (no library).
     #   ADV: one INCR per scan; the window is in the key, so a lost EXPIRE never blocks past the minute.
     #   COMPROMISE: up to 2 × the limit across a window boundary; fine for counting page opens.
     window, elapsed = divmod(int(now), SCAN_WINDOW_S)
-    key = f"ratelimit:scans:{hashlib.sha256(client_ip.encode()).hexdigest()[:16]}:{window}"
+    key = f"ratelimit:{kind}:{hashlib.sha256(client_ip.encode()).hexdigest()[:16]}:{window}"
     hits = await redis.incr(key)
     if hits == 1:
         await redis.expire(key, SCAN_WINDOW_S)
-    if hits > SCAN_LIMIT:
+    if hits > limit:
         raise RateLimitedError(details={"retry_after_s": SCAN_WINDOW_S - elapsed})
 
 
@@ -740,7 +779,8 @@ async def audit_rows(
         limit: page size.
 
     Returns:
-        One page of rows with diffs as stored (secrets already `[redacted]`), without device id or GPS.
+        One page of rows; diffs as stored (secrets already `[redacted]`) except that location, boundary and
+        land-record values read `[hidden]` (`scrub`); no device id or GPS column.
 
     Raises:
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
@@ -752,6 +792,7 @@ async def audit_rows(
     more = len(rows) > limit
     rows = rows[:limit]
     items = [AuditRow.model_validate(r, from_attributes=True) for r in rows]
+    items = [i.model_copy(update={"diff": scrub(i.diff)}) for i in items]
     return Page[AuditRow](items=items, next_cursor=str(rows[-1].id) if more else None, has_more=more)
 
 
@@ -811,7 +852,7 @@ async def audit_csv(session: AsyncSession, fpo_id: uuid.UUID, batch_id: uuid.UUI
             v.reason_text,
             value,
             unit,
-            json.dumps(v.payload, ensure_ascii=False, sort_keys=True),
+            json.dumps(scrub(v.payload), ensure_ascii=False, sort_keys=True),
         )
         writer.writerow([csv_cell(c) for c in cells])
     return batch.code, out.getvalue()
@@ -821,27 +862,38 @@ async def audit_csv(session: AsyncSession, fpo_id: uuid.UUID, batch_id: uuid.UUI
 
 
 async def record_scan(session: AsyncSession, batch_code: str, user_agent: str | None, client_ip: str) -> None:
-    """Count one anonymous open of a public batch page (FR20), within the per-IP rate limit (D-038).
+    """Count one anonymous open of a public batch page (FR20), within the per-IP rate limits (D-038).
 
     Args:
         session: database session (the router commits).
-        batch_code: code from the scanned URL; unknown codes are still counted (ScanEvent docstring).
+        batch_code: code from the scanned URL (Crockford pattern checked by the router); codes no batch
+            has are still counted, under the tighter `UNKNOWN_SCAN_LIMIT`.
         user_agent: the `User-Agent` header, stored only as a SHA-256 hash.
-        client_ip: the caller's address; used for the rate limit only and never stored.
+        client_ip: the caller's address; used for the rate limits only and never stored.
 
     Raises:
-        RateLimitedError: more than 100 scans from this address this minute (`rate_limited`, 429).
-        redis.exceptions.RedisError: Valkey unreachable.
+        RateLimitedError: over 100 scans, or over 10 scans of unknown codes, from this address this minute
+            (`rate_limited`, 429).
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        One Valkey INCR (plus EXPIRE on the first hit); adds a `scan_events` row to the session.
+        One or two Valkey INCRs (plus EXPIRE on a first hit); one indexed batch lookup; adds a `scan_events`
+        row to the session. When Valkey is unreachable nothing is stored (logged once per process).
     """
+    code = batch_code.upper()
     # shortcut: one short-lived Valkey connection per scan, like the health check; share a pool if scans
     #   ever reach hundreds per second.
     redis = Redis.from_url(get_settings().redis_url)
     try:
-        await limit_scans(redis, client_ip, utcnow().timestamp())
+        now = utcnow().timestamp()
+        await limit_scans(redis, client_ip, now)
+        if await session.scalar(select(Batch.id).where(Batch.code == code)) is None:
+            await limit_scans(redis, client_ip, now, kind="unknown", limit=UNKNOWN_SCAN_LIMIT)
+    except RedisError:
+        # A beacon must not fail; without its limiter the scan is dropped rather than stored unbounded.
+        _log_valkey_down()
+        return
     finally:
         await redis.aclose()
     ua_hash = hashlib.sha256(user_agent.encode()).hexdigest() if user_agent else None
-    session.add(ScanEvent(batch_code=batch_code.upper(), scanned_at=utcnow(), user_agent_hash=ua_hash))
+    session.add(ScanEvent(batch_code=code, scanned_at=utcnow(), user_agent_hash=ua_hash))

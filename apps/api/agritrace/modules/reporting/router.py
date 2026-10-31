@@ -42,6 +42,9 @@ Cursor = Annotated[
     uuid.UUID | None, Query(description="`next_cursor` of the previous page; omit for the first page.")
 ]
 Limit = Annotated[int, Query(ge=1, le=200, description="Page size, 1–200.")]
+CROCKFORD_CODE = (
+    r"^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{12}$"  # batch code alphabet (core.ids.CROCKFORD), any case
+)
 SCOPE: dict[int | str, dict[str, Any]] = {
     401: {"model": ErrorEnvelope, "description": "`unauthorized`."},
     403: {"model": ErrorEnvelope, "description": "`forbidden`: role not allowed."},
@@ -155,8 +158,10 @@ async def list_dashboard_farmers(
     response_model=Page[AuditRow],
     summary="Search the audit log",
     description="Audit rows about the caller's FPO's records (D-039), newest first, filtered by actor, "
-    "entity and time. Diffs are returned as stored (secret columns read `[redacted]`); device ids and GPS "
-    "are not listed. FPO admin only.",
+    "entity and time. Diffs are returned as stored except that secret columns read `[redacted]` and "
+    "location, boundary and land-record values (`pin`, `walked_boundary`, `land_record_ref`, `exif_gps`, "
+    "`gps`, `started_gps`, `boundary`) read `[hidden]`; device ids and the row's GPS are not listed. "
+    "FPO admin only.",
     responses={401: SCOPE[401], 403: SCOPE[403]},
 )
 async def search_audit_log(
@@ -251,8 +256,10 @@ async def export_batch_audit(
     summary="Count a public page scan (no sign-in)",
     description="Called by the public batch page when it opens. No body and no sign-in, so a static page "
     "can send it with `navigator.sendBeacon` without a CORS preflight (D-038). Stores the batch code, the "
-    "time and a hash of the User-Agent; the IP address is never stored. More than 100 scans per minute from "
-    "one address → 429 `rate_limited` with `details.retry_after_s`.",
+    "time and a hash of the User-Agent; the IP address is never stored. `batch_code` must be a "
+    "12-character Crockford base32 code. More than 100 scans per minute from one address, or more than 10 "
+    "of codes no batch has, → 429 `rate_limited` with `details.retry_after_s`. While Valkey is down scans "
+    "are not counted (204).",
     responses={
         422: {"model": ErrorEnvelope, "description": "`validation_error`: bad batch code."},
         429: {"model": ErrorEnvelope, "description": "`rate_limited`."},
@@ -261,9 +268,7 @@ async def export_batch_audit(
 async def post_scan(
     request: Request,
     session: Session,
-    batch_code: Annotated[
-        str, Query(min_length=1, max_length=32, pattern=r"^[0-9A-Za-z_]+$", description="Scanned batch code.")
-    ],
+    batch_code: Annotated[str, Query(pattern=CROCKFORD_CODE, description="Scanned batch code.")],
     user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
 ) -> Response:
     """Count one scan.
@@ -279,13 +284,14 @@ async def post_scan(
         204 No Content.
 
     Raises:
-        RateLimitedError: over 100 scans this minute from this address (429).
+        RateLimitedError: over 100 scans (or 10 of unknown codes) this minute from this address (429).
         ValidationFailedError: bad batch code (422).
 
     Side effects:
         Inserts one `scan_events` row and commits; one Valkey counter update.
     """
-    # Behind the load balancer uvicorn needs --proxy-headers, so `client.host` is the browser's address.
+    # Behind the load balancer set FORWARDED_ALLOW_IPS=<LB subnet> (never `*`: a spoofed X-Forwarded-For
+    #   would bypass the limit) so `client.host` is the browser's address.
     client_ip = request.client.host if request.client else "unknown"
     await service.record_scan(session, batch_code, user_agent, client_ip)
     await session.commit()

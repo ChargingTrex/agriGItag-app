@@ -144,7 +144,10 @@ class Dashboard(BaseModel):
     land_area: LandArea = Field(description="Land Area Analytics.")
     finished_goods: FinishedGoods = Field(description="Finished Goods inventory (whole FPO).")
     scans: Scans = Field(description="Public page scans (whole FPO).")
-    sync_health: list[SyncHealthRow] = Field(description="Sync timings by network type, last 7 days.")
+    sync_health: list[SyncHealthRow] = Field(
+        description="Sync timings by network type, last 7 days, from devices of the FPO's members; a "
+        "member of several FPOs is counted in each."
+    )
 
 
 class FarmerRow(BaseModel):
@@ -166,7 +169,7 @@ class FarmerRow(BaseModel):
 
 
 class AuditRow(BaseModel):
-    """One `audit_log` row; device id and GPS are left out (conventions.md: device ids are not listed)."""
+    """One `audit_log` row; device id and GPS columns are left out, location values in `diff` are hidden."""
 
     id: uuid.UUID = Field(description="Audit row id (UUIDv7, time-ordered).")
     at: datetime = Field(description="When the change was written (UTC).")
@@ -176,5 +179,8 @@ class AuditRow(BaseModel):
     action: str = Field(description="`create`, `update`, `delete` or a named action such as `event.correct`.")
     entity_type: str = Field(description="Table name of the changed row, e.g. `farmers`, `event_versions`.")
     entity_id: uuid.UUID | None = Field(description="Primary key of the changed row.")
-    diff: dict[str, Any] = Field(description="What changed, as stored; secret columns read `[redacted]`.")
+    diff: dict[str, Any] = Field(
+        description="What changed, as stored; secret columns read `[redacted]`, location, boundary and "
+        "land-record values (`pin`, `walked_boundary`, `land_record_ref`, `exif_gps`, ...) read `[hidden]`."
+    )
     request_id: str | None = Field(description="Request id for correlating with API logs.")
