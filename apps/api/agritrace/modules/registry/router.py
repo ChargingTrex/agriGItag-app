@@ -529,6 +529,8 @@ async def create_input(body: InputIn, session: Session, user: AnyRole) -> InputO
 
 
 # --- B13: master data imports (PLAN "Gap analysis": Master data uploads) --------------------------------
+# shortcut: Starlette spools the whole multipart body before `file.read(MAX_BYTES + 1)` checks 2 MB; cap the
+#   body at the proxy (e.g. nginx `client_max_body_size 3m`) before the API is exposed publicly.
 
 
 @router.post("/imports/farmers", response_model=ImportReport, summary="Import farmers from CSV")

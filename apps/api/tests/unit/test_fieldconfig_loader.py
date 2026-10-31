@@ -83,6 +83,9 @@ def test_shipped_config_is_valid() -> None:
         (TENANT, "    soil_type:", "    pin:", "core field cannot be disabled"),
         (TENANT, "fpo_code: VIRUDHAI", "fpo_code: OTHER_VIRUDHAI", "must equal the file name"),
         (TENANT, "boundary_walk: true", "boundary_walk: [", "cannot read YAML"),
+        (TENANT, "fields:\n", "fields:\n  farmer:\n    phone:\n      visibility: public\n",
+         "fields.farmer.phone: visibility may only be narrowed"),
+        (TENANT, "  plot:\n    soil_type:", "  village:\n    pincode:", "fields.village: shared"),
     ],
 )  # fmt: skip
 def test_invalid_yaml_is_refused_with_the_file_and_key(
@@ -128,17 +131,29 @@ def test_tenant_disables_soil_type_for_that_fpo_only() -> None:
     assert "soil_type" not in [f.name for f in fieldconfig.fields_for("plot", DEMO)]
     assert "soil_type" in [f.name for f in fieldconfig.fields_for("plot", "SOME_OTHER_FPO")]
     assert "soil_type" in [f.name for f in fieldconfig.fields_for("plot", None)]
-    assert "soil_type" not in fieldconfig.required_fields("plot", DEMO)
 
 
 def test_features_and_public_fields() -> None:
     """Defaults apply without a tenant file; public fields never include phone or exact location."""
     assert fieldconfig.features_for("NO_FILE_FPO").producer_groups is False
     assert fieldconfig.features_for(DEMO).boundary_walk is True
-    assert "phone" not in fieldconfig.public_fields("farmer")
-    assert {"pin", "land_record_ref", "walked_boundary"}.isdisjoint(fieldconfig.public_fields("plot"))
+    assert "phone" not in fieldconfig.public_fields("farmer", None)
+    assert {"pin", "land_record_ref", "walked_boundary"}.isdisjoint(fieldconfig.public_fields("plot", None))
     part = fieldconfig.bundle_part(DEMO)
     assert part["version"].startswith('"') and "soil_type" not in str(part["entities"]["plot"])
+
+
+def test_public_fields_honour_tenant_hiding(config_dir: Path) -> None:
+    """A tenant that disables a field or narrows it to internal removes it from the public page.
+
+    Args:
+        config_dir: the writable config copy (demo tenant also narrows farmer name to internal).
+    """
+    _replace(config_dir / TENANT, "fields:\n", "fields:\n  farmer:\n    name:\n      visibility: internal\n")
+    assert "name" in fieldconfig.public_fields("farmer", None)
+    assert "name" not in fieldconfig.public_fields("farmer", DEMO)
+    assert "soil_type" in fieldconfig.public_fields("plot", None)
+    assert "soil_type" not in fieldconfig.public_fields("plot", DEMO)  # disabled for the demo tenant
 
 
 HARVEST = {"bags": 6, "quantity": {"value": 300, "unit": "kg"}}

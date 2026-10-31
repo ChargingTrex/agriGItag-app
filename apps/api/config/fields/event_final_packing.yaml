@@ -1,11 +1,13 @@
-# Payload fields of the `final_packing` event (Final packing).
+# Payload fields of the `final_packing` event (Final packing); keys equal B06's `events.payloads.FinalPackingPayload`.
 # Serves: D-017, FR22 (crop event schema), FR23 (configurable capture), UserFlows §Logging an event.
 # Read by: agritrace/core/fieldconfig.py; served to clients (M07, M10, M11). Not enforced by a server
 # hook yet: events (B06) calls fieldconfig.validate_payload("event_final_packing", ...) when it wires it.
-# extra: allow keeps payload keys not listed here (B06 owns the payload shape). Keys: see farmer.yaml.
+# Photos and voice notes travel in the entry envelope (`photos[]`), not in the payload, so they are not
+# listed. tests/unit/test_fieldconfig_events.py keeps this file and the payload model in step.
 entity: event_final_packing
 extra: allow
 fields:
   - {name: quantity, type: quantity, required: true, enabled: true, visibility: public, stage: packing, label: {en: Packed weight, ta: பொதி எடை}}
-  - {name: pack_date, type: date, required: true, enabled: true, visibility: public, stage: packing, label: {en: Pack date, ta: பொதி தேதி}}
-  - {name: best_before_date, type: date, required: false, enabled: true, visibility: public, stage: packing, label: {en: Best before, ta: பயன்படுத்த உகந்த தேதி}}
+  - {name: pack_size, type: quantity, required: false, enabled: true, visibility: public, stage: packing, label: {en: Pack size, ta: பொதி அளவு}}
+  - {name: packs, type: integer, required: false, enabled: true, visibility: internal, stage: packing, label: {en: Packs, ta: பொதிகள்}}
+  - {name: avg_sale_price_per_kg, type: number, required: false, enabled: true, visibility: internal, stage: packing, label: {en: Average sale price per kg, ta: சராசரி கிலோ விற்பனை விலை}}

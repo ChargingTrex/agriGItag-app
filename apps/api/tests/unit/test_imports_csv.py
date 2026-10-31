@@ -51,6 +51,14 @@ def test_parse_csv_handles_bom_blank_lines_and_line_numbers() -> None:
                     (4, {"name_en": "Neem", "unit": "l"})]  # fmt: skip
 
 
+def test_parse_csv_ignores_trailing_commas() -> None:
+    """Spreadsheet exports add a blank last column; blank extra cells are ignored, filled ones refused."""
+    rows = imports.parse_csv(b"name_en,category,unit,\nUrea,chemical_fertilizer,kg,\nNeem,bio_pesticide,l\n")
+    assert [line for line, _ in rows] == [2, 3]
+    assert rows[0][1] == {"name_en": "Urea", "category": "chemical_fertilizer", "unit": "kg"}
+    assert imports.parse_csv(b"a,b\n1,2,,\n") == [(2, {"a": "1", "b": "2"})]
+
+
 @pytest.mark.parametrize(
     ("raw", "code"),
     [

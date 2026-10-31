@@ -3,9 +3,9 @@
 Serves: D-017 (YAML field/feature config with per-tenant overrides), FR22/FR23 (configurable capture per
 crop and tenant), FR53, FR56, PLAN "Gap analysis" (ID capture, PIN login, SHG groups, master data uploads).
 Callers: `agritrace.main` lifespan (`load`, refuses to start on invalid YAML), config router (GET
-/v1/config/*), registry service hooks (`create_farmer`, `create_plot`) and imports (templates, required
-fields), registry router feature gates; later events (B06), sync bundle (B07, `bundle_part`), publishing
-(B10, `public_fields`).
+/v1/config/*), registry service hooks (`create_farmer`, `create_plot`) and imports (templates,
+`validate_payload`), registry router feature gates; later events (B06), sync bundle (B07, `bundle_part`),
+publishing (B10, `public_fields`).
 """
 
 import hashlib
@@ -20,7 +20,8 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 from agritrace.core.errors import FieldRequiredError, FieldUnknownError
 
 CONFIG_DIR = Path(__file__).resolve().parents[2] / "config"
-BUNDLE_PART = "fields"  # sync bundle part name served by B07 (`GET /v1/sync/bundle/fields`)
+VISIBILITY_RANK = {"internal": 0, "partner": 1, "public": 2}
+GLOBAL_ENTITIES = {"village"}  # master data shared by every FPO: tenant overrides make no sense
 
 FieldType = Literal[
     "text", "number", "integer", "boolean", "date", "datetime", "phone", "choice", "id",
@@ -157,7 +158,9 @@ def _read(path: Path) -> Any:
 def _check_tenant(
     tenant: TenantConfig, path: Path, entities: dict[str, EntityConfig], base: Features
 ) -> None:
-    """Refuse a tenant file that names unknown entities, fields or flags, or relaxes a core field.
+    """Refuse a tenant file that would break the schema or the privacy rules.
+
+    Refused: unknown or global entities, unknown fields or flags, a relaxed core field, widened visibility.
 
     Args:
         tenant: the parsed tenant file.
@@ -177,12 +180,22 @@ def _check_tenant(
     for entity, overrides in tenant.fields.items():
         if entity not in entities:
             raise ConfigInvalid(f"{path}: fields.{entity}: unknown entity; known: {sorted(entities)}")
+        if entity in GLOBAL_ENTITIES:
+            raise ConfigInvalid(f"{path}: fields.{entity}: shared by every FPO, no tenant overrides")
         specs = {f.name: f for f in entities[entity].fields}
         for name, override in overrides.items():
             if name not in specs:
                 raise ConfigInvalid(f"{path}: fields.{entity}.{name}: unknown field")
             if specs[name].core and (override.enabled is False or override.required is False):
                 raise ConfigInvalid(f"{path}: fields.{entity}.{name}: core field cannot be disabled")
+            # DECISION D-017: a tenant may only narrow visibility (public > partner > internal).
+            #   ADV: no tenant file can make a phone number or land record public (CLAUDE.md §6).
+            #   COMPROMISE: widening a field for one FPO needs a reviewed change to the default YAML.
+            if (
+                override.visibility
+                and VISIBILITY_RANK[override.visibility] > VISIBILITY_RANK[specs[name].visibility]
+            ):
+                raise ConfigInvalid(f"{path}: fields.{entity}.{name}: visibility may only be narrowed")
 
 
 def parse(config_dir: Path) -> Config:
@@ -290,38 +303,23 @@ def features_for(fpo_code: str | None) -> Features:
     return Features.model_validate(config.features.model_dump() | (tenant.features if tenant else {}))
 
 
-def required_fields(entity: str, fpo_code: str | None) -> list[str]:
-    """Names of the fields a tenant must send for an entity.
+def public_fields(entity: str, fpo_code: str | None) -> list[str]:
+    """Names of the fields the public page may show for a tenant (CLAUDE.md §6; B10 honours it, D-017).
+
+    Safe to apply tenant overrides: the loader refuses any override that widens visibility, so a tenant can
+    only hide fields (disable them or narrow them to partner/internal), never expose more.
 
     Args:
         entity: entity name.
         fpo_code: the tenant's FPO code, or None for the defaults.
 
     Returns:
-        Enabled and required field names.
+        Enabled field names whose visibility for this tenant is `public`.
 
     Raises:
         KeyError: unknown entity.
     """
-    return [f.name for f in fields_for(entity, fpo_code) if f.required]
-
-
-def public_fields(entity: str) -> list[str]:
-    """Names of the fields the public page may show (CLAUDE.md §6; the page builder honours it, D-017).
-
-    Tenant overrides are ignored on purpose: a tenant may hide a field but never make it more public than
-    the reviewed default.
-
-    Args:
-        entity: entity name.
-
-    Returns:
-        Enabled field names whose default visibility is `public`.
-
-    Raises:
-        KeyError: unknown entity.
-    """
-    return [f.name for f in fields_for(entity, None) if f.visibility == "public"]
+    return [f.name for f in fields_for(entity, fpo_code) if f.visibility == "public"]
 
 
 def _blank(value: Any) -> bool:

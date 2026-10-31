@@ -1,9 +1,11 @@
-# Payload fields of the `land_preparation` event (Land preparation).
+# Payload fields of the `land_preparation` event (Land preparation); keys equal B06's `events.payloads.LandPreparationPayload`.
 # Serves: D-017, FR22 (crop event schema), FR23 (configurable capture), UserFlows §Logging an event.
 # Read by: agritrace/core/fieldconfig.py; served to clients (M07, M10, M11). Not enforced by a server
 # hook yet: events (B06) calls fieldconfig.validate_payload("event_land_preparation", ...) when it wires it.
-# extra: allow keeps payload keys not listed here (B06 owns the payload shape). Keys: see farmer.yaml.
+# Photos and voice notes travel in the entry envelope (`photos[]`), not in the payload, so they are not
+# listed. tests/unit/test_fieldconfig_events.py keeps this file and the payload model in step.
 entity: event_land_preparation
 extra: allow
 fields:
-  - {name: photo, type: photo, required: false, enabled: true, visibility: public, stage: cultivation, label: {en: Photo, ta: புகைப்படம்}}
+  - {name: cultivated_area, type: quantity, required: false, enabled: true, visibility: partner, stage: cultivation, label: {en: Area prepared, ta: தயார் செய்த பரப்பு}}
+  - {name: last_ploughed_on, type: date, required: false, enabled: true, visibility: internal, stage: cultivation, label: {en: Last ploughed on, ta: கடைசியாக உழுத தேதி}}

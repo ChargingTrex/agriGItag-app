@@ -46,6 +46,7 @@ MAX_ROWS = 5000
 CSV_TYPES = {"text", "number", "integer", "boolean", "date", "phone", "choice"}
 # Farmers pick their village by LGD code (people know it; nobody knows our UUIDs), resolved to village_id.
 FARMER_VILLAGE_COLUMN = "village_lgd_code"
+EXTRA_CELLS = "\0extra"  # DictReader key for cells beyond the header (cannot clash with a name)
 
 
 def template_columns(kind: Kind, fpo_code: str | None) -> list[str]:
@@ -58,7 +59,8 @@ def template_columns(kind: Kind, fpo_code: str | None) -> list[str]:
     Returns:
         Column names; farmers add `village_lgd_code`.
     """
-    columns = [f.name for f in fieldconfig.fields_for(ENTITY[kind], fpo_code) if f.type in CSV_TYPES]
+    tenant = None if kind == "villages" else fpo_code
+    columns = [f.name for f in fieldconfig.fields_for(ENTITY[kind], tenant) if f.type in CSV_TYPES]
     return columns + [FARMER_VILLAGE_COLUMN] if kind == "farmers" else columns
 
 
@@ -96,13 +98,15 @@ def parse_csv(raw: bytes) -> list[tuple[int, dict[str, str]]]:
         text = raw.decode("utf-8-sig")
     except UnicodeDecodeError as e:
         raise ValidationFailedError(details={"file": "save the CSV as UTF-8"}) from e
-    reader = csv.DictReader(io.StringIO(text), restkey="")
+    reader = csv.DictReader(io.StringIO(text), restkey=EXTRA_CELLS)
     if not reader.fieldnames:
         raise ValidationFailedError(details={"file": "the first line must be the column names"})
     reader.fieldnames = [name.strip() for name in reader.fieldnames]
     rows: list[tuple[int, dict[str, str]]] = []
     for row in reader:
-        if "" in row:
+        # Spreadsheets add trailing commas: blank-named columns and blank extra cells are ignored.
+        spill = [*(row.pop(EXTRA_CELLS, None) or []), row.pop("", None)]
+        if any(v and v.strip() for v in spill):
             raise ValidationFailedError(details={"row": reader.line_num, "file": "more cells than columns"})
         cells = {k: v.strip() for k, v in row.items() if v and v.strip()}
         if cells:

@@ -1,10 +1,11 @@
-# Payload fields of the `grading` event (Grading).
+# Payload fields of the `grading` event (Grading); keys equal B06's `events.payloads.GradingPayload`.
 # Serves: D-017, FR22 (crop event schema), FR23 (configurable capture), UserFlows §Logging an event.
 # Read by: agritrace/core/fieldconfig.py; served to clients (M07, M10, M11). Not enforced by a server
 # hook yet: events (B06) calls fieldconfig.validate_payload("event_grading", ...) when it wires it.
-# extra: allow keeps payload keys not listed here (B06 owns the payload shape). Keys: see farmer.yaml.
+# Photos and voice notes travel in the entry envelope (`photos[]`), not in the payload, so they are not
+# listed. tests/unit/test_fieldconfig_events.py keeps this file and the payload model in step.
 entity: event_grading
 extra: allow
 fields:
-  - {name: declared_grade, type: choice, required: true, enabled: true, visibility: public, stage: grading, label: {en: Grade, ta: தரம்}}
   - {name: quantity, type: quantity, required: false, enabled: true, visibility: partner, stage: grading, label: {en: Graded weight, ta: தரம் பிரித்த எடை}}
+  - {name: declared_grade, type: text, required: true, enabled: true, visibility: public, stage: grading, label: {en: Grade, ta: தரம்}}

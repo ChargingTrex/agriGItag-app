@@ -135,7 +135,9 @@ Every error response, whatever the status, has this body:
 - **Enforced today** on `POST /v1/farmers`, `POST /v1/plots` (also sync-pushed plots through the same
   service) and the imports: missing required → 422 `field_required` with `details.field`. Event, lot and
   reading payloads are served for the forms but enforced only once their modules call
-  `fieldconfig.validate_payload`. Public pages may show only `fieldconfig.public_fields(entity)`.
+  `fieldconfig.validate_payload`. Public pages may show only `fieldconfig.public_fields(entity, fpo_code)`; a tenant
+  may narrow visibility (public > partner > internal) or disable a field, never widen it (refused at
+  start-up), and village fields take no tenant overrides.
 - **Feature-gated routes** answer 404 `feature_disabled` while the FPO's flag is off:
   `POST /v1/farmers/{id}/id-documents` (`id_document_capture`; needs the farmer's unrevoked
   `data_collection` consent; returns one presigned PUT into the private `id-docs` bucket with the same
