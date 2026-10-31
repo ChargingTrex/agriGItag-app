@@ -9,7 +9,7 @@ import 'package:agritrace_api/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **assignedRole** | [**Role**](Role.md) | Role expected to review it: field_officer, or fpo_admin. | 
-**details** | [**BuiltMap&lt;String, JsonObject&gt;**](JsonObject.md) | Rule inputs and limits behind the finding; quantities carry `unit`. | 
+**details** | [**BuiltMap&lt;String, JsonObject&gt;**](JsonObject.md) | {thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never listed (it keeps exact EXIF GPS). Re-read for fresh links. | 
 **fpoId** | **String** | FPO that owns the flagged record. | 
 **id** | **String** | Flag id (UUIDv7, so newer flags sort later). | 
 **raisedAt** | [**DateTime**](DateTime.md) | When a rule first raised it, ISO 8601 UTC. | 
