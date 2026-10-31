@@ -916,16 +916,6 @@
       }
     }
   },
-  "lotCodeLabel": "Lot {code}",
-  "@lotCodeLabel": {
-    "description": "Short lot code under the Sell QR, for staff who type it when the scan fails.",
-    "placeholders": {
-      "code": {
-        "type": "String",
-        "example": "A1B2C3"
-      }
-    }
-  },
   "moneyPrompt": "Your crop and its sale.",
   "@moneyPrompt": {
     "description": "Spoken sentence at the top of the Money screen. Also its voice prompt id."

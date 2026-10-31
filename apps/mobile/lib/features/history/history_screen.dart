@@ -26,11 +26,14 @@ import '../event_log/choose_event_screen.dart' show eventPicture, farmerAppBar;
 import '../event_log/event_log_controller.dart';
 import '../event_log/farm_event.dart';
 
-/// The farm-event entries on this phone that stand: the latest version of each entry chain, newest first; an undone
-/// entry drops out because its `undo` row supersedes it (and undo rows are not farm events). Re-emitted on every
-/// Entries change.
+/// The signed-in user's farm-event entries that stand: the latest version of each entry chain, newest first; an undone
+/// entry drops out because its `undo` row supersedes it (and undo rows are not farm events), or because the pull marked
+/// it `undone`. Re-emitted on every Entries change.
 ///
-/// shortcut: every farmer's entries on the phone are listed (a farmer's phone holds its owner's); filter by farmer
+/// Only entries entered by the signed-in user are listed (D-029): on a shared phone the next user must not undo the
+/// previous user's entry, because the undo row would be sent under that user's identity.
+///
+/// shortcut: an officer assisting a farmer sees the entries the officer entered, for every farmer; filter by farmer
 ///   when M10 nests History under `/assist/:farmerId`.
 final historyProvider = StreamProvider<List<Entry>>((ref) {
   final db = ref.watch(appDatabaseProvider);
@@ -39,6 +42,8 @@ final historyProvider = StreamProvider<List<Entry>>((ref) {
     ..where(
       (e) =>
           e.entryType.isIn([for (final f in FarmEvent.values) f.wireName]) &
+          e.status.equalsValue(EntryStatus.undone).not() &
+          e.enteredByUserId.isInQuery(db.selectOnly(db.sessionTable)..addColumns([db.sessionTable.userId])) &
           notExistsQuery(
             db.select(newer)..where((n) => n.rootId.equalsExp(e.rootId) & n.version.isBiggerThan(e.version)),
           ),
@@ -79,9 +84,9 @@ class HistoryScreen extends ConsumerWidget {
         padding: EdgeInsets.all(tokens.gap),
         children: [
           if (entries != null && entries.isEmpty)
-            VoicePromptBar(promptId: 'historyEmpty', text: l10n.historyEmpty)
+            VoicePromptBar(key: const ValueKey('historyEmpty'), promptId: 'historyEmpty', text: l10n.historyEmpty)
           else
-            VoicePromptBar(promptId: 'historyPrompt', text: l10n.historyPrompt),
+            VoicePromptBar(key: const ValueKey('historyPrompt'), promptId: 'historyPrompt', text: l10n.historyPrompt),
           for (final e in entries ?? const <Entry>[]) ...[
             SizedBox(height: tokens.gap / 2),
             Card.outlined(
@@ -139,8 +144,9 @@ class _HistoryDetailScreenState extends ConsumerState<HistoryDetailScreen> {
     try {
       await db.transaction(() async {
         await db.entriesDao.undo(e.entryId, now: ref.read(clockProvider)());
-        // shortcut: tasks the entry completed stay done until the next pull (the Saved screen's Undo reopens them
-        //   from its draft, which History does not have).
+        // shortcut: tasks the entry completed stay done and the lot goes to `open` (not its status before the
+        //   packing, which History does not know) until the next pull; the Saved screen's Undo restores both from its
+        //   draft. Upgrade when Entries or the pull carry the previous lot status.
         if (e.entryType == FarmEvent.packing.wireName && e.lotId != null) {
           await (db.update(db.lots)..where((l) => l.lotId.equals(e.lotId!) & l.status.equals(readyForSale))).write(
             const LotsCompanion(status: Value('open')),

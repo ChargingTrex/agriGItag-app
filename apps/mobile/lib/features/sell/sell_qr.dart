@@ -3,7 +3,7 @@
 // Requirement: UserFlows §Selling to the FPO (step 1 "a large QR code for the lot that is ready to sell"; step 2 "The
 //   lot, farmer and packed quantity appear"); plan §7.2 M08 acceptance (QR `{lotId, farmerId, packedKg, sig}` scans in
 //   M11); FR58 (quantities carry units: packedKg is kilograms).
-// Callers: sell_screen.dart (encode); M11 QC intake scanner (decode); test/features/sell_money_test.dart.
+// Callers: sell_screen.dart (encode); M11 QC intake scanner (decode); test/features/m08_screens_test.dart.
 
 import 'dart:convert';
 
@@ -45,7 +45,7 @@ class SellQr {
     'sig': sig,
   });
 
-  /// Reads a scanned QR [text]. Returns the payload, or null when it is not a Sell QR (not JSON, a key missing or of
+  /// Reads a scanned QR [text]. Returns the payload (packedKg rounded to 0.1 kg, as signed), or null when it is not a Sell QR (not JSON, a key missing or of
   /// the wrong type) or its `sig` does not match. Throws nothing.
   static SellQr? decode(String text) {
     try {
@@ -53,7 +53,8 @@ class SellQr {
       final qr = SellQr(
         lotId: m['lotId'] as String,
         farmerId: m['farmerId'] as String,
-        packedKg: (m['packedKg'] as num).toDouble(),
+        // The value the sig covers (one decimal), so 300.04 never decodes as more than the farmer packed.
+        packedKg: double.parse((m['packedKg'] as num).toStringAsFixed(1)),
       );
       return qr.sig == m['sig'] ? qr : null;
     } on Object {

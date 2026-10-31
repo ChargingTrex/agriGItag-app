@@ -12,11 +12,13 @@ import 'package:agritrace/core/db/daos/entries_dao.dart' show undoEntryType;
 import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/router/session.dart';
 import 'package:agritrace/features/sell/sell_qr.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../auth/harness.dart' show playedClips;
+import '../db/db_fixtures.dart';
 import 'harness.dart';
 
 /// The payload of the Sell QR on screen, decoded as M11 decodes it. Fails when there is no QR or it does not verify.
@@ -48,6 +50,8 @@ void main() {
       expect(SellQr.decode('agritrace://auth?phone=1'), isNull);
       expect(SellQr.decode(jsonEncode({'lotId': 'x'})), isNull);
       expect(SellQr.decode('[1,2]'), isNull);
+      // A value finer than the sig covers decodes as the signed one-decimal value.
+      expect(SellQr.decode(jsonEncode({...m, 'packedKg': 1200.04}))!.packedKg, 1200.0);
     });
   });
 
@@ -65,7 +69,6 @@ void main() {
       expect((qr.lotId, qr.farmerId, qr.packedKg), ('lot-1', 'farmer-1', 300.0));
       expect(find.text('Field 1'), findsOneWidget);
       expect(find.text('300 kg'), findsOneWidget);
-      expect(find.text('Lot LOT-1'), findsOneWidget);
       expect(find.text('Show this code at the collection centre.'), findsOneWidget);
       expect(h.taps, 1);
       await h.dispose(tester);
@@ -113,6 +116,32 @@ void main() {
   });
 
   group('History', () {
+    testWidgets('shows only the signed-in user\'s entries, never ones the server marked undone (D-029)', (
+      tester,
+    ) async {
+      final h = FlowHarness();
+      await h.start(tester, withHistory: false);
+      // Another user of this shared phone logged a harvest; the server undid this user's problem entry.
+      final other = entryAt(
+        at: flowNow,
+      ).copyWith(entryType: const Value('harvest'), enteredByUserId: const Value('user-2'));
+      await h.db.entriesDao.save(other, const []);
+      final undone = await h.saveEntry('problem', flowNow);
+      await (h.db.update(
+        h.db.entries,
+      )..where((e) => e.entryId.equals(undone))).write(const EntriesCompanion(status: Value(EntryStatus.undone)));
+      await h.saveEntry('drying', flowNow);
+      h.go('/home/history');
+      await tester.pumpAndSettle();
+      expect(find.byType(ListTile), findsOneWidget);
+      expect(find.text('Drying'), findsOneWidget);
+      // A typed link to the other user's entry finds nothing to undo either.
+      h.go('/home/history/${other.entryId.value}');
+      await tester.pumpAndSettle();
+      expect(find.text('Undo'), findsNothing);
+      await h.dispose(tester);
+    });
+
     testWidgets('lists standing entries newest first with "14 Feb" dates and status words', (tester) async {
       final h = FlowHarness();
       await h.start(tester);

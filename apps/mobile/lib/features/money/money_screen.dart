@@ -99,9 +99,9 @@ class MoneyScreen extends ConsumerWidget {
         padding: EdgeInsets.all(tokens.gap),
         children: [
           if (lots != null && lots.isEmpty)
-            VoicePromptBar(promptId: 'noLot', text: l10n.noLot)
+            VoicePromptBar(key: const ValueKey('noLot'), promptId: 'noLot', text: l10n.noLot)
           else
-            VoicePromptBar(promptId: 'moneyPrompt', text: l10n.moneyPrompt),
+            VoicePromptBar(key: const ValueKey('moneyPrompt'), promptId: 'moneyPrompt', text: l10n.moneyPrompt),
           // shortcut: no batch share % and no price: the pull carries neither yet (TODO B07: lot `batch_share_pct`,
           //   and `price_per_kg` only when the tenant's field config makes it farmer-visible, D-017).
           for (final l in lots ?? const <FarmerLot>[]) ...[

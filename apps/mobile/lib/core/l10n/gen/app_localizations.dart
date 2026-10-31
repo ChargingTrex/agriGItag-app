@@ -1228,12 +1228,6 @@ abstract class AppLocalizations {
   /// **'{kg} கிலோ'**
   String kgAmount(String kg);
 
-  /// Short lot code under the Sell QR, for staff who type it when the scan fails.
-  ///
-  /// In ta, this message translates to:
-  /// **'லாட் {code}'**
-  String lotCodeLabel(String code);
-
   /// Spoken sentence at the top of the Money screen. Also its voice prompt id.
   ///
   /// In ta, this message translates to:

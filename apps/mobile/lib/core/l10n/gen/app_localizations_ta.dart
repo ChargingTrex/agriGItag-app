@@ -628,11 +628,6 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
-  String lotCodeLabel(String code) {
-    return 'லாட் $code';
-  }
-
-  @override
   String get moneyPrompt => 'உங்கள் பயிரும் அதன் விற்பனையும்.';
 
   @override

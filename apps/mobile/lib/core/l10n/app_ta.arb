@@ -916,16 +916,6 @@
       }
     }
   },
-  "lotCodeLabel": "லாட் {code}",
-  "@lotCodeLabel": {
-    "description": "Short lot code under the Sell QR, for staff who type it when the scan fails.",
-    "placeholders": {
-      "code": {
-        "type": "String",
-        "example": "A1B2C3"
-      }
-    }
-  },
   "moneyPrompt": "உங்கள் பயிரும் அதன் விற்பனையும்.",
   "@moneyPrompt": {
     "description": "Spoken sentence at the top of the Money screen. Also its voice prompt id."

@@ -633,11 +633,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lotCodeLabel(String code) {
-    return 'Lot $code';
-  }
-
-  @override
   String get moneyPrompt => 'Your crop and its sale.';
 
   @override
