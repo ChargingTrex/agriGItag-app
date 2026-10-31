@@ -1,8 +1,8 @@
 """lots_batches HTTP routes: lots, ready gate, intakes, batches and the grading / packing / publish gates.
 
 Serves: Dataflow Stages 4–9 and §4 (approval gates), FR9–FR11, FR29, FR49, FR60, FR62, D-005 (client ids),
-D-020 (/v1, additive), D-033 (gates answer 409 `gate_not_met` listing every reason), backend-design.md §1
-lots_batches row.
+D-020 (/v1, additive), D-033 (gates answer 409 `gate_not_met` listing every reason), D-040 (intake by a QC
+officer or FPO admin), backend-design.md §1 lots_batches row.
 Callers: `agritrace.main.create_app` mounts `router` (module discovery, D-004); the mobile app (M07, M11)
 and the portal (P03, P04) through the generated clients (D-003). The lot QR uses `publishing.service.qr_png`
 (B10).
@@ -41,6 +41,7 @@ Staff = Annotated[
     CurrentUser, Depends(require_role(Role.FIELD_OFFICER, Role.QC_OFFICER, Role.FPO_ADMIN, Role.VIEWER))
 ]
 Admin = Annotated[CurrentUser, Depends(require_role(Role.FPO_ADMIN))]
+Receiver = Annotated[CurrentUser, Depends(require_role(Role.QC_OFFICER, Role.FPO_ADMIN))]
 LotId = Annotated[uuid.UUID, Path(description="Lot id.")]
 BatchId = Annotated[uuid.UUID, Path(description="Batch id.")]
 Cursor = Annotated[
@@ -223,22 +224,29 @@ async def mark_ready(lot_id: LotId, session: Session, user: LotKeeper) -> LotOut
     status_code=status.HTTP_201_CREATED,
     summary="Receive a lot at the processor (idempotent on client_id)",
     description=(
-        "Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active "
+        "Stage 7 intake of a lot by a QC officer or FPO admin (D-040; the QC phone sends the same body as "
+        "push kind `lot_intake`). The lot is `ready_for_sale`, or `open`/`drying` and passes the ready gate "
+        "here (latest drying-end moisture at or under the limit). Without `processor_id` the FPO's only own "
+        "processor receives it. Runs the lot rules synchronously and returns the active "
         "flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a "
-        "wrong intake before the lot is batched, send a new intake with `supersedes_intake_id` and "
-        "`correction_reason`; the new row becomes the lot's current intake (D-033)."
+        "wrong intake before the lot is batched (FPO admin only), send a new intake with "
+        "`supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake "
+        "(D-033)."
     ),
     responses={
         200: {"model": IntakeOut, "description": "The intake already existed with this client_id."},
         **_errors(
+            e403="`forbidden`: not a QC officer or FPO admin, or a correction by a QC officer.",
             e404="`not_found`: lot, processor, superseded intake or moisture reading.",
             e409="`client_id_conflict`, or "
             + GATE
-            + "`lot_not_ready`, `lot_already_batched`, `intake_not_current`.",
+            + "`moisture_gate_failed`, `lot_not_ready`, `lot_already_batched`, `intake_not_current`.",
+            e422="`field_required` (`processor_id`: the FPO has zero or several own processors), "
+            "`validation_error`.",
         ),
     },
 )
-async def create_intake(body: IntakeIn, response: Response, session: Session, user: Admin) -> IntakeOut:
+async def create_intake(body: IntakeIn, response: Response, session: Session, user: Receiver) -> IntakeOut:
     """Record an intake; a resend answers 200 with the stored intake.
 
     \f
@@ -246,15 +254,17 @@ async def create_intake(body: IntakeIn, response: Response, session: Session, us
         body: the intake.
         response: used to answer 200 for a resend.
         session: database session.
-        user: the FPO admin.
+        user: the QC officer or FPO admin.
 
     Returns:
         The intake with its reconciliation and flags.
 
     Raises:
+        ForbiddenError: a correction by a QC officer (403).
+        FieldRequiredError: no `processor_id` and not exactly one own processor (422).
         NotFoundError: lot, processor or reading out of scope (404).
         ClientIdConflictError: id used by another FPO (409).
-        GateNotMetError: lot not ready (409).
+        GateNotMetError: lot not ready, moisture gate failed (409).
 
     Side effects:
         Commits the intake, the lot changes and the refreshed flags.

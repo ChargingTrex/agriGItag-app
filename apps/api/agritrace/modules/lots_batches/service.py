@@ -6,13 +6,16 @@ intake (lot ready), batch merge (lots received at that processor; GI re-check, F
 (every earlier gate, second sign-off above `second_signoff_threshold_kg`, no open hold) → `page_builds` row
 and `publishing.build_page`. Every gate re-runs the lot/batch rules now (`rules_flags.run_gate_checks`,
 D-006: the server is the authority) and blocks on any active `hold` flag of the batch, its lots, their
-plots, events or readings. This module never writes `lots.gi_hold_reason` (B08 owns lot holds); GI problems
+plots, events or readings, except the GI-only holds in a batch without the GI label (D-041). This module
+never writes `lots.gi_hold_reason` (B08 owns lot holds); GI problems
 found at merge are recorded on the batch (`gi_block_reasons`).
 
 Serves: PRD §5 (Component Lot, Super Lot / Batch), Dataflow Stages 4–9 and §4, FR9–FR11, FR29, FR30, FR49,
-FR56, FR60, FR62, D-005, D-017 (`lot` fields, `second_signoff_threshold_kg`), backend-design.md §1–§2.
+FR56, FR60, FR62, D-005, D-017 (`lot` fields, `second_signoff_threshold_kg`), D-040 (QC officer intake,
+processor default, ready gate at intake), D-041 (GI-only holds in non-GI batches), backend-design.md §1–§3.
 Callers: `lots_batches.router` (which commits); `publishing.service` and `publishing.router` use `reason`,
-`get_batch` and `enqueue_page_build` (rebuild, QR, B10).
+`get_batch` and `enqueue_page_build` (rebuild, QR, B10); `events.service` uses `create_intake_from_sync`
+(push kind `lot_intake`, it commits).
 Functions flush but never commit, except `_refuse`, which commits the refreshed flags before raising.
 """
 
@@ -20,12 +23,13 @@ import asyncio
 import itertools
 import logging
 import uuid
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from datetime import date
 from decimal import Decimal
 from typing import Any
 
 from geoalchemy2.shape import to_shape
+from pydantic import ValidationError
 from shapely.geometry import Point
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,9 +51,12 @@ from agritrace.core.enums import (
 )
 from agritrace.core.errors import (
     ClientIdConflictError,
+    FieldRequiredError,
+    ForbiddenError,
     GateNotMetError,
     GiRegionMissingError,
     NotFoundError,
+    ValidationFailedError,
 )
 from agritrace.core.schemas import GeoPoint, Page, PracticeTags, Quantity, Reconciliation
 from agritrace.core.time import utcnow
@@ -82,11 +89,19 @@ from agritrace.modules.registry.models import Crop, Farmer, Plot, Processor
 from agritrace.modules.rules_flags import service as rules_service
 from agritrace.modules.rules_flags.models import Flag
 
-__all__ = ["enqueue_page_build", "get_batch", "reason"]
+__all__ = ["create_intake_from_sync", "enqueue_page_build", "get_batch", "reason"]
 
 log = logging.getLogger(__name__)
 
 LIVE_EVENTS = (EventStatus.SUBMITTED, EventStatus.LOCKED)
+INTAKE_ROLES = (Role.QC_OFFICER, Role.FPO_ADMIN)
+
+# DECISION D-041: in a batch without the GI label these two hold codes do not block approve, final packing
+#   or publish; they stay open and each approval row records them. Every other hold blocks (fail closed).
+#   ADV: FR29's non-GI trace path exists; the hold stays visible; an unclassified hold still blocks.
+#   COMPROMISE: a two-code list in code: a new GI-only rule must be added here on purpose (a unit test ties
+#     it to the rules' `CODES`); a lot over the yield ceiling can reach a non-GI page while under review.
+GI_ONLY_HOLD_CODES = frozenset({"plot_outside_gi_region", "yield_over_ceiling"})
 
 
 # --- small pure helpers (unit-tested) ------------------------------------------------------------------
@@ -107,15 +122,31 @@ def reason(code: str, message: str, **extra: Any) -> dict[str, Any]:
     return {"code": code, "message": message, **safe}
 
 
-def hold_reasons(flags: Sequence[Flag]) -> list[dict[str, Any]]:
-    """Turn the active hold flags of a gate check into unmet-gate reasons.
+def _blocks(flag: Flag, gi_label_requested: bool) -> bool:
+    """Tell whether an active flag blocks a batch gate (D-041).
+
+    Args:
+        flag: an active flag from `run_gate_checks`.
+        gi_label_requested: the batch's GI label request.
+
+    Returns:
+        True for a hold, unless its code is in `GI_ONLY_HOLD_CODES` and the batch has no GI label request.
+    """
+    return flag.severity == Severity.HOLD and (gi_label_requested or flag.rule_code not in GI_ONLY_HOLD_CODES)
+
+
+def hold_reasons(flags: Sequence[Flag], gi_label_requested: bool) -> list[dict[str, Any]]:
+    """Turn the blocking hold flags of a gate check into unmet-gate reasons.
 
     Args:
         flags: active flags from `run_gate_checks` (batch, lots, plots, events, readings).
+        gi_label_requested: the batch's GI label request; when False, holds coded in `GI_ONLY_HOLD_CODES`
+            do not block (D-041).
 
     Returns:
-        One `open_hold_flag` reason per hold, naming the rule and the flagged row; plot holds such as
-        `plot_outside_gi_region` are included (B08 P3: they do not change the lot's `gi_eligible`).
+        One `open_hold_flag` reason per blocking hold, naming the rule and the flagged row; plot holds such
+        as `plot_outside_gi_region` are included in a GI-requested batch (B08 P3: they do not change the
+        lot's `gi_eligible`).
     """
     return [
         reason(
@@ -127,7 +158,7 @@ def hold_reasons(flags: Sequence[Flag]) -> list[dict[str, Any]]:
             subject_id=f.subject_id,
         )
         for f in flags
-        if f.severity == Severity.HOLD
+        if _blocks(f, gi_label_requested)
     ]
 
 
@@ -379,12 +410,13 @@ def _approval(batch: Batch, stage: ApprovalStage, user: CurrentUser, flags: Sequ
         batch: the batch.
         stage: the gate.
         user: the approving admin.
-        flags: active flags at the time; the non-hold ones are kept as approved-over (warn/info).
+        flags: active flags at the time; every one that did not block is kept as approved-over (warns,
+            infos and, in a batch without the GI label, the GI-only holds, D-041).
 
     Returns:
         The new (unflushed) approval row.
     """
-    pending = sorted({f.rule_code for f in flags if f.severity != Severity.HOLD})
+    pending = sorted({f.rule_code for f in flags if not _blocks(f, batch.gi_label_requested)})
     return BatchApproval(
         batch_id=batch.id,
         stage=stage,
@@ -658,40 +690,64 @@ async def create_intake(
 ) -> tuple[LotIntake, list[Flag], bool]:
     """Record a processor receiving a ready lot, or correct its intake, and run the lot rules now.
 
-    Serves Stage 7, FR9, FR60, FR11. A correction (`supersedes_intake_id` + `correction_reason`) adds a new
-    row that replaces the lot's current intake (D-033: append-only, corrections add rows); it is refused
-    once the lot is in a batch.
+    Serves Stage 7, FR9, FR60, FR11, D-040. A correction (`supersedes_intake_id` + `correction_reason`) adds
+    a new row that replaces the lot's current intake (D-033: append-only, corrections add rows); it is
+    refused once the lot is in a batch. A first intake of an `open` or `drying` lot runs the ready gate
+    (`mark_ready`) in the same transaction, after every other check.
 
     Args:
         session: database session.
-        user: the accepting FPO admin.
-        data: the intake.
+        user: the accepting QC officer or FPO admin (a correction: FPO admin only).
+        data: the intake; without `processor_id` the FPO's only own processor is used.
 
     Returns:
         `(intake, active flags on the lot, created)`; a resend returns the stored intake, no flags, False.
 
     Raises:
+        ForbiddenError: `forbidden` (403): the caller is not a QC officer or FPO admin, or a QC officer sends
+            a correction.
+        FieldRequiredError: `field_required` (422, `details.field` = `processor_id`): no `processor_id` and
+            the FPO has zero or several own processors.
         ClientIdConflictError: the id belongs to another FPO's intake or to an intake of another lot (409).
         NotFoundError: lot, processor, superseded intake or intake moisture reading (parameter `moisture`,
             stage `intake`, on this lot) not found (404).
-        GateNotMetError: `gate_not_met` (409): `lot_not_ready` (first intake of a lot not `ready_for_sale`),
-            `lot_already_batched` (correction after batching), `intake_not_current` (the intake to correct
-            was already corrected, or the lot is not `received`).
+        GateNotMetError: `gate_not_met` (409): `moisture_gate_failed` (first intake of an open/drying lot
+            whose latest drying-end moisture is missing or above the limit), `lot_not_ready` (first intake of
+            a lot in any other state but `ready_for_sale`), `lot_already_batched` (correction after batching),
+            `intake_not_current` (the intake to correct was already corrected, or the lot is not `received`).
 
     Side effects:
-        Locks the lot row (`SELECT … FOR UPDATE`) so a double submit cannot record two intakes; fills
-        `lots.harvested_kg` / `packed_kg` from the lot's events, sets the lot `received`, inserts the intake
-        with its reconciliation snapshot, flushes, then `run_gate_checks` (B08).
+        Locks the lot row (`SELECT … FOR UPDATE`) so a double submit cannot record two intakes; may set the
+        lot `ready_for_sale` with `ready_at` (ready gate); fills `lots.harvested_kg` / `packed_kg` from the
+        lot's events, sets the lot `received`, inserts the intake with its reconciliation snapshot, flushes,
+        then `run_gate_checks` (B08).
     """
+    if user.role not in INTAKE_ROLES:
+        raise ForbiddenError(details={"required_roles": [str(r) for r in INTAKE_ROLES]})
+    if data.supersedes_intake_id is not None and user.role != Role.FPO_ADMIN:
+        raise ForbiddenError(
+            "Only an FPO admin can correct an intake.", {"required_roles": [str(Role.FPO_ADMIN)]}
+        )
     existing = await session.get(LotIntake, data.client_id)
     if existing is not None:
         if existing.fpo_id != user.fpo_id or existing.lot_id != data.lot_id:
             raise ClientIdConflictError(details={"client_id": str(data.client_id)})
         return existing, [], False
     lot = await _lot_in_scope(session, user, data.lot_id, lock=True)
-    processor = await session.get(Processor, data.processor_id)
-    if processor is None or processor.fpo_id not in (None, user.fpo_id):
-        raise NotFoundError(details={"processor_id": str(data.processor_id)})
+    if data.processor_id is None:
+        # DECISION D-040: an intake without `processor_id` goes to the FPO's only own processor.
+        #   ADV: the QC phone sends no processor and needs no picker while an FPO has one processor.
+        #   COMPROMISE: an FPO with zero or several own processors gets `field_required` until QC mode has a
+        #     processor picker (TODO.md); shared processors (`fpo_id` null) are never picked by default.
+        own = (await session.scalars(select(Processor).where(Processor.fpo_id == user.fpo_id).limit(2))).all()
+        if len(own) != 1:
+            raise FieldRequiredError(details={"field": "processor_id", "entity": "lot_intake"})
+        processor = own[0]
+    else:
+        named = await session.get(Processor, data.processor_id)
+        if named is None or named.fpo_id not in (None, user.fpo_id):
+            raise NotFoundError(details={"processor_id": str(data.processor_id)})
+        processor = named
     if data.intake_moisture_reading_id is not None:
         reading = await session.get(QualityReading, data.intake_moisture_reading_id)
         if reading is None or (reading.lot_id, reading.parameter_code, reading.stage) != (
@@ -712,6 +768,12 @@ async def create_intake(
         if newer or lot.status != LotStatus.RECEIVED:
             msg = "Only the lot's current intake can be corrected."
             await _refuse(session, [reason("intake_not_current", msg, status=lot.status)])
+    elif lot.status in (LotStatus.OPEN, LotStatus.DRYING):
+        # DECISION D-040: the first intake of an open or drying lot runs the ready gate here.
+        #   ADV: no phone calls POST /v1/lots/{id}/ready, so a phone intake would always be `lot_not_ready`;
+        #     the same moisture gate runs at the moment it matters (D-006: the server decides).
+        #   COMPROMISE: the server shows a packed lot as `open` until it is received.
+        await mark_ready(session, user, lot.id)
     elif lot.status != LotStatus.READY_FOR_SALE:
         # shortcut: one intake per lot; a lot sold to two processors needs partial-sale support (product).
         await _refuse(session, [reason("lot_not_ready", "The lot is not ready for sale.", status=lot.status)])
@@ -740,6 +802,37 @@ async def create_intake(
     await session.flush()
     flags = await rules_service.run_gate_checks(session, lot_id=lot.id)
     return intake, flags, True
+
+
+async def create_intake_from_sync(
+    session: AsyncSession, user: CurrentUser, data: Mapping[str, Any]
+) -> tuple[LotIntake, list[Flag], bool]:
+    """Record an intake from the raw `data` of a sync push `lot_intake` entry (D-040).
+
+    Events may not import `schemas` (D-004); same pattern as `registry.service.create_plot_from_sync`.
+
+    Args:
+        session: database session.
+        user: the caller (QC officer or FPO admin).
+        data: the entry data, shaped like `IntakeIn` (with `client_id` = the entry's client id).
+
+    Returns:
+        Same as `create_intake`.
+
+    Raises:
+        ValidationFailedError: the data does not match `IntakeIn` (`validation_error`, 422, with details).
+        AppError: every error of `create_intake` (`forbidden`, `field_required`, `client_id_conflict`,
+            `not_found`, `gate_not_met`).
+
+    Side effects:
+        Same as `create_intake`; the caller commits.
+    """
+    try:
+        body = IntakeIn.model_validate(data)
+    except ValidationError as e:
+        details = [{"loc": err["loc"], "msg": err["msg"], "type": err["type"]} for err in e.errors()]
+        raise ValidationFailedError(details=details) from e
+    return await create_intake(session, user, body)
 
 
 # --- batches -------------------------------------------------------------------------------------------
@@ -1063,7 +1156,7 @@ async def approve_grading(
                 computed=grade.computed_grade,
             )
         )
-    await _refuse(session, reasons + hold_reasons(flags))
+    await _refuse(session, reasons + hold_reasons(flags, batch.gi_label_requested))
     assert grade is not None  # no reasons implies a computation
     batch.status, batch.graded_kg = BatchStatus.GRADED, graded_kg
     batch.computed_grade, batch.standards_profile_version_id = grade.computed_grade, grade.profile_version_id
@@ -1119,7 +1212,7 @@ async def final_packing(
                 graded_kg=batch.graded_kg,
             )
         )
-    await _refuse(session, reasons + hold_reasons(flags))
+    await _refuse(session, reasons + hold_reasons(flags, batch.gi_label_requested))
     batch.packed_kg, batch.pack_date, batch.best_before_date = packed_kg, pack_date, best_before_date
     batch.status = BatchStatus.PACKED
     session.add(_approval(batch, ApprovalStage.FINAL_PACKING, user, flags))
@@ -1160,7 +1253,7 @@ async def publish(session: AsyncSession, user: CurrentUser, batch_id: uuid.UUID)
         reasons.append(reason("final_packing_missing", "Final packing has not been signed off."))
     if batch.second_signoff_by is None and await _needs_second_signoff(session, batch):
         reasons.append(reason("second_signoff_missing", "A second admin must sign off this batch."))
-    await _refuse(session, reasons + hold_reasons(flags))
+    await _refuse(session, reasons + hold_reasons(flags, batch.gi_label_requested))
     batch.status, batch.current_build_no = BatchStatus.PUBLISHED, batch.current_build_no + 1
     build = PageBuild(
         batch_id=batch.id,

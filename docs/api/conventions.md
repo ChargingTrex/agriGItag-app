@@ -132,7 +132,8 @@ Every error response, whatever the status, has this body:
 
 - `POST /v1/sync/push` takes `{device_id, app_version, device_time, metrics[], entries[]}`. Each entry is
   `{client_id, kind, data, assist_session_id?}` with kind `event_version`, `quality_reading`, `plot`,
-  `consent`, `flag_resolution`, `farmer` or `assist_session`; the entry's `client_id` becomes the record's id.
+  `consent`, `flag_resolution`, `farmer`, `assist_session` or `lot_intake`; the entry's `client_id` becomes the
+  record's id.
   `farmer` (D-031): `data` = `FarmerIn`, field officer or FPO admin only, stored `pending`; a farmer id this
   FPO already has → `duplicate`, another FPO's → `client_id_conflict`; assist context never applies to it.
   `POST /v1/farmers` takes the same optional `client_id` (a resend answers 201 with the stored farmer).
@@ -140,13 +141,20 @@ Every error response, whatever the status, has this body:
   rules as `POST /v1/assist/start` (an id of another officer or farmer → `conflict`). An entry's
   `assist_session_id` (on the entry, never inside `data`) records assist mode for that entry only: it must
   be one of your sessions, open or ended (else `assist_session_invalid`), and the entry's farmer must be the
-  session's (consent, plot, event; else `forbidden`). Without it, `X-Assist-Session` applies as before
-  (open sessions only). Order: `farmer` → `assist_session` → the entries that use them. Entries are processed in order, each
+  session's (consent, plot, lot event, reading on a lot; else `forbidden`). A batch reading or batch event
+  with a session → `forbidden`; `farmer`, `flag_resolution`, `assist_session` and `lot_intake` ignore it (no
+  lookup, no assist fields; D-042). Without it, `X-Assist-Session` applies as before (open sessions only).
+  `lot_intake` (D-040): `data` = `IntakeIn` without `client_id` (the entry's `client_id` is the intake id),
+  QC officer or FPO admin (corrections FPO admin only), same rules as `POST /v1/intakes`: absent
+  `processor_id` → the FPO's only own processor (zero or several → `field_required`), an `open`/`drying` lot
+  passes the ready gate first (`gate_not_met` / `moisture_gate_failed`); `server_id` = the intake id. Send a
+  lot's intake reading before its `lot_intake`. An `intake` event version is a timeline note only. Order: `farmer` → `assist_session` → the entries that use them. Entries are processed in order, each
   in its own transaction, and the response is 200 whenever the envelope parses, with one result per entry:
   `accepted` (stored now), `duplicate` (already stored by you: same `server_id`, upload URLs only for photos
   not yet uploaded) or `rejected` with an error body (`validation_error`, `client_id_conflict`,
   `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`,
-  `assist_session_invalid`, `farmer_phone_taken`, `conflict`, `not_implemented_pilot` for
+  `assist_session_invalid`, `farmer_phone_taken`, `conflict`, `field_required`, `gate_not_met`,
+  `not_implemented_pilot` for
   `flag_resolution` in the pilot, ...). A rejected entry never blocks the
   others; fix it or drop it and send the rest again.
 - `event_version` data is `EventVersionIn` (`oneOf` discriminated by `event_type`; one payload schema per
