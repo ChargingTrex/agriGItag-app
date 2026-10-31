@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **farmerId** | **String** | Owner. | 
 **farmingType** | [**FarmingType**](FarmingType.md) | irrigated or rainfed. | 
 **fpoId** | **String** | Owning FPO. | 
+**giTagId** | **String** | GI tag stored at onboarding or correction; null when none was sent (fallback). | [optional] 
 **id** | **String** | Plot id (client-generated, D-005). | 
 **irrigationSource** | [**IrrigationSource**](IrrigationSource.md) | Water source. | 
 **landRecordRef** | **String** | Land-record reference (internal only). | 

@@ -1215,6 +1215,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sync/bundle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List reference-bundle parts
+         * @description Every offline reference part available to you with its `version` and strong `etag`: `plots` (yours, or the FPO's for officers), `crops` (with `event_schema {mandatory, tracks}`), `inputs` (global + FPO), `standards` (full profile rules per crop), `gi_region` (simplified outline ≤ 50 KB + buffer; absent while none is in effect), `farmer_profile`, `villages` (the FPO's district), `fields` (field configuration), `prompts`, `images` (product-picture URLs) and `calendar`. Download a part with `GET /v1/sync/bundle/{part}`; later ask `GET /v1/sync/reference?since=` for changes only.
+         */
+        get: operations["sync_bundle_v1_sync_bundle_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sync/bundle/{part}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download one reference-bundle part
+         * @description The part body in the shape the app parses (docs/api/conventions.md "Reference bundles"). Sends a strong `ETag`; send it back in `If-None-Match` to get 304 without a body. Unknown part → 422.
+         */
+        get: operations["sync_bundle_part_v1_sync_bundle__part__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sync/photos/confirm": {
         parameters: {
             query?: never;
@@ -1235,6 +1275,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sync/pull": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pull server-side changes
+         * @description Changes since `cursor`, oldest first: `flag`, `lot`, `event` (current version, e.g. after an officer correction; photo variant URLs are presigned for 1 hour), `intake`, `notification` (yours) and, on the last page, `photo_pending` (photos still not uploaded 24 h after their entry: resend the entry to get fresh upload URLs). Farmers see their own lots, plots and events; other roles the whole FPO. Every change is an `upsert` by `id`. Store `next_cursor` and call again while `has_more`. Changes appear about 30 s after they are written. An invalid cursor → 422 `validation_error`.
+         */
+        get: operations["sync_pull_v1_sync_pull_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sync/push": {
         parameters: {
             query?: never;
@@ -1249,6 +1309,26 @@ export interface paths {
          * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`; `flag_resolution` is rejected with `not_implemented_pilot` in the pilot. Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
          */
         post: operations["sync_push_v1_sync_push_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sync/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Changed reference-bundle parts
+         * @description Delta sync (plan §13 C2). `since` lists the part versions you hold as `<part>:<version>` joined by commas, e.g. `plots:41,crops:7,fields:90210`. Answers the parts whose version differs from yours, each compared on its own, with body, version and etag; parts you do not list are new to you and included. 304 when nothing changed. A malformed `since` → 422 `validation_error`.
+         */
+        get: operations["sync_reference_v1_sync_reference_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1413,6 +1493,25 @@ export interface components {
              */
             file: string;
         };
+        /**
+         * BundleManifest
+         * @description Every bundle part available to the caller, with version and ETag (FR4, plan §13 C2).
+         */
+        BundleManifest: {
+            /**
+             * Parts
+             * @description Part name -> version and ETag. `gi_region` is absent while no region is in effect.
+             */
+            parts: {
+                [key: string]: components["schemas"]["PartVersion"];
+            };
+        };
+        /**
+         * BundlePart
+         * @description Offline reference-bundle parts (backend-design.md §3; bodies per docs/agents/reports/M03.md).
+         * @enum {string}
+         */
+        BundlePart: "plots" | "crops" | "inputs" | "standards" | "gi_region" | "farmer_profile" | "villages" | "fields" | "prompts" | "images" | "calendar";
         /**
          * ChangeKind
          * @description Why an event version exists (FR25 corrections with reason, FR59 system entries).
@@ -1821,7 +1920,7 @@ export interface components {
             status: components["schemas"]["PhotoStatus"];
             /**
              * Variants
-             * @description {thumb_url, medium_url, jpeg_url, width, height} once variants exist.
+             * @description {thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never listed (it keeps exact EXIF GPS). Re-read for fresh links.
              */
             variants?: {
                 [key: string]: unknown;
@@ -4237,6 +4336,22 @@ export interface components {
             value?: string | null;
         };
         /**
+         * PartVersion
+         * @description Version and ETag of one bundle part as the caller would download it now.
+         */
+        PartVersion: {
+            /**
+             * Etag
+             * @description Strong ETag of the part body; send it in `If-None-Match` for a 304.
+             */
+            etag: string;
+            /**
+             * Version
+             * @description Part version: from `reference_versions` for database-fed parts (only grows), a content fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`.
+             */
+            version: number;
+        };
+        /**
          * PhotoConfirmOut
          * @description Whether storage holds the photo.
          */
@@ -4949,6 +5064,52 @@ export interface components {
          */
         ProfileVersionStatus: "draft" | "published" | "retired";
         /**
+         * PullChange
+         * @description One server-side change for the phone's local copy.
+         */
+        PullChange: {
+            /**
+             * Data
+             * @description The record, lean; decimals are strings, times ISO 8601 UTC.
+             */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Entity
+             * @description Kind of record in `data`.
+             * @enum {string}
+             */
+            entity: "flag" | "lot" | "event" | "intake" | "notification" | "photo_pending";
+            /**
+             * Op
+             * @description Always `upsert`: replace the local row with the same `id`.
+             * @constant
+             */
+            op: "upsert";
+        };
+        /**
+         * PullOut
+         * @description One page of changes since the cursor (backend-design.md §3).
+         */
+        PullOut: {
+            /**
+             * Changes
+             * @description Changes ordered by change time, then id.
+             */
+            changes: components["schemas"]["PullChange"][];
+            /**
+             * Has More
+             * @description True when another page is waiting; call again with `next_cursor`.
+             */
+            has_more: boolean;
+            /**
+             * Next Cursor
+             * @description Opaque cursor to send next time; equals the sent cursor when nothing changed.
+             */
+            next_cursor: string | null;
+        };
+        /**
          * QualityReadingIn
          * @description One measured parameter of a lot or batch at a stage (FR42–FR46). Also the sync `quality_reading` data.
          *
@@ -5214,6 +5375,42 @@ export interface components {
          * @enum {string}
          */
         ReadingStage: "drying_end" | "intake" | "grading" | "storage";
+        /**
+         * ReferenceOut
+         * @description Parts whose version differs from the ones the phone holds (plan §13 C2).
+         */
+        ReferenceOut: {
+            /**
+             * Parts
+             * @description Changed or new parts only.
+             */
+            parts: {
+                [key: string]: components["schemas"]["ReferencePart"];
+            };
+        };
+        /**
+         * ReferencePart
+         * @description A changed bundle part with its body.
+         */
+        ReferencePart: {
+            /**
+             * Body
+             * @description The part body, as `GET /v1/sync/bundle/{part}` returns it.
+             */
+            body: {
+                [key: string]: unknown;
+            };
+            /**
+             * Etag
+             * @description Strong ETag of the part body; send it in `If-None-Match` for a 304.
+             */
+            etag: string;
+            /**
+             * Version
+             * @description Part version: from `reference_versions` for database-fed parts (only grows), a content fingerprint for the others. Send it back in `GET /v1/sync/reference?since=`.
+             */
+            version: number;
+        };
         /**
          * RefreshIn
          * @description Rotate the refresh token. Web clients omit the body field and send the httpOnly cookie.
@@ -8542,6 +8739,95 @@ export interface operations {
             };
         };
     };
+    sync_bundle_v1_sync_bundle_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BundleManifest"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_bundle_part_v1_sync_bundle__part__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Part name, as listed by `GET /v1/sync/bundle`. */
+                part: components["schemas"]["BundlePart"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Unchanged; keep your copy. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `gi_region_missing`: `gi_region` asked while no region is in effect. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     sync_photos_confirm_v1_sync_photos_confirm_post: {
         parameters: {
             query?: never;
@@ -8567,6 +8853,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PhotoConfirmOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_pull_v1_sync_pull_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of your previous pull; omit the first time. */
+                cursor?: string | null;
+                /** @description Most changes per page. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PullOut"];
+                };
+            };
+            /** @description `validation_error`: invalid cursor or limit. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */
@@ -8617,6 +8951,59 @@ export interface operations {
                 };
             };
             /** @description `validation_error`: the envelope does not parse, or more than 50 entries. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_reference_v1_sync_reference_get: {
+        parameters: {
+            query?: {
+                /** @description Part versions you hold: `<part>:<version>,...`; omit for all. */
+                since?: string | null;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceOut"];
+                };
+            };
+            /** @description Unchanged; keep your copy. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `validation_error`: `since` is not `<part>:<version>,...`. */
             422: {
                 headers: {
                     [name: string]: unknown;

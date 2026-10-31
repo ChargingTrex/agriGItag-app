@@ -10,7 +10,7 @@ import 'package:built_value/serializer.dart';
 
 part 'farmer_out.g.dart';
 
-/// A farmer as returned by the API (no phone number: it lives on the sign-in account).
+/// A farmer as returned by the API; the phone (on the sign-in account) only masked (B14).
 ///
 /// Properties:
 /// * [address] - Structured address.
@@ -24,8 +24,9 @@ part 'farmer_out.g.dart';
 /// * [name] - Name in English script.
 /// * [nameLocal] - Name in the local script.
 /// * [noSmartphone] - True when the officer always enters data.
+/// * [phoneMasked] - Phone of the sign-in account with all but the last 4 digits hidden, e.g. `XXXXXX3210`; null without a phone. FPO admins read the full number via GET /v1/farmers/{id}/phone (audited).
 /// * [photoKey] - Object key of the profile photo.
-/// * [status] - pending until an FPO admin approves; then active.
+/// * [status] - pending until an FPO admin approves; then active; suspended when rejected (B14).
 /// * [userId] - Sign-in account; null when no phone was given.
 /// * [villageId] - Village from the directory.
 @BuiltValue()
@@ -74,11 +75,15 @@ abstract class FarmerOut implements Built<FarmerOut, FarmerOutBuilder> {
   @BuiltValueField(wireName: r'no_smartphone')
   bool get noSmartphone;
 
+  /// Phone of the sign-in account with all but the last 4 digits hidden, e.g. `XXXXXX3210`; null without a phone. FPO admins read the full number via GET /v1/farmers/{id}/phone (audited).
+  @BuiltValueField(wireName: r'phone_masked')
+  String? get phoneMasked;
+
   /// Object key of the profile photo.
   @BuiltValueField(wireName: r'photo_key')
   String? get photoKey;
 
-  /// pending until an FPO admin approves; then active.
+  /// pending until an FPO admin approves; then active; suspended when rejected (B14).
   @BuiltValueField(wireName: r'status')
   FarmerStatus get status;
   // enum statusEnum {  pending,  active,  suspended,  };
@@ -179,6 +184,13 @@ class _$FarmerOutSerializer implements PrimitiveSerializer<FarmerOut> {
       object.noSmartphone,
       specifiedType: const FullType(bool),
     );
+    if (object.phoneMasked != null) {
+      yield r'phone_masked';
+      yield serializers.serialize(
+        object.phoneMasked,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'photo_key';
     yield object.photoKey == null
         ? null
@@ -311,6 +323,14 @@ class _$FarmerOutSerializer implements PrimitiveSerializer<FarmerOut> {
             specifiedType: const FullType(bool),
           ) as bool;
           result.noSmartphone = valueDes;
+          break;
+        case r'phone_masked':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.phoneMasked = valueDes;
           break;
         case r'photo_key':
           final valueDes = serializers.deserialize(

@@ -11,20 +11,47 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(AssistEndIn.serializer)
       ..add(AssistSessionOut.serializer)
       ..add(AssistStartIn.serializer)
+      ..add(AvgSalePricePerKg.serializer)
+      ..add(BundleManifest.serializer)
+      ..add(BundlePart.serializer)
       ..add(CeilingKgPerAcre.serializer)
+      ..add(ChangeKind.serializer)
       ..add(ConsentIn.serializer)
       ..add(ConsentOut.serializer)
       ..add(ConsentType.serializer)
+      ..add(CorrectionIn.serializer)
       ..add(CropOut.serializer)
+      ..add(Data.serializer)
       ..add(DeviceOut.serializer)
+      ..add(DryingPayload.serializer)
+      ..add(DryingPayloadPhaseEnum.serializer)
+      ..add(DryingVersion.serializer)
+      ..add(DryingVersionChangeKindEnum.serializer)
+      ..add(DryingVersionEventTypeEnum.serializer)
       ..add(ErrorBody.serializer)
       ..add(ErrorEnvelope.serializer)
+      ..add(EventOut.serializer)
+      ..add(EventPhotoOut.serializer)
+      ..add(EventStatus.serializer)
+      ..add(EventSubject.serializer)
+      ..add(EventType.serializer)
       ..add(FarmerIn.serializer)
       ..add(FarmerInLangEnum.serializer)
       ..add(FarmerOut.serializer)
       ..add(FarmerPatch.serializer)
+      ..add(FarmerPhoneOut.serializer)
+      ..add(FarmerReject.serializer)
       ..add(FarmerStatus.serializer)
       ..add(FarmingType.serializer)
+      ..add(Features.serializer)
+      ..add(FieldSpec.serializer)
+      ..add(FieldSpecStageEnum.serializer)
+      ..add(FieldSpecTypeEnum.serializer)
+      ..add(FieldSpecVisibilityEnum.serializer)
+      ..add(FinalPackingPayload.serializer)
+      ..add(FinalPackingVersion.serializer)
+      ..add(FinalPackingVersionChangeKindEnum.serializer)
+      ..add(FinalPackingVersionEventTypeEnum.serializer)
       ..add(FpoIn.serializer)
       ..add(FpoOut.serializer)
       ..add(GeoPoint.serializer)
@@ -35,16 +62,43 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(GradeOut.serializer)
       ..add(GradeStatus.serializer)
       ..add(GradingIn.serializer)
+      ..add(GradingPayload.serializer)
+      ..add(GradingVersion.serializer)
+      ..add(GradingVersionChangeKindEnum.serializer)
+      ..add(GradingVersionEventTypeEnum.serializer)
+      ..add(HarvestPayload.serializer)
+      ..add(HarvestVersion.serializer)
+      ..add(HarvestVersionChangeKindEnum.serializer)
+      ..add(HarvestVersionEventTypeEnum.serializer)
       ..add(Health.serializer)
       ..add(HoldMarginPct.serializer)
+      ..add(IdDocumentIn.serializer)
+      ..add(IdDocumentInContentTypeEnum.serializer)
+      ..add(IdDocumentUpload.serializer)
+      ..add(IdDocumentUploadMethodEnum.serializer)
+      ..add(ImportReport.serializer)
+      ..add(ImportRowError.serializer)
+      ..add(InputApplicationPayload.serializer)
+      ..add(InputApplicationVersion.serializer)
+      ..add(InputApplicationVersionChangeKindEnum.serializer)
+      ..add(InputApplicationVersionEventTypeEnum.serializer)
       ..add(InputCategory.serializer)
       ..add(InputIn.serializer)
       ..add(InputOut.serializer)
       ..add(InstrumentIn.serializer)
       ..add(InstrumentKind.serializer)
       ..add(InstrumentOut.serializer)
+      ..add(IntakePayload.serializer)
+      ..add(IntakeVersion.serializer)
+      ..add(IntakeVersionChangeKindEnum.serializer)
+      ..add(IntakeVersionEventTypeEnum.serializer)
       ..add(IrrigationSource.serializer)
       ..add(LabCertifiedRequires.serializer)
+      ..add(Labels.serializer)
+      ..add(LandPreparationPayload.serializer)
+      ..add(LandPreparationVersion.serializer)
+      ..add(LandPreparationVersionChangeKindEnum.serializer)
+      ..add(LandPreparationVersionEventTypeEnum.serializer)
       ..add(LocationStatus.serializer)
       ..add(LotGateInput.serializer)
       ..add(LotGateOutput.serializer)
@@ -54,14 +108,28 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Min.serializer)
       ..add(MultiPolygonGeoJSON.serializer)
       ..add(MultiPolygonGeoJSONTypeEnum.serializer)
+      ..add(NotificationChannel.serializer)
+      ..add(NotificationOut.serializer)
+      ..add(NotificationStatus.serializer)
+      ..add(NurseryPayload.serializer)
+      ..add(NurseryVersion.serializer)
+      ..add(NurseryVersionChangeKindEnum.serializer)
+      ..add(NurseryVersionEventTypeEnum.serializer)
       ..add(OrgKind.serializer)
       ..add(OtpRequestIn.serializer)
       ..add(OtpVerifyIn.serializer)
       ..add(OtpVerifyInPlatformEnum.serializer)
       ..add(PackSize.serializer)
+      ..add(PackingPayload.serializer)
+      ..add(PackingVersion.serializer)
+      ..add(PackingVersionChangeKindEnum.serializer)
+      ..add(PackingVersionEventTypeEnum.serializer)
       ..add(PageConsentOut.serializer)
+      ..add(PageEventOut.serializer)
       ..add(PageFarmerOut.serializer)
       ..add(PageInstrumentOut.serializer)
+      ..add(PageNotificationOut.serializer)
+      ..add(PagePlotOut.serializer)
       ..add(PageQualityReadingOut.serializer)
       ..add(PageStandardsProfileOut.serializer)
       ..add(PageVillageOut.serializer)
@@ -73,6 +141,16 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ParameterOutputStatusEnum.serializer)
       ..add(ParameterResult.serializer)
       ..add(ParameterResultOutcomeEnum.serializer)
+      ..add(PartVersion.serializer)
+      ..add(PhotoConfirmOut.serializer)
+      ..add(PhotoConfirmOutStatusEnum.serializer)
+      ..add(PhotoIn.serializer)
+      ..add(PhotoInContentTypeEnum.serializer)
+      ..add(PhotoRef.serializer)
+      ..add(PhotoStatus.serializer)
+      ..add(PhotoUpload.serializer)
+      ..add(PhotoUploadMethodEnum.serializer)
+      ..add(PhotosConfirmIn.serializer)
       ..add(PinChangeIn.serializer)
       ..add(PinIn.serializer)
       ..add(PinMethod.serializer)
@@ -85,12 +163,25 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PlotOut.serializer)
       ..add(PolygonGeoJSON.serializer)
       ..add(PolygonGeoJSONTypeEnum.serializer)
+      ..add(PricePerKg.serializer)
+      ..add(ProblemPayload.serializer)
+      ..add(ProblemPayloadProblemTypeEnum.serializer)
+      ..add(ProblemVersion.serializer)
+      ..add(ProblemVersionChangeKindEnum.serializer)
+      ..add(ProblemVersionEventTypeEnum.serializer)
       ..add(ProcessorIn.serializer)
       ..add(ProcessorOut.serializer)
+      ..add(ProducerGroupIn.serializer)
+      ..add(ProducerGroupKind.serializer)
+      ..add(ProducerGroupOut.serializer)
       ..add(ProfileVersionIn.serializer)
       ..add(ProfileVersionInStatusEnum.serializer)
       ..add(ProfileVersionOut.serializer)
       ..add(ProfileVersionStatus.serializer)
+      ..add(PullChange.serializer)
+      ..add(PullChangeEntityEnum.serializer)
+      ..add(PullChangeOpEnum.serializer)
+      ..add(PullOut.serializer)
       ..add(QualityReadingIn.serializer)
       ..add(QualityReadingOut.serializer)
       ..add(QuantityInput.serializer)
@@ -99,6 +190,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RangeOutput.serializer)
       ..add(ReadingSource.serializer)
       ..add(ReadingStage.serializer)
+      ..add(ReferenceOut.serializer)
+      ..add(ReferencePart.serializer)
       ..add(RefreshIn.serializer)
       ..add(RegionCheckOut.serializer)
       ..add(RegionCheckOutStatusEnum.serializer)
@@ -108,6 +201,11 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(SessionOutKindEnum.serializer)
       ..add(SignedQuantityInput.serializer)
       ..add(SignedQuantityOutput.serializer)
+      ..add(SowingPayload.serializer)
+      ..add(SowingPayloadMethodEnum.serializer)
+      ..add(SowingVersion.serializer)
+      ..add(SowingVersionChangeKindEnum.serializer)
+      ..add(SowingVersionEventTypeEnum.serializer)
       ..add(StandardRef.serializer)
       ..add(StandardsProfileOut.serializer)
       ..add(StandardsProfileRulesInput.serializer)
@@ -115,12 +213,21 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(StandardsProfileRulesOutput.serializer)
       ..add(StandardsProfileRulesOutputSchemaVersionEnum.serializer)
       ..add(StandardsScheme.serializer)
+      ..add(SyncEntry.serializer)
+      ..add(SyncEntryKindEnum.serializer)
+      ..add(SyncMetricIn.serializer)
+      ..add(SyncPushIn.serializer)
+      ..add(SyncPushOut.serializer)
+      ..add(SyncResult.serializer)
+      ..add(SyncResultStatusEnum.serializer)
+      ..add(ThreeClocks.serializer)
       ..add(Tolerance.serializer)
       ..add(ToleranceBufferM.serializer)
       ..add(TrailRuleInput.serializer)
       ..add(TrailRuleInputRuleEnum.serializer)
       ..add(TrailRuleOutput.serializer)
       ..add(TrailRuleOutputRuleEnum.serializer)
+      ..add(UndoIn.serializer)
       ..add(UserOut.serializer)
       ..add(Value.serializer)
       ..add(Value1.serializer)
@@ -148,14 +255,68 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(ConsentOut)]),
           () => ListBuilder<ConsentOut>())
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(EventOut)]),
+          () => ListBuilder<EventOut>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(FarmerOut)]),
           () => ListBuilder<FarmerOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ImportRowError)]),
+          () => ListBuilder<ImportRowError>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(InstrumentOut)]),
           () => ListBuilder<InstrumentOut>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(MembershipOut)]),
           () => ListBuilder<MembershipOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(NotificationOut)]),
+          () => ListBuilder<NotificationOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoIn)]),
+          () => ListBuilder<PhotoIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoRef)]),
+          () => ListBuilder<PhotoRef>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PhotoUpload)]),
+          () => ListBuilder<PhotoUpload>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PlotOut)]),
+          () => ListBuilder<PlotOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PullChange)]),
+          () => ListBuilder<PullChange>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(QualityReadingOut)]),
           () => ListBuilder<QualityReadingOut>())
@@ -251,12 +412,40 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(TrailRuleOutput)]),
           () => ListBuilder<TrailRuleOutput>())
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(SyncEntry)]),
+          () => ListBuilder<SyncEntry>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(SyncMetricIn)]),
+          () => ListBuilder<SyncMetricIn>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(SyncResult)]),
+          () => ListBuilder<SyncResult>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(VillageOut)]),
           () => ListBuilder<VillageOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(num)]),
+          () => ListBuilder<num>())
       ..addBuilderFactory(
           const FullType(BuiltMap,
               const [const FullType(String), const FullType(ParameterResult)]),
           () => MapBuilder<String, ParameterResult>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap,
+              const [const FullType(String), const FullType(PartVersion)]),
+          () => MapBuilder<String, PartVersion>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap,
+              const [const FullType(String), const FullType(ReferencePart)]),
+          () => MapBuilder<String, ReferencePart>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltMap, const [const FullType(String), const FullType(String)]),
+          () => MapBuilder<String, String>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltMap, const [const FullType(String), const FullType(String)]),
+          () => MapBuilder<String, String>())
       ..addBuilderFactory(
           const FullType(BuiltMap, const [
             const FullType(String),
@@ -268,7 +457,46 @@ Serializers _$serializers = (Serializers().toBuilder()
             const FullType(String),
             const FullType.nullable(JsonObject)
           ]),
-          () => MapBuilder<String, JsonObject?>()))
+          () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(EventPhotoOut)]),
+          () => ListBuilder<EventPhotoOut>()))
     .build();
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

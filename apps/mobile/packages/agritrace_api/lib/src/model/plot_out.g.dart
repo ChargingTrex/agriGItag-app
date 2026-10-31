@@ -22,6 +22,8 @@ class _$PlotOut extends PlotOut {
   @override
   final String fpoId;
   @override
+  final String? giTagId;
+  @override
   final String id;
   @override
   final IrrigationSource? irrigationSource;
@@ -67,6 +69,7 @@ class _$PlotOut extends PlotOut {
       required this.farmerId,
       this.farmingType,
       required this.fpoId,
+      this.giTagId,
       required this.id,
       this.irrigationSource,
       this.landRecordRef,
@@ -103,6 +106,7 @@ class _$PlotOut extends PlotOut {
         farmerId == other.farmerId &&
         farmingType == other.farmingType &&
         fpoId == other.fpoId &&
+        giTagId == other.giTagId &&
         id == other.id &&
         irrigationSource == other.irrigationSource &&
         landRecordRef == other.landRecordRef &&
@@ -132,6 +136,7 @@ class _$PlotOut extends PlotOut {
     _$hash = $jc(_$hash, farmerId.hashCode);
     _$hash = $jc(_$hash, farmingType.hashCode);
     _$hash = $jc(_$hash, fpoId.hashCode);
+    _$hash = $jc(_$hash, giTagId.hashCode);
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, irrigationSource.hashCode);
     _$hash = $jc(_$hash, landRecordRef.hashCode);
@@ -163,6 +168,7 @@ class _$PlotOut extends PlotOut {
           ..add('farmerId', farmerId)
           ..add('farmingType', farmingType)
           ..add('fpoId', fpoId)
+          ..add('giTagId', giTagId)
           ..add('id', id)
           ..add('irrigationSource', irrigationSource)
           ..add('landRecordRef', landRecordRef)
@@ -218,6 +224,10 @@ class PlotOutBuilder implements Builder<PlotOut, PlotOutBuilder> {
   String? _fpoId;
   String? get fpoId => _$this._fpoId;
   set fpoId(String? fpoId) => _$this._fpoId = fpoId;
+
+  String? _giTagId;
+  String? get giTagId => _$this._giTagId;
+  set giTagId(String? giTagId) => _$this._giTagId = giTagId;
 
   String? _id;
   String? get id => _$this._id;
@@ -312,6 +322,7 @@ class PlotOutBuilder implements Builder<PlotOut, PlotOutBuilder> {
       _farmerId = $v.farmerId;
       _farmingType = $v.farmingType;
       _fpoId = $v.fpoId;
+      _giTagId = $v.giTagId;
       _id = $v.id;
       _irrigationSource = $v.irrigationSource;
       _landRecordRef = $v.landRecordRef;
@@ -363,6 +374,7 @@ class PlotOutBuilder implements Builder<PlotOut, PlotOutBuilder> {
             farmingType: farmingType,
             fpoId: BuiltValueNullFieldError.checkNotNull(
                 fpoId, r'PlotOut', 'fpoId'),
+            giTagId: giTagId,
             id: BuiltValueNullFieldError.checkNotNull(id, r'PlotOut', 'id'),
             irrigationSource: irrigationSource,
             landRecordRef: landRecordRef,
