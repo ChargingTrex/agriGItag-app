@@ -37,6 +37,8 @@ dependencies:
   url_launcher: ^6.3.2
   smart_auth: ^3.2.0
   uuid: ^4.6.0
+  # Draws the onboarding handoff QR (lib/features/onboarding_farmer/handoff_step.dart, M09).
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +60,10 @@ flutter:
     - assets/prompts.json
     - assets/audio/ta/
     - assets/audio/en/
+    # Picture cards of the onboarding wizard (M09); 96 px WebP placeholders until the photographed set lands.
+    - assets/images/water/
+    - assets/images/practice/
+    - assets/images/crops/
   fonts:
     # Tamil-block subset of Noto Sans Tamil Regular (35 KB, SIL OFL 1.1, licence in assets/fonts/).
     # DECISION D-016: Tamil ships inside the app so first run works offline with consistent glyphs.

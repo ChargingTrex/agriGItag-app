@@ -176,6 +176,180 @@ class AppLocalizationsTa extends AppLocalizations {
   String get sessionEnded => 'நீங்கள் வெளியேற்றப்பட்டீர்கள். மீண்டும் உள்நுழையவும்.';
 
   @override
+  String get onboardTitle => 'விவசாயி சேர்';
+
+  @override
+  String onboardStepOf(int step, int total) {
+    return '$step / $total';
+  }
+
+  @override
+  String get onboardNext => 'அடுத்து';
+
+  @override
+  String get onboardPhonePrompt => 'விவசாயியின் கைபேசி எண்ணை உள்ளிடவும்.';
+
+  @override
+  String get onboardConsentMessage =>
+      'உங்கள் பெயர், புகைப்படம், கைபேசி எண், உங்கள் வயலின் இருப்பிடம் மற்றும் விவசாயப் பணிகளின் புகைப்படங்களைச் சேமிப்போம். உங்கள் மிளகாய் உண்மையானது என்று நிரூபிக்கவும் உங்களுக்குப் பணம் தரவும் உங்கள் உழவர் உற்பத்தியாளர் நிறுவனம் இவற்றைப் பயன்படுத்தும். உங்கள் கைபேசி எண்ணும் வயலின் சரியான இடமும் வாங்குபவர்களுக்குக் காட்டப்படாது. சம்மதமா?';
+
+  @override
+  String get onboardAgree => 'சம்மதம்';
+
+  @override
+  String get onboardWhoPrompt => 'விவசாயியைப் புகைப்படம் எடுத்து, பெயரை உள்ளிட்டு, மொழியைத் தேர்ந்தெடுக்கவும்.';
+
+  @override
+  String get onboardTakePhoto => 'படம் எடு';
+
+  @override
+  String get onboardNameLabel => 'விவசாயி பெயர்';
+
+  @override
+  String get onboardSurveyLabel => 'சர்வே எண் (தெரிந்தால்)';
+
+  @override
+  String get onboardLocationPrompt => 'வயலுக்குள் நின்று பொத்தானை அழுத்தவும்.';
+
+  @override
+  String get onboardInField => 'வயலில் நிற்கிறேன்';
+
+  @override
+  String onboardPinSaved(int metres) {
+    return 'இருப்பிடம் சேமிக்கப்பட்டது ($metres மீ).';
+  }
+
+  @override
+  String get onboardNoFixYet => 'இன்னும் இருப்பிடம் கிடைக்கவில்லை. திறந்த வெளிக்குச் செல்லவும்.';
+
+  @override
+  String get onboardLandPrompt => 'இந்த வயல் எவ்வளவு பெரியது? ஏக்கர் அல்லது சென்ட் தேர்ந்தெடுக்கவும்.';
+
+  @override
+  String get unitAcres => 'ஏக்கர்';
+
+  @override
+  String get unitCents => 'சென்ட்';
+
+  @override
+  String get onboardBoundaryPrompt => 'வயலின் எல்லையில் நடக்கவும். தொடங்கிய இடத்தில் நிறுத்து அழுத்தவும்.';
+
+  @override
+  String get onboardStartWalking => 'நடக்கத் தொடங்கு';
+
+  @override
+  String get onboardStop => 'நிறுத்து';
+
+  @override
+  String get onboardWalkAgain => 'மீண்டும் நட';
+
+  @override
+  String onboardDeclared(String acres) {
+    return 'சொன்னது: $acres ஏக்கர்';
+  }
+
+  @override
+  String onboardWalked(String acres) {
+    return 'நடந்தது: $acres ஏக்கர்';
+  }
+
+  @override
+  String get onboardAreaMismatch => 'நடந்த பரப்பும் சொன்ன அளவும் 20 %-க்கு மேல் வேறுபடுகின்றன. அலுவலகம் சரிபார்க்கும்.';
+
+  @override
+  String get onboardTooFewPoints => 'புள்ளிகள் போதவில்லை. முழு எல்லையிலும் நடக்கவும்.';
+
+  @override
+  String get onboardWaterPrompt => 'வயல் பாசனமா மானாவாரியா? தண்ணீர் எங்கிருந்து வருகிறது?';
+
+  @override
+  String get farmingIrrigated => 'பாசனம்';
+
+  @override
+  String get farmingRainfed => 'மானாவாரி';
+
+  @override
+  String get waterWell => 'கிணறு';
+
+  @override
+  String get waterBorewell => 'ஆழ்துளை';
+
+  @override
+  String get waterCanal => 'கால்வாய்';
+
+  @override
+  String get waterTank => 'ஏரி';
+
+  @override
+  String get waterRain => 'மழை மட்டும்';
+
+  @override
+  String get onboardSoilPrompt => 'மண் எப்படி?';
+
+  @override
+  String get soilRed => 'செம்மண்';
+
+  @override
+  String get soilBlack => 'கரிசல்';
+
+  @override
+  String get soilSandy => 'மணல்';
+
+  @override
+  String get soilAlluvial => 'வண்டல்';
+
+  @override
+  String get onboardCropPrompt => 'இந்த வயலில் என்ன பயிர்?';
+
+  @override
+  String get onboardNoCrops => 'பயிர் பட்டியல் இன்னும் வரவில்லை.';
+
+  @override
+  String get onboardGiInside => 'புவிசார் பகுதிக்குள்';
+
+  @override
+  String get onboardGiReview => 'சரிபார்க்க வேண்டும்';
+
+  @override
+  String get onboardFarmerPhone => 'விவசாயி கைபேசி';
+
+  @override
+  String get onboardNoSmartphone => 'திறன்பேசி இல்லை';
+
+  @override
+  String get onboardSave => 'சேமி';
+
+  @override
+  String get onboardPhoneTaken => 'இந்த எண் ஏற்கனவே பதிவில் உள்ளது.';
+
+  @override
+  String get onboardHandoffPrompt =>
+      'விவசாயியின் கைபேசியில் இந்தக் குறியீட்டை ஸ்கேன் செய்து, எஸ்எம்எஸ் குறியீட்டுடன் உள்நுழைந்து, குரல் வழிகாட்டியை இயக்கவும்.';
+
+  @override
+  String onboardQrLabel(String phone) {
+    return '$phone உள்நுழைவுக் குறியீடு';
+  }
+
+  @override
+  String get onboardVoiceTour => 'குரல் வழிகாட்டி';
+
+  @override
+  String get onboardTour =>
+      'அக்ரிட்ரேஸுக்கு வரவேற்கிறோம். மேலே உள்ள பெரிய அட்டை உங்கள் அடுத்த வேலையைக் காட்டும். அதை அழுத்தி, படம் எடுத்து, சரி குறியை அழுத்தவும். மேகம் அனுப்பக் காத்திருக்கும் பதிவுகளைக் காட்டும். உதவிக்கு அலுவலரை அழை அழுத்தவும்.';
+
+  @override
+  String get onboardDone => 'முடிந்தது';
+
+  @override
+  String onboardSummary(String name, int count) {
+    return '$name: $count வயல் சேமிக்கப்பட்டது';
+  }
+
+  @override
+  String get onboardAnotherPlot => 'இன்னொரு நிலம்';
+
+  @override
   String get signOut => 'வெளியேறு';
 
   @override

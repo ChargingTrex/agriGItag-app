@@ -1,7 +1,8 @@
 // go_router configuration: role-based redirect and the /assist/:farmerId scope.
 // Requirement: plan §7.2 M00 and M06 ("farmer never reaches officer routes"), D-013, UserFlows §"Who uses
 //   what" (a farmer only ever sees the farmer screens; the field officer can act for a farmer).
-//   M06 wires the real sign-in screens (UserFlows §Log in once) and the /settings placeholder with sign-out.
+//   M06 wires the real sign-in screens (UserFlows §Log in once) and the /settings placeholder with sign-out;
+//   M09 adds /officer/onboard (UserFlows §Onboarding a farmer).
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
 //   test/widget/router_test.dart.
 
@@ -14,6 +15,7 @@ import 'package:agritrace_api/agritrace_api.dart' show PinRequiredOut;
 import '../../features/auth/otp_screen.dart';
 import '../../features/auth/phone_screen.dart';
 import '../../features/auth/pin_screen.dart';
+import '../../features/onboarding_farmer/onboarding_wizard.dart';
 import '../l10n/gen/app_localizations.dart';
 import 'placeholder_screen.dart';
 import 'session.dart';
@@ -79,6 +81,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/officer',
         builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).roleFieldOfficer),
+        // M09: the officer's onboarding wizard (UserFlows §Onboarding a farmer); M10's home links "Add farmer" here.
+        routes: [GoRoute(path: 'onboard', builder: (context, _) => const OnboardingWizard())],
       ),
       GoRoute(
         path: '/qc',

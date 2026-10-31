@@ -242,6 +242,262 @@
   "@sessionEnded": {
     "description": "Shown on the phone step when the server ended the session (refresh token reused or the phone was signed out remotely)."
   },
+  "onboardTitle": "விவசாயி சேர்",
+  "@onboardTitle": {
+    "description": "App bar title of the officer's onboarding wizard (UserFlows §Onboarding a farmer); at most two words."
+  },
+  "onboardStepOf": "{step} / {total}",
+  "@onboardStepOf": {
+    "description": "Step counter in the onboarding app bar.",
+    "placeholders": {
+      "step": {
+        "type": "int",
+        "example": "3"
+      },
+      "total": {
+        "type": "int",
+        "example": "9"
+      }
+    }
+  },
+  "onboardNext": "அடுத்து",
+  "@onboardNext": {
+    "description": "Button that moves to the next onboarding step; disabled while a required field is empty."
+  },
+  "onboardPhonePrompt": "விவசாயியின் கைபேசி எண்ணை உள்ளிடவும்.",
+  "@onboardPhonePrompt": {
+    "description": "Onboarding step 1 prompt (voice clip id)."
+  },
+  "onboardConsentMessage": "உங்கள் பெயர், புகைப்படம், கைபேசி எண், உங்கள் வயலின் இருப்பிடம் மற்றும் விவசாயப் பணிகளின் புகைப்படங்களைச் சேமிப்போம். உங்கள் மிளகாய் உண்மையானது என்று நிரூபிக்கவும் உங்களுக்குப் பணம் தரவும் உங்கள் உழவர் உற்பத்தியாளர் நிறுவனம் இவற்றைப் பயன்படுத்தும். உங்கள் கைபேசி எண்ணும் வயலின் சரியான இடமும் வாங்குபவர்களுக்குக் காட்டப்படாது. சம்மதமா?",
+  "@onboardConsentMessage": {
+    "description": "Onboarding step 2: the consent message played as a recording and shown as text (FR41, CLAUDE.md §6). Version v1."
+  },
+  "onboardAgree": "சம்மதம்",
+  "@onboardAgree": {
+    "description": "The farmer's big consent button (onboarding step 2); at most two words."
+  },
+  "onboardWhoPrompt": "விவசாயியைப் புகைப்படம் எடுத்து, பெயரை உள்ளிட்டு, மொழியைத் தேர்ந்தெடுக்கவும்.",
+  "@onboardWhoPrompt": {
+    "description": "Onboarding step 3 prompt (voice clip id)."
+  },
+  "onboardTakePhoto": "படம் எடு",
+  "@onboardTakePhoto": {
+    "description": "Button that opens the camera for the farmer's photo; at most two words."
+  },
+  "onboardNameLabel": "விவசாயி பெயர்",
+  "@onboardNameLabel": {
+    "description": "Label of the name box the officer types into (onboarding step 3)."
+  },
+  "onboardSurveyLabel": "சர்வே எண் (தெரிந்தால்)",
+  "@onboardSurveyLabel": {
+    "description": "Label of the optional survey / patta number box (onboarding step 5, FR65)."
+  },
+  "onboardLocationPrompt": "வயலுக்குள் நின்று பொத்தானை அழுத்தவும்.",
+  "@onboardLocationPrompt": {
+    "description": "Onboarding step 4 prompt (voice clip id)."
+  },
+  "onboardInField": "வயலில் நிற்கிறேன்",
+  "@onboardInField": {
+    "description": "The farmer's button 'I am standing in my field' (onboarding step 4), in at most two words."
+  },
+  "onboardPinSaved": "இருப்பிடம் சேமிக்கப்பட்டது ({metres} மீ).",
+  "@onboardPinSaved": {
+    "description": "Shown once the plot pin is saved, with its GPS accuracy in metres.",
+    "placeholders": {
+      "metres": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "onboardNoFixYet": "இன்னும் இருப்பிடம் கிடைக்கவில்லை. திறந்த வெளிக்குச் செல்லவும்.",
+  "@onboardNoFixYet": {
+    "description": "Shown when 'Save anyway' is tapped before any GPS fix arrived."
+  },
+  "onboardLandPrompt": "இந்த வயல் எவ்வளவு பெரியது? ஏக்கர் அல்லது சென்ட் தேர்ந்தெடுக்கவும்.",
+  "@onboardLandPrompt": {
+    "description": "Onboarding step 5 prompt (voice clip id)."
+  },
+  "unitAcres": "ஏக்கர்",
+  "@unitAcres": {
+    "description": "Unit card and stepper unit: acres (100 cents = 1 acre)."
+  },
+  "unitCents": "சென்ட்",
+  "@unitCents": {
+    "description": "Unit card and stepper unit: cents (100 cents = 1 acre)."
+  },
+  "onboardBoundaryPrompt": "வயலின் எல்லையில் நடக்கவும். தொடங்கிய இடத்தில் நிறுத்து அழுத்தவும்.",
+  "@onboardBoundaryPrompt": {
+    "description": "Onboarding step 6 prompt (voice clip id)."
+  },
+  "onboardStartWalking": "நடக்கத் தொடங்கு",
+  "@onboardStartWalking": {
+    "description": "Starts recording GPS points of the walked boundary; at most two words."
+  },
+  "onboardStop": "நிறுத்து",
+  "@onboardStop": {
+    "description": "Stops recording the walked boundary."
+  },
+  "onboardWalkAgain": "மீண்டும் நட",
+  "@onboardWalkAgain": {
+    "description": "Discards the walked boundary and starts again; at most two words."
+  },
+  "onboardDeclared": "சொன்னது: {acres} ஏக்கர்",
+  "@onboardDeclared": {
+    "description": "Declared land size in acres beside the walked area.",
+    "placeholders": {
+      "acres": {
+        "type": "String",
+        "example": "1.00"
+      }
+    }
+  },
+  "onboardWalked": "நடந்தது: {acres} ஏக்கர்",
+  "@onboardWalked": {
+    "description": "Walked boundary area in acres beside the declared size.",
+    "placeholders": {
+      "acres": {
+        "type": "String",
+        "example": "2.40"
+      }
+    }
+  },
+  "onboardAreaMismatch": "நடந்த பரப்பும் சொன்ன அளவும் 20 %-க்கு மேல் வேறுபடுகின்றன. அலுவலகம் சரிபார்க்கும்.",
+  "@onboardAreaMismatch": {
+    "description": "Mismatch note when walked and declared areas differ by more than 20 % (FR66)."
+  },
+  "onboardTooFewPoints": "புள்ளிகள் போதவில்லை. முழு எல்லையிலும் நடக்கவும்.",
+  "@onboardTooFewPoints": {
+    "description": "Shown after Stop when fewer than 3 GPS points were recorded."
+  },
+  "onboardWaterPrompt": "வயல் பாசனமா மானாவாரியா? தண்ணீர் எங்கிருந்து வருகிறது?",
+  "@onboardWaterPrompt": {
+    "description": "Onboarding step 7 prompt (voice clip id), FR54."
+  },
+  "farmingIrrigated": "பாசனம்",
+  "@farmingIrrigated": {
+    "description": "Farming type card: irrigated (FR54)."
+  },
+  "farmingRainfed": "மானாவாரி",
+  "@farmingRainfed": {
+    "description": "Farming type card: rainfed (FR54)."
+  },
+  "waterWell": "கிணறு",
+  "@waterWell": {
+    "description": "Water source card: open well."
+  },
+  "waterBorewell": "ஆழ்துளை",
+  "@waterBorewell": {
+    "description": "Water source card: borewell."
+  },
+  "waterCanal": "கால்வாய்",
+  "@waterCanal": {
+    "description": "Water source card: canal."
+  },
+  "waterTank": "ஏரி",
+  "@waterTank": {
+    "description": "Water source card: tank (village reservoir)."
+  },
+  "waterRain": "மழை மட்டும்",
+  "@waterRain": {
+    "description": "Water source card: rain only."
+  },
+  "onboardSoilPrompt": "மண் எப்படி?",
+  "@onboardSoilPrompt": {
+    "description": "Soil step prompt (voice clip id); shown only when plot.soil_type is enabled."
+  },
+  "soilRed": "செம்மண்",
+  "@soilRed": {
+    "description": "Soil card: red soil."
+  },
+  "soilBlack": "கரிசல்",
+  "@soilBlack": {
+    "description": "Soil card: black (cotton) soil."
+  },
+  "soilSandy": "மணல்",
+  "@soilSandy": {
+    "description": "Soil card: sandy soil."
+  },
+  "soilAlluvial": "வண்டல்",
+  "@soilAlluvial": {
+    "description": "Soil card: alluvial soil."
+  },
+  "onboardCropPrompt": "இந்த வயலில் என்ன பயிர்?",
+  "@onboardCropPrompt": {
+    "description": "Onboarding step 8 prompt (voice clip id)."
+  },
+  "onboardNoCrops": "பயிர் பட்டியல் இன்னும் வரவில்லை.",
+  "@onboardNoCrops": {
+    "description": "Shown on the crop step before the reference bundle arrived."
+  },
+  "onboardGiInside": "புவிசார் பகுதிக்குள்",
+  "@onboardGiInside": {
+    "description": "GI preview: the pin is inside (or at the edge of) the GI production area (D-006: preview only)."
+  },
+  "onboardGiReview": "சரிபார்க்க வேண்டும்",
+  "@onboardGiReview": {
+    "description": "GI preview: outside the GI area, or the outline is not downloaded; the office reviews it."
+  },
+  "onboardFarmerPhone": "விவசாயி கைபேசி",
+  "@onboardFarmerPhone": {
+    "description": "Saves and goes to step 9 (set up the farmer's own phone); at most two words."
+  },
+  "onboardNoSmartphone": "திறன்பேசி இல்லை",
+  "@onboardNoSmartphone": {
+    "description": "Saves and stops after step 8: the farmer gets voice calls and SMS instead; at most two words."
+  },
+  "onboardSave": "சேமி",
+  "@onboardSave": {
+    "description": "Saves another plot of an already saved farmer."
+  },
+  "onboardPhoneTaken": "இந்த எண் ஏற்கனவே பதிவில் உள்ளது.",
+  "@onboardPhoneTaken": {
+    "description": "Save failure: the mobile number belongs to another farmer (farmer_phone_taken)."
+  },
+  "onboardHandoffPrompt": "விவசாயியின் கைபேசியில் இந்தக் குறியீட்டை ஸ்கேன் செய்து, எஸ்எம்எஸ் குறியீட்டுடன் உள்நுழைந்து, குரல் வழிகாட்டியை இயக்கவும்.",
+  "@onboardHandoffPrompt": {
+    "description": "Onboarding step 9 prompt (voice clip id)."
+  },
+  "onboardQrLabel": "{phone} உள்நுழைவுக் குறியீடு",
+  "@onboardQrLabel": {
+    "description": "Screen-reader label of the handoff QR code; it holds only the phone number.",
+    "placeholders": {
+      "phone": {
+        "type": "String",
+        "example": "+919876543210"
+      }
+    }
+  },
+  "onboardVoiceTour": "குரல் வழிகாட்டி",
+  "@onboardVoiceTour": {
+    "description": "Plays the 60-second voice tour on the farmer's phone; at most two words."
+  },
+  "onboardTour": "அக்ரிட்ரேஸுக்கு வரவேற்கிறோம். மேலே உள்ள பெரிய அட்டை உங்கள் அடுத்த வேலையைக் காட்டும். அதை அழுத்தி, படம் எடுத்து, சரி குறியை அழுத்தவும். மேகம் அனுப்பக் காத்திருக்கும் பதிவுகளைக் காட்டும். உதவிக்கு அலுவலரை அழை அழுத்தவும்.",
+  "@onboardTour": {
+    "description": "Text of the 60-second voice tour played at handoff (onboarding step 9); the recording is the tour."
+  },
+  "onboardDone": "முடிந்தது",
+  "@onboardDone": {
+    "description": "Closes the onboarding wizard and returns to the officer home."
+  },
+  "onboardSummary": "{name}: {count} வயல் சேமிக்கப்பட்டது",
+  "@onboardSummary": {
+    "description": "Farmer summary after saving; count is the number of plots saved for this farmer.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Murugan"
+      },
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "onboardAnotherPlot": "இன்னொரு நிலம்",
+  "@onboardAnotherPlot": {
+    "description": "Starts the location-to-crop steps again for the same farmer ('Add another plot'); at most two words."
+  },
   "signOut": "வெளியேறு",
   "@signOut": {
     "description": "Button that signs this phone out (settings, and the device-in-use sheet); at most two words."
