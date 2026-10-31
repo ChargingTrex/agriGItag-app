@@ -1,4 +1,4 @@
-// Widget tests per screen state of the M07 farmer screens: home (task card, fallback, assist bar), deep links (F17),
+// Widget tests per screen state of the M07 farmer screens: home (task card, fallback), deep links (F17),
 // unknown routes, lot picker, no lot, field configuration (D-017: hidden fields, required fields, YAML labels), yield
 // preview, drying reminder, camera refused.
 // Requirement: plan §7.2 M07; UserFlows §Farmer home screen, §Each farm event, §When things go wrong; D-017.
@@ -10,7 +10,6 @@ import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/sync/enum_wire_names.dart';
 import 'package:agritrace/features/event_log/farm_event.dart';
 import 'package:agritrace/features/event_log/choose_event_screen.dart';
-import 'package:agritrace/features/event_log/event_log_controller.dart';
 import 'package:agritrace/core/router/placeholder_screen.dart';
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter/material.dart';
@@ -68,18 +67,6 @@ void main() {
     await h.tap(tester, find.text('Sell'));
     expect(find.byType(PlaceholderScreen), findsOneWidget);
     expect(find.text('Coming soon.'), findsOneWidget);
-    await h.dispose(tester);
-  });
-
-  testWidgets('assist mode: bar on the home screen, entry recorded with assistMode', (tester) async {
-    final h = FlowHarness(overrides: [assistFarmerProvider.overrideWithValue((farmerId: 'farmer-1', name: 'Murugan'))]);
-    await h.start(tester);
-    expect(find.text('Logging for: Murugan'), findsOneWidget);
-    h.go('/log/sowing');
-    await tester.pumpAndSettle();
-    await h.tap(tester, find.text('Take photo'));
-    await h.tap(tester, find.text('Correct'));
-    expect((await h.saved('sowing')).single.assistMode, isTrue);
     await h.dispose(tester);
   });
 

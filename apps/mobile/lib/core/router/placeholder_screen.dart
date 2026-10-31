@@ -4,9 +4,9 @@
 //   sample screen in Tamil), UserFlows §Design rules "Language first" (switched with one button); M06 sign-out
 //   (UserFlows §Who uses what: shared family phones; §When things go wrong: unsent entries stay, the cloud reminds).
 //   UserFlows §When things go wrong (never an error code: one picture, one sentence read aloud, one button).
-// Callers: app_router.dart routes /officer, /qc, /assist/:farmerId, /home/{sell,money,farm}, /settings and its
+// Callers: app_router.dart routes /qc, /home/{sell,money,farm} (also under /assist/:farmerId), /settings and its
 //   errorBuilder (NotFoundScreen). Replaced by the real feature screens in M08 (sell, money, settings), M09 (my farm),
-//   M10 (officer, assist), M11 (QC).
+//   M11 (QC); M10 replaced the officer and assist placeholders.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

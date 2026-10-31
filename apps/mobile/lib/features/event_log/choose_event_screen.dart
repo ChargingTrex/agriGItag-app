@@ -1,7 +1,7 @@
 // F04 Choose event: eight picture cards, the first of the three taps of every routine event.
 // Requirement: UserFlows §Logging a farm event ("Three taps: choose the event, take the photo, confirm"), §Each farm
 //   event (the eight events), §Design rules (one job, pictures and voice, call officer on every screen); FR3.
-// Callers: app_router.dart route `/log` (farmer home "Log" button).
+// Callers: app_router.dart routes `/log` and `/assist/:farmerId/log` (farmer home "Log" button).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +12,7 @@ import '../../core/theme/farmer_tokens.dart';
 import '../../core/widgets/call_officer_button.dart';
 import '../../core/widgets/picture_card_grid.dart';
 import '../../core/widgets/voice_prompt_bar.dart';
+import 'event_log_controller.dart';
 import 'farm_event.dart';
 
 /// The event grid; a tap opens `/log/<event>`, where the lot, the extra choice and the camera follow.
@@ -34,7 +35,7 @@ class ChooseEventScreen extends ConsumerWidget {
           SizedBox(height: tokens.gap),
           PictureCardGrid<FarmEvent>(
             selected: null,
-            onSelected: (e) => context.push('/log/${e.wireName}'),
+            onSelected: (e) => context.push(farmerPath(ref, '/log/${e.wireName}')),
             choices: [
               for (final e in FarmEvent.values)
                 PictureChoice(value: e, picture: eventPicture(e), label: e.label(l10n), promptId: e.promptId),

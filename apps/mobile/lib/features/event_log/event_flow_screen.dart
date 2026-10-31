@@ -3,7 +3,8 @@
 // Also the deep-link target F17: `/log/harvest` opens here with harvest preselected (reminders, M12).
 // Requirement: UserFlows §Logging a farm event (three taps), §Each farm event, "When a farmer opens an event out of
 //   order ... asks once by voice 'Did you already sow?' with Yes / No buttons, and flags the gap"; FR3, FR55; D-006.
-// Callers: app_router.dart route `/log/:eventType` (ChooseEventScreen cards, farmer home task card, deep links).
+// Callers: app_router.dart route `/log/:eventType` and its assist copy (ChooseEventScreen cards, farmer home task card,
+//   deep links).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -154,14 +155,16 @@ class _EventFlowScreenState extends ConsumerState<EventFlowScreen> {
       // Loading takes milliseconds (local database); a spinner would only flash, and would keep animating under the
       // out-of-order sheet.
       _Step.loading => const SizedBox.shrink(),
-      _Step.camera => CameraStep(onAccepted: () => context.push('/log/${widget.event.wireName}/confirm')),
+      _Step.camera => CameraStep(
+        onAccepted: () => context.push(farmerPath(ref, '/log/${widget.event.wireName}/confirm')),
+      ),
       _Step.noLot => _list(tokens, [
         Icon(Icons.grass, size: 96, color: tokens.attention.color),
         VoicePromptBar(promptId: 'noLot', text: l10n.noLot),
         FarmerButton(
           icon: Icons.home,
           label: l10n.goHome,
-          onPressed: () => context.go('/home'),
+          onPressed: () => context.go(farmerPath(ref, '/home')),
           onSpeak: () => playPrompt(ref, context, 'goHome'),
           prominent: true,
         ),

@@ -14,21 +14,11 @@
   },
   "roleFieldOfficer": "கள அலுவலர்",
   "@roleFieldOfficer": {
-    "description": "Role name of an FPO field officer, shown on the officer home placeholder."
+    "description": "Role name of an FPO field officer, the title of the officer home."
   },
   "roleQc": "தர ஆய்வாளர்",
   "@roleQc": {
     "description": "Role name of a quality-check (grading) officer, shown on the QC home placeholder."
-  },
-  "assistFor": "உதவி: {farmerId}",
-  "@assistFor": {
-    "description": "Title of the assist-mode placeholder: the field officer is entering data for this farmer.",
-    "placeholders": {
-      "farmerId": {
-        "type": "String",
-        "example": "F-0042"
-      }
-    }
   },
   "switchLanguage": "English",
   "@switchLanguage": {
@@ -879,5 +869,155 @@
   "notFound": "இந்தப் பக்கம் இல்லை.",
   "@notFound": {
     "description": "Page for a link that does not exist; a Home button follows. Also its voice prompt id."
+  },
+  "officerAddFarmer": "விவசாயி சேர்",
+  "@officerAddFarmer": {
+    "description": "Officer home button that opens the onboarding wizard."
+  },
+  "officerFlags": "சரிசெய்ய வேண்டியவை: {count}",
+  "@officerFlags": {
+    "description": "Officer home button that opens the flag list, with the number of open flags.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "officerVisitsToday": "இன்றைய வருகைகள்",
+  "@officerVisitsToday": {
+    "description": "Officer home heading: farmers with an event due today, grouped by village."
+  },
+  "officerNoVisits": "இன்று வருகை எதுவும் இல்லை.",
+  "@officerNoVisits": {
+    "description": "Officer home line under the visits heading when no farmer has an event due."
+  },
+  "officerAllFarmers": "எல்லா விவசாயிகளும்",
+  "@officerAllFarmers": {
+    "description": "Officer home heading: every farmer of the FPO, grouped by village; a tap starts assist mode."
+  },
+  "officerNoPhone": "தொலைபேசி இல்லை",
+  "@officerNoPhone": {
+    "description": "Officer home marker of a farmer without a smartphone (the officer logs their events)."
+  },
+  "officerStranded": "வேறு பயனரின் {count} பதிவுகள் இந்தத் தொலைபேசியில் காத்திருக்கின்றன.",
+  "@officerStranded": {
+    "description": "Officer home line: unsent entries of another user on a shared phone (they send when that user signs in).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "assistEnd": "உதவி முடி",
+  "@assistEnd": {
+    "description": "Officer button on the assisted farmer's home: ends assist mode and returns to the officer home."
+  },
+  "flagsTitle": "சரிசெய்ய வேண்டியவை",
+  "@flagsTitle": {
+    "description": "App bar title of the officer flag screens."
+  },
+  "flagsNone": "சரிசெய்ய எதுவும் இல்லை.",
+  "@flagsNone": {
+    "description": "Flag list line when no flag is open."
+  },
+  "flagSeverity": "{severity, select, hold{நிறுத்தம்} warn{சரிபார்} other{குறிப்பு}}",
+  "@flagSeverity": {
+    "description": "Word next to a flag's glyph: hold (red triangle), warn (orange circle), info (grey).",
+    "placeholders": {
+      "severity": {
+        "type": "String",
+        "example": "warn"
+      }
+    }
+  },
+  "flagRule": "{code, select, event_off_plot{வயலுக்கு வெளியே பதிவு} yield_over_ceiling{மகசூல் வரம்பை மீறியது} event_out_of_order{நிகழ்வு வரிசை தவறு} gps_poor_accuracy{பலவீனமான GPS} quantity_mismatch{அளவுகள் பொருந்தவில்லை} photo_checksum_mismatch{புகைப்படம் பொருந்தவில்லை} exif_mismatch{புகைப்பட தேதி அல்லது இடம் பொருந்தவில்லை} plot_outside_gi_region{வயல் GI பகுதிக்கு வெளியே} other{இந்தப் பதிவைச் சரிபார்க்கவும்}}",
+  "@flagRule": {
+    "description": "What triggered a flag, by its server rule code; other codes read \"Check this record\".",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "event_off_plot"
+      }
+    }
+  },
+  "flagFixIt": "சரிசெய்",
+  "@flagFixIt": {
+    "description": "Flag button: correct the flagged entry (a new version with a reason)."
+  },
+  "flagLooksFine": "சரியாக உள்ளது",
+  "@flagLooksFine": {
+    "description": "Flag button: close the flag, nothing is wrong."
+  },
+  "flagEscalate": "மேலே அனுப்பு",
+  "@flagEscalate": {
+    "description": "Flag button: send the flag to the FPO admin."
+  },
+  "flagNotOnPhone": "இந்தப் பதிவு இந்தத் தொலைபேசியில் இல்லை; இங்கே சரிசெய்ய முடியாது.",
+  "@flagNotOnPhone": {
+    "description": "Flag detail line when the flagged entry is not stored on the officer's phone."
+  },
+  "flagAdminOnly": "இதை FPO நிர்வாகி மட்டுமே சரிசெய்ய முடியும்.",
+  "@flagAdminOnly": {
+    "description": "Flag detail line for holds and escalated flags, which the officer may not clear."
+  },
+  "flagReasonPrompt": "ஏன்? ஒரு காரணத்தைத் தேர்ந்தெடுக்கவும்.",
+  "@flagReasonPrompt": {
+    "description": "Prompt above the reason picture cards of a flag outcome."
+  },
+  "flagReason": "{reason, select, field_visit{வயல் பார்வை} farmer_confirmed{விவசாயி கூறினார்} photo_checked{புகைப்படம் பார்த்தேன்} other{பதிவுப் பிழை}}",
+  "@flagReason": {
+    "description": "Label of a reason card (reason codes field_visit, farmer_confirmed, photo_checked, entry_mistake).",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "example": "field_visit"
+      }
+    }
+  },
+  "moistureTitle": "ஈரப்பதம்",
+  "@moistureTitle": {
+    "description": "Title of the moisture reading screen and the officer button that opens it."
+  },
+  "moistureMeterPrompt": "எந்த மீட்டர்?",
+  "@moistureMeterPrompt": {
+    "description": "Prompt above the moisture meter cards."
+  },
+  "moistureMeterCard": "{label}, {date} வரை அளவுத்திருத்தம்",
+  "@moistureMeterCard": {
+    "description": "Moisture meter card: make, model and serial, and the last day of its calibration (\"14 Feb\").",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Wile 55 #A12"
+      },
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "moistureCalibrationExpired": "இந்த மீட்டரின் அளவுத்திருத்தம் {date} அன்று முடிந்தது. சரியான அளவுத்திருத்தம் உள்ள மீட்டரைப் பயன்படுத்தவும்.",
+  "@moistureCalibrationExpired": {
+    "description": "Sentence that blocks a reading with a meter whose calibration date has passed.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "moistureNoMeter": "இந்தத் தொலைபேசியில் ஈரப்பத மீட்டர் இல்லை. இணையத்துடன் இணைத்து மீண்டும் திறக்கவும்.",
+  "@moistureNoMeter": {
+    "description": "Moisture screen line when no meter was ever downloaded."
+  },
+  "moistureNoLot": "இந்த விவசாயிக்கு அளக்க பயிர் இல்லை.",
+  "@moistureNoLot": {
+    "description": "Moisture screen line when the assisted farmer has no active lot."
+  },
+  "moistureValuePrompt": "மீட்டரில் உள்ள அளவு",
+  "@moistureValuePrompt": {
+    "description": "Prompt above the number pad for the moisture value in percent."
   }
 }

@@ -160,7 +160,7 @@ class FlowHarness {
     final gps = fixes ?? [fixOf(8)];
     db = memoryDb();
     container = authContainer(
-      FakeApi(),
+      api,
       db: db,
       overrides: [
         mediaDirProvider.overrideWith((ref) async => media),
@@ -187,6 +187,9 @@ class FlowHarness {
       ],
     );
   }
+
+  /// The fake HTTP adapter (no signal unless a test adds routes); its `requests` show what the app called.
+  final FakeApi api = FakeApi();
 
   /// Temp root (deleted by [dispose]).
   late final Directory dir;
@@ -215,11 +218,12 @@ class FlowHarness {
   /// Send kicks requested after saves and undos ([afterSaveProvider]).
   int kicks = 0;
 
-  /// Signs in as a farmer in [locale], seeds the farm (see [seedFarm]) and pumps the app on [tester] at [location].
-  /// Returns when settled. Throws what the app throws while building.
+  /// Signs in as [role] (`farmer`, or `field_officer` for M10) in [locale], seeds the farm (see [seedFarm]) and pumps
+  /// the app on [tester] at [location]. Returns when settled. Throws what the app throws while building.
   Future<void> start(
     WidgetTester tester, {
     String location = '/home',
+    String role = 'farmer',
     Locale locale = english,
     double? lastMoisture,
     bool withHistory = true,
@@ -230,7 +234,7 @@ class FlowHarness {
       ..physicalSize = const Size(412, 915)
       ..devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
-    await container.read(sessionProvider.notifier).openSession(sessionOut());
+    await container.read(sessionProvider.notifier).openSession(sessionOut(role: role));
     container.read(sessionProvider.notifier).setLocale(locale);
     await seedFarm(lastMoisture: lastMoisture, withHistory: withHistory, lots: lots);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const AgriTraceApp()));

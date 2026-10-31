@@ -4,7 +4,7 @@
 //   tick or Retake"), §Design rules "Mistakes are easy to undo" (confirm shows the photo before saving), §Each farm
 //   event (problem: photo plus a 30-second voice note); FR3; D-005 (one save per tap burst), D-017 (a required field
 //   without a value disables the tick).
-// Callers: app_router.dart route `/log/:eventType/confirm` (pushed by CameraStep).
+// Callers: app_router.dart route `/log/:eventType/confirm` and its assist copy (pushed by CameraStep).
 
 import 'dart:io';
 
@@ -72,7 +72,7 @@ class ConfirmScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     try {
       await ref.read(eventLogProvider.notifier).save();
-      if (context.mounted) context.go('/home/saved');
+      if (context.mounted) context.go(farmerPath(ref, '/home/saved'));
     } on Exception {
       // SqliteException (disk full, I/O) or FileSystemException: nothing was written; the farmer can retry.
       if (!context.mounted) return;
