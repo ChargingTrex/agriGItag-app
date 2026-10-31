@@ -220,7 +220,6 @@ class NotImplementedPilotError(AppError):
     fix = "No client action; the feature is planned after the pilot."
 
 
-
 # Quality readings and grading (B05; PRD §6.8 FR47–FR50). Plausibility codes equal the grade engine's
 # `Violation.code` values, so the phone preview (D-006) shows the same reason.
 
@@ -295,6 +294,8 @@ class ProfileIncompleteNotAllowedError(AppError):
     code, status, message_key = "profile_incomplete_not_allowed", 422, "error.profile_incomplete_not_allowed"
     message = "Some grading parameters have no limits yet (load_from_standard)."
     fix = "Enter the limits from the standard, or publish with `allow_incomplete: true` (public note shown)."
+
+
 # Identity (B02, FR1, D-024). Wrong codes and PINs get their own codes, never a bare 401 (P00 contract).
 class OtpInvalidError(AppError):
     """The one-time code is wrong, or the phone cannot sign in (indistinguishable on purpose)."""

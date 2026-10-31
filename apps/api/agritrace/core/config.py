@@ -1,9 +1,9 @@
 """Process settings read from environment variables (and `apps/api/.env` when present).
 
 Serves: Arch §Backend services (twelve-factor config), D-008 (bucket names), D-009 (Redis broker URL),
-D-024 (JWT secret, OTP dev code and daily cap).
-Callers: `core.db`, `core.storage`, `core.auth`, identity service (B02), `agritrace.main`, `agritrace.worker`,
-`alembic/env.py`, tests.
+D-024 (JWT secret, OTP dev code and daily cap), FR7 (SMS provider, B04).
+Callers: `core.db`, `core.storage`, `core.auth`, identity service (B02), notifications providers (B04),
+`agritrace.main`, `agritrace.worker`, `alembic/env.py`, tests.
 Every variable is documented in `apps/api/.env.example`.
 """
 
@@ -52,6 +52,14 @@ class Settings(BaseSettings):
 
     otp_daily_cap: int = Field(
         10, ge=1, description="Most OTP codes one phone may request in any 24 hours (SMS cost and guessing)."
+    )
+    sms_provider: str | None = Field(
+        None,
+        description="SMS gateway: `console` logs messages (dev); unset or any other value fails every SMS "
+        "with `provider_not_configured` until a real gateway is wired (TODO(provider)).",
+    )
+    sms_sender_id: str | None = Field(
+        None, description="DLT-registered 6-letter SMS sender id (header), used by the real SMS gateway."
     )
 
     @field_validator("otp_dev_code")
