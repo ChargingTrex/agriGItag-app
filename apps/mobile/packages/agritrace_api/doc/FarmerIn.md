@@ -9,6 +9,7 @@ import 'package:agritrace_api/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **address** | [**Address**](Address.md) | Structured address (FR53); parts left empty are filled from `village_id`. | [optional] 
+**clientId** | **String** | Farmer id generated on the phone (UUIDv7, D-031); becomes the farmer's `id`. Resending it returns the stored farmer with 201 (no phone check, no second account); an id used by another FPO → 409 `client_id_conflict`. In a sync push `farmer` entry the entry's `client_id` is used. | [optional] 
 **giAuthorisedUserNo** | **String** | Farmer's GI authorised-user registration number (FR62). | [optional] 
 **lang** | **String** | Preferred language for app, SMS and voice. | [optional] [default to 'ta']
 **name** | **String** | Name in English script. | 

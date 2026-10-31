@@ -172,6 +172,7 @@ def _intake_json(intake: LotIntake) -> dict[str, Any]:
         "price_per_kg": intake.price_per_kg,
         "reconciliation": intake.reconciliation,
         "yield_check": intake.yield_check,
+        "supersedes_intake_id": intake.supersedes_intake_id,
     }
 
 

@@ -14,6 +14,7 @@ import 'package:agritrace_api/src/api/events_api.dart';
 import 'package:agritrace_api/src/api/flags_api.dart';
 import 'package:agritrace_api/src/api/health_api.dart';
 import 'package:agritrace_api/src/api/identity_api.dart';
+import 'package:agritrace_api/src/api/lots_batches_api.dart';
 import 'package:agritrace_api/src/api/notifications_api.dart';
 import 'package:agritrace_api/src/api/quality_api.dart';
 import 'package:agritrace_api/src/api/registry_api.dart';
@@ -166,6 +167,12 @@ class AgritraceApi {
   /// by doing that all interceptors will not be executed
   IdentityApi getIdentityApi() {
     return IdentityApi(dio, serializers);
+  }
+
+  /// Get LotsBatchesApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  LotsBatchesApi getLotsBatchesApi() {
+    return LotsBatchesApi(dio, serializers);
   }
 
   /// Get NotificationsApi instance, base route and serializer can be overridden by a given but be careful,

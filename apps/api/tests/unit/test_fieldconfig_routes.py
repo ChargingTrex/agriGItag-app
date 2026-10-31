@@ -155,6 +155,7 @@ async def test_config_features() -> None:
     assert response.status_code == 200
     assert response.json()["id_document_capture"] is False
     assert response.json()["sync_push_max_entries"] == 50
+    assert response.json()["grading_loss_warn_pct"] == 15
     assert response.headers["etag"]
 
 

@@ -103,6 +103,18 @@ Class | Method | HTTP request | Description
 [*IdentityApi*](doc/IdentityApi.md) | [**pinSetV1AuthPinPost**](doc/IdentityApi.md#pinsetv1authpinpost) | **POST** /v1/auth/pin | Pin Set
 [*IdentityApi*](doc/IdentityApi.md) | [**pinVerifyV1AuthPinVerifyPost**](doc/IdentityApi.md#pinverifyv1authpinverifypost) | **POST** /v1/auth/pin/verify | Pin Verify
 [*IdentityApi*](doc/IdentityApi.md) | [**refreshV1AuthRefreshPost**](doc/IdentityApi.md#refreshv1authrefreshpost) | **POST** /v1/auth/refresh | Refresh
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**approveGradingV1BatchesBatchIdGradingApprovePost**](doc/LotsBatchesApi.md#approvegradingv1batchesbatchidgradingapprovepost) | **POST** /v1/batches/{batch_id}/grading/approve | Approve the batch grading
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**createBatchV1BatchesPost**](doc/LotsBatchesApi.md#createbatchv1batchespost) | **POST** /v1/batches | Merge received lots into a batch (idempotent on client_id)
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**createIntakeV1IntakesPost**](doc/LotsBatchesApi.md#createintakev1intakespost) | **POST** /v1/intakes | Receive a lot at the processor (idempotent on client_id)
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**createLotV1LotsPost**](doc/LotsBatchesApi.md#createlotv1lotspost) | **POST** /v1/lots | Open a lot (idempotent on client_id)
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**finalPackingV1BatchesBatchIdFinalPackingPost**](doc/LotsBatchesApi.md#finalpackingv1batchesbatchidfinalpackingpost) | **POST** /v1/batches/{batch_id}/final-packing | Sign off final packing
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**getBatchV1BatchesBatchIdGet**](doc/LotsBatchesApi.md#getbatchv1batchesbatchidget) | **GET** /v1/batches/{batch_id} | Read a batch
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**getLotV1LotsLotIdGet**](doc/LotsBatchesApi.md#getlotv1lotslotidget) | **GET** /v1/lots/{lot_id} | Read a lot
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**listBatchesV1BatchesGet**](doc/LotsBatchesApi.md#listbatchesv1batchesget) | **GET** /v1/batches | List batches
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**listLotsV1LotsGet**](doc/LotsBatchesApi.md#listlotsv1lotsget) | **GET** /v1/lots | List lots
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**markReadyV1LotsLotIdReadyPost**](doc/LotsBatchesApi.md#markreadyv1lotslotidreadypost) | **POST** /v1/lots/{lot_id}/ready | Mark a lot ready for sale (moisture gate)
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**publishV1BatchesBatchIdPublishPost**](doc/LotsBatchesApi.md#publishv1batchesbatchidpublishpost) | **POST** /v1/batches/{batch_id}/publish | Publish the public page (final sign-off)
+[*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**secondSignoffV1BatchesBatchIdSecondSignoffPost**](doc/LotsBatchesApi.md#secondsignoffv1batchesbatchidsecondsignoffpost) | **POST** /v1/batches/{batch_id}/second-signoff | Second admin sign-off of a large batch
 [*NotificationsApi*](doc/NotificationsApi.md) | [**listMyNotificationsV1NotificationsGet**](doc/NotificationsApi.md#listmynotificationsv1notificationsget) | **GET** /v1/notifications | List my notifications
 [*QualityApi*](doc/QualityApi.md) | [**createInstrumentV1InstrumentsPost**](doc/QualityApi.md#createinstrumentv1instrumentspost) | **POST** /v1/instruments | Register an instrument
 [*QualityApi*](doc/QualityApi.md) | [**createQualityReadingV1QualityReadingsPost**](doc/QualityApi.md#createqualityreadingv1qualityreadingspost) | **POST** /v1/quality-readings | Record a quality reading
@@ -152,6 +164,9 @@ Class | Method | HTTP request | Description
  - [AssistSessionOut](doc/AssistSessionOut.md)
  - [AssistStartIn](doc/AssistStartIn.md)
  - [AvgSalePricePerKg](doc/AvgSalePricePerKg.md)
+ - [BatchIn](doc/BatchIn.md)
+ - [BatchOut](doc/BatchOut.md)
+ - [BatchStatus](doc/BatchStatus.md)
  - [BundleManifest](doc/BundleManifest.md)
  - [BundlePart](doc/BundlePart.md)
  - [CeilingKgPerAcre](doc/CeilingKgPerAcre.md)
@@ -181,8 +196,10 @@ Class | Method | HTTP request | Description
  - [FarmingType](doc/FarmingType.md)
  - [Features](doc/Features.md)
  - [FieldSpec](doc/FieldSpec.md)
+ - [FinalPackingIn](doc/FinalPackingIn.md)
  - [FinalPackingPayload](doc/FinalPackingPayload.md)
  - [FinalPackingVersion](doc/FinalPackingVersion.md)
+ - [FlagBrief](doc/FlagBrief.md)
  - [FlagOut](doc/FlagOut.md)
  - [FlagResolveIn](doc/FlagResolveIn.md)
  - [FlagStatus](doc/FlagStatus.md)
@@ -190,11 +207,13 @@ Class | Method | HTTP request | Description
  - [FpoIn](doc/FpoIn.md)
  - [FpoOut](doc/FpoOut.md)
  - [GeoPoint](doc/GeoPoint.md)
+ - [GiBlockReason](doc/GiBlockReason.md)
  - [GiRegionOut](doc/GiRegionOut.md)
  - [GiRegionVersionIn](doc/GiRegionVersionIn.md)
  - [GiRegionVersionOut](doc/GiRegionVersionOut.md)
  - [GradeOut](doc/GradeOut.md)
  - [GradeStatus](doc/GradeStatus.md)
+ - [GradingApproveIn](doc/GradingApproveIn.md)
  - [GradingIn](doc/GradingIn.md)
  - [GradingPayload](doc/GradingPayload.md)
  - [GradingVersion](doc/GradingVersion.md)
@@ -214,6 +233,8 @@ Class | Method | HTTP request | Description
  - [InstrumentIn](doc/InstrumentIn.md)
  - [InstrumentKind](doc/InstrumentKind.md)
  - [InstrumentOut](doc/InstrumentOut.md)
+ - [IntakeIn](doc/IntakeIn.md)
+ - [IntakeOut](doc/IntakeOut.md)
  - [IntakePayload](doc/IntakePayload.md)
  - [IntakeVersion](doc/IntakeVersion.md)
  - [IrrigationSource](doc/IrrigationSource.md)
@@ -224,6 +245,9 @@ Class | Method | HTTP request | Description
  - [LocationStatus](doc/LocationStatus.md)
  - [LotGateInput](doc/LotGateInput.md)
  - [LotGateOutput](doc/LotGateOutput.md)
+ - [LotIn](doc/LotIn.md)
+ - [LotOut](doc/LotOut.md)
+ - [LotStatus](doc/LotStatus.md)
  - [Max](doc/Max.md)
  - [MeOut](doc/MeOut.md)
  - [MembershipOut](doc/MembershipOut.md)
@@ -240,11 +264,13 @@ Class | Method | HTTP request | Description
  - [PackSize](doc/PackSize.md)
  - [PackingPayload](doc/PackingPayload.md)
  - [PackingVersion](doc/PackingVersion.md)
+ - [PageBatchOut](doc/PageBatchOut.md)
  - [PageConsentOut](doc/PageConsentOut.md)
  - [PageEventOut](doc/PageEventOut.md)
  - [PageFarmerOut](doc/PageFarmerOut.md)
  - [PageFlagOut](doc/PageFlagOut.md)
  - [PageInstrumentOut](doc/PageInstrumentOut.md)
+ - [PageLotOut](doc/PageLotOut.md)
  - [PageNotificationOut](doc/PageNotificationOut.md)
  - [PagePlotOut](doc/PagePlotOut.md)
  - [PageQualityReadingOut](doc/PageQualityReadingOut.md)
@@ -268,6 +294,8 @@ Class | Method | HTTP request | Description
  - [PlotIn](doc/PlotIn.md)
  - [PlotOut](doc/PlotOut.md)
  - [PolygonGeoJSON](doc/PolygonGeoJSON.md)
+ - [PracticeTag](doc/PracticeTag.md)
+ - [PracticeTags](doc/PracticeTags.md)
  - [PricePerKg](doc/PricePerKg.md)
  - [ProblemPayload](doc/ProblemPayload.md)
  - [ProblemVersion](doc/ProblemVersion.md)
@@ -279,6 +307,7 @@ Class | Method | HTTP request | Description
  - [ProfileVersionIn](doc/ProfileVersionIn.md)
  - [ProfileVersionOut](doc/ProfileVersionOut.md)
  - [ProfileVersionStatus](doc/ProfileVersionStatus.md)
+ - [PublishOut](doc/PublishOut.md)
  - [PullChange](doc/PullChange.md)
  - [PullOut](doc/PullOut.md)
  - [QualityReadingIn](doc/QualityReadingIn.md)
@@ -289,6 +318,7 @@ Class | Method | HTTP request | Description
  - [RangeOutput](doc/RangeOutput.md)
  - [ReadingSource](doc/ReadingSource.md)
  - [ReadingStage](doc/ReadingStage.md)
+ - [Reconciliation](doc/Reconciliation.md)
  - [ReferenceOut](doc/ReferenceOut.md)
  - [ReferencePart](doc/ReferencePart.md)
  - [RefreshIn](doc/RefreshIn.md)
@@ -297,6 +327,7 @@ Class | Method | HTTP request | Description
  - [Role](doc/Role.md)
  - [SessionOut](doc/SessionOut.md)
  - [Severity](doc/Severity.md)
+ - [ShareOut](doc/ShareOut.md)
  - [SignedQuantityInput](doc/SignedQuantityInput.md)
  - [SignedQuantityOutput](doc/SignedQuantityOutput.md)
  - [SowingPayload](doc/SowingPayload.md)

@@ -1,14 +1,19 @@
 // App start-up shared by the three flavor entry points: config from --dart-define, crash hooks, runApp.
 // Requirement: plan §7.2 M00 (flavors dev/staging/prod, crash reporting init placeholder); plan §13 D2
-//   (cold start < 3 s: only local reads happen here); M06 session restore (UserFlows §Log in once).
+//   (cold start < 3 s: only local reads happen here); M06 session restore (UserFlows §Log in once); M02 sync engine
+//   start and 15-min background task (mobile-design.md §3, PLAN §13 A1).
 // Callers: lib/main_dev.dart, lib/main_staging.dart, lib/main_prod.dart.
+
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/providers/sync_providers.dart';
 import 'core/router/session.dart';
+import 'core/sync/background_scheduler.dart';
 
 /// Build flavor, chosen by the entry point (`flutter run -t lib/main_dev.dart`).
 enum Flavor {
@@ -56,15 +61,19 @@ final appConfigProvider = Provider<AppConfig>(
 ///
 /// The stored session is read before the first frame, so a signed-in user opens straight on their home screen
 /// (UserFlows §Log in once); that read is local only (SQLite + keystore), any token refresh runs in the background.
-/// Side effects: installs the crash hooks, binds Flutter, restores the session and runs [AgriTraceApp]. Throws
+/// Side effects: installs the crash hooks, binds Flutter, restores the session, runs [AgriTraceApp], then starts the
+/// sync engine and registers the 15-min background sync (errors from either reach the crash hooks). Throws
 /// [StateError] (from [AppConfig.fromEnvironment]) when a staging or prod build lacks API_BASE_URL.
 Future<void> bootstrap(Flavor flavor) async {
   final config = AppConfig.fromEnvironment(flavor);
   WidgetsFlutterBinding.ensureInitialized();
   initCrashReporting();
-  final container = ProviderContainer(overrides: [appConfigProvider.overrideWithValue(config)]);
+  final container = ProviderContainer(overrides: [appConfigProvider.overrideWithValue(config), ...syncOverrides]);
   await container.read(sessionProvider.notifier).restore();
   runApp(UncontrolledProviderScope(container: container, child: const AgriTraceApp()));
+  // Not awaited: the first sync and the task registration must not hold up the first frame (plan §13 D2).
+  unawaited(container.read(syncServiceProvider).start());
+  unawaited(scheduleBackgroundSync(config));
 }
 
 /// Installs global error hooks so uncaught errors reach one place.

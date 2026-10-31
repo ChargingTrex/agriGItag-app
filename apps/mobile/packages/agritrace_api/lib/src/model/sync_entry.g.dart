@@ -16,6 +16,10 @@ const SyncEntryKindEnum _$syncEntryKindEnum_consent =
     const SyncEntryKindEnum._('consent');
 const SyncEntryKindEnum _$syncEntryKindEnum_flagResolution =
     const SyncEntryKindEnum._('flagResolution');
+const SyncEntryKindEnum _$syncEntryKindEnum_farmer =
+    const SyncEntryKindEnum._('farmer');
+const SyncEntryKindEnum _$syncEntryKindEnum_assistSession =
+    const SyncEntryKindEnum._('assistSession');
 
 SyncEntryKindEnum _$syncEntryKindEnumValueOf(String name) {
   switch (name) {
@@ -29,6 +33,10 @@ SyncEntryKindEnum _$syncEntryKindEnumValueOf(String name) {
       return _$syncEntryKindEnum_consent;
     case 'flagResolution':
       return _$syncEntryKindEnum_flagResolution;
+    case 'farmer':
+      return _$syncEntryKindEnum_farmer;
+    case 'assistSession':
+      return _$syncEntryKindEnum_assistSession;
     default:
       throw ArgumentError(name);
   }
@@ -41,6 +49,8 @@ final BuiltSet<SyncEntryKindEnum> _$syncEntryKindEnumValues =
   _$syncEntryKindEnum_plot,
   _$syncEntryKindEnum_consent,
   _$syncEntryKindEnum_flagResolution,
+  _$syncEntryKindEnum_farmer,
+  _$syncEntryKindEnum_assistSession,
 ]);
 
 Serializer<SyncEntryKindEnum> _$syncEntryKindEnumSerializer =
@@ -54,6 +64,8 @@ class _$SyncEntryKindEnumSerializer
     'plot': 'plot',
     'consent': 'consent',
     'flagResolution': 'flag_resolution',
+    'farmer': 'farmer',
+    'assistSession': 'assist_session',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'event_version': 'eventVersion',
@@ -61,6 +73,8 @@ class _$SyncEntryKindEnumSerializer
     'plot': 'plot',
     'consent': 'consent',
     'flag_resolution': 'flagResolution',
+    'farmer': 'farmer',
+    'assist_session': 'assistSession',
   };
 
   @override
@@ -82,6 +96,8 @@ class _$SyncEntryKindEnumSerializer
 
 class _$SyncEntry extends SyncEntry {
   @override
+  final String? assistSessionId;
+  @override
   final String clientId;
   @override
   final BuiltMap<String, JsonObject?> data;
@@ -92,7 +108,10 @@ class _$SyncEntry extends SyncEntry {
       (SyncEntryBuilder()..update(updates))._build();
 
   _$SyncEntry._(
-      {required this.clientId, required this.data, required this.kind})
+      {this.assistSessionId,
+      required this.clientId,
+      required this.data,
+      required this.kind})
       : super._();
   @override
   SyncEntry rebuild(void Function(SyncEntryBuilder) updates) =>
@@ -105,6 +124,7 @@ class _$SyncEntry extends SyncEntry {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is SyncEntry &&
+        assistSessionId == other.assistSessionId &&
         clientId == other.clientId &&
         data == other.data &&
         kind == other.kind;
@@ -113,6 +133,7 @@ class _$SyncEntry extends SyncEntry {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, assistSessionId.hashCode);
     _$hash = $jc(_$hash, clientId.hashCode);
     _$hash = $jc(_$hash, data.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
@@ -123,6 +144,7 @@ class _$SyncEntry extends SyncEntry {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'SyncEntry')
+          ..add('assistSessionId', assistSessionId)
           ..add('clientId', clientId)
           ..add('data', data)
           ..add('kind', kind))
@@ -132,6 +154,11 @@ class _$SyncEntry extends SyncEntry {
 
 class SyncEntryBuilder implements Builder<SyncEntry, SyncEntryBuilder> {
   _$SyncEntry? _$v;
+
+  String? _assistSessionId;
+  String? get assistSessionId => _$this._assistSessionId;
+  set assistSessionId(String? assistSessionId) =>
+      _$this._assistSessionId = assistSessionId;
 
   String? _clientId;
   String? get clientId => _$this._clientId;
@@ -153,6 +180,7 @@ class SyncEntryBuilder implements Builder<SyncEntry, SyncEntryBuilder> {
   SyncEntryBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _assistSessionId = $v.assistSessionId;
       _clientId = $v.clientId;
       _data = $v.data.toBuilder();
       _kind = $v.kind;
@@ -179,6 +207,7 @@ class SyncEntryBuilder implements Builder<SyncEntry, SyncEntryBuilder> {
     try {
       _$result = _$v ??
           _$SyncEntry._(
+            assistSessionId: assistSessionId,
             clientId: BuiltValueNullFieldError.checkNotNull(
                 clientId, r'SyncEntry', 'clientId'),
             data: data.build(),

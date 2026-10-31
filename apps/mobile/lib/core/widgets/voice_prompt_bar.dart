@@ -2,7 +2,8 @@
 // Requirement: UserFlows §Design rules "Pictures and voice before words" (speaker icon plays a recorded
 //   prompt) and §When things go wrong ("one short sentence read aloud"); mobile-design.md §5 (prompt id =
 //   string key; missing clip -> text only + counter, no TTS).
-// Callers: ConfirmScaffold, ErrorSheet (this folder); farmer screens from M07 on; test/widget/kit_*.
+// Callers: ConfirmScaffold, ErrorSheet (this folder); farmer screens from M07 on; onboarding wizard and consent step
+//   (M09, clipLocale + onEnd); test/widget/kit_*.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,14 +21,22 @@ class VoicePromptBar extends ConsumerStatefulWidget {
   /// Creates the bar.
   ///
   /// [promptId] is the ARB key of the sentence (and the clip name); [text] is that sentence, already
-  /// localised by the caller (it may carry placeholders such as a bag count).
-  const VoicePromptBar({super.key, required this.promptId, required this.text});
+  /// localised by the caller (it may carry placeholders such as a bag count); [clipLocale] plays the clip in that
+  /// language instead of the screen's (M09 consent: always Tamil); [onEnd] is called each time the clip stops, or at
+  /// once when there is no clip.
+  const VoicePromptBar({super.key, required this.promptId, required this.text, this.clipLocale, this.onEnd});
 
   /// Voice prompt id: the ARB key, clip `assets/audio/<lang>/<promptId>.ogg`.
   final String promptId;
 
   /// Localised sentence shown next to the speaker.
   final String text;
+
+  /// Language of the clip, or null for the screen's language.
+  final Locale? clipLocale;
+
+  /// Called when the clip stops (or at once when it is missing); null for none.
+  final VoidCallback? onEnd;
 
   /// Creates the state that remembers whether the clip was missing. Returns it; throws nothing.
   @override
@@ -51,7 +60,9 @@ class _VoicePromptBarState extends ConsumerState<VoicePromptBar> {
   /// missing state changes. Throws what [VoicePlayer.play] throws for a broken manifest.
   Future<void> _play() async {
     if (!mounted) return;
-    final played = await playPrompt(ref, context, widget.promptId);
+    final played = await ref
+        .read(voicePlayerProvider)
+        .play(widget.promptId, widget.clipLocale ?? Localizations.localeOf(context), onEnd: widget.onEnd);
     if (mounted && played == _missing) setState(() => _missing = !played);
   }
 

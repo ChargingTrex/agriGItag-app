@@ -318,6 +318,7 @@ async def create_farmer(body: FarmerIn, session: Session, user: Staff) -> Farmer
         The stored farmer.
 
     Raises:
+        ClientIdConflictError: `client_id` is another FPO's farmer (D-031).
         FarmerPhoneTakenError: phone already used by a farmer of this FPO.
         ValidationFailedError: unknown village.
     """

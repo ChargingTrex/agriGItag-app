@@ -19,6 +19,9 @@ import 'package:agritrace_api/src/model/assist_end_in.dart';
 import 'package:agritrace_api/src/model/assist_session_out.dart';
 import 'package:agritrace_api/src/model/assist_start_in.dart';
 import 'package:agritrace_api/src/model/avg_sale_price_per_kg.dart';
+import 'package:agritrace_api/src/model/batch_in.dart';
+import 'package:agritrace_api/src/model/batch_out.dart';
+import 'package:agritrace_api/src/model/batch_status.dart';
 import 'package:agritrace_api/src/model/bundle_manifest.dart';
 import 'package:agritrace_api/src/model/bundle_part.dart';
 import 'package:agritrace_api/src/model/ceiling_kg_per_acre.dart';
@@ -48,8 +51,10 @@ import 'package:agritrace_api/src/model/farmer_status.dart';
 import 'package:agritrace_api/src/model/farming_type.dart';
 import 'package:agritrace_api/src/model/features.dart';
 import 'package:agritrace_api/src/model/field_spec.dart';
+import 'package:agritrace_api/src/model/final_packing_in.dart';
 import 'package:agritrace_api/src/model/final_packing_payload.dart';
 import 'package:agritrace_api/src/model/final_packing_version.dart';
+import 'package:agritrace_api/src/model/flag_brief.dart';
 import 'package:agritrace_api/src/model/flag_out.dart';
 import 'package:agritrace_api/src/model/flag_resolve_in.dart';
 import 'package:agritrace_api/src/model/flag_status.dart';
@@ -57,11 +62,13 @@ import 'package:agritrace_api/src/model/flag_subject.dart';
 import 'package:agritrace_api/src/model/fpo_in.dart';
 import 'package:agritrace_api/src/model/fpo_out.dart';
 import 'package:agritrace_api/src/model/geo_point.dart';
+import 'package:agritrace_api/src/model/gi_block_reason.dart';
 import 'package:agritrace_api/src/model/gi_region_out.dart';
 import 'package:agritrace_api/src/model/gi_region_version_in.dart';
 import 'package:agritrace_api/src/model/gi_region_version_out.dart';
 import 'package:agritrace_api/src/model/grade_out.dart';
 import 'package:agritrace_api/src/model/grade_status.dart';
+import 'package:agritrace_api/src/model/grading_approve_in.dart';
 import 'package:agritrace_api/src/model/grading_in.dart';
 import 'package:agritrace_api/src/model/grading_payload.dart';
 import 'package:agritrace_api/src/model/grading_version.dart';
@@ -81,6 +88,8 @@ import 'package:agritrace_api/src/model/input_out.dart';
 import 'package:agritrace_api/src/model/instrument_in.dart';
 import 'package:agritrace_api/src/model/instrument_kind.dart';
 import 'package:agritrace_api/src/model/instrument_out.dart';
+import 'package:agritrace_api/src/model/intake_in.dart';
+import 'package:agritrace_api/src/model/intake_out.dart';
 import 'package:agritrace_api/src/model/intake_payload.dart';
 import 'package:agritrace_api/src/model/intake_version.dart';
 import 'package:agritrace_api/src/model/irrigation_source.dart';
@@ -91,6 +100,9 @@ import 'package:agritrace_api/src/model/land_preparation_version.dart';
 import 'package:agritrace_api/src/model/location_status.dart';
 import 'package:agritrace_api/src/model/lot_gate_input.dart';
 import 'package:agritrace_api/src/model/lot_gate_output.dart';
+import 'package:agritrace_api/src/model/lot_in.dart';
+import 'package:agritrace_api/src/model/lot_out.dart';
+import 'package:agritrace_api/src/model/lot_status.dart';
 import 'package:agritrace_api/src/model/max.dart';
 import 'package:agritrace_api/src/model/me_out.dart';
 import 'package:agritrace_api/src/model/membership_out.dart';
@@ -107,11 +119,13 @@ import 'package:agritrace_api/src/model/otp_verify_in.dart';
 import 'package:agritrace_api/src/model/pack_size.dart';
 import 'package:agritrace_api/src/model/packing_payload.dart';
 import 'package:agritrace_api/src/model/packing_version.dart';
+import 'package:agritrace_api/src/model/page_batch_out.dart';
 import 'package:agritrace_api/src/model/page_consent_out.dart';
 import 'package:agritrace_api/src/model/page_event_out.dart';
 import 'package:agritrace_api/src/model/page_farmer_out.dart';
 import 'package:agritrace_api/src/model/page_flag_out.dart';
 import 'package:agritrace_api/src/model/page_instrument_out.dart';
+import 'package:agritrace_api/src/model/page_lot_out.dart';
 import 'package:agritrace_api/src/model/page_notification_out.dart';
 import 'package:agritrace_api/src/model/page_plot_out.dart';
 import 'package:agritrace_api/src/model/page_quality_reading_out.dart';
@@ -135,6 +149,8 @@ import 'package:agritrace_api/src/model/plot_correction.dart';
 import 'package:agritrace_api/src/model/plot_in.dart';
 import 'package:agritrace_api/src/model/plot_out.dart';
 import 'package:agritrace_api/src/model/polygon_geo_json.dart';
+import 'package:agritrace_api/src/model/practice_tag.dart';
+import 'package:agritrace_api/src/model/practice_tags.dart';
 import 'package:agritrace_api/src/model/price_per_kg.dart';
 import 'package:agritrace_api/src/model/problem_payload.dart';
 import 'package:agritrace_api/src/model/problem_version.dart';
@@ -146,6 +162,7 @@ import 'package:agritrace_api/src/model/producer_group_out.dart';
 import 'package:agritrace_api/src/model/profile_version_in.dart';
 import 'package:agritrace_api/src/model/profile_version_out.dart';
 import 'package:agritrace_api/src/model/profile_version_status.dart';
+import 'package:agritrace_api/src/model/publish_out.dart';
 import 'package:agritrace_api/src/model/pull_change.dart';
 import 'package:agritrace_api/src/model/pull_out.dart';
 import 'package:agritrace_api/src/model/quality_reading_in.dart';
@@ -156,6 +173,7 @@ import 'package:agritrace_api/src/model/range_input.dart';
 import 'package:agritrace_api/src/model/range_output.dart';
 import 'package:agritrace_api/src/model/reading_source.dart';
 import 'package:agritrace_api/src/model/reading_stage.dart';
+import 'package:agritrace_api/src/model/reconciliation.dart';
 import 'package:agritrace_api/src/model/reference_out.dart';
 import 'package:agritrace_api/src/model/reference_part.dart';
 import 'package:agritrace_api/src/model/refresh_in.dart';
@@ -164,6 +182,7 @@ import 'package:agritrace_api/src/model/response_otp_verify_v1_auth_otp_verify_p
 import 'package:agritrace_api/src/model/role.dart';
 import 'package:agritrace_api/src/model/session_out.dart';
 import 'package:agritrace_api/src/model/severity.dart';
+import 'package:agritrace_api/src/model/share_out.dart';
 import 'package:agritrace_api/src/model/signed_quantity_input.dart';
 import 'package:agritrace_api/src/model/signed_quantity_output.dart';
 import 'package:agritrace_api/src/model/sowing_payload.dart';
@@ -200,6 +219,9 @@ part 'serializers.g.dart';
   AssistSessionOut,
   AssistStartIn,
   AvgSalePricePerKg,
+  BatchIn,
+  BatchOut,
+  BatchStatus,
   BundleManifest,
   BundlePart,
   CeilingKgPerAcre,
@@ -229,8 +251,10 @@ part 'serializers.g.dart';
   FarmingType,
   Features,
   FieldSpec,
+  FinalPackingIn,
   FinalPackingPayload,
   FinalPackingVersion,
+  FlagBrief,
   FlagOut,
   FlagResolveIn,
   FlagStatus,
@@ -238,11 +262,13 @@ part 'serializers.g.dart';
   FpoIn,
   FpoOut,
   GeoPoint,
+  GiBlockReason,
   GiRegionOut,
   GiRegionVersionIn,
   GiRegionVersionOut,
   GradeOut,
   GradeStatus,
+  GradingApproveIn,
   GradingIn,
   GradingPayload,
   GradingVersion,
@@ -262,6 +288,8 @@ part 'serializers.g.dart';
   InstrumentIn,
   InstrumentKind,
   InstrumentOut,
+  IntakeIn,
+  IntakeOut,
   IntakePayload,
   IntakeVersion,
   IrrigationSource,
@@ -272,6 +300,9 @@ part 'serializers.g.dart';
   LocationStatus,
   LotGateInput,
   LotGateOutput,
+  LotIn,
+  LotOut,
+  LotStatus,
   Max,
   MeOut,
   MembershipOut,
@@ -288,11 +319,13 @@ part 'serializers.g.dart';
   PackSize,
   PackingPayload,
   PackingVersion,
+  PageBatchOut,
   PageConsentOut,
   PageEventOut,
   PageFarmerOut,
   PageFlagOut,
   PageInstrumentOut,
+  PageLotOut,
   PageNotificationOut,
   PagePlotOut,
   PageQualityReadingOut,
@@ -316,6 +349,8 @@ part 'serializers.g.dart';
   PlotIn,
   PlotOut,
   PolygonGeoJSON,
+  PracticeTag,
+  PracticeTags,
   PricePerKg,
   ProblemPayload,
   ProblemVersion,
@@ -327,6 +362,7 @@ part 'serializers.g.dart';
   ProfileVersionIn,
   ProfileVersionOut,
   ProfileVersionStatus,
+  PublishOut,
   PullChange,
   PullOut,
   QualityReadingIn,
@@ -337,6 +373,7 @@ part 'serializers.g.dart';
   RangeOutput,
   ReadingSource,
   ReadingStage,
+  Reconciliation,
   ReferenceOut,
   ReferencePart,
   RefreshIn,
@@ -345,6 +382,7 @@ part 'serializers.g.dart';
   Role,
   SessionOut,
   Severity,
+  ShareOut,
   SignedQuantityInput,
   SignedQuantityOutput,
   SowingPayload,
@@ -387,6 +425,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<ProducerGroupOut>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(LotOut)]),
+        () => ListBuilder<LotOut>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ReadingStage)]),
         () => ListBuilder<ReadingStage>(),
       )
@@ -411,6 +453,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => MapBuilder<String, PartVersion>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PracticeTag)]),
+        () => ListBuilder<PracticeTag>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltMap, [FullType(String), FullType(LotGateInput)]),
         () => MapBuilder<String, LotGateInput>(),
       )
@@ -425,6 +471,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltMap, [FullType(String), FullType(ParameterResult)]),
         () => MapBuilder<String, ParameterResult>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(GiBlockReason)]),
+        () => ListBuilder<GiBlockReason>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ConsentOut)]),
@@ -447,6 +497,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => MapBuilder<String, LotGateOutput>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ShareOut)]),
+        () => ListBuilder<ShareOut>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PlotOut)]),
         () => ListBuilder<PlotOut>(),
       )
@@ -457,6 +511,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FpoOut)]),
         () => ListBuilder<FpoOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(BatchOut)]),
+        () => ListBuilder<BatchOut>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FarmerOut)]),
@@ -547,6 +605,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProcessorOut)]),
         () => ListBuilder<ProcessorOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FlagBrief)]),
+        () => ListBuilder<FlagBrief>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [

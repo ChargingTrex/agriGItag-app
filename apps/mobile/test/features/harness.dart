@@ -179,6 +179,8 @@ class FlowHarness {
           () => VoiceNoteRecorder(recorder: FakeAudioRecorder(), now: () => flowNow),
         ),
         clockProvider.overrideWithValue(() => flowNow),
+        // No sync engine in widget tests: the save's send kick is counted instead.
+        afterSaveProvider.overrideWithValue(() => kicks++),
         pendingSendCountProvider.overrideWith((ref) => Stream.value(pending)),
         fieldOfficerPhoneProvider.overrideWithValue('+919876543210'),
         ...overrides,
@@ -209,6 +211,9 @@ class FlowHarness {
 
   /// Taps on forward actions counted by [tap].
   int taps = 0;
+
+  /// Send kicks requested after saves and undos ([afterSaveProvider]).
+  int kicks = 0;
 
   /// Signs in as a farmer in [locale], seeds the farm (see [seedFarm]) and pumps the app on [tester] at [location].
   /// Returns when settled. Throws what the app throws while building.

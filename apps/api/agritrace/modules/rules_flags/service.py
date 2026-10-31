@@ -36,10 +36,11 @@ from agritrace.core.errors import (
     ResolutionForbiddenError,
     ValidationFailedError,
 )
+from agritrace.core.fieldconfig import features_for
 from agritrace.core.schemas import GeoPoint, Page
 from agritrace.core.time import utcnow
 from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto
-from agritrace.modules.lots_batches.models import Batch, BatchShare, Lot, LotIntake
+from agritrace.modules.lots_batches.models import Batch, BatchShare, Lot, LotIntake, current_intake
 from agritrace.modules.quality import service as quality_service
 from agritrace.modules.quality.models import GradeComputation, QualityReading
 from agritrace.modules.registry import service as registry_service
@@ -391,7 +392,7 @@ async def _lot_context(session: AsyncSession, lot: Lot) -> LotContext:
         if input_ids
         else []
     )
-    received = select(func.sum(LotIntake.received_kg)).where(LotIntake.lot_id == lot.id)
+    received = select(func.sum(LotIntake.received_kg)).where(LotIntake.lot_id == lot.id, current_intake())
     used = select(func.sum(BatchShare.kg_contributed)).where(BatchShare.lot_id == lot.id)
     rule = await quality_service.yield_params_for_crop(session, lot.crop_id)
     harvested = _kg(rows, EventType.HARVEST) or lot.harvested_kg
@@ -460,7 +461,7 @@ async def _check_lot(session: AsyncSession, lot: Lot) -> set[uuid.UUID]:
 
 
 async def _check_batch(session: AsyncSession, batch: Batch) -> set[uuid.UUID]:
-    """Run the batch rules and store their flags.
+    """Run the batch rules (grading loss limit from the FPO's `features_for`, D-030) and store their flags.
 
     Args:
         session: database session (flushed, not committed).
@@ -484,7 +485,11 @@ async def _check_batch(session: AsyncSession, batch: Batch) -> set[uuid.UUID]:
     ctx = BatchContext(
         batch_id=batch.id,
         shares_kg=await session.scalar(shares),
-        batch_kg=batch.packed_kg or batch.graded_kg or batch.total_received_kg,
+        batch_kg=batch.packed_kg or batch.graded_kg,
+        received_kg=batch.total_received_kg,
+        grading_loss_warn_pct=features_for(
+            await registry_service.fpo_code(session, batch.fpo_id)
+        ).grading_loss_warn_pct,
         profile_incomplete=tuple(
             code for code, r in per_parameter.items() if (r or {}).get("outcome") == "profile_incomplete"
         ),

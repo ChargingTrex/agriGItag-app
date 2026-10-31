@@ -394,6 +394,336 @@ abstract class AppLocalizations {
   /// **'நீங்கள் வெளியேற்றப்பட்டீர்கள். மீண்டும் உள்நுழையவும்.'**
   String get sessionEnded;
 
+  /// App bar title of the officer's onboarding wizard (UserFlows §Onboarding a farmer); at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயி சேர்'**
+  String get onboardTitle;
+
+  /// Step counter in the onboarding app bar.
+  ///
+  /// In ta, this message translates to:
+  /// **'{step} / {total}'**
+  String onboardStepOf(int step, int total);
+
+  /// Button that moves to the next onboarding step; disabled while a required field is empty.
+  ///
+  /// In ta, this message translates to:
+  /// **'அடுத்து'**
+  String get onboardNext;
+
+  /// Onboarding step 1 prompt (voice clip id).
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயியின் கைபேசி எண்ணை உள்ளிடவும்.'**
+  String get onboardPhonePrompt;
+
+  /// Onboarding step 2: the consent message played as a recording and shown as text (FR41, CLAUDE.md §6). Version v1.
+  ///
+  /// In ta, this message translates to:
+  /// **'உங்கள் பெயர், புகைப்படம், கைபேசி எண், உங்கள் வயலின் இருப்பிடம் மற்றும் விவசாயப் பணிகளின் புகைப்படங்களைச் சேமிப்போம். உங்கள் மிளகாய் உண்மையானது என்று நிரூபிக்கவும் உங்களுக்குப் பணம் தரவும் உங்கள் உழவர் உற்பத்தியாளர் நிறுவனம் இவற்றைப் பயன்படுத்தும். உங்கள் கைபேசி எண்ணும் வயலின் சரியான இடமும் வாங்குபவர்களுக்குக் காட்டப்படாது. சம்மதமா?'**
+  String get onboardConsentMessage;
+
+  /// The farmer's big consent button (onboarding step 2); at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'சம்மதம்'**
+  String get onboardAgree;
+
+  /// Onboarding step 3 prompt (voice clip id).
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயியைப் புகைப்படம் எடுத்து, பெயரை உள்ளிட்டு, மொழியைத் தேர்ந்தெடுக்கவும்.'**
+  String get onboardWhoPrompt;
+
+  /// Button that opens the camera for the farmer's photo; at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'படம் எடு'**
+  String get onboardTakePhoto;
+
+  /// Label of the name box the officer types into (onboarding step 3).
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயி பெயர்'**
+  String get onboardNameLabel;
+
+  /// Label of the optional survey / patta number box (onboarding step 5, FR65).
+  ///
+  /// In ta, this message translates to:
+  /// **'சர்வே எண் (தெரிந்தால்)'**
+  String get onboardSurveyLabel;
+
+  /// Onboarding step 4 prompt (voice clip id).
+  ///
+  /// In ta, this message translates to:
+  /// **'வயலுக்குள் நின்று பொத்தானை அழுத்தவும்.'**
+  String get onboardLocationPrompt;
+
+  /// The farmer's button 'I am standing in my field' (onboarding step 4), in at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'வயலில் நிற்கிறேன்'**
+  String get onboardInField;
+
+  /// Shown once the plot pin is saved, with its GPS accuracy in metres.
+  ///
+  /// In ta, this message translates to:
+  /// **'இருப்பிடம் சேமிக்கப்பட்டது ({metres} மீ).'**
+  String onboardPinSaved(int metres);
+
+  /// Shown when 'Save anyway' is tapped before any GPS fix arrived.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்னும் இருப்பிடம் கிடைக்கவில்லை. திறந்த வெளிக்குச் செல்லவும்.'**
+  String get onboardNoFixYet;
+
+  /// Onboarding step 5 prompt (voice clip id).
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த வயல் எவ்வளவு பெரியது? ஏக்கர் அல்லது சென்ட் தேர்ந்தெடுக்கவும்.'**
+  String get onboardLandPrompt;
+
+  /// Unit card and stepper unit: acres (100 cents = 1 acre).
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏக்கர்'**
+  String get unitAcres;
+
+  /// Unit card and stepper unit: cents (100 cents = 1 acre).
+  ///
+  /// In ta, this message translates to:
+  /// **'சென்ட்'**
+  String get unitCents;
+
+  /// Onboarding step 6 prompt (voice clip id).
+  ///
+  /// In ta, this message translates to:
+  /// **'வயலின் எல்லையில் நடக்கவும். தொடங்கிய இடத்தில் நிறுத்து அழுத்தவும்.'**
+  String get onboardBoundaryPrompt;
+
+  /// Starts recording GPS points of the walked boundary; at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'நடக்கத் தொடங்கு'**
+  String get onboardStartWalking;
+
+  /// Stops recording the walked boundary.
+  ///
+  /// In ta, this message translates to:
+  /// **'நிறுத்து'**
+  String get onboardStop;
+
+  /// Discards the walked boundary and starts again; at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீண்டும் நட'**
+  String get onboardWalkAgain;
+
+  /// Declared land size in acres beside the walked area.
+  ///
+  /// In ta, this message translates to:
+  /// **'சொன்னது: {acres} ஏக்கர்'**
+  String onboardDeclared(String acres);
+
+  /// Walked boundary area in acres beside the declared size.
+  ///
+  /// In ta, this message translates to:
+  /// **'நடந்தது: {acres} ஏக்கர்'**
+  String onboardWalked(String acres);
+
+  /// Mismatch note when walked and declared areas differ by more than 20 % (FR66).
+  ///
+  /// In ta, this message translates to:
+  /// **'நடந்த பரப்பும் சொன்ன அளவும் 20 %-க்கு மேல் வேறுபடுகின்றன. அலுவலகம் சரிபார்க்கும்.'**
+  String get onboardAreaMismatch;
+
+  /// Boundary step: the walked shape crosses itself (GPS jitter), so the boundary is left out of the plot (M09 review P1-1).
+  ///
+  /// In ta, this message translates to:
+  /// **'வடிவம் தன்னைத்தானே வெட்டுகிறது, அதனால் சேமிக்கப்படாது. மீண்டும் நடக்கவும் அல்லது அடுத்து அழுத்தவும்.'**
+  String get onboardBoundaryCrosses;
+
+  /// Location step: GPS permission refused or location off; the 'In field' button is back for a retry (M09 review P2-3).
+  ///
+  /// In ta, this message translates to:
+  /// **'இருப்பிடம் இல்லை. இருப்பிடத்தை இயக்கி மீண்டும் அழுத்தவும்.'**
+  String get onboardLocationOff;
+
+  /// Shown after Stop when fewer than 3 GPS points were recorded.
+  ///
+  /// In ta, this message translates to:
+  /// **'புள்ளிகள் போதவில்லை. முழு எல்லையிலும் நடக்கவும்.'**
+  String get onboardTooFewPoints;
+
+  /// Onboarding step 7 prompt (voice clip id), FR54.
+  ///
+  /// In ta, this message translates to:
+  /// **'வயல் பாசனமா மானாவாரியா? தண்ணீர் எங்கிருந்து வருகிறது?'**
+  String get onboardWaterPrompt;
+
+  /// Farming type card: irrigated (FR54).
+  ///
+  /// In ta, this message translates to:
+  /// **'பாசனம்'**
+  String get farmingIrrigated;
+
+  /// Farming type card: rainfed (FR54).
+  ///
+  /// In ta, this message translates to:
+  /// **'மானாவாரி'**
+  String get farmingRainfed;
+
+  /// Water source card: open well.
+  ///
+  /// In ta, this message translates to:
+  /// **'கிணறு'**
+  String get waterWell;
+
+  /// Water source card: borewell.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஆழ்துளை'**
+  String get waterBorewell;
+
+  /// Water source card: canal.
+  ///
+  /// In ta, this message translates to:
+  /// **'கால்வாய்'**
+  String get waterCanal;
+
+  /// Water source card: tank (village reservoir).
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏரி'**
+  String get waterTank;
+
+  /// Water source card: rain only.
+  ///
+  /// In ta, this message translates to:
+  /// **'மழை மட்டும்'**
+  String get waterRain;
+
+  /// Soil step prompt (voice clip id); shown only when plot.soil_type is enabled.
+  ///
+  /// In ta, this message translates to:
+  /// **'மண் எப்படி?'**
+  String get onboardSoilPrompt;
+
+  /// Soil card: red soil.
+  ///
+  /// In ta, this message translates to:
+  /// **'செம்மண்'**
+  String get soilRed;
+
+  /// Soil card: black (cotton) soil.
+  ///
+  /// In ta, this message translates to:
+  /// **'கரிசல்'**
+  String get soilBlack;
+
+  /// Soil card: sandy soil.
+  ///
+  /// In ta, this message translates to:
+  /// **'மணல்'**
+  String get soilSandy;
+
+  /// Soil card: alluvial soil.
+  ///
+  /// In ta, this message translates to:
+  /// **'வண்டல்'**
+  String get soilAlluvial;
+
+  /// Onboarding step 8 prompt (voice clip id).
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த வயலில் என்ன பயிர்?'**
+  String get onboardCropPrompt;
+
+  /// Shown on the crop step before the reference bundle arrived.
+  ///
+  /// In ta, this message translates to:
+  /// **'பயிர் பட்டியல் இன்னும் வரவில்லை.'**
+  String get onboardNoCrops;
+
+  /// GI preview: the pin is inside (or at the edge of) the GI production area (D-006: preview only).
+  ///
+  /// In ta, this message translates to:
+  /// **'புவிசார் பகுதிக்குள்'**
+  String get onboardGiInside;
+
+  /// GI preview: outside the GI area, or the outline is not downloaded; the office reviews it.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிபார்க்க வேண்டும்'**
+  String get onboardGiReview;
+
+  /// Saves and goes to step 9 (set up the farmer's own phone); at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயி கைபேசி'**
+  String get onboardFarmerPhone;
+
+  /// Saves and stops after step 8: the farmer gets voice calls and SMS instead; at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'திறன்பேசி இல்லை'**
+  String get onboardNoSmartphone;
+
+  /// Saves another plot of an already saved farmer.
+  ///
+  /// In ta, this message translates to:
+  /// **'சேமி'**
+  String get onboardSave;
+
+  /// Save failure: the mobile number belongs to another farmer (farmer_phone_taken).
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த எண் ஏற்கனவே பதிவில் உள்ளது.'**
+  String get onboardPhoneTaken;
+
+  /// Onboarding step 9 prompt (voice clip id).
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயியின் கைபேசியில் இந்தக் குறியீட்டை ஸ்கேன் செய்து, எஸ்எம்எஸ் குறியீட்டுடன் உள்நுழைந்து, குரல் வழிகாட்டியை இயக்கவும்.'**
+  String get onboardHandoffPrompt;
+
+  /// Screen-reader label of the handoff QR code; it holds only the phone number.
+  ///
+  /// In ta, this message translates to:
+  /// **'{phone} உள்நுழைவுக் குறியீடு'**
+  String onboardQrLabel(String phone);
+
+  /// Plays the 60-second voice tour on the farmer's phone; at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'குரல் வழிகாட்டி'**
+  String get onboardVoiceTour;
+
+  /// Text of the 60-second voice tour played at handoff (onboarding step 9); the recording is the tour.
+  ///
+  /// In ta, this message translates to:
+  /// **'அக்ரிட்ரேஸுக்கு வரவேற்கிறோம். மேலே உள்ள பெரிய அட்டை உங்கள் அடுத்த வேலையைக் காட்டும். அதை அழுத்தி, படம் எடுத்து, சரி குறியை அழுத்தவும். மேகம் அனுப்பக் காத்திருக்கும் பதிவுகளைக் காட்டும். உதவிக்கு அலுவலரை அழை அழுத்தவும்.'**
+  String get onboardTour;
+
+  /// Closes the onboarding wizard and returns to the officer home.
+  ///
+  /// In ta, this message translates to:
+  /// **'முடிந்தது'**
+  String get onboardDone;
+
+  /// Farmer summary after saving; count is the number of plots saved for this farmer.
+  ///
+  /// In ta, this message translates to:
+  /// **'{name}: {count} வயல் சேமிக்கப்பட்டது'**
+  String onboardSummary(String name, int count);
+
+  /// Starts the location-to-crop steps again for the same farmer ('Add another plot'); at most two words.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்னொரு நிலம்'**
+  String get onboardAnotherPlot;
+
   /// Button that signs this phone out (settings, and the device-in-use sheet); at most two words.
   ///
   /// In ta, this message translates to:

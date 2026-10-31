@@ -17,6 +17,10 @@ dependencies:
   crypto: ^3.0.8
   # Exact decimals in the grade/yield/moisture previews, matching the server engine's Decimal (D-006, M03).
   decimal: ^3.2.6
+  # Network type for Wi-Fi-only photos and sync metrics; a change triggers the reachability probe (M02).
+  connectivity_plus: ^7.3.1
+  # 15-min background sync: Android WorkManager, iOS BGAppRefresh (lib/core/sync/background_scheduler.dart, M02).
+  workmanager: ^0.10.10
   dio: ^5.11.1
   drift: ^2.31.0
   drift_flutter: ^0.2.8
@@ -39,6 +43,8 @@ dependencies:
   url_launcher: ^6.3.2
   smart_auth: ^3.2.0
   uuid: ^4.6.0
+  # Draws the onboarding handoff QR (lib/features/onboarding_farmer/handoff_step.dart, M09).
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +71,10 @@ flutter:
     - assets/audio/en/
     # Placeholder pictures of the eight event cards and the product card (M07); replace with drawn art.
     - assets/images/events/
+    # Picture cards of the onboarding wizard (M09); 96 px WebP placeholders until the photographed set lands.
+    - assets/images/water/
+    - assets/images/practice/
+    - assets/images/crops/
   fonts:
     # Tamil-block subset of Noto Sans Tamil Regular (35 KB, SIL OFL 1.1, licence in assets/fonts/).
     # DECISION D-016: Tamil ships inside the app so first run works offline with consistent glyphs.

@@ -108,6 +108,9 @@ class Features(_Strict):
     sync_push_max_entries: int = Field(ge=1, description="Most entries in one sync push.")
     sync_push_max_bytes: int = Field(ge=1, description="Largest sync push body, in bytes.")
     otp_daily_cap: int = Field(ge=1, description="Most OTP codes per phone per 24 hours (informative).")
+    grading_loss_warn_pct: int = Field(
+        ge=0, le=100, description="Batch output more than this % below its received kg warns (D-030)."
+    )
 
 
 class FieldOverride(_Strict):

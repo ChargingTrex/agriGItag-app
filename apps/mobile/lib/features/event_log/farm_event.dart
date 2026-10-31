@@ -8,7 +8,8 @@ import '../../core/l10n/gen/app_localizations.dart';
 
 /// One farm event type. [wireName] is the API `event_type` and the `Entries.entryType` value.
 ///
-/// TODO(M02): use the shared enum wire-name map once M02 lands; until then this enum is the map.
+/// The wire names are the farm subset of M02's `eventTypes` (lib/core/sync/enum_wire_names.dart); a test keeps them
+/// in step.
 enum FarmEvent {
   /// Stage 1: photo of the ploughed field; area comes from the plot.
   landPreparation('land_preparation', ['cultivated_area', 'last_ploughed_on']),

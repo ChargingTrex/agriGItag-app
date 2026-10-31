@@ -7,8 +7,9 @@ from the Bearer access token and the optional `X-Assist-Session` header, and sta
 Serves: FR1 (OTP sign-in), FR14 (role-based access), FR24 (tenant isolation), Arch §Security and privacy
 ("session tied to the device", "officers and admins add a 4-digit PIN"), CLAUDE.md §6 (every call scoped
 to the caller's FPO and role; assist mode recorded), backend-design.md §3 (Bearer token,
-`X-Assist-Session`), D-024.
+`X-Assist-Session`), D-024, D-032 (per-entry assist sessions in sync push, `assist_session_farmer`).
 Callers: module routers as FastAPI dependencies (`get_current_user`, `require_role`, `assert_same_fpo`);
+events sync push (`assist_session_farmer`);
 identity service and router (B02) issue and decode tokens; tests/unit/test_auth.py,
 tests/unit/test_identity_*.py, tests/integration/test_identity.py.
 """
@@ -270,6 +271,32 @@ async def _assist_farmer(
         ASSIST_SESSIONS.c.id == assist_session_id,
         ASSIST_SESSIONS.c.officer_user_id == officer_user_id,
         ASSIST_SESSIONS.c.ended_at.is_(None),
+    )
+    farmer_id: uuid.UUID | None = (await session.execute(query)).scalar()
+    return farmer_id
+
+
+async def assist_session_farmer(
+    session: AsyncSession, assist_session_id: uuid.UUID, officer_user_id: uuid.UUID
+) -> uuid.UUID | None:
+    """Find the farmer of an assist session started by this officer, open or ended (D-032 per-entry path).
+
+    Args:
+        session: the request's database session.
+        assist_session_id: the `assist_session_id` of a sync push entry.
+        officer_user_id: the caller.
+
+    Returns:
+        The assisted farmer's id, or None when the session is unknown or someone else's.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+    """
+    # DECISION D-032: an ended session is accepted here (never on the header path, `_assist_farmer`).
+    #   ADV: entries captured offline during a session sync after the officer ended it, still attributed.
+    #   COMPROMISE: an entry can be attributed to a session after it closed; the audit keeps both times.
+    query = select(ASSIST_SESSIONS.c.farmer_id).where(
+        ASSIST_SESSIONS.c.id == assist_session_id, ASSIST_SESSIONS.c.officer_user_id == officer_user_id
     )
     farmer_id: uuid.UUID | None = (await session.execute(query)).scalar()
     return farmer_id

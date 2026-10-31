@@ -7,6 +7,8 @@
 import 'dart:convert';
 
 import 'package:agritrace/core/db/database.dart';
+import 'package:agritrace/core/sync/enum_wire_names.dart';
+import 'package:agritrace/features/event_log/farm_event.dart';
 import 'package:agritrace/features/event_log/choose_event_screen.dart';
 import 'package:agritrace/features/event_log/event_log_controller.dart';
 import 'package:agritrace/core/router/placeholder_screen.dart';
@@ -246,5 +248,9 @@ void main() {
       'quantity': {'value': 2, 'unit': 'bag'},
     });
     await h.dispose(tester);
+  });
+
+  test('every farm event wire name is one M02 pushes as an event version', () {
+    expect(FarmEvent.values.map((e) => e.wireName), everyElement(isIn(eventTypes)));
   });
 }

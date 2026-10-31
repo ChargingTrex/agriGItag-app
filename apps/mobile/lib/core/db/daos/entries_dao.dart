@@ -24,19 +24,21 @@ class EntriesDao extends DatabaseAccessor<AppDatabase> with _$EntriesDaoMixin {
   /// Saves [entry] with its [media] in one transaction and queues them for sending.
   ///
   /// Writes the entry with status `saved`, each media row with upload status `pending`, then one outbox row for the
-  /// entry (priority 0) and one per media file (priority 1), all due at `entry.createdAt`. For a correction, pass
+  /// entry (priority 0) and one per media file (priority 1), all due at `entry.createdAt` and owned by
+  /// `entry.enteredByUserId` (D-029). For a correction, pass
   /// the same `rootId`, `version` + 1 and `supersedesEntryId`; the unique (rootId, version) index refuses a fork.
   /// Throws `SqliteException` when an id already exists, the version is taken or a media row names a missing entry
   /// (foreign key); nothing is written then. Side effect: the outbox pending count stream emits.
   Future<void> save(EntriesCompanion entry, List<MediaCompanion> media) {
     final due = entry.createdAt.value;
+    final owner = entry.enteredByUserId.value;
     // A Drift batch runs every insert in one transaction with a single round trip to the database.
     return batch((b) {
       b.insert(entries, entry.copyWith(status: const Value(EntryStatus.saved)));
       b.insertAll(this.media, [for (final m in media) m.copyWith(uploadStatus: const Value(UploadStatus.pending))]);
       b.insertAll(outbox, [
-        _queue(OutboxKind.entry, entry.entryId.value, 0, due),
-        for (final m in media) _queue(OutboxKind.media, m.mediaId.value, 1, due),
+        _queue(OutboxKind.entry, entry.entryId.value, 0, due, owner),
+        for (final m in media) _queue(OutboxKind.media, m.mediaId.value, 1, due, owner),
       ]);
     });
   }
@@ -147,16 +149,18 @@ class EntriesDao extends DatabaseAccessor<AppDatabase> with _$EntriesDaoMixin {
     return undoId;
   });
 
-  /// Builds the outbox row for [refId] of [kind] at [priority], due at [due]; the idempotency key is the client id
-  /// (D-005). Returns the companion; throws nothing.
-  OutboxCompanion _queue(OutboxKind kind, String refId, int priority, DateTime due) => OutboxCompanion.insert(
-    kind: kind,
-    refId: refId,
-    idempotencyKey: refId,
-    priority: priority,
-    nextAttemptAt: due,
-    createdAt: due,
-  );
+  /// Builds the outbox row for [refId] of [kind] at [priority], due at [due], owned by user [owner] (D-029); the
+  /// idempotency key is the client id (D-005). Returns the companion; throws nothing.
+  OutboxCompanion _queue(OutboxKind kind, String refId, int priority, DateTime due, String owner) =>
+      OutboxCompanion.insert(
+        kind: kind,
+        refId: refId,
+        ownerUserId: owner,
+        idempotencyKey: refId,
+        priority: priority,
+        nextAttemptAt: due,
+        createdAt: due,
+      );
 
   /// Sets [entryId]'s status to [to] when it is currently one of [from]. Returns when written; throws nothing.
   Future<void> _setStatus(String entryId, EntryStatus to, {required List<EntryStatus> from}) => (update(

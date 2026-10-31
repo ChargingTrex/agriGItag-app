@@ -1,7 +1,8 @@
 // go_router configuration: role-based redirect and the /assist/:farmerId scope.
 // Requirement: plan §7.2 M00 and M06 ("farmer never reaches officer routes"), D-013, UserFlows §"Who uses
 //   what" (a farmer only ever sees the farmer screens; the field officer can act for a farmer).
-//   M06 wires the real sign-in screens (UserFlows §Log in once) and the /settings placeholder with sign-out.
+//   M06 wires the real sign-in screens (UserFlows §Log in once) and the /settings placeholder with sign-out;
+//   M09 adds /officer/onboard (UserFlows §Onboarding a farmer).
 //   M07 adds the farmer home and event routes (UserFlows §Farmer home screen, §Logging a farm event; F17 deep link
 //   `/log/<eventType>`) and a farmer-friendly page for unknown routes (UserFlows §When things go wrong).
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
@@ -23,6 +24,7 @@ import '../../features/event_log/event_log_controller.dart';
 import '../../features/event_log/farm_event.dart';
 import '../../features/event_log/saved_screen.dart';
 import '../../features/farmer_home/farmer_home_screen.dart';
+import '../../features/onboarding_farmer/onboarding_wizard.dart';
 import '../l10n/gen/app_localizations.dart';
 import 'placeholder_screen.dart';
 import 'session.dart';
@@ -135,6 +137,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/officer',
         builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).roleFieldOfficer),
+        // M09: the officer's onboarding wizard (UserFlows §Onboarding a farmer); M10's home links "Add farmer" here.
+        routes: [GoRoute(path: 'onboard', builder: (context, _) => const OnboardingWizard())],
       ),
       GoRoute(
         path: '/qc',

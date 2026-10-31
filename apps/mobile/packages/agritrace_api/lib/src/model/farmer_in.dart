@@ -14,6 +14,7 @@ part 'farmer_in.g.dart';
 ///
 /// Properties:
 /// * [address] - Structured address (FR53); parts left empty are filled from `village_id`.
+/// * [clientId] - Farmer id generated on the phone (UUIDv7, D-031); becomes the farmer's `id`. Resending it returns the stored farmer with 201 (no phone check, no second account); an id used by another FPO → 409 `client_id_conflict`. In a sync push `farmer` entry the entry's `client_id` is used.
 /// * [giAuthorisedUserNo] - Farmer's GI authorised-user registration number (FR62).
 /// * [lang] - Preferred language for app, SMS and voice.
 /// * [name] - Name in English script.
@@ -27,6 +28,10 @@ abstract class FarmerIn implements Built<FarmerIn, FarmerInBuilder> {
   /// Structured address (FR53); parts left empty are filled from `village_id`.
   @BuiltValueField(wireName: r'address')
   Address? get address;
+
+  /// Farmer id generated on the phone (UUIDv7, D-031); becomes the farmer's `id`. Resending it returns the stored farmer with 201 (no phone check, no second account); an id used by another FPO → 409 `client_id_conflict`. In a sync push `farmer` entry the entry's `client_id` is used.
+  @BuiltValueField(wireName: r'client_id')
+  String? get clientId;
 
   /// Farmer's GI authorised-user registration number (FR62).
   @BuiltValueField(wireName: r'gi_authorised_user_no')
@@ -91,6 +96,13 @@ class _$FarmerInSerializer implements PrimitiveSerializer<FarmerIn> {
       yield serializers.serialize(
         object.address,
         specifiedType: const FullType.nullable(Address),
+      );
+    }
+    if (object.clientId != null) {
+      yield r'client_id';
+      yield serializers.serialize(
+        object.clientId,
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.giAuthorisedUserNo != null) {
@@ -179,6 +191,14 @@ class _$FarmerInSerializer implements PrimitiveSerializer<FarmerIn> {
           ) as Address?;
           if (valueDes == null) continue;
           result.address.replace(valueDes);
+          break;
+        case r'client_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.clientId = valueDes;
           break;
         case r'gi_authorised_user_no':
           final valueDes = serializers.deserialize(

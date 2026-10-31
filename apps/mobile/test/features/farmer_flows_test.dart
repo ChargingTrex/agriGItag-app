@@ -133,6 +133,7 @@ void main() {
         expect(photo.lat, 9.5501);
         // The camera original is never kept.
         expect(h.compressor.originals.every((f) => !f.existsSync()), isTrue);
+        expect(h.kicks, 1, reason: 'one send kick after the save');
         await h.dispose(tester);
       });
     }

@@ -24,6 +24,7 @@ import '../../core/capture/voice_note_recorder.dart';
 import '../../core/db/daos/entries_dao.dart';
 import '../../core/db/database.dart';
 import '../../core/db/providers.dart';
+import '../../core/providers/sync_providers.dart';
 import '../../core/refdata/bundle_repository.dart';
 import '../../core/refdata/models/reference.dart';
 import '../../core/refdata/models/standards.dart';
@@ -67,10 +68,9 @@ typedef AssistFarmer = ({String farmerId, String name});
 /// shortcut: always null until M10 overrides it from `Session.assistFarmerId` under `/assist/:farmerId`.
 final assistFarmerProvider = Provider<AssistFarmer?>((ref) => null);
 
-/// Called after every save and undo to start a send.
-///
-/// shortcut: a no-op until M02 overrides it with its sync service's debounced kick (mobile-design.md §3).
-final afterSaveProvider = Provider<void Function()>((ref) => () {});
+/// Called after every save and undo to start a send: M02's debounced kick (`SyncService.afterSave`, 500 ms, only when
+/// the API is reachable; mobile-design.md §3). Tests replace it with a no-op.
+final afterSaveProvider = Provider<void Function()>((ref) => ref.watch(syncServiceProvider).afterSave);
 
 /// Lot statuses that still take farm events (server `LotStatus` open, drying, ready_for_sale).
 const _activeLotStatuses = ['open', 'drying', 'ready_for_sale'];
@@ -482,7 +482,7 @@ class EventLogNotifier extends Notifier<EventDraft> {
       undoDeadline: now.add(const Duration(hours: 24)),
       createdAt: now,
     );
-    // TODO(M02): set ownerUserId to session.userId once M02's schema v2 adds it (D-029 per-user outbox).
+    // The outbox rows' ownerUserId (D-029) is filled by EntriesDao.save from enteredByUserId.
     final media = [
       MediaCompanion.insert(
         mediaId: const Uuid().v7(),
