@@ -2,16 +2,17 @@
  * MSW request handlers: a mock of the API for tests, `npm run dev:mock` and the Playwright mock-mode specs.
  * Serves: plan §7.3 P00 (MSW from spec; login passes with MSW), P01 (identity + registry handlers for the
  * Members screens, Stage 0 approval) and P02 (flags list/detail/resolve, lot events with evidence photos,
- * farmer plots, plot correction; FR70, Dataflow "Review & flags") and P03 (lots, batch create with shares and
- * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60) and P04 (batch list, readings, grade,
+ * farmer plots, plot correction; FR70, Dataflow "Review & flags"), P03 (lots, batch create with shares and
+ * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60), P04 (batch list, readings, grade,
  * instruments, standards profile, grading approve, final packing, publish, builds with a simulated worker, rebuild,
- * qr.png, labels.pdf; FR15, FR48, FR49, FR62). Called by: src/mocks/browser.ts,
+ * qr.png, labels.pdf; FR15, FR48, FR49, FR62) and P08 (field config, import templates and CSV imports with dry
+ * run; gap analysis "Master data uploads"). Called by: src/mocks/browser.ts,
  * src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`, `resetMockData`).
  *
  * Every body is typed with the generated `components` schemas, so a contract change breaks
  * `npm run typecheck` here. State (farmers, processors, plots, flags, lots, batches, grades, readings, builds,
- * features, the session's user and roles, the refresh "cookie") is module-level and reset by `resetMockData`
- * after each test.
+ * features, import calls, the session's user and roles, the refresh "cookie") is module-level and reset by
+ * `resetMockData` after each test.
  */
 import { http, HttpResponse } from 'msw';
 import type { components } from '../api/generated/schema';
@@ -34,6 +35,8 @@ type LotOut = Schemas['LotOut'];
 type BatchOut = Schemas['BatchOut'];
 type BatchIn = Schemas['BatchIn'];
 type BuildOut = Schemas['BuildOut'];
+type FieldSpec = Schemas['FieldSpec'];
+type ImportReport = Schemas['ImportReport'];
 
 /** The SMS code the mock accepts. */
 export const MOCK_OTP = '123456';
@@ -113,6 +116,10 @@ export const mockState = {
   userId: MOCK_USER_ID,
   /** `GET /v1/config/features`; tests lower `second_signoff_threshold_kg`. */
   features: seedFeatures(),
+  /** Every `POST /v1/imports/{kind}` received, in order: the file text and the `dry_run` flag. */
+  imports: [] as { kind: string; dryRun: boolean; text: string }[],
+  /** The `users.is_super_admin` flag: adds `super_admin` to the session roles and `/v1/me`; villages need it. */
+  superAdmin: false,
 };
 
 /** Restores the seed state (called after every test). */
@@ -123,6 +130,8 @@ export function resetMockData(): void {
   mockState.processors = [];
   mockState.plots = seedPlots();
   mockState.flags = seedFlags();
+  mockState.imports = [];
+  mockState.superAdmin = false;
   mockState.lots = seedLots();
   mockState.batches = [];
   mockState.grades = {};
@@ -203,6 +212,112 @@ function seedLots(): LotOut[] {
     lot(MOCK_WAITING_LOT_ID, 7, '80', { status: 'ready_for_sale' }),
     lot(MOCK_UNPACKED_LOT_ID, 8, '40', { packed: null }),
   ];
+}
+
+/**
+ * One field of the mock field config.
+ * @param name Payload key / CSV column.
+ * @param type Value kind.
+ * @param en English label.
+ * @param required Whether a value is needed.
+ * @returns The field, enabled, internal, master-data stage (the screen reads only name, type, label, required).
+ */
+const field = (name: string, type: FieldSpec['type'], en: string, required = false): FieldSpec => ({
+  name,
+  type,
+  required,
+  enabled: true,
+  core: required,
+  visibility: 'internal',
+  stage: 'master_data',
+  label: { en, ta: `${en} (ta)` },
+});
+
+/** `GET /v1/config/fields` for the demo tenant: the farmer, village and input entities of apps/api/config. */
+export const MOCK_FIELDS: Record<string, FieldSpec[]> = {
+  farmer: [
+    field('name', 'text', 'Name', true),
+    field('name_local', 'text', 'Name in Tamil'),
+    field('phone', 'phone', 'Mobile number'),
+    field('lang', 'choice', 'Language'),
+    field('village_id', 'id', 'Village'),
+    field('address', 'address', 'Address'),
+    field('gi_authorised_user_no', 'text', 'GI authorised user number'),
+    field('no_smartphone', 'boolean', 'No smartphone'),
+    field('photo_key', 'photo', 'Farmer photo'),
+  ],
+  village: [
+    field('lgd_code', 'text', 'LGD village code', true),
+    field('name_en', 'text', 'Village name', true),
+    field('district', 'text', 'District', true),
+    field('state', 'text', 'State', true),
+    field('pincode', 'text', 'PIN code'),
+  ],
+  input: [
+    field('name_en', 'text', 'Product name', true),
+    field('manufacturer', 'text', 'Manufacturer'),
+    field('category', 'choice', 'Category', true),
+    field('unit', 'text', 'Unit', true),
+    field('photo_key', 'photo', 'Product photo'),
+  ],
+};
+
+const IMPORT_ENTITY: Record<string, string> = {
+  farmers: 'farmer',
+  villages: 'village',
+  inputs: 'input',
+};
+
+/**
+ * Template columns like the API's `imports.template_columns`: CSV-capable fields, plus the farmer village key.
+ * @param kind farmers, villages or inputs.
+ * @returns The header names.
+ */
+function templateColumns(kind: string): string[] {
+  const csvTypes = ['text', 'number', 'integer', 'boolean', 'date', 'phone', 'choice'];
+  const columns = (MOCK_FIELDS[IMPORT_ENTITY[kind] ?? ''] ?? [])
+    .filter((f) => csvTypes.includes(f.type))
+    .map((f) => f.name);
+  return kind === 'farmers' ? [...columns, 'village_lgd_code'] : columns;
+}
+
+/**
+ * A simplified server import: a missing required value gives `field_required`, a malformed phone
+ * `import_row_invalid`; a commit of farmers adds the accepted rows as pending farmers. Rows are numbered by
+ * line (the fixtures have no quoted line breaks). Side effect: a farmers commit appends to `mockState.farmers`.
+ * @param kind farmers, villages or inputs.
+ * @param text The uploaded CSV.
+ * @param dryRun Report only.
+ * @returns The row-level report.
+ */
+function mockImport(kind: string, text: string, dryRun: boolean): ImportReport {
+  const lines = text.split(/\r?\n/);
+  const header = (lines[0] ?? '').split(',');
+  const required = (MOCK_FIELDS[IMPORT_ENTITY[kind] ?? ''] ?? []).filter((f) => f.required);
+  const report: ImportReport = { dry_run: dryRun, accepted: 0, rejected: [] };
+  lines.slice(1).forEach((line, index) => {
+    if (!line.trim()) return;
+    const cells = Object.fromEntries(line.split(',').map((v, i) => [header[i] ?? '', v.trim()]));
+    const missing = required.find((f) => !cells[f.name]);
+    const row = index + 2;
+    if (missing) report.rejected.push({ row, code: 'field_required', field: missing.name });
+    else if (cells['phone'] && !/^\+91\d{10}$/.test(cells['phone']))
+      report.rejected.push({ row, code: 'import_row_invalid', field: 'phone' });
+    else {
+      report.accepted += 1;
+      if (kind === 'farmers' && !dryRun) {
+        const n = mockState.farmers.length + 1;
+        mockState.farmers.push({
+          ...(seedFarmers()[0] as FarmerOut),
+          id: farmerId(n),
+          code: `VSV-${String(n).padStart(4, '0')}`,
+          name: cells['name'] ?? '',
+          name_local: null,
+        });
+      }
+    }
+  });
+  return report;
 }
 
 /**
@@ -445,7 +560,7 @@ const session = (token = MOCK_ACCESS_TOKEN): SessionOut => ({
   access_token: token,
   refresh_token: null,
   expires_in: 900,
-  roles: mockState.roles,
+  roles: [...mockState.roles, ...(mockState.superAdmin ? ['super_admin'] : [])],
   fpo_id: MOCK_FPO_ID,
 });
 
@@ -754,6 +869,30 @@ export const handlers = [
         })
       : fail(404, 'gi_region_missing'),
   ),
+  // Field config and master data imports (B13 contract).
+  http.get('/v1/config/fields', ({ request }) =>
+    authed(request) ? HttpResponse.json(MOCK_FIELDS) : fail(401, 'unauthorized'),
+  ),
+  http.get('/v1/imports/:kind/template.csv', ({ request, params }) =>
+    authed(request)
+      ? HttpResponse.text(`${templateColumns(String(params['kind'])).join(',')}\r\n`, {
+          headers: { 'Content-Type': 'text/csv; charset=utf-8' },
+        })
+      : fail(401, 'unauthorized'),
+  ),
+  http.post('/v1/imports/:kind', async ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const kind = String(params['kind']);
+    if (kind === 'villages' && !mockState.superAdmin) return fail(403, 'forbidden');
+    const file = (await request.formData()).get('file');
+    // Not `instanceof Blob`: under Vitest the part is Node's File, not jsdom's Blob.
+    if (file === null || typeof file === 'string')
+      return fail(422, 'validation_error', { file: 'missing' });
+    const text = await file.text();
+    const dryRun = new URL(request.url).searchParams.get('dry_run') === 'true';
+    mockState.imports.push({ kind, dryRun, text });
+    return HttpResponse.json<ImportReport>(mockImport(kind, text, dryRun));
+  }),
   http.get('/v1/processors', ({ request }) =>
     authed(request) ? HttpResponse.json(mockState.processors) : fail(401, 'unauthorized'),
   ),
@@ -770,7 +909,7 @@ export const handlers = [
       ? HttpResponse.json<Schemas['MeOut']>({
           user: {
             id: mockState.userId,
-            is_super_admin: false,
+            is_super_admin: mockState.superAdmin,
             lang: 'en',
             name: 'Office user',
             name_local: null,
