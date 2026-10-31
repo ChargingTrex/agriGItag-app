@@ -1,0 +1,2767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5 (Python 3.12.13 on darwin)" generated="2026-10-31T11:46:16.943563" rpa="false" schemaversion="5">
+<suite id="s1" name="Page" source="/Users/fi-it/Documents/projects/agriGitag/qa/robot/public/page.robot">
+<test id="s1-t1" name="Privacy Lint Passes The Clean Fixture And Catches The Dirty One" line="20">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-10-31T11:46:18.697598" level="INFO">${lint} = /Users/fi-it/Documents/projects/agriGitag/qa/robot/resources/../../../infra/scripts/privacy-lint.py</msg>
+<var>${lint}</var>
+<arg>${REPO_ROOT}/infra/scripts/privacy-lint.py</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-10-31T11:46:18.696909" elapsed="0.000743"/>
+</kw>
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:18.698499" level="INFO">Starting process:
+/tmp/w02rv/bin/python /Users/fi-it/Documents/projects/agriGitag/qa/robot/resources/../../../infra/scripts/privacy-lint.py /Users/fi-it/Documents/projects/agriGitag/qa/robot/resources/../../../qa/fixtures/privacy/clean</msg>
+<msg time="2026-10-31T11:46:18.704286" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:46:18.919074" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:46:18.919533" level="INFO">${clean} = &lt;result object with rc 0&gt;</msg>
+<var>${clean}</var>
+<arg>${{sys.executable}}</arg>
+<arg>${lint}</arg>
+<arg>${REPO_ROOT}/qa/fixtures/privacy/clean</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:18.697888" elapsed="0.221702"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:46:18.922022" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${clean.rc}</arg>
+<arg>0</arg>
+<arg>msg=${clean.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:46:18.920272" elapsed="0.001877"/>
+</kw>
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:18.923222" level="INFO">Starting process:
+/tmp/w02rv/bin/python /Users/fi-it/Documents/projects/agriGitag/qa/robot/resources/../../../infra/scripts/privacy-lint.py /Users/fi-it/Documents/projects/agriGitag/qa/robot/resources/../../../qa/fixtures/privacy/dirty</msg>
+<msg time="2026-10-31T11:46:18.928863" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:46:19.106553" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:46:19.107055" level="INFO">${dirty} = &lt;result object with rc 1&gt;</msg>
+<var>${dirty}</var>
+<arg>${{sys.executable}}</arg>
+<arg>${lint}</arg>
+<arg>${REPO_ROOT}/qa/fixtures/privacy/dirty</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:18.922440" elapsed="0.184670"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:46:19.109351" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${dirty.rc}</arg>
+<arg>1</arg>
+<arg>msg=${dirty.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.107757" elapsed="0.001722"/>
+</kw>
+<doc>Real smoke test, no stack needed: infra/scripts/privacy-lint.py on qa/fixtures/privacy.</doc>
+<tag>BM-09</tag>
+<tag>FR-16</tag>
+<tag>public</tag>
+<tag>smoke</tag>
+<tag>WP-Q00</tag>
+<status status="PASS" start="2026-10-31T11:46:18.695181" elapsed="0.414619"/>
+</test>
+<test id="s1-t2" name="Fixture Renders Valid HTML" line="29">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:19.115068" level="INFO">${built} = False</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.113206" elapsed="0.001922"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="NOT RUN" start="2026-10-31T11:46:19.115527" elapsed="0.000028"/>
+</return>
+<status status="NOT RUN" start="2026-10-31T11:46:19.115377" elapsed="0.000221"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:19.115303" elapsed="0.000327"/>
+</if>
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:19.117151" level="INFO">Starting process:
+uv run python -m agritrace_page build fixtures/batch_sample.json out/site</msg>
+<msg time="2026-10-31T11:46:19.123553" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:46:19.676605" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:46:19.677049" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.116613" elapsed="0.560489"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:46:19.677328" elapsed="0.000140"/>
+</return>
+<msg time="2026-10-31T11:46:19.677803" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.116157" elapsed="0.561686"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:46:19.679760" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.678306" elapsed="0.001612"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<msg time="2026-10-31T11:46:19.682069" level="INFO">${PAGE_BUILT} = True</msg>
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.680358" elapsed="0.001851"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets ${PAGE_BUILT}.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.112518" elapsed="0.569855"/>
+</kw>
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:19.685287" level="INFO">Starting process:
+npx --no-install html-validate out/site/index.html</msg>
+<msg time="2026-10-31T11:46:19.696545" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:46:21.235513" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:46:21.236133" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.684458" elapsed="1.551798"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:46:21.236572" elapsed="0.000193"/>
+</return>
+<msg time="2026-10-31T11:46:21.237255" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>npx</arg>
+<arg>--no-install</arg>
+<arg>html-validate</arg>
+<arg>out/site/index.html</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:46:19.683559" elapsed="1.553781"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.239869" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.238278" elapsed="0.001794"/>
+</kw>
+<doc>html-validate (.htmlvalidate.mjs: standard + a11y presets) reports 0 errors on the build.</doc>
+<tag>FR-16</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-31T11:46:19.110411" elapsed="2.130000"/>
+</test>
+<test id="s1-t3" name="Crop Name Is Bilingual" line="36">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.244385" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.243606" elapsed="0.000866"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:46:21.244802" elapsed="0.000041"/>
+</return>
+<status status="PASS" start="2026-10-31T11:46:21.244690" elapsed="0.000203"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:21.244640" elapsed="0.000299"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.245662" elapsed="0.000057"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.246017" elapsed="0.000046"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.246347" elapsed="0.000048"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.242870" elapsed="0.003654"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.249717" level="INFO">${record} = {'product_name_en': 'Virudhunagar Samba Vathal', 'product_name_local': 'விருதுநகர் சம்பா வத்தல்', 'batch_code': 'FGP8T4033HM7', 'super_lot_code': 'COMBO_LOT_6C1DCCFE', 'total_quantity': {'value': 20, ...</msg>
+<var>${record}</var>
+<arg>json.loads(pathlib.Path($PAGE_APP, "fixtures", "batch_sample.json").read_text("utf-8"))</arg>
+<arg>modules=json,pathlib</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.246756" elapsed="0.003046"/>
+</kw>
+<kw name="Get File" owner="OperatingSystem">
+<msg time="2026-10-31T11:46:21.250298" level="INFO" html="true">Getting file '&lt;a href="file:///Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/site/index.html"&gt;/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/site/index.html&lt;/a&gt;'.</msg>
+<msg time="2026-10-31T11:46:21.251868" level="INFO">${html} = &lt;!doctype html&gt;
+&lt;html lang="ta"&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;
+&lt;title&gt;Virudhunagar Samba Vathal · FGP8T4033HM7&lt;/title&gt;
+&lt;style&gt;/* Pub...</msg>
+<var>${html}</var>
+<arg>${SITE}/index.html</arg>
+<doc>Returns the contents of a specified file.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.250046" elapsed="0.001890"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${html}</arg>
+<arg>&lt;h1&gt;&lt;span lang="ta"&gt;${record}[product_name_local]&lt;/span&gt; / &lt;span lang="en"&gt;${record}[product_name_en]&lt;/span&gt;&lt;/h1&gt;</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.252158" elapsed="0.001154"/>
+</kw>
+<doc>The heading shows the fixture's Tamil crop name, then the English one.</doc>
+<tag>FR-5</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-31T11:46:21.241196" elapsed="0.012268"/>
+</test>
+<test id="s1-t4" name="Every Quantity Carries A Unit" line="46">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.255130" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.254741" elapsed="0.000426"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:46:21.255352" elapsed="0.000035"/>
+</return>
+<status status="PASS" start="2026-10-31T11:46:21.255273" elapsed="0.000152"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:21.255247" elapsed="0.000208"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.255923" elapsed="0.000032"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.256129" elapsed="0.000028"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.256310" elapsed="0.000026"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.254412" elapsed="0.001998"/>
+</kw>
+<kw name="Read Public Page" owner="agritrace_keywords">
+<msg time="2026-10-31T11:46:21.272551" level="INFO">${facts} = {'timelines': [['2025-08-24', '2025-09-19', '2025-11-11', '2025-12-05', '2025-12-28', '2026-02-14', '2026-02-15', '2026-03-04', '2026-03-05', '2026-03-12', '2026-05-02'], ['2025-09-05', '2025-09-30', ...</msg>
+<var>${facts}</var>
+<arg>${SITE}/index.html</arg>
+<doc>Read a built public page (W01 `index.html`) into the facts the public suite asserts on.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.256547" elapsed="0.016056"/>
+</kw>
+<kw name="Should Not Be Empty" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.273205" level="INFO">Length is 43.</msg>
+<arg>${facts}[quantities]</arg>
+<doc>Verifies that the given item is not empty.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.272794" elapsed="0.000480"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.273776" elapsed="0.000819"/>
+</kw>
+<var name="${quantity}">20 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.273600" elapsed="0.001055"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.275131" elapsed="0.000427"/>
+</kw>
+<var name="${quantity}">320 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.274926" elapsed="0.000688"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.275917" elapsed="0.000427"/>
+</kw>
+<var name="${quantity}">10.4 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.275734" elapsed="0.000668"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.276704" elapsed="0.000378"/>
+</kw>
+<var name="${quantity}">0.6 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.276519" elapsed="0.000622"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.277417" elapsed="0.000366"/>
+</kw>
+<var name="${quantity}">100 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.277251" elapsed="0.000583"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.278150" elapsed="0.000521"/>
+</kw>
+<var name="${quantity}">31.25 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.277939" elapsed="0.000812"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.279198" elapsed="0.000577"/>
+</kw>
+<var name="${quantity}">0.5 acre</var>
+<status status="PASS" start="2026-10-31T11:46:21.278912" elapsed="0.000951"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.280327" elapsed="0.000679"/>
+</kw>
+<var name="${quantity}">0.5 acre</var>
+<status status="PASS" start="2026-10-31T11:46:21.280038" elapsed="0.001066"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.281526" elapsed="0.000671"/>
+</kw>
+<var name="${quantity}">25 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.281296" elapsed="0.000990"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.282760" elapsed="0.000634"/>
+</kw>
+<var name="${quantity}">10 l</var>
+<status status="PASS" start="2026-10-31T11:46:21.282475" elapsed="0.001009"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.284006" elapsed="0.000646"/>
+</kw>
+<var name="${quantity}">210 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.283679" elapsed="0.001069"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.285238" elapsed="0.000645"/>
+</kw>
+<var name="${quantity}">10.8 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.284931" elapsed="0.001048"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.286489" elapsed="0.000768"/>
+</kw>
+<var name="${quantity}">170 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.286182" elapsed="0.001175"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.287842" elapsed="0.000925"/>
+</kw>
+<var name="${quantity}">10.4 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.287548" elapsed="0.001319"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.289383" elapsed="0.000639"/>
+</kw>
+<var name="${quantity}">110 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.289070" elapsed="0.001054"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.290588" elapsed="0.000612"/>
+</kw>
+<var name="${quantity}">100 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.290300" elapsed="0.000997"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.291796" elapsed="0.000638"/>
+</kw>
+<var name="${quantity}">10.5 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.291489" elapsed="0.001034"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.293003" elapsed="0.000612"/>
+</kw>
+<var name="${quantity}">200 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.292704" elapsed="0.000999"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.294221" elapsed="0.000592"/>
+</kw>
+<var name="${quantity}">62.5 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.293903" elapsed="0.000973"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.295189" elapsed="0.000385"/>
+</kw>
+<var name="${quantity}">1 acre</var>
+<status status="PASS" start="2026-10-31T11:46:21.295003" elapsed="0.000624"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.295988" elapsed="0.000367"/>
+</kw>
+<var name="${quantity}">1 acre</var>
+<status status="PASS" start="2026-10-31T11:46:21.295736" elapsed="0.000676"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.296743" elapsed="0.000379"/>
+</kw>
+<var name="${quantity}">2 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.296560" elapsed="0.000615"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.297448" elapsed="0.000354"/>
+</kw>
+<var name="${quantity}">5 l</var>
+<status status="PASS" start="2026-10-31T11:46:21.297286" elapsed="0.000567"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.298118" elapsed="0.000350"/>
+</kw>
+<var name="${quantity}">400 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.297959" elapsed="0.000559"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.298783" elapsed="0.000365"/>
+</kw>
+<var name="${quantity}">10.6 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.298623" elapsed="0.000575"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.299467" elapsed="0.000355"/>
+</kw>
+<var name="${quantity}">330 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.299303" elapsed="0.000571"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.300156" elapsed="0.000357"/>
+</kw>
+<var name="${quantity}">10.3 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.299988" elapsed="0.000576"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.300833" elapsed="0.000509"/>
+</kw>
+<var name="${quantity}">215 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.300672" elapsed="0.000753"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.301823" elapsed="0.000398"/>
+</kw>
+<var name="${quantity}">200 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.301596" elapsed="0.000677"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.302555" elapsed="0.000355"/>
+</kw>
+<var name="${quantity}">10.4 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.302384" elapsed="0.000575"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.303228" elapsed="0.000361"/>
+</kw>
+<var name="${quantity}">20 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.303063" elapsed="0.000575"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.303909" elapsed="0.000389"/>
+</kw>
+<var name="${quantity}">6.25 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.303742" elapsed="0.000648"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.304706" elapsed="0.000389"/>
+</kw>
+<var name="${quantity}">0.25 acre</var>
+<status status="PASS" start="2026-10-31T11:46:21.304526" elapsed="0.000622"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.305431" elapsed="0.000368"/>
+</kw>
+<var name="${quantity}">0.25 acre</var>
+<status status="PASS" start="2026-10-31T11:46:21.305257" elapsed="0.000592"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.306125" elapsed="0.000362"/>
+</kw>
+<var name="${quantity}">1 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.305955" elapsed="0.000592"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.306843" elapsed="0.000398"/>
+</kw>
+<var name="${quantity}">90 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.306657" elapsed="0.000640"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.307579" elapsed="0.000389"/>
+</kw>
+<var name="${quantity}">10.5 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.307410" elapsed="0.000639"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.308582" elapsed="0.000496"/>
+</kw>
+<var name="${quantity}">28 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.308360" elapsed="0.000773"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.309419" elapsed="0.000517"/>
+</kw>
+<var name="${quantity}">20 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.309246" elapsed="0.000742"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.310265" elapsed="0.000353"/>
+</kw>
+<var name="${quantity}">10.5 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.310099" elapsed="0.000570"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.311014" elapsed="0.000353"/>
+</kw>
+<var name="${quantity}">320 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.310849" elapsed="0.000569"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.311679" elapsed="0.000344"/>
+</kw>
+<var name="${quantity}">10.4 %</var>
+<status status="PASS" start="2026-10-31T11:46:21.311521" elapsed="0.000551"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${quantity}</arg>
+<arg>^-?[0-9][0-9,]*(\\.[0-9]+)? \\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.312342" elapsed="0.000348"/>
+</kw>
+<var name="${quantity}">20 kg</var>
+<status status="PASS" start="2026-10-31T11:46:21.312183" elapsed="0.000569"/>
+</iter>
+<var>${quantity}</var>
+<value>@{facts}[quantities]</value>
+<status status="PASS" start="2026-10-31T11:46:21.273376" elapsed="0.039416"/>
+</for>
+<doc>Every &lt;data class="q"&gt; reads "&lt;number&gt; &lt;unit&gt;", e.g. "1,20,000 kg" or "31.25 %".</doc>
+<tag>FR-58</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-31T11:46:21.253762" elapsed="0.059163"/>
+</test>
+<test id="s1-t5" name="Events Are In Date Order" line="56">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.315095" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.314570" elapsed="0.000570"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:46:21.315340" elapsed="0.000039"/>
+</return>
+<status status="PASS" start="2026-10-31T11:46:21.315253" elapsed="0.000166"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:21.315223" elapsed="0.000227"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.315958" elapsed="0.000038"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.316185" elapsed="0.000030"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.316379" elapsed="0.000028"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.314148" elapsed="0.002342"/>
+</kw>
+<kw name="Read Public Page" owner="agritrace_keywords">
+<msg time="2026-10-31T11:46:21.334776" level="INFO">${facts} = {'timelines': [['2025-08-24', '2025-09-19', '2025-11-11', '2025-12-05', '2025-12-28', '2026-02-14', '2026-02-15', '2026-03-04', '2026-03-05', '2026-03-12', '2026-05-02'], ['2025-09-05', '2025-09-30', ...</msg>
+<var>${facts}</var>
+<arg>${SITE}/index.html</arg>
+<doc>Read a built public page (W01 `index.html`) into the facts the public suite asserts on.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.316638" elapsed="0.018217"/>
+</kw>
+<kw name="Should Not Be Empty" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.335724" level="INFO">Length is 4.</msg>
+<arg>${facts}[timelines]</arg>
+<doc>Verifies that the given item is not empty.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.335142" elapsed="0.000678"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.337276" level="INFO">${ascending} = ['2025-08-24', '2025-09-19', '2025-11-11', '2025-12-05', '2025-12-28', '2026-02-14', '2026-02-15', '2026-03-04', '2026-03-05', '2026-03-12', '2026-05-02']</msg>
+<var>${ascending}</var>
+<arg>sorted($dates)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.336499" elapsed="0.000841"/>
+</kw>
+<kw name="Lists Should Be Equal" owner="Collections">
+<arg>${dates}</arg>
+<arg>${ascending}</arg>
+<doc>Fails if given lists are unequal.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.337709" elapsed="0.000884"/>
+</kw>
+<var name="${dates}">['2025-08-24', '2025-09-19', '2025-11-11', '2025-12-05', '2025-12-28', '2026-02-14', '2026-02-15', '2026-03-04', '2026-03-05', '2026-03-12', '2026-05-02']</var>
+<status status="PASS" start="2026-10-31T11:46:21.336233" elapsed="0.002459"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.340094" level="INFO">${ascending} = ['2025-09-05', '2025-09-30', '2025-11-02', '2025-11-20', '2025-12-15', '2026-02-10', '2026-02-11', '2026-03-01', '2026-03-02', '2026-03-10', '2026-05-02']</msg>
+<var>${ascending}</var>
+<arg>sorted($dates)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.339229" elapsed="0.000933"/>
+</kw>
+<kw name="Lists Should Be Equal" owner="Collections">
+<arg>${dates}</arg>
+<arg>${ascending}</arg>
+<doc>Fails if given lists are unequal.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.340530" elapsed="0.000494"/>
+</kw>
+<var name="${dates}">['2025-09-05', '2025-09-30', '2025-11-02', '2025-11-20', '2025-12-15', '2026-02-10', '2026-02-11', '2026-03-01', '2026-03-02', '2026-03-10', '2026-05-02']</var>
+<status status="PASS" start="2026-10-31T11:46:21.338925" elapsed="0.002190"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.342405" level="INFO">${ascending} = ['2025-09-12', '2025-09-20', '2025-11-15', '2025-12-10', '2026-02-20', '2026-02-21', '2026-03-05', '2026-05-02']</msg>
+<var>${ascending}</var>
+<arg>sorted($dates)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.341631" elapsed="0.000838"/>
+</kw>
+<kw name="Lists Should Be Equal" owner="Collections">
+<arg>${dates}</arg>
+<arg>${ascending}</arg>
+<doc>Fails if given lists are unequal.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.342823" elapsed="0.000482"/>
+</kw>
+<var name="${dates}">['2025-09-12', '2025-09-20', '2025-11-15', '2025-12-10', '2026-02-20', '2026-02-21', '2026-03-05', '2026-05-02']</var>
+<status status="PASS" start="2026-10-31T11:46:21.341340" elapsed="0.002058"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.344632" level="INFO">${ascending} = ['2026-07-30', '2026-07-30']</msg>
+<var>${ascending}</var>
+<arg>sorted($dates)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.343873" elapsed="0.000800"/>
+</kw>
+<kw name="Lists Should Be Equal" owner="Collections">
+<arg>${dates}</arg>
+<arg>${ascending}</arg>
+<doc>Fails if given lists are unequal.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.344894" elapsed="0.000291"/>
+</kw>
+<var name="${dates}">['2026-07-30', '2026-07-30']</var>
+<status status="PASS" start="2026-10-31T11:46:21.343608" elapsed="0.001629"/>
+</iter>
+<var>${dates}</var>
+<value>@{facts}[timelines]</value>
+<status status="PASS" start="2026-10-31T11:46:21.335942" elapsed="0.009410"/>
+</for>
+<doc>In every timeline (each lot, processing) event start dates ascend.</doc>
+<tag>FR-63</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-31T11:46:21.313242" elapsed="0.032252"/>
+</test>
+<test id="s1-t6" name="No Temp Uploads Or Non Evidence Paths" line="67">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.347444" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.347043" elapsed="0.000438"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:46:21.347668" elapsed="0.000036"/>
+</return>
+<status status="PASS" start="2026-10-31T11:46:21.347582" elapsed="0.000243"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:21.347555" elapsed="0.000304"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.348324" elapsed="0.000031"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.348530" elapsed="0.000028"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.348709" elapsed="0.000025"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.346482" elapsed="0.002329"/>
+</kw>
+<kw name="Get File" owner="OperatingSystem">
+<msg time="2026-10-31T11:46:21.349140" level="INFO" html="true">Getting file '&lt;a href="file:///Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/site/index.html"&gt;/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/site/index.html&lt;/a&gt;'.</msg>
+<msg time="2026-10-31T11:46:21.350569" level="INFO">${html} = &lt;!doctype html&gt;
+&lt;html lang="ta"&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;
+&lt;title&gt;Virudhunagar Samba Vathal · FGP8T4033HM7&lt;/title&gt;
+&lt;style&gt;/* Pub...</msg>
+<var>${html}</var>
+<arg>${SITE}/index.html</arg>
+<doc>Returns the contents of a specified file.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.348964" elapsed="0.001715"/>
+</kw>
+<kw name="Should Not Contain" owner="BuiltIn">
+<arg>${html}</arg>
+<arg>temp_uploads</arg>
+<doc>Fails if the `container` contains the `item`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.350999" elapsed="0.000779"/>
+</kw>
+<kw name="Should Not Contain" owner="BuiltIn">
+<arg>${html}</arg>
+<arg>/tmp/</arg>
+<doc>Fails if the `container` contains the `item`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.352023" elapsed="0.000580"/>
+</kw>
+<kw name="Read Public Page" owner="agritrace_keywords">
+<msg time="2026-10-31T11:46:21.367896" level="INFO">${facts} = {'timelines': [['2025-08-24', '2025-09-19', '2025-11-11', '2025-12-05', '2025-12-28', '2026-02-14', '2026-02-15', '2026-03-04', '2026-03-05', '2026-03-12', '2026-05-02'], ['2025-09-05', '2025-09-30', ...</msg>
+<var>${facts}</var>
+<arg>${SITE}/index.html</arg>
+<doc>Read a built public page (W01 `index.html`) into the facts the public suite asserts on.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.352782" elapsed="0.015168"/>
+</kw>
+<kw name="Should Not Be Empty" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.368553" level="INFO">Length is 96.</msg>
+<arg>${facts}[photo_urls]</arg>
+<doc>Verifies that the given item is not empty.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.368137" elapsed="0.000483"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.369155" elapsed="0.000851"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/land-preparation-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.368881" elapsed="0.001215"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.370461" elapsed="0.000405"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/land-preparation-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.370273" elapsed="0.000648"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.371203" elapsed="0.000366"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/land-preparation-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.371032" elapsed="0.000601"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.372041" elapsed="0.000401"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/nursery-preparation-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.371786" elapsed="0.000717"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.372785" elapsed="0.000372"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/nursery-preparation-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.372618" elapsed="0.000592"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.373478" elapsed="0.000366"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/nursery-preparation-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.373314" elapsed="0.000581"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.374165" elapsed="0.000371"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/sowing-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.374000" elapsed="0.000590"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.374964" elapsed="0.000386"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/sowing-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.374787" elapsed="0.000615"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.375676" elapsed="0.000364"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/sowing-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.375511" elapsed="0.000580"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.376369" elapsed="0.000369"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/input-application-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.376197" elapsed="0.000594"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.377070" elapsed="0.000495"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/input-application-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.376901" elapsed="0.000723"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.378027" elapsed="0.000643"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/input-application-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.377740" elapsed="0.001024"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.379258" elapsed="0.000717"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/input-application-2-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.378946" elapsed="0.001125"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.380583" elapsed="0.000635"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/input-application-2-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.380261" elapsed="0.001046"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.381793" elapsed="0.000730"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/input-application-2.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.381491" elapsed="0.001128"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.383140" elapsed="0.000686"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/harvest-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.382813" elapsed="0.001100"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.384386" elapsed="0.000617"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/harvest-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.384087" elapsed="0.001003"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.385571" elapsed="0.000884"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/harvest-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.385274" elapsed="0.001268"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.387030" elapsed="0.000624"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/drying-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.386730" elapsed="0.001013"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.388281" elapsed="0.000792"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/drying-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.387957" elapsed="0.001211"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.389653" elapsed="0.000470"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/drying-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.389364" elapsed="0.000875"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.390804" elapsed="0.000640"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/harvest-2-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.390489" elapsed="0.001038"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.391997" elapsed="0.000613"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/harvest-2-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.391709" elapsed="0.000985"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.393174" elapsed="0.000615"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/harvest-2.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.392879" elapsed="0.001103"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.394491" elapsed="0.000709"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/drying-2-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.394171" elapsed="0.001119"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.395712" elapsed="0.000431"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/drying-2-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.395469" elapsed="0.000770"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.396771" elapsed="0.000452"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/drying-2.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.396439" elapsed="0.000844"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.397603" elapsed="0.000475"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/farm-packing-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.397403" elapsed="0.000743"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.398442" elapsed="0.000386"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/farm-packing-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.398264" elapsed="0.000622"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.399164" elapsed="0.000500"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/farm-packing-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.398997" elapsed="0.000732"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.400035" elapsed="0.000571"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/sale-to-processor-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.399852" elapsed="0.000836"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.401134" elapsed="0.000595"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/sale-to-processor-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.400836" elapsed="0.000956"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.402128" elapsed="0.000619"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOTD02DADB6/sale-to-processor-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.401912" elapsed="0.000911"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.403254" elapsed="0.000561"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/nursery-preparation-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.402972" elapsed="0.000907"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.404287" elapsed="0.000641"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/nursery-preparation-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.404011" elapsed="0.000976"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.405294" elapsed="0.000499"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/nursery-preparation-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.405106" elapsed="0.000747"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.406328" elapsed="0.000544"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/land-preparation-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.406116" elapsed="0.000834"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.407339" elapsed="0.000503"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/land-preparation-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.407094" elapsed="0.000808"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.408344" elapsed="0.000513"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/land-preparation-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.408071" elapsed="0.000864"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.409384" elapsed="0.000570"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/sowing-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.409098" elapsed="0.000922"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.410598" elapsed="0.000535"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/sowing-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.410312" elapsed="0.000902"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.411672" elapsed="0.000407"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/sowing-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.411426" elapsed="0.000711"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.412493" elapsed="0.000709"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/input-application-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.412272" elapsed="0.001010"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.413690" elapsed="0.000534"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/input-application-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.413415" elapsed="0.000869"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.414677" elapsed="0.000591"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/input-application-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.414414" elapsed="0.000919"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.415775" elapsed="0.000621"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/input-application-2-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.415490" elapsed="0.000995"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.417002" elapsed="0.000676"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/input-application-2-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.416680" elapsed="0.001087"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.418310" elapsed="0.000768"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/input-application-2.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.417990" elapsed="0.001190"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.419712" elapsed="0.001330"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/harvest-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.419384" elapsed="0.001766"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.421683" elapsed="0.000715"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/harvest-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.421361" elapsed="0.001127"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.422991" elapsed="0.000668"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/harvest-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.422669" elapsed="0.001081"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.424328" elapsed="0.000638"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/drying-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.424026" elapsed="0.001004"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.425483" elapsed="0.000625"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/drying-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.425187" elapsed="0.001015"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.426693" elapsed="0.000593"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/drying-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.426390" elapsed="0.000980"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.427797" elapsed="0.000502"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/harvest-2-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.427534" elapsed="0.000843"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.428829" elapsed="0.000594"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/harvest-2-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.428544" elapsed="0.000962"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.429987" elapsed="0.000673"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/harvest-2.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.429685" elapsed="0.001173"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.431329" elapsed="0.000635"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/drying-2-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.431042" elapsed="0.001027"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.432721" elapsed="0.000667"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/drying-2-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.432373" elapsed="0.001107"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.434006" elapsed="0.000595"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/drying-2.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.433671" elapsed="0.001018"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.435196" elapsed="0.000519"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/farm-packing-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.434890" elapsed="0.000914"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.436276" elapsed="0.000554"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/farm-packing-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.435979" elapsed="0.000936"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.437322" elapsed="0.000557"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/farm-packing-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.437042" elapsed="0.000913"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.438401" elapsed="0.000553"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/sale-to-processor-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.438111" elapsed="0.000922"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.439483" elapsed="0.000582"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/sale-to-processor-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.439202" elapsed="0.000945"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.440616" elapsed="0.000687"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT3072CB6A/sale-to-processor-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.440331" elapsed="0.001058"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.441865" elapsed="0.000726"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/land-preparation-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.441574" elapsed="0.001108"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.443187" elapsed="0.000893"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/land-preparation-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.442873" elapsed="0.001298"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.444669" elapsed="0.000604"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/land-preparation-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.444362" elapsed="0.000995"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.445910" elapsed="0.000611"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/nursery-preparation-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.445599" elapsed="0.001026"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.447000" elapsed="0.000524"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/nursery-preparation-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.446791" elapsed="0.000812"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.448063" elapsed="0.000583"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/nursery-preparation-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.447775" elapsed="0.000954"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.449196" elapsed="0.000599"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/sowing-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.448900" elapsed="0.000979"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.450230" elapsed="0.000552"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/sowing-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.450039" elapsed="0.000808"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.451237" elapsed="0.000668"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/sowing-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.450984" elapsed="0.001015"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.452493" elapsed="0.000617"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/input-application-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.452189" elapsed="0.000986"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.453491" elapsed="0.000656"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/input-application-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.453304" elapsed="0.000942"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.454874" elapsed="0.000462"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/input-application-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.454446" elapsed="0.000951"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.455694" elapsed="0.000401"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/harvest-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.455516" elapsed="0.000661"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.456628" elapsed="0.000594"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/harvest-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.456336" elapsed="0.000970"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.457784" elapsed="0.000612"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/harvest-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.457478" elapsed="0.001006"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.458968" elapsed="0.000582"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/drying-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.458665" elapsed="0.000967"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.460079" elapsed="0.000558"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/drying-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.459798" elapsed="0.000918"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.461151" elapsed="0.000593"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/drying-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.460875" elapsed="0.000951"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.462276" elapsed="0.000841"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/farm-packing-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.461991" elapsed="0.001221"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.463701" elapsed="0.000589"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/farm-packing-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.463396" elapsed="0.000973"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.464744" elapsed="0.000561"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/farm-packing-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.464493" elapsed="0.000902"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.465851" elapsed="0.000609"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/sale-to-processor-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.465572" elapsed="0.000975"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.466950" elapsed="0.000421"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/sale-to-processor-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.466712" elapsed="0.000719"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.467757" elapsed="0.000398"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/LOT0EF81415/sale-to-processor-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.467559" elapsed="0.000651"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.468562" elapsed="0.000371"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/processing/grading-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.468388" elapsed="0.000597"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.469254" elapsed="0.000434"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/processing/grading-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.469092" elapsed="0.000673"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.470208" elapsed="0.000734"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/processing/grading-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.469924" elapsed="0.001095"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.471547" elapsed="0.000617"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/processing/processing-packing-1-medium.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.471233" elapsed="0.001022"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.472733" elapsed="0.000745"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/processing/processing-packing-1-thumb.webp</var>
+<status status="PASS" start="2026-10-31T11:46:21.472431" elapsed="0.001146"/>
+</iter>
+<iter>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${url}</arg>
+<arg>^https?://[^/\\s]+/(\\S*/)?evidence/\\S+$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.474096" elapsed="0.000668"/>
+</kw>
+<var name="${url}">https://evidence.example/evidence/fpo-demo/FGP8T4033HM7/processing/processing-packing-1.jpg</var>
+<status status="PASS" start="2026-10-31T11:46:21.473772" elapsed="0.001084"/>
+</iter>
+<var>${url}</var>
+<value>@{facts}[photo_urls]</value>
+<status status="PASS" start="2026-10-31T11:46:21.368700" elapsed="0.106233"/>
+</for>
+<doc>No temporary path anywhere; every photo URL (img, source, photo link) is in evidence/.</doc>
+<tag>FR-61</tag>
+<tag>public</tag>
+<tag>WP-W01</tag>
+<status status="PASS" start="2026-10-31T11:46:21.345796" elapsed="0.129344"/>
+</test>
+<test id="s1-t7" name="Built Fixture Passes Privacy Lint With Canaries" line="80">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.477399" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.476979" elapsed="0.000460"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:46:21.477685" elapsed="0.000055"/>
+</return>
+<status status="PASS" start="2026-10-31T11:46:21.477566" elapsed="0.000233"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:21.477528" elapsed="0.000311"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.478570" elapsed="0.000056"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.478936" elapsed="0.000044"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.479227" elapsed="0.000045"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.476614" elapsed="0.002784"/>
+</kw>
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:21.481623" level="INFO">Starting process:
+bash tools/check_output.sh out/site</msg>
+<msg time="2026-10-31T11:46:21.496427" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:46:21.879822" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:46:21.880491" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.480877" elapsed="0.399702"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:46:21.880864" elapsed="0.000166"/>
+</return>
+<msg time="2026-10-31T11:46:21.881525" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>bash</arg>
+<arg>tools/check_output.sh</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.480214" elapsed="0.401384"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.883935" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.882325" elapsed="0.001776"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${run.stdout}</arg>
+<arg>0 hit(s) in 2 file(s) scanned</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.884452" elapsed="0.000931"/>
+</kw>
+<doc>tools/check_output.sh (privacy-lint.py + every canary in fixtures/canaries.json) finds 0 hits.</doc>
+<tag>BM-09</tag>
+<tag>FR-16</tag>
+<tag>public</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-31T11:46:21.475608" elapsed="0.410084"/>
+</test>
+<test id="s1-t8" name="Injected Phone Number Fails Privacy Lint" line="88">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.889746" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.888969" elapsed="0.000842"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:46:21.890454" elapsed="0.000066"/>
+</return>
+<status status="PASS" start="2026-10-31T11:46:21.890278" elapsed="0.000312"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:21.890219" elapsed="0.000429"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.891325" elapsed="0.000040"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.891567" elapsed="0.000030"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:21.891813" elapsed="0.000052"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.888183" elapsed="0.004225"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.894451" level="INFO">${phone} = 98765 01234</msg>
+<var>${phone}</var>
+<arg>next(c["value"] for c in json.loads(pathlib.Path($CANARIES).read_text("utf-8"))["canaries"] if c["kind"] == "phone")</arg>
+<arg>modules=json,pathlib</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.892748" elapsed="0.001772"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-10-31T11:46:21.895431" level="INFO">${copy} = /tmp/w02robot/injected-phone</msg>
+<var>${copy}</var>
+<arg>${OUTPUT DIR}/injected-phone</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.894844" elapsed="0.000642"/>
+</kw>
+<kw name="Remove Directory" owner="OperatingSystem">
+<msg time="2026-10-31T11:46:21.896169" level="INFO" html="true">Directory '&lt;a href="file:///tmp/w02robot/injected-phone"&gt;/tmp/w02robot/injected-phone&lt;/a&gt;' does not exist.</msg>
+<arg>${copy}</arg>
+<arg>recursive=True</arg>
+<doc>Removes the directory pointed to by the given `path`.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.895757" elapsed="0.000523"/>
+</kw>
+<kw name="Copy Directory" owner="OperatingSystem">
+<msg time="2026-10-31T11:46:21.899485" level="INFO" html="true">Copied directory from '&lt;a href="file:///Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/site"&gt;/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/site&lt;/a&gt;' to '&lt;a href="file:///tmp/w02robot/injected-phone"&gt;/tmp/w02robot/injected-phone&lt;/a&gt;'.</msg>
+<arg>${SITE}</arg>
+<arg>${copy}</arg>
+<doc>Copies the source directory into the destination.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.896620" elapsed="0.002991"/>
+</kw>
+<kw name="Get File" owner="OperatingSystem">
+<msg time="2026-10-31T11:46:21.900298" level="INFO" html="true">Getting file '&lt;a href="file:///tmp/w02robot/injected-phone/index.html"&gt;/tmp/w02robot/injected-phone/index.html&lt;/a&gt;'.</msg>
+<msg time="2026-10-31T11:46:21.901791" level="INFO">${html} = &lt;!doctype html&gt;
+&lt;html lang="ta"&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;
+&lt;title&gt;Virudhunagar Samba Vathal · FGP8T4033HM7&lt;/title&gt;
+&lt;style&gt;/* Pub...</msg>
+<var>${html}</var>
+<arg>${copy}/index.html</arg>
+<doc>Returns the contents of a specified file.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.899970" elapsed="0.001882"/>
+</kw>
+<kw name="Create File" owner="OperatingSystem">
+<msg time="2026-10-31T11:46:21.904410" level="INFO" html="true">Created file '&lt;a href="file:///tmp/w02robot/injected-phone/index.html"&gt;/tmp/w02robot/injected-phone/index.html&lt;/a&gt;'.</msg>
+<arg>${copy}/index.html</arg>
+<arg>${{ $html.replace("&lt;/main&gt;", "&lt;p&gt;" + $phone + "&lt;/p&gt;&lt;/main&gt;") }}</arg>
+<doc>Creates a file with the given content and encoding.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.902049" elapsed="0.002472"/>
+</kw>
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:21.909443" level="INFO">Starting process:
+bash tools/check_output.sh /tmp/w02robot/injected-phone</msg>
+<msg time="2026-10-31T11:46:21.915996" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:46:22.256826" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:46:22.257372" level="INFO">${run} = &lt;result object with rc 1&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.908627" elapsed="0.348818"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:46:22.257730" elapsed="0.000164"/>
+</return>
+<msg time="2026-10-31T11:46:22.258273" level="INFO">${run} = &lt;result object with rc 1&gt;</msg>
+<var>${run}</var>
+<arg>bash</arg>
+<arg>tools/check_output.sh</arg>
+<arg>${copy}</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:46:21.905129" elapsed="0.353187"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:46:22.260157" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${run.rc}</arg>
+<arg>1</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.258806" elapsed="0.001506"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${run.stdout}</arg>
+<arg>: phone: &lt;redacted&gt;</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.260636" elapsed="0.000734"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${run.stdout}</arg>
+<arg>: canary: &lt;redacted&gt;</arg>
+<doc>Fails if the `container` does not contain the `item` one or more times.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.261591" elapsed="0.000539"/>
+</kw>
+<kw name="Should Not Contain" owner="BuiltIn">
+<arg>${run.stdout}</arg>
+<arg>${phone}</arg>
+<doc>Fails if the `container` contains the `item`.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.262432" elapsed="0.000683"/>
+</kw>
+<doc>A copy of the build with the phone canary printed into it fails, and the log never
+repeats the number (W02 acceptance "injected phone fails CI").</doc>
+<tag>BM-09</tag>
+<tag>FR-16</tag>
+<tag>public</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-31T11:46:21.886341" elapsed="0.377000"/>
+</test>
+<test id="s1-t9" name="Initial HTML CSS And JS Are Under 100 KB" line="107">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:22.267295" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.266546" elapsed="0.000814"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:46:22.267890" elapsed="0.000060"/>
+</return>
+<status status="PASS" start="2026-10-31T11:46:22.267727" elapsed="0.000288"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:22.267672" elapsed="0.000398"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:22.269188" elapsed="0.000060"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:22.269583" elapsed="0.000054"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:22.269887" elapsed="0.000032"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.265928" elapsed="0.004089"/>
+</kw>
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:22.271849" level="INFO">Starting process:
+uv run python -m agritrace_page check out/site</msg>
+<msg time="2026-10-31T11:46:22.279281" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:46:22.752425" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:46:22.752968" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.271146" elapsed="0.481914"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:46:22.753348" elapsed="0.000173"/>
+</return>
+<msg time="2026-10-31T11:46:22.753964" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>check</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.270667" elapsed="0.483400"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:46:22.755822" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.754729" elapsed="0.001211"/>
+</kw>
+<kw name="Should Not Contain" owner="BuiltIn">
+<arg>${run.stdout}</arg>
+<arg>OVER BUDGET</arg>
+<doc>Fails if the `container` contains the `item`.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.756207" elapsed="0.000593"/>
+</kw>
+<doc>`python -m agritrace_page check`: inline CSS &lt; 12 KB, JS &lt; 4 KB, index.html &lt; 100 KB raw
+(plan §13 E1). The first view loads only index.html (photos sit in closed &lt;details&gt;), so this
+also bounds BM-03's 500 KB first-view transfer without a browser.</doc>
+<tag>BM-03</tag>
+<tag>BM-16</tag>
+<tag>FR-19</tag>
+<tag>public</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-31T11:46:22.263878" elapsed="0.493148"/>
+</test>
+<test id="s1-t10" name="Lighthouse 3G Performance Is At Least 90 With LCP At Most 2 s" line="117">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:46:22.760943" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.760230" elapsed="0.000804"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:46:22.761438" elapsed="0.000094"/>
+</return>
+<status status="PASS" start="2026-10-31T11:46:22.761231" elapsed="0.000398"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:46:22.761181" elapsed="0.000531"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:22.762681" elapsed="0.000058"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:22.763033" elapsed="0.000046"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:46:22.763387" elapsed="0.000048"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.759548" elapsed="0.004019"/>
+</kw>
+<kw name="Chrome Is Available For Lighthouse">
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:22.766319" level="INFO">Starting process:
+npx --no-install lhci healthcheck --fatal --config=lighthouserc.3g.yml</msg>
+<msg time="2026-10-31T11:46:22.772339" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:46:24.066625" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:46:24.067016" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.765159" elapsed="1.301906"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:46:24.067267" elapsed="0.000111"/>
+</return>
+<msg time="2026-10-31T11:46:24.067650" level="INFO">${health} = &lt;result object with rc 0&gt;</msg>
+<var>${health}</var>
+<arg>npx</arg>
+<arg>--no-install</arg>
+<arg>lhci</arg>
+<arg>healthcheck</arg>
+<arg>--fatal</arg>
+<arg>--config=lighthouserc.3g.yml</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.764718" elapsed="1.302970"/>
+</kw>
+<kw name="Skip If" owner="BuiltIn">
+<arg>${health.rc} != 0</arg>
+<arg>lhci found no Chrome or no npm tools (npm ci; set CHROME_PATH): ${health.stdout}</arg>
+<doc>Conditionally stops the current test or task and sets its status to SKIP.</doc>
+<status status="PASS" start="2026-10-31T11:46:24.068010" elapsed="0.001150"/>
+</kw>
+<doc>Skip the current test unless `lhci healthcheck --fatal` finds Chrome (CHROME_PATH or an
+installed Chrome) and the npm tools are installed. Side effects: none beyond lhci's own check.</doc>
+<status status="PASS" start="2026-10-31T11:46:22.763864" elapsed="1.305473"/>
+</kw>
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:46:24.071136" level="INFO">Starting process:
+npx --no-install lhci autorun --config=lighthouserc.3g.yml</msg>
+<msg time="2026-10-31T11:46:24.076026" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:47:18.799418" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:47:18.799953" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:46:24.070608" elapsed="54.729391"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:47:18.800242" elapsed="0.000143"/>
+</return>
+<msg time="2026-10-31T11:47:18.800683" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>npx</arg>
+<arg>--no-install</arg>
+<arg>lhci</arg>
+<arg>autorun</arg>
+<arg>--config=lighthouserc.3g.yml</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:46:24.070019" elapsed="54.730701"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:47:18.802123" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:47:18.801113" elapsed="0.001102"/>
+</kw>
+<doc>lighthouserc.3g.yml: performance &gt;= 0.90, total-byte-weight &lt;= 500000 B, LCP &lt;= 2000 ms
+(median of 3 simulated runs). Reports in apps/public-page/out/lhci/3g/.</doc>
+<tag>BM-03</tag>
+<tag>FR-19</tag>
+<tag>needs-chrome</tag>
+<tag>public</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-31T11:46:22.757543" elapsed="56.044836"/>
+</test>
+<test id="s1-t11" name="Lighthouse Normal 4G Transfers Under 100 KB With LCP At Most 2.5 s" line="126">
+<kw name="Public Page Fixture Is Built" type="SETUP">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-10-31T11:47:18.805140" level="INFO">${built} = True</msg>
+<var>${built}</var>
+<arg>${PAGE_BUILT}</arg>
+<arg>${False}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-10-31T11:47:18.804736" elapsed="0.000441"/>
+</kw>
+<if>
+<branch type="IF" condition="${built}">
+<return>
+<status status="PASS" start="2026-10-31T11:47:18.805388" elapsed="0.000034"/>
+</return>
+<status status="PASS" start="2026-10-31T11:47:18.805299" elapsed="0.000160"/>
+</branch>
+<status status="PASS" start="2026-10-31T11:47:18.805271" elapsed="0.000220"/>
+</if>
+<kw name="Run Page Tool">
+<var>${run}</var>
+<arg>uv</arg>
+<arg>run</arg>
+<arg>python</arg>
+<arg>-m</arg>
+<arg>agritrace_page</arg>
+<arg>build</arg>
+<arg>fixtures/batch_sample.json</arg>
+<arg>out/site</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="NOT RUN" start="2026-10-31T11:47:18.806042" elapsed="0.000046"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" start="2026-10-31T11:47:18.806255" elapsed="0.000027"/>
+</kw>
+<kw name="Set Global Variable" owner="BuiltIn">
+<arg>${PAGE_BUILT}</arg>
+<arg>${True}</arg>
+<doc>Makes the variable available globally in all tests and suites.</doc>
+<status status="NOT RUN" start="2026-10-31T11:47:18.806438" elapsed="0.000025"/>
+</kw>
+<doc>Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
+with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).
+Side effects: overwrites out/site/index.html and data.json (git-ignored); sets True.</doc>
+<status status="PASS" start="2026-10-31T11:47:18.804368" elapsed="0.002163"/>
+</kw>
+<kw name="Chrome Is Available For Lighthouse">
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:47:18.808154" level="INFO">Starting process:
+npx --no-install lhci healthcheck --fatal --config=lighthouserc.3g.yml</msg>
+<msg time="2026-10-31T11:47:18.812978" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:47:19.751679" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:47:19.752032" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:47:18.807679" elapsed="0.944396"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:47:19.752269" elapsed="0.000108"/>
+</return>
+<msg time="2026-10-31T11:47:19.752640" level="INFO">${health} = &lt;result object with rc 0&gt;</msg>
+<var>${health}</var>
+<arg>npx</arg>
+<arg>--no-install</arg>
+<arg>lhci</arg>
+<arg>healthcheck</arg>
+<arg>--fatal</arg>
+<arg>--config=lighthouserc.3g.yml</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:47:18.807266" elapsed="0.945409"/>
+</kw>
+<kw name="Skip If" owner="BuiltIn">
+<arg>${health.rc} != 0</arg>
+<arg>lhci found no Chrome or no npm tools (npm ci; set CHROME_PATH): ${health.stdout}</arg>
+<doc>Conditionally stops the current test or task and sets its status to SKIP.</doc>
+<status status="PASS" start="2026-10-31T11:47:19.753030" elapsed="0.001348"/>
+</kw>
+<doc>Skip the current test unless `lhci healthcheck --fatal` finds Chrome (CHROME_PATH or an
+installed Chrome) and the npm tools are installed. Side effects: none beyond lhci's own check.</doc>
+<status status="PASS" start="2026-10-31T11:47:18.806695" elapsed="0.947772"/>
+</kw>
+<kw name="Run Page Tool">
+<kw name="Run Process" owner="Process">
+<msg time="2026-10-31T11:47:19.756188" level="INFO">Starting process:
+npx --no-install lhci autorun --config=lighthouserc.4g.yml</msg>
+<msg time="2026-10-31T11:47:19.761737" level="INFO">Waiting for process to complete.</msg>
+<msg time="2026-10-31T11:48:10.420692" level="INFO">Process completed.</msg>
+<msg time="2026-10-31T11:48:10.421300" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>@{command}</arg>
+<arg>cwd=${PAGE_APP}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2026-10-31T11:47:19.755686" elapsed="50.665673"/>
+</kw>
+<return>
+<value>${run}</value>
+<status status="PASS" start="2026-10-31T11:48:10.421619" elapsed="0.000170"/>
+</return>
+<msg time="2026-10-31T11:48:10.424167" level="INFO">${run} = &lt;result object with rc 0&gt;</msg>
+<var>${run}</var>
+<arg>npx</arg>
+<arg>--no-install</arg>
+<arg>lhci</arg>
+<arg>autorun</arg>
+<arg>--config=lighthouserc.4g.yml</arg>
+<doc>Run a command in apps/public-page, stderr merged into stdout.
+Args: @{command} the program and its arguments (an `=` inside an argument stays literal).
+Returns: the Process result (rc, stdout). Fails: only if the program cannot be started.</doc>
+<status status="PASS" start="2026-10-31T11:47:19.755181" elapsed="50.669068"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-10-31T11:48:10.427727" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${run.rc}</arg>
+<arg>0</arg>
+<arg>msg=${run.stdout}</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-10-31T11:48:10.425873" elapsed="0.002018"/>
+</kw>
+<doc>lighthouserc.4g.yml (qa/robot/profiles.yaml normal_4g): total-byte-weight &lt;= 102400 B,
+LCP &lt;= 2500 ms (median of 3 simulated runs). Reports in apps/public-page/out/lhci/4g/.</doc>
+<tag>BM-16</tag>
+<tag>FR-19</tag>
+<tag>needs-chrome</tag>
+<tag>public</tag>
+<tag>WP-W02</tag>
+<status status="PASS" start="2026-10-31T11:47:18.803132" elapsed="51.625099"/>
+</test>
+<test id="s1-t12" name="OG Tags Pass The Privacy Lint" line="135">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<msg time="2026-10-31T11:48:10.434183" level="SKIP">Placeholder: written when W03 merges.</msg>
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="SKIP" start="2026-10-31T11:48:10.431744" elapsed="0.006041">Placeholder: written when W03 merges.</status>
+</kw>
+<arg>W03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="SKIP" start="2026-10-31T11:48:10.430977" elapsed="0.007161">Placeholder: written when W03 merges.</status>
+</kw>
+<tag>FR-41</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W03</tag>
+<status status="SKIP" start="2026-10-31T11:48:10.428945" elapsed="0.009502">Placeholder: written when W03 merges.</status>
+</test>
+<test id="s1-t13" name="Tamil Renders With The System Font" line="139">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<msg time="2026-10-31T11:48:10.441463" level="SKIP">Placeholder: written when W03 merges.</msg>
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="SKIP" start="2026-10-31T11:48:10.440817" elapsed="0.000813">Placeholder: written when W03 merges.</status>
+</kw>
+<arg>W03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="SKIP" start="2026-10-31T11:48:10.440248" elapsed="0.001563">Placeholder: written when W03 merges.</status>
+</kw>
+<tag>FR-5</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-W03</tag>
+<status status="SKIP" start="2026-10-31T11:48:10.438961" elapsed="0.003095">Placeholder: written when W03 merges.</status>
+</test>
+<test id="s1-t14" name="Page Is Served From Object Storage With The Backend Down" line="143">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<msg time="2026-10-31T11:48:10.444692" level="SKIP">Placeholder: written when Q03 merges.</msg>
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="SKIP" start="2026-10-31T11:48:10.444090" elapsed="0.000724">Placeholder: written when Q03 merges.</status>
+</kw>
+<arg>Q03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="SKIP" start="2026-10-31T11:48:10.443516" elapsed="0.001445">Placeholder: written when Q03 merges.</status>
+</kw>
+<tag>FR-15</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-Q03</tag>
+<status status="SKIP" start="2026-10-31T11:48:10.442425" elapsed="0.002731">Placeholder: written when Q03 merges.</status>
+</test>
+<test id="s1-t15" name="Old Page Version Is Retrievable" line="147">
+<kw name="Not Ready" owner="common">
+<kw name="Skip" owner="BuiltIn">
+<msg time="2026-10-31T11:48:10.447162" level="SKIP">Placeholder: written when Q03 merges.</msg>
+<arg>Placeholder: written when ${wp} merges.</arg>
+<doc>Stops the current test or task and sets its status to SKIP.</doc>
+<status status="SKIP" start="2026-10-31T11:48:10.446752" elapsed="0.000526">Placeholder: written when Q03 merges.</status>
+</kw>
+<arg>Q03</arg>
+<doc>Mark a placeholder test as skipped until its work package merges.
+Args: ${wp} the work package that will make the test real (e.g. B02).</doc>
+<status status="SKIP" start="2026-10-31T11:48:10.446361" elapsed="0.001071">Placeholder: written when Q03 merges.</status>
+</kw>
+<tag>FR-17</tag>
+<tag>not-ready</tag>
+<tag>public</tag>
+<tag>WP-Q03</tag>
+<status status="SKIP" start="2026-10-31T11:48:10.445526" elapsed="0.002065">Placeholder: written when Q03 merges.</status>
+</test>
+<doc>Public batch page: render, privacy lint, HTML validity, size budgets, Lighthouse thresholds,
+backend-down serve (plan §7.4 W01-W03, §7.5 Q03). Serves: FR-5, FR-15, FR-16, FR-17, FR-19,
+FR-41, FR-58, FR-61, FR-63; gate G4; BM-03, BM-09, BM-16. Run by: W02 and Q03 Verifiers.
+Needs uv (builds fixtures/batch_sample.json into apps/public-page/out/site) and, for the
+html-validate and Lighthouse tests, `npm ci` in apps/public-page. Lighthouse tests are tagged
+needs-chrome and skip when lhci finds no Chrome (set CHROME_PATH).
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-10-31T11:46:16.945491" elapsed="113.502930"/>
+</suite>
+<statistics>
+<total>
+<stat pass="11" fail="0" skip="4">All Tests</stat>
+</total>
+<tag>
+<stat pass="2" fail="0" skip="0">BM-03</stat>
+<stat pass="3" fail="0" skip="0">BM-09</stat>
+<stat pass="2" fail="0" skip="0">BM-16</stat>
+<stat pass="0" fail="0" skip="1">FR-15</stat>
+<stat pass="4" fail="0" skip="0">FR-16</stat>
+<stat pass="0" fail="0" skip="1">FR-17</stat>
+<stat pass="3" fail="0" skip="0">FR-19</stat>
+<stat pass="0" fail="0" skip="1">FR-41</stat>
+<stat pass="1" fail="0" skip="1">FR-5</stat>
+<stat pass="1" fail="0" skip="0">FR-58</stat>
+<stat pass="1" fail="0" skip="0">FR-61</stat>
+<stat pass="1" fail="0" skip="0">FR-63</stat>
+<stat pass="2" fail="0" skip="0">needs-chrome</stat>
+<stat pass="0" fail="0" skip="4">not-ready</stat>
+<stat pass="11" fail="0" skip="4">public</stat>
+<stat pass="1" fail="0" skip="0">smoke</stat>
+<stat pass="1" fail="0" skip="0">WP-Q00</stat>
+<stat pass="0" fail="0" skip="2">WP-Q03</stat>
+<stat pass="5" fail="0" skip="0">WP-W01</stat>
+<stat pass="6" fail="0" skip="0">WP-W02</stat>
+<stat pass="0" fail="0" skip="2">WP-W03</stat>
+</tag>
+<suite>
+<stat name="Page" id="s1" pass="11" fail="0" skip="4">Page</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

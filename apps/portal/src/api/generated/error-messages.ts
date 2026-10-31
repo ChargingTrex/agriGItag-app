@@ -22,6 +22,8 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   otp_locked: "Too many wrong codes.",
   pin_locked: "Too many wrong PINs; try again in 5 minutes.",
   plot_locked: "The plot location is locked after onboarding.",
+  stale_version: "This event was changed since your copy; the version number is not the next one.",
+  undo_window_closed: "Entries can be undone only within 24 hours.",
   payload_too_large: "The request is too large.",
   implausible_value: "The value is outside the plausible range for this parameter.",
   instrument_calibration_expired: "The instrument's calibration has expired.",

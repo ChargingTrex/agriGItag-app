@@ -1,0 +1,5 @@
+$ uv run --no-project --with pytest --with pyyaml --with robotframework==7.5 pytest qa/tests -q --junitxml=docs/agents/qa/W02/junit-qa.xml
+........................................................................ [ 70%]
+..............................                                           [100%]
+102 passed in 26.49s
+exit=0

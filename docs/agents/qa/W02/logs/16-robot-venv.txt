@@ -1,0 +1,43 @@
+$ uv venv --python 3.12 /tmp/w02rv && uv pip install --python /tmp/w02rv/bin/python -r qa/robot/requirements.txt
+Using CPython 3.12.13
+Creating virtual environment at: /tmp/w02rv
+Activate with: source /tmp/w02rv/bin/activate
+Using Python 3.12.13 environment at: /tmp/w02rv
+Resolved 35 packages in 1.03s
+Installed 35 packages in 152ms
+ + asn1crypto==1.5.1
+ + certifi==2026.10.23
+ + charset-normalizer==3.5.2
+ + click==8.5.0
+ + grpcio==1.84.0
+ + grpcio-tools==1.84.0
+ + idna==3.20
+ + iniconfig==2.3.1
+ + natsort==8.4.0
+ + overrides==7.7.0
+ + packaging==26.3
+ + pg8000==1.31.6
+ + pluggy==1.7.0
+ + protobuf==7.35.1
+ + psutil==7.2.2
+ + pygments==2.21.0
+ + pytest==9.2.0
+ + python-dateutil==3.0.0
+ + pyyaml==6.0.3
+ + requests==2.34.2
+ + robotframework==7.5
+ + robotframework-assertion-engine==5.0.1
+ + robotframework-browser==20.6.0
+ + robotframework-databaselibrary==2.5.0
+ + robotframework-pythonlibcore==4.6.0
+ + robotframework-requests==0.9.7
+ + scramp==1.5.0
+ + seedir==0.5.1
+ + setuptools==84.2.1
+ + six==1.17.0
+ + sqlparse==0.6.0
+ + typing-extensions==4.16.0
+ + tzdata==2026.6
+ + urllib3==2.8.0
+ + wrapt==2.5.2
+exit=0

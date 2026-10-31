@@ -1,0 +1,18 @@
+== 3g ==
+run localhost-index_html-2026_10_31_06_13_58.report.json: representative=False perf=0.98 LCP=1587 ms total-byte-weight=6923 B html+css+js transfer=6478 B (raw 48827 B) TBT=32 ms benchmarkIndex=1226 lh=12.6.1 UA=HeadlessChrome/156.0.0.0
+   requests: [('index.html', 'Document', 6478, 200), ('favicon.ico', 'Other', 445, 404)]
+run localhost-index_html-2026_10_31_06_14_38.report.json: representative=False perf=1.00 LCP=1524 ms total-byte-weight=6923 B html+css+js transfer=6478 B (raw 48827 B) TBT=0 ms benchmarkIndex=592 lh=12.6.1 UA=HeadlessChrome/156.0.0.0
+   requests: [('index.html', 'Document', 6478, 200), ('favicon.ico', 'Other', 445, 404)]
+run localhost-index_html-2026_10_31_06_14_17.report.json: representative=True perf=0.94 LCP=1530 ms total-byte-weight=6923 B html+css+js transfer=6478 B (raw 48827 B) TBT=0 ms benchmarkIndex=1234 lh=12.6.1 UA=HeadlessChrome/156.0.0.0
+   requests: [('index.html', 'Document', 6478, 200), ('favicon.ico', 'Other', 445, 404)]
+MEDIAN 3g: perf=0.98 LCP=1530 ms total-byte-weight=6923 B html+css+js transfer=6478 B
+   throttling: {'rttMs': 300, 'throughputKbps': 700, 'requestLatencyMs': 562.5, 'downloadThroughputKbps': 1474.5600000000002, 'uploadThroughputKbps': 675, 'cpuSlowdownMultiplier': 4} method: simulate formFactor: mobile
+== 4g ==
+run localhost-index_html-2026_10_31_06_15_04.report.json: representative=False perf=1.00 LCP=680 ms total-byte-weight=6923 B html+css+js transfer=6478 B (raw 48827 B) TBT=0 ms benchmarkIndex=906 lh=12.6.1 UA=HeadlessChrome/156.0.0.0
+   requests: [('index.html', 'Document', 6478, 200), ('favicon.ico', 'Other', 445, 404)]
+run localhost-index_html-2026_10_31_06_15_39.report.json: representative=False perf=1.00 LCP=498 ms total-byte-weight=6923 B html+css+js transfer=6478 B (raw 48827 B) TBT=0 ms benchmarkIndex=1306 lh=12.6.1 UA=HeadlessChrome/156.0.0.0
+   requests: [('index.html', 'Document', 6478, 200), ('favicon.ico', 'Other', 445, 404)]
+run localhost-index_html-2026_10_31_06_15_22.report.json: representative=True perf=1.00 LCP=565 ms total-byte-weight=6923 B html+css+js transfer=6478 B (raw 48827 B) TBT=0 ms benchmarkIndex=1232 lh=12.6.1 UA=HeadlessChrome/156.0.0.0
+   requests: [('index.html', 'Document', 6478, 200), ('favicon.ico', 'Other', 445, 404)]
+MEDIAN 4g: perf=1.00 LCP=565 ms total-byte-weight=6923 B html+css+js transfer=6478 B
+   throttling: {'rttMs': 60, 'throughputKbps': 10000, 'requestLatencyMs': 562.5, 'downloadThroughputKbps': 1474.5600000000002, 'uploadThroughputKbps': 675, 'cpuSlowdownMultiplier': 4} method: simulate formFactor: mobile
