@@ -6,8 +6,8 @@
  * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60), P04 (batch list, readings, grade,
  * instruments, standards profile, grading approve, final packing, publish, builds with a simulated worker, rebuild,
  * qr.png, labels.pdf; FR15, FR48, FR49, FR62), P05 (binary labels.pdf, audit-export.csv; FR21, FR58) and P08
- * (field config, import templates and CSV imports with dry run; gap analysis "Master data uploads"). Called by: src/mocks/browser.ts,
- * src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`, `resetMockData`).
+ * (field config, import templates and CSV imports with dry run; gap analysis "Master data uploads").
+ * Called by: src/mocks/browser.ts, src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`, `resetMockData`).
  *
  * Every body is typed with the generated `components` schemas, so a contract change breaks
  * `npm run typecheck` here. State (farmers, processors, plots, flags, lots, batches, grades, readings, builds,

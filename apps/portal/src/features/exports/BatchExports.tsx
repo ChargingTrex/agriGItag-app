@@ -2,8 +2,8 @@
  * The batch page's "Labels and exports" section: the pack label sheet (`labels-<batchId>.pdf`, B10) with what is on
  * it and a print hint, the audit trail CSV (B11 `audit-export.csv`) and a CSV of the batch's lots and shares built
  * in the browser. Every greyed button says why (role, packing, loading).
- * Serves: FR62 (pack labels), FR12 (QR on every pack), FR21 (CSV export), FR58 (unit on every quantity), FR60
- * (shares), plan §7.3 P05 (`labels-<batchId>.pdf`; CSV unit on every quantity).
+ * Serves: FR62 (pack labels), FR12 (QR on every pack), FR9 (batch ID in the file name), FR21 (CSV export), FR58
+ * (unit on every quantity), FR60 (shares), plan §7.3 P05 (`labels-<batchId>.pdf`; CSV unit on every quantity).
  * Called by: src/features/batches/BatchPage.tsx.
  */
 import Paper from '@mui/material/Paper';
@@ -31,14 +31,14 @@ export const LABELS_PER_SHEET = 8;
  * @param props.batch The batch.
  * @param props.lots The share lots loaded so far (for their codes).
  * @param props.lotsLoading True while a share lot is still being read.
- * @param props.farmerName Name per farmer id (P03 `useFarmerNames`).
+ * @param props.farmerName Name per farmer id (P03 `useFarmerNames`; `pending` while a name is being read).
  * @returns The section.
  */
 export function BatchExports(props: {
   batch: BatchOut;
   lots: readonly LotOut[];
   lotsLoading: boolean;
-  farmerName: (id: string) => string;
+  farmerName: ((id: string) => string) & { pending: boolean };
 }) {
   const { batch, lots, lotsLoading, farmerName } = props;
   const { api, session } = useAuth();
@@ -55,9 +55,14 @@ export function BatchExports(props: {
   const audit = useMutation({
     mutationFn: () =>
       unwrap(
-        api.GET('/v1/batches/{batch_id}/audit-export.csv', { params: { path }, parseAs: 'blob' }),
+        api.GET('/v1/batches/{batch_id}/audit-export.csv', {
+          params: { path },
+          parseAs: 'arrayBuffer',
+        }),
       ),
-    onSuccess: (blob) => {
+    onSuccess: (bytes) => {
+      // B11 writes no BOM; prepend one so Excel opens Tamil names right (D-051). The bytes are kept as sent.
+      const blob = new Blob(['\uFEFF', bytes], { type: 'text/csv;charset=utf-8' });
       saveBlob(blob, `audit-${batch.code}.csv`);
     },
   });
@@ -114,11 +119,15 @@ export function BatchExports(props: {
         />
         {audit.isError && <GateReasons error={audit.error} />}
         <Typography>
-          Lots and shares: lot code, farmer, received kg, packed share kg and share %.
+          Lots and shares: lot code, farmer, harvested, on-farm packed and received kg, the share of
+          the final packed kg (derived: packed kg × share %) and share %.
         </Typography>
         <GatedButton
           label="Download lots CSV"
-          reasons={lotsLoading ? ['Loading the lots…'] : []}
+          reasons={[
+            ...(lotsLoading ? ['Loading the lots…'] : []),
+            ...(farmerName.pending ? ['Loading farmer names…'] : []),
+          ]}
           onClick={() => {
             const byId = new Map(lots.map((lot) => [lot.id, lot]));
             saveCsv(lotsCsvRows(batch, byId, farmerName), `batch-${batch.code}-lots.csv`);

@@ -79,10 +79,10 @@ export const saveCsv = (rows: readonly (readonly Cell[])[], fileName: string) =>
 const qty = (q: Quantity | null | undefined): [Cell, Cell] => (q ? [q.value, q.unit] : ['', '']);
 
 /**
- * The batch's lots and shares as CSV rows: lot code, farmer name, received kg, packed share kg and share %, each
- * quantity followed by its unit (FR58).
+ * The batch's lots and shares as CSV rows: lot code, farmer name, the recorded harvested, on-farm packed and received
+ * kg, the derived share of the final packed kg and the share %, each quantity followed by its unit (FR58).
  * @param batch The batch.
- * @param lots The share lots by id (a lot not loaded shows its id).
+ * @param lots The share lots by id (a lot not loaded shows its id and empty harvested / on-farm packed cells).
  * @param farmerName Name per farmer id (P03 `useFarmerNames`, names only).
  * @returns Header plus one row per share.
  */
@@ -92,15 +92,23 @@ export function lotsCsvRows(
   farmerName: (id: string) => string,
 ): Cell[][] {
   const packedGrams = batch.packed ? toGrams(batch.packed.value) : null;
-  const header = ['lot_code', 'farmer_name', 'received', 'received_unit'];
+  const quantities = ['harvested', 'farm_packed', 'received', 'final_packed_share_derived'];
   return [
-    [...header, 'packed_share', 'packed_share_unit', 'share', 'share_unit'],
+    [
+      'lot_code',
+      'farmer_name',
+      ...quantities.flatMap((q) => [q, `${q}_unit`]),
+      'share',
+      'share_unit',
+    ],
     ...batch.shares.map((s) => {
-      // DECISION D-051: a lot's packed kg is the batch's packed kg × its share %; the API stores packing per batch.
+      const lot = lots.get(s.lot_id);
+      // DECISION D-051: final packing is recorded per batch (`BatchOut.packed`), so a lot's part of it is derived
+      //   (batch packed kg × share %) and its column says so, next to the lot's recorded quantities.
       //   ADV: the export answers "how much of the packed output came from this farmer" (FR60) with no new route.
       //   COMPROMISE: a derived figure rounded to the gram; the shares' rounding can make the column sum differ
       //   from the packed kg by a few grams.
-      const packed =
+      const derived =
         packedGrams === null
           ? null
           : {
@@ -108,10 +116,12 @@ export function lotsCsvRows(
               unit: 'kg',
             };
       return [
-        lots.get(s.lot_id)?.code ?? s.lot_id,
+        lot?.code ?? s.lot_id,
         farmerName(s.farmer_id),
+        ...qty(lot?.harvested),
+        ...qty(lot?.packed),
         ...qty(s.contributed),
-        ...qty(packed),
+        ...qty(derived),
         s.share_pct,
         '%',
       ];

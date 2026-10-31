@@ -16,12 +16,11 @@ import { renderApp } from '../../test/render';
 import { server } from '../../test/setup';
 import type { BatchOut } from '../batches/batchModel';
 import { csvCell, farmersCsvRows, lotsCsvRows, toCsv, type FarmerRow } from './exportModel';
-import { visibleColumns } from './ExportsPage';
 
 const BATCH_ID = 'b0000000-0000-7000-8000-000000000005';
 const CODE = 'FGP8T4033HM7';
-/** An Indian mobile number, with or without +91. */
-const PHONE = /(?:\+91)?[6-9]\d{9}/;
+/** An Indian mobile number, with or without +91, spaces or dashes. */
+const PHONE = /(?:\+?91[\s-]?)?[6-9](?:[\s-]?\d){9}/;
 /** Two decimal degrees side by side ("9.58, 77.96" or "POINT(77.96 9.58)"). */
 const COORDS = /-?\d{1,3}\.\d+\s*[, ]\s*-?\d{1,3}\.\d+/;
 
@@ -137,26 +136,62 @@ describe('CSV writer', () => {
 });
 
 describe('lots CSV', () => {
-  it('has a unit next to every quantity (FR58) and the packed share by share %', () => {
+  it('has a unit next to every quantity (FR58), the recorded lot kg and the derived final packed share', () => {
     const b = batch();
     const lots = new Map(
-      mockState.lots.filter((l) => MOCK_REF_LOT_IDS.includes(l.id as never)).map((l) => [l.id, l]),
+      mockState.lots
+        .filter((l) => MOCK_REF_LOT_IDS.includes(l.id as never))
+        // On-farm packing differs from the intake kg, so the columns cannot be confused.
+        .map((l) => [
+          l.id,
+          l.id === MOCK_REF_LOT_IDS[0] ? { ...l, packed: { value: '98', unit: 'kg' } } : l,
+        ]),
     );
     const rows = lotsCsvRows(b, lots, (id) => `Farmer ${id.slice(-2)}`);
     expect(rows).toEqual([
       [
         'lot_code',
         'farmer_name',
+        'harvested',
+        'harvested_unit',
+        'farm_packed',
+        'farm_packed_unit',
         'received',
         'received_unit',
-        'packed_share',
-        'packed_share_unit',
+        'final_packed_share_derived',
+        'final_packed_share_derived_unit',
         'share',
         'share_unit',
       ],
-      ['VSV-0001-L1', 'Farmer 01', '100', 'kg', '93.75', 'kg', '31.250', '%'],
-      ['VSV-0004-L1', 'Farmer 04', '200', 'kg', '187.5', 'kg', '62.500', '%'],
-      ['VSV-0005-L1', 'Farmer 05', '20', 'kg', '18.75', 'kg', '6.250', '%'],
+      [
+        'VSV-0001-L1',
+        'Farmer 01',
+        '100',
+        'kg',
+        '98',
+        'kg',
+        '100',
+        'kg',
+        '93.75',
+        'kg',
+        '31.250',
+        '%',
+      ],
+      [
+        'VSV-0004-L1',
+        'Farmer 04',
+        '200',
+        'kg',
+        '200',
+        'kg',
+        '200',
+        'kg',
+        '187.5',
+        'kg',
+        '62.500',
+        '%',
+      ],
+      ['VSV-0005-L1', 'Farmer 05', '20', 'kg', '20', 'kg', '20', 'kg', '18.75', 'kg', '6.250', '%'],
     ]);
     // Every quantity column is followed by its unit column, and a value always has a unit.
     const header = rows[0] ?? [];
@@ -167,9 +202,15 @@ describe('lots CSV', () => {
     }
   });
 
-  it('leaves the packed share empty before packing and shows a lot id when the lot is not loaded', () => {
+  it('leaves the derived share empty before packing and shows a lot id when the lot is not loaded', () => {
     const rows = lotsCsvRows(batch({ packed: null }), new Map(), () => 'X');
-    expect(rows[1]).toEqual([MOCK_REF_LOT_IDS[0], 'X', '100', 'kg', '', '', '31.250', '%']);
+    expect(rows[1]).toEqual([
+      MOCK_REF_LOT_IDS[0],
+      'X',
+      ...['', '', '', ''],
+      ...['100', 'kg', '', ''],
+      ...['31.250', '%'],
+    ]);
   });
 });
 
@@ -197,7 +238,14 @@ describe('farmers CSV', () => {
   } as FarmerRow;
 
   it('never contains a phone pattern, survey number or coordinate pair, even if the API sent one', () => {
-    const text = toCsv(farmersCsvRows([row], [...Object.keys(row), 'phone', 'pin']));
+    const spaced = [
+      { ...row, phone: '+91 98765 43210' },
+      { ...row, phone: '98765-43210', phone_masked: '91 98765 43210' },
+    ] as unknown as FarmerRow[];
+    // The pattern itself catches the spaced forms, so the backstop is real.
+    expect('+91 98765 43210').toMatch(PHONE);
+    expect('98765-43210').toMatch(PHONE);
+    const text = toCsv(farmersCsvRows([row, ...spaced], [...Object.keys(row), 'phone', 'pin']));
     expect(text).not.toMatch(PHONE);
     expect(text).not.toMatch(COORDS);
     expect(text).not.toContain('123/4A');
@@ -214,19 +262,6 @@ describe('farmers CSV', () => {
       ['Muthu Kumar', '1.2', 'acre'],
     ]);
     expect(farmersCsvRows([{ name: 'A' }], ['name', 'declared_area'])[1]).toEqual(['A', '', '']);
-  });
-
-  it('reads the dashboard column choice, else every column', () => {
-    expect(visibleColumns('x')).toHaveLength(10);
-    localStorage.setItem(
-      'agritrace.dashboard.columns.x',
-      JSON.stringify(['lots', 'name', 'phone']),
-    );
-    expect(visibleColumns('x')).toEqual(['name', 'lots']);
-    localStorage.setItem('agritrace.dashboard.columns.x', '{not json');
-    expect(visibleColumns('x')).toHaveLength(10);
-    localStorage.setItem('agritrace.dashboard.columns.x', '["phone"]');
-    expect(visibleColumns('x')).toHaveLength(10);
   });
 });
 
@@ -258,7 +293,10 @@ describe('batch page labels and exports', () => {
       expect(files).toHaveLength(2);
     });
     expect(files[1]?.name).toBe(`audit-${CODE}.csv`);
-    expect((await read(files[1]?.blob ?? new Blob())).text).toContain('entered_by');
+    const auditCsv = await read(files[1]?.blob ?? new Blob());
+    // BOM prepended to B11's bytes, which are otherwise saved as sent.
+    expect(auditCsv.head).toEqual([0xef, 0xbb, 0xbf]);
+    expect(auditCsv.text).toContain('entered_by,assist_session_id,quantity,unit');
 
     // Names come from P03's farmer reads; wait for them before exporting.
     await screen.findByRole('cell', { name: 'Muthu Kumar' });
@@ -271,8 +309,9 @@ describe('batch page labels and exports', () => {
     const lotsCsv = await read(files[2]?.blob ?? new Blob());
     expect(lotsCsv.head).toEqual([0xef, 0xbb, 0xbf]);
     expect(lotsCsv.text.split('\r\n').slice(0, 2)).toEqual([
-      'lot_code,farmer_name,received,received_unit,packed_share,packed_share_unit,share,share_unit',
-      'VSV-0001-L1,Muthu Kumar,100,kg,93.75,kg,31.250,%',
+      'lot_code,farmer_name,harvested,harvested_unit,farm_packed,farm_packed_unit,received,received_unit,' +
+        'final_packed_share_derived,final_packed_share_derived_unit,share,share_unit',
+      'VSV-0001-L1,Muthu Kumar,100,kg,100,kg,100,kg,93.75,kg,31.250,%',
     ]);
     expect(lotsCsv.text).not.toMatch(PHONE);
 
@@ -329,9 +368,9 @@ describe('/exports page', () => {
       id: 'f1',
       name: 'Muthu Kumar',
       declared_area: { value: '1.5', unit: 'acre' },
-      phone: '9876543210',
+      phone: '+91 98765 43210',
     },
-    { id: 'f2', name: 'Farmer, 02', declared_area: { value: '0.75', unit: 'acre' } },
+    { id: 'f2', name: 'முத்து, குமார்', declared_area: { value: '0.75', unit: 'acre' } },
   ];
 
   it('is in the sidebar and downloads the visible farmer columns of every page, no phone', async () => {
@@ -372,9 +411,11 @@ describe('/exports page', () => {
     });
     expect(files[0]?.name).toMatch(/^farmers-VSV_FPO-\d{4}-\d{2}-\d{2}\.csv$/);
     expect(requested).toEqual(['name,declared_area', 'name,declared_area']);
-    const { text } = await read(files[0]?.blob ?? new Blob());
+    const { head, text } = await read(files[0]?.blob ?? new Blob());
+    // The whole file: BOM bytes first, then the Tamil name decoded intact.
+    expect(head).toEqual([0xef, 0xbb, 0xbf]);
     expect(text).toBe(
-      'name,declared_area,declared_area_unit\r\nMuthu Kumar,1.5,acre\r\n"Farmer, 02",0.75,acre\r\n',
+      'name,declared_area,declared_area_unit\r\nMuthu Kumar,1.5,acre\r\n"முத்து, குமார்",0.75,acre\r\n',
     );
     expect(text).not.toMatch(PHONE);
     expect(text).not.toMatch(COORDS);

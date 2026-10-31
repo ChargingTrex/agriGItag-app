@@ -1,7 +1,7 @@
 /**
- * Labels and exports page (`/exports`): the dashboard farmer table as CSV (the columns shown on the dashboard, every
- * quantity with its unit, never a phone, survey number or coordinate) and the way to each batch's labels, audit CSV
- * and lots CSV (they live on the batch page).
+ * Labels and exports page (`/exports`): the dashboard farmer table as CSV (the columns shown on the dashboard, from
+ * P06 `readColumns`; every quantity with its unit, never a phone, survey number or coordinate) and the way to each
+ * batch's labels, audit CSV and lots CSV (they live on the batch page).
  * Serves: FR21 (CSV export), FR58 (unit on every quantity), FR13 (farmer table), plan §7.3 P05, CLAUDE.md §6.
  * Called by: src/AppRoutes.tsx (`/exports`, sidebar "Labels & exports").
  */
@@ -17,36 +17,11 @@ import { fieldsParam, type CursorPage } from '../../api/cursor';
 import { errorMessage } from '../../api/errors';
 import { useAuth } from '../../auth/AuthProvider';
 import { GatedButton } from '../batches/ReadyLotsPage';
-import {
-  FARMER_COLUMNS,
-  farmersCsvRows,
-  saveCsv,
-  type FarmerColumn,
-  type FarmerRow,
-} from './exportModel';
+import { readColumns } from '../dashboard/DashboardPage';
+import { FARMER_COLUMNS, farmersCsvRows, saveCsv, type FarmerRow } from './exportModel';
 
 /** The API's largest page. */
 const PAGE = 200;
-
-/**
- * The farmer columns shown on the dashboard: P06 keeps the choice per FPO in localStorage under this key.
- * @param fpoId The session's FPO.
- * @returns The stored known columns in display order, else every column.
- */
-export function visibleColumns(fpoId: string): FarmerColumn[] {
-  // shortcut: repeats P06's `columnsKey` text because features/dashboard is not merged yet; import P06's
-  //   `readColumns` once both are on main.
-  try {
-    const stored: unknown = JSON.parse(
-      localStorage.getItem(`agritrace.dashboard.columns.${fpoId}`) ?? 'null',
-    );
-    const known = FARMER_COLUMNS.filter((c) => Array.isArray(stored) && stored.includes(c));
-    if (known.length > 0) return known;
-  } catch {
-    // Corrupt JSON or storage disabled: every column, as the dashboard shows then.
-  }
-  return [...FARMER_COLUMNS];
-}
 
 /**
  * The Labels and exports page.
@@ -57,7 +32,9 @@ export function ExportsPage() {
   const fpoId = session?.fpo_id ?? '';
   const farmers = useMutation({
     mutationFn: async () => {
-      const columns = visibleColumns(fpoId);
+      // The dashboard's column choice (P06), narrowed again to the export's own allow-list.
+      const shown: readonly string[] = readColumns(fpoId);
+      const columns = FARMER_COLUMNS.filter((c) => shown.includes(c));
       const fields = fieldsParam<FarmerRow>(columns);
       const fpo = await unwrap(
         api.GET('/v1/fpos/{fpo_id}', { params: { path: { fpo_id: fpoId } } }),

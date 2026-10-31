@@ -7,8 +7,9 @@
  * Serves: User Flows §"Create a batch" step 4 and §"Approve and publish", FR9, FR29 (GI verified or the reasons
  * it is not), FR48/FR49 (declared above computed blocks approval), FR60 (shares), FR62 (packing, labels), FR15
  * (publish), FR58/FR21 (CSV exports with units), Dataflow §4 gate 2 (second sign-off above
- * `second_signoff_threshold_kg`) and Stages 8–10, plan §7.3 P03, P04 (declared Special/computed Standard → Approve disabled with reason; missing reading →
- * disabled; happy path → published + URL) and P05 (labels, CSV exports).
+ * `second_signoff_threshold_kg`) and Stages 8–10, plan §7.3 P03, P04 (declared Special/computed Standard →
+ * Approve disabled with reason; missing reading → disabled; happy path → published + URL) and P05 (labels, CSV
+ * exports).
  * Called by: src/AppRoutes.tsx (`/batches/:batchId`); ReadyLotsPage.tsx navigates here after Create;
  * BatchesPage.tsx links here.
  */
