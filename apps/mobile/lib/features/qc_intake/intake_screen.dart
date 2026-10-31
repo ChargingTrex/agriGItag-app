@@ -1,11 +1,11 @@
 // Q-intake: the lot card (farmer, packed kg), the received weight on the number pad with the ±5 % check against the
 //   packed quantity, and the intake moisture reading from a calibrated meter with the profile's moisture limit.
-//   Save writes the reading and the `intake` event in one transaction for the outbox.
+//   Save writes the reading and the `lot_intake` entry (receives the lot, D-040) in one transaction for the outbox.
 // Requirement: UserFlows §Selling to the FPO steps 2-4 ("weighs the bags and enters the weight; ... takes an intake
 //   moisture reading. Checks run on the spot: weight vs. packed quantity, ... moisture limit. A green tick means
 //   accepted; an orange circle explains the problem in one line"), Dataflow Stage 7, FR42, FR43 (intake moisture),
 //   FR50 (calibration, plausibility), PLAN §7.2 M11 ("230 vs 200 → orange; 11.5 → orange"), D-017 (`event_intake`
-//   field config), D-006 (the phone only previews; the server re-runs every rule, B08/B09).
+//   field config), D-006 (the phone only previews; the server re-runs every rule, B08/B09), D-040 (`lot_intake` push kind).
 // Callers: scan_screen.dart (after a scan or a pick); test/features/qc/*.
 
 import 'package:decimal/decimal.dart';
@@ -88,8 +88,8 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
     final moisture = parseTyped(_values[_moisture]);
     final moistureProblem = moisture == null || rules == null ? null : _implausible(rules, moisture, unit, l10n);
     final fields = [
-      if (fieldShown(config, 'received'))
-        QcField(name: 'received', label: l10n.qcReceived, unit: kg, check: _weightCheck(received, tokens, l10n)),
+      // Always shown and required: `IntakeIn.received` is required by the server schema, not by field config.
+      QcField(name: 'received', label: l10n.qcReceived, unit: kg, check: _weightCheck(received, tokens, l10n)),
       if (fieldShown(config, 'price_per_kg'))
         QcField(name: 'price_per_kg', label: l10n.qcPricePerKg, unit: l10n.unitRupeePerKg),
       if (fieldShown(config, 'moisture_reading_id'))
@@ -101,7 +101,9 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
         ),
     ];
     final missing = fields
-        .where((f) => fieldRequired(config, f.name == _moisture ? 'moisture_reading_id' : f.name))
+        .where(
+          (f) => f.name == 'received' || fieldRequired(config, f.name == _moisture ? 'moisture_reading_id' : f.name),
+        )
         .where((f) => parseTyped(_values[f.name]) == null)
         .firstOrNull;
     String? blocker;
@@ -225,9 +227,10 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
         : null;
   }
 
-  /// Saves the moisture reading (when typed) and the intake event in one transaction (`saveQcEntries`).
+  /// Saves the moisture reading (when typed) and the `lot_intake` entry in one transaction (`saveQcEntries`).
   ///
-  /// [received] kg, [price] ₹/kg and [moisture] in [unit] are the typed values (null = left out of the payload);
+  /// [received] kg (never null: Save stays disabled without it), [price] ₹/kg and [moisture] in [unit] are the
+  /// typed values (null = left out of the payload);
   /// [methodRef] is the profile's moisture method. Returns when saved or failed; throws nothing (a failure shows the
   /// generic sentence and keeps the form for a retry). Side effects: Entries and Outbox rows.
   Future<void> _save({
@@ -264,16 +267,20 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
         ?reading,
         (
           id: _intakeId,
-          type: 'intake',
+          // DECISION D-040: the phone receives the lot with push kind `lot_intake` (`IntakeIn` without client_id),
+          //   not an `intake` event version, which only lands on the lot timeline and receives nothing.
+          //   ADV: one intake record (`lot_intakes`): shares, reconciliation, pull and the page see this weight.
+          //   COMPROMISE: no `processor_id` is sent (the QC user has none in context); the server uses the FPO's
+          //   only processor and answers `field_required` when an FPO has several, until a processor picker exists.
+          type: 'lot_intake',
           lotId: lot.lotId,
           farmerId: lot.farmerId,
           payload: {
-            if (received != null) 'received': quantity(received, 'kg'),
+            'lot_id': lot.lotId,
+            'sale_date': now.toIso8601String().substring(0, 10),
+            'received': quantity(received!, 'kg'),
             if (price != null) 'price_per_kg': price.toString(),
-            'moisture_reading_id': ?reading?.id,
-            // shortcut: this is the lot-timeline intake event; the lot is received (lot_intakes, status received)
-            //   only by POST /v1/intakes (FPO admin, with processor_id and sale_date). Until B09 links them, the
-            //   admin also records the intake on the portal (M11 review r1 P2-2, Architect-Gate).
+            'intake_moisture_reading_id': ?reading?.id,
           },
         ),
       ], now);

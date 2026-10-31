@@ -4,7 +4,7 @@
 //   schemas in packages/openapi/openapi.json, and the event wire form against the M02 push builder.
 // Requirement: PLAN §7.2 M11 acceptance ("scan → lot; 230 vs 200 → orange; 11.5 → orange; 4 readings → grade +
 //   standard edition") and tests ("a scripted flow test asserting the saved payloads match the server schemas");
-//   UserFlows §Selling to the FPO, §Grade a batch; FR42, FR49, FR50; D-005, D-014, D-036.
+//   UserFlows §Selling to the FPO, §Grade a batch; FR42, FR49, FR50; D-005, D-014, D-036, D-040 (`lot_intake`).
 // Callers: flutter test (CI mobile job).
 
 import 'dart:convert';
@@ -95,7 +95,9 @@ void main() {
     debugPrint('M11 taps: intake $taps (Receive lot, 3 digits, moisture tile, 4 keys, meter, Save)');
 
     final saved = await savedEntries(f.db);
-    final reading = saved['quality_reading']!.single, intake = saved['intake']!.single;
+    // D-040: the lot is received with a `lot_intake` entry; no `intake` timeline event is written.
+    expect(saved.keys, unorderedEquals(['quality_reading', 'lot_intake']));
+    final reading = saved['quality_reading']!.single, intake = saved['lot_intake']!.single;
     final r = payloadOf(reading), i = payloadOf(intake);
     expectSchema(r, 'QualityReadingIn', sentElsewhere: {'client_id'});
     expectEnum(r['stage'], 'ReadingStage');
@@ -108,9 +110,13 @@ void main() {
     expect(r['instrument_id'], meterId);
     expect(r['method_ref'], 'AGMARK Sch. IV moisture method');
     expect(DateTime.parse(r['measured_at']! as String).isUtc, isTrue);
-    expectSchema(i, 'IntakePayload');
+    // RE-RUN WHEN B16 LANDS: `processor_id` becomes optional in IntakeIn (D-040 §3); until then it is excused here.
+    expectSchema(i, 'IntakeIn', sentElsewhere: {'client_id', 'processor_id'});
+    expect(i.containsKey('processor_id'), isFalse, reason: 'D-040: omitted, the server uses the FPO processor');
+    expect(i['lot_id'], lotId);
+    expect(i['sale_date'], DateTime.now().toIso8601String().substring(0, 10));
     expectQuantity(i['received'], '230', 'kg');
-    expect(i['moisture_reading_id'], reading.entryId);
+    expect(i['intake_moisture_reading_id'], reading.entryId);
     for (final e in [reading, intake]) {
       expect(e.enteredByUserId, 'qc-1');
       expect(e.lotId, lotId);
@@ -122,15 +128,18 @@ void main() {
     // Both queued, the reading first (the intake names it).
     final outbox = await f.db.select(f.db.outbox).get();
     expect([for (final o in outbox) o.refId], [reading.entryId, intake.entryId]);
-    // The push builder sends the reading as `quality_reading` and the intake as a lot event version.
-    final rw = (await entryToWire(f.db, reading))!, iw = (await entryToWire(f.db, intake))!;
-    expect(rw['kind'], 'quality_reading');
-    final event = iw['data']! as Map;
+    // The push built from them carries kinds [quality_reading, lot_intake] with the IntakeIn fields in `data`
+    // (kind wording: backend-design.md §3 until B16 adds it to openapi.json).
+    final wires = [
+      for (final e in [reading, intake]) (await entryToWire(f.db, e))!,
+    ];
+    expect([for (final w in wires) w['kind']], ['quality_reading', 'lot_intake']);
+    expect(wires.last['client_id'], intake.entryId);
+    expect(wires.last['data'], i);
     expect(
-      [iw['kind'], event['event_type'], event['subject_type'], event['lot_id']],
-      ['event_version', 'intake', 'lot', lotId],
+      File('../../docs/agents/specs/backend-design.md').readAsStringSync(),
+      contains('Kind `lot_intake` (rulings 2026-10-31b, D-040; B16):\n`data` = `IntakeIn` without `client_id`'),
     );
-    expectSchema((event['payload']! as Map).cast(), 'IntakePayload');
   });
 
   testWidgets('batch: 4 readings → grade + standard edition, declared above computed, pack above graded refused', (
