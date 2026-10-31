@@ -69,7 +69,7 @@ class WizardFixture {
 /// (`farmer`, `plot`, `features`) to its FieldConfig JSON value (omitted entities were never pulled); [creator] is
 /// the farmer API (default: no signal); [crops] and [region] store the crops and GI-outline bundles; [pushed] shows
 /// the wizard as a pushed route (route chrome measured by the accessibility sweep); [gpsSource] replaces the GPS feed
-/// (e.g. `Stream.empty` for location off). Side effects: changes the test
+/// (e.g. `Stream.empty` for location off); [holdClipEnds] keeps voice clips "playing" until the test ends them. Side effects: changes the test
 /// view (reset at tear-down); the database is closed at tear-down. Returns after the draft loaded.
 Future<WizardFixture> pumpWizard(
   WidgetTester tester, {
@@ -82,6 +82,7 @@ Future<WizardFixture> pumpWizard(
   bool region = true,
   bool pushed = false,
   Stream<LocationFix> Function()? gpsSource,
+  bool holdClipEnds = false,
 }) async {
   tester.view
     ..physicalSize = size
@@ -129,7 +130,7 @@ Future<WizardFixture> pumpWizard(
     final feature = (fixture['features'] as List).first as Map;
     await bundle('gi_region', {'geometry': feature['geometry'], 'tolerance_buffer_m': 150});
   }
-  final player = RecordingVoicePlayer();
+  final player = RecordingVoicePlayer(holdEnds: holdClipEnds);
   final container = ProviderContainer(
     overrides: [
       appDatabaseProvider.overrideWithValue(db),

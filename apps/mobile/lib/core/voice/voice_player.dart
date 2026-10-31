@@ -72,6 +72,9 @@ final voicePlayerProvider = Provider<VoicePlayer>((ref) {
   return VoicePlayer(
     bundle: rootBundle,
     playClip: (path, onEnd) async {
+      // just_audio stays in the playing state after a clip finishes, and then play() returns at once; pausing first
+      // makes play() complete only when this clip ends, so onEnd really means "ended" (M09 consent, review r2 P2).
+      if (audio.playing) await audio.pause();
       try {
         await audio.setAsset(path);
       } on PlayerInterruptedException {

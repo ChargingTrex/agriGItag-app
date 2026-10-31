@@ -164,6 +164,17 @@ void main() {
     debugPrint('M09 taps per step: $_taps');
   });
 
+  testWidgets('"I agree" stays disabled until the consent clip has ended', (tester) async {
+    final f = await pumpWizard(tester, holdClipEnds: true);
+    f.notifier.edit((d) => d.step = OnboardingStep.consent);
+    await tester.pumpAndSettle();
+    expect(f.player.played.last, 'assets/audio/ta/onboardConsentMessage.ogg');
+    expect(enabled(tester, 'I agree'), isFalse);
+    f.player.heldEnds.last();
+    await tester.pump();
+    expect(enabled(tester, 'I agree'), isTrue);
+  });
+
   testWidgets('"No smartphone" after step 8 saves hasSmartphone=false and skips the handoff', (tester) async {
     final f = await pumpWizard(tester);
     _fillToCrop(f);
