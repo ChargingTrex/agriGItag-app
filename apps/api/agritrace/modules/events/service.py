@@ -38,7 +38,6 @@ from agritrace.core.errors import (
     ClientIdConflictError,
     ForbiddenError,
     NotFoundError,
-    NotImplementedPilotError,
     ReasonRequiredError,
     StaleVersionError,
     UndoWindowClosedError,
@@ -71,6 +70,7 @@ from agritrace.modules.lots_batches.models import Batch, Lot
 from agritrace.modules.quality import service as quality_service
 from agritrace.modules.registry import service as registry_service
 from agritrace.modules.registry.models import Farmer
+from agritrace.modules.rules_flags import service as rules_flags_service
 
 __all__: list[str] = []
 
@@ -740,24 +740,27 @@ async def _push_consent(session: AsyncSession, user: CurrentUser, entry: SyncEnt
 
 
 async def _push_flag_resolution(
-    _session: AsyncSession, _user: CurrentUser, _entry: SyncEntry, _app_version: str
+    session: AsyncSession, user: CurrentUser, entry: SyncEntry, _: str
 ) -> SyncResult:
-    """Handle `kind=flag_resolution`: not in the pilot yet.
+    """Handle `kind=flag_resolution` with rules_flags' `resolve_from_sync` (it commits).
 
     Args:
-        _session: database session (unused).
-        _user: the caller (unused).
-        _entry: the entry (unused).
-        _app_version: app version (unused).
+        session: database session.
+        user: the caller.
+        entry: the entry; `data` is `{flag_id, resolution, reason_code, note}`.
+        _: app version (unused).
 
     Returns:
-        Never returns.
+        `accepted` (resolved now) or `duplicate` (the same resolution was already stored); `server_id` is
+        the flag id.
 
     Raises:
-        NotImplementedPilotError: always; the entry is rejected, the rest of the batch goes on.
+        AppError: every error of `rules_flags.service.resolve_from_sync` (validation, not found, forbidden,
+            `flag_not_open`, `resolution_forbidden`, `reason_required`).
     """
-    # TODO(B08): resolve the flag through rules_flags' service once it exposes one in `__all__`.
-    raise NotImplementedPilotError(details={"kind": "flag_resolution"})
+    flag_id, resolved = await rules_flags_service.resolve_from_sync(session, user, entry.data)
+    status = "accepted" if resolved else "duplicate"
+    return SyncResult(client_id=entry.client_id, status=status, server_id=flag_id)
 
 
 Handler = Callable[[AsyncSession, CurrentUser, SyncEntry, str], Awaitable[SyncResult]]

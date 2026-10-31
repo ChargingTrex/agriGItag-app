@@ -259,8 +259,9 @@ class SyncEntry(BaseModel):
     )
     data: dict[str, Any] = Field(
         description="`event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: "
-        "`QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: not in the pilot. "
-        "The entry's `client_id` is used as the record's id."
+        "`QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: "
+        "`FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id). "
+        "Otherwise the entry's `client_id` is used as the record's id."
     )
 
 

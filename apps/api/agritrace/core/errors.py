@@ -441,6 +441,25 @@ class UndoWindowClosedError(AppError):
     fix = "Ask your field officer to correct the entry with a reason instead."
 
 
+# Rules and flags (B08; FR70 review on flags). Reuses `reason_required`, `forbidden` and `not_found`.
+
+
+class FlagNotOpenError(AppError):
+    """A flag was already resolved (cleared or fixed), or an escalated one is resolved again by an officer."""
+
+    code, status, message_key = "flag_not_open", 409, "error.flag_not_open"
+    message = "This flag is already resolved."
+    fix = "Reload the flag; if the problem is back, the next rule check raises it again."
+
+
+class ResolutionForbiddenError(AppError):
+    """A field officer tried to resolve a `hold` flag or an escalated one; only an FPO admin may (FR70)."""
+
+    code, status, message_key = "resolution_forbidden", 403, "error.resolution_forbidden"
+    message = "Only an FPO admin can resolve this flag."
+    fix = "Escalate it, or ask an FPO admin to review and resolve it."
+
+
 SQLSTATE_RESTRICT_VIOLATION = "23001"
 
 

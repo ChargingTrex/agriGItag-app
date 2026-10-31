@@ -88,7 +88,7 @@ def errors(**by_status: str) -> dict[int | str, dict[str, Any]]:
     description=(
         "Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: "
         "`event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, "
-        "`plot`, `consent`; `flag_resolution` is rejected with `not_implemented_pilot` in the pilot. Each "
+        "`plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`). Each "
         "entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` "
         "already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet "
         "uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, "
