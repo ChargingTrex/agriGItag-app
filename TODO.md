@@ -59,7 +59,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] W01: opted-out farmer names are a consent decision the schema cannot see; B10 must set `farmer_name` from consent and never change it afterwards.
 - [ ] W01: 3-decimal pin rounding and "Farmer N" numbering currently cite D-017; write a small ADR (D-021 privacy rendering rules) when the product sign-off on rounding arrives.
 - [ ] B10: map `agritrace_page` `ValidationError` to a registered AppError (`public_record_invalid`, 409) so privacy rejections are visible, never silent.
-- [ ] B06: `events.make_variants` records width and height per variant and keeps the original JPEG URL (public page schema expects `thumb_url`, `medium_url`, `jpeg_url`, `width`, `height`).
+- [x] B06: `events.make_variants` records width and height per variant and keeps the original JPEG URL (public page schema expects `thumb_url`, `medium_url`, `jpeg_url`, `width`, `height`).
 - [ ] W01 P3s for W03: rarer phone formats (`0091 98765 43210`, `(987) 654-3210`, `98765.43210`, zero-width space) rely on the shared privacy linter; polygon pattern lost its word boundary (rejects "Polygonum"); phone pattern also scans system ids; pin `boundary_map_url` host once B07/B13 fix the GI asset host.
 - [ ] Q00/W02 (P2, do first in W02): OSM map links with 6-dp coordinates slip the linter (`?mlat=…&mlon=…`, `#map=17/lat/lon`), issue docs/agents/qa/issues/Q00-1-privacy-lint-osm-map-coordinates.md (one-token fix: drop the `\b` before lat/lon and add the slash form). Also degree-sign, DMS and bare space-separated pairs outside WKT (Q00-r2 P2-3).
 - [ ] Q00: gate-readiness is silent for a WP with no Robot tests at all; a survey number under a neutral JSON key (e.g. `land_record_ref`) passes the linter; `hw.keyboard=yes` on the Go AVD still open.
@@ -68,7 +68,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Orchestration deviation record: Q00 received a third review round (two-round rule) because the round-2 reviewer supplied exact regex fixes for two regressions; B00 received a third worker round before verification to clear six security-relevant P2s. Both noted in docs/agents/gates/G0.md when signed.
 - [ ] G1 readiness: W01 merged with 6 Robot placeholder tests (public/page.robot ×5, BM-16); W02/Q03 must write them before G1 is signed (gate-readiness.py G1 enforces).
 - [ ] B00 (before first prod deploy): pass S3 keys only when set so an IAM role can be used (review B00-r1 P3-5); enforce a router tag per module (P3-6); let `AppError` carry headers so 429 can send `Retry-After`.
-- [ ] B06: request size cap for `/v1/sync/push` (256 KB) and 413 `payload_too_large` mapping.
+- [x] B06: request size cap for `/v1/sync/push` (256 KB) and 413 `payload_too_large` mapping.
 - [ ] B10: use a real key prefix for `storage.put_public` (`public-pages/batches/<code>/…`).
 - [ ] Ledger note: `certifi` and `pathspec` are MPL-2.0 transitive dependencies (file-level copyleft, unmodified use; accepted, record in LIBRARIES.md when they appear as direct deps).
 - [x] B02: treat `OTP_DEV_CODE` None/empty as "off"; never add a code default (B00 r2 P3-1). Done in B02 (no default; dev code only when set).
@@ -80,7 +80,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Ledger: `lightningcss` (Vite build dependency) is MPL-2.0, build-time only, not shipped; accepted under D-018 as file-level copyleft in unmodified use (same reasoning as certifi/pathspec).
 - [ ] B09: enforce Σ `batch_shares.share_pct` = 100 ± 0.01 in the service (spans rows; not a CHECK).
 - [x] B02: replace `core/auth.get_current_user` placeholder body and call `set_audit_context` per request. Done in B02.
-- [ ] B06/B07: map SQLSTATE 23001 (`append_only_violation` trigger) to the registered AppError.
+- [x] B06/B07: map SQLSTATE 23001 (`append_only_violation` trigger) to the registered AppError.
 - [ ] B01 risk: first live `alembic check` may show drift on geography reflection, VARCHAR enums or NULLS NOT DISTINCT; fix model or migration, never env.py. `alembic check` ignores CHECK constraints (enum values pinned by unit test instead).
 - [ ] Tests on append-only tables cannot DELETE; use fresh rows or TRUNCATE.
 - [x] M00 size gate decision: the "15 MB at skeleton" acceptance line was indicative; binding budgets are 40 MB target / 100 MB ceiling (arm64 APK) and 30 MB per-ABI AAB download. Native libs stay uncompressed (installed size matters on 2 GB phones). Skeleton measured 14.68 MiB arm64 (7.06 MB gzipped).
@@ -90,7 +90,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] M00 risk: goldens recorded on macOS; if the first Linux CI run fails, regenerate goldens on Linux rather than raising tolerance. `gen_api.sh` needs network (npx + generator download) in CI.
 - [ ] Dev machine: Android cmdline-tools missing and SDK licences unaccepted; system Java is 1.8 (Android Studio JDK 21 via JAVA_HOME works). Not needed for CI.
 - [ ] B06/B07 (B01 review F1): `GET /v1/sync/reference?since=` must compare versions per part, because one global sequence number is not commit-ordered; a part can be missed until it changes again.
-- [ ] B06/B07 (F4): the sync write path uses Core `INSERT … ON CONFLICT`, which the ORM audit listener does not see; those writes must insert audit rows explicitly.
+- [x] B06/B07 (F4): the sync write path uses Core `INSERT … ON CONFLICT`, which the ORM audit listener does not see; those writes must insert audit rows explicitly.
 - [ ] Compliance (F5, DPDP Act 2023): append-only tables need an erasure runbook for valid deletion requests; the API's database role must not own the tables (so it cannot disable triggers); consider redacting phone, plot pin and survey number from audit diffs. Owner: SEC review before G5.
 - [ ] B03 (F7, Architect-Gate ruling): create a `users` row for every farmer who has a phone, including feature-phone farmers, so the phone has exactly one home.
 - [ ] B01 r2 / B03 (F8): the shared `Address` schema needs a `taluk` field for FR53's taluk check.
@@ -98,12 +98,12 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Q01: re-record FarmerButton goldens on Linux (Flutter 3.38.4), then remove the macOS-only skip in test/widget/farmer_button_golden_test.dart.
 - [x] Compliance (B05): moisture profile allows only instrument/lab sources, so a visual moisture reading is rejected at entry (correct: moisture is not visual); the `max_grade_for_source: visual → Standard` cap is for colour/visual parameters. Confirm with the compliance owner when the full AGMARK schedule is loaded.
 - [ ] B08: sweep readings carrying a `reason_code` (trail overrides) in case the broker was down when the override was accepted (B05 `shortcut:`), and turn `per_parameter` entries with `outcome == "profile_incomplete"` into the info flag.
-- [ ] B06: reuse the registered `client_id_conflict` error code (registering it twice raises).
+- [x] B06: reuse the registered `client_id_conflict` error code (registering it twice raises).
 - [ ] B13 migration 0003: add `plots.gi_tag_id` (B03 shortcut: when a request omits it, the only GI tag with a region is used; breaks with a second GI crop).
 - [x] B03 shortcut: farmer codes are random 6-hex per FPO; a collision surfaces as 500 — add a retry or sequence before scale. (B13 redraws on collision.)
 - [ ] B02/B03 reconcile: B03 reads `users.is_super_admin` per call because `CurrentUser` has no super-admin flag; B02's `require_role` honours "super_admin" — one mechanism should win (prefer a claim in the access token, D-024).
 - [ ] B08: GPS accuracy threshold flag, taluk check against GI registration (FR53), raising the walked-vs-declared gap flag (B03 computes, B08 flags).
-- [ ] B06: dict-accepting plot entry for sync push (`registry.service.create_plot_from_sync`).
+- [x] B06: dict-accepting plot entry for sync push (`registry.service.create_plot_from_sync`).
 - [ ] Product: must a plot's location be confirmed before a farmer is activated (FR67 says yes for GI eligibility; activation itself is admin approval) — confirm with product.
 - [ ] Public page / W03: show the ODbL attribution for the GI boundary (D-019 amendment).
 - [ ] B05 P3s (review B05-r1): `compute()` ignores units (F9); calibration judged on client `measured_at` without skew check, instrument kind not matched to parameter, stage not checked against role/subject (F10); `send_task` can block a request while the broker is down (F12, same family as the B05 trail-override shortcut).
@@ -129,7 +129,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] M05 r2 leftovers: load Roboto in the golden harness (Q01); ≤ 2-word assert on `PictureChoice.label` and consider making `promptId` required; the interrupted-load branch has no test (needs real just_audio platform).
 - [ ] Prod start-up now requires a real `SMS_PROVIDER` (B04 r2): add the gateway name to the `sms_provider` Literal at the `TODO(provider)` mark when the provider is chosen (TODO §2 open question).
 - [ ] B04 P3s (review B04-r1): a real SMS gateway must map transport errors to `ProviderRefused` (anything else leaves the row `queued`); deploy note: never run the Celery worker at DEBUG in prod and deploy the worker before the API (two unreachable code-printing paths); B02 should pass `expires=` equal to the OTP lifetime when enqueueing `notifications.send` so a redelivered task cannot send an expired code; `reject_on_worker_lost` re-queues a task that crashes its own process; amend D-009 text to describe the NullPool-per-task pattern; add an allow-list to gen-error-codes.py if a second internal exception like `ProviderRefused` appears; consolidate keyset/base64 cursor helpers into core at the third list endpoint; Tamil templates are 92–114 chars (two SMS each) and India's DLT template registration must be handled with the gateway.
-- [ ] B06 (from M04): voice notes arrive as `audio/ogg` (Android 10+) or `audio/mp4` (iOS, Android 8–9); the push photo/media schema must accept both content types.
+- [x] B06 (from M04): voice notes arrive as `audio/ogg` (Android 10+) or `audio/mp4` (iOS, Android 8–9); the push photo/media schema must accept both content types. Done in B06 r2 (`.ogg` / `.m4a` keys, checksum-only verify).
 - [ ] M07 (from M04): delete the camera original after `PhotoCompressor` saves; show progress while the pure-Dart decoder runs (unmeasured on Android Go); confirm action must be idempotent (M05 double-tap).
 - [ ] Q01 (from M04): measure compressor PSS on a 2 GB phone; calibrate blur/brightness thresholds (`shortcut:` in capture_constants.dart) on pilot phones; real camera/GPS/microphone smoke; iOS pod install and minimum versions of camera/record/geolocator.
 - [ ] Localisation: Tamil text for the iOS/Android permission prompts (camera, location, microphone).
@@ -154,7 +154,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] P01 hand-offs: B14 (new WP) adds the registry API the portal needs; P01 round 2 or P02 wires masked phone + reveal, reject, farmer plots, village filter/search once B14 lands; production needs its own tile host (tile.openstreetmap.org allows light use only); the EOX Sentinel-2 satellite source (CC BY 4.0) needs compliance sign-off; two tabs restoring at once can trip `refresh_reused` (single-tab lock or BroadcastChannel in P02).
 - [ ] B10: keep lot order stable between rebuilds, because "Farmer N" numbering for opted-out farmers follows the order lots are sent.
 - [ ] B03 → Architect-Gate (D-019 wording): the Datameet maps repo has no sub-district layer (only Census 2011 districts) and Datameet village boundaries skip Tamil Nadu; open Census-2011 taluk files found are CC BY-NC-SA (rejected) or restricted. `infra/scripts/gi_boundary/README.md` therefore recommends geoBoundaries gbOpen IND ADM3 + ADM2 (ODbL-1.0, LGD-derived, commit 9469f09); measured v0 40.7 KB / v1 33.1 KB, reference point inside both. Amend D-019's source sentence, and decide the ODbL attribution line on the public page (B10).
-- [ ] B03 → B06: the sync push `plot` entry kind should reuse `registry.service.create_plot` + `enqueue_plot_check` (after the per-entry commit); `create_plot` takes the registry `PlotIn` schema, which other modules may not import (D-004), so B06 needs a service entry that accepts the entry's dict (add it to `service.__all__` then).
+- [x] B03 → B06: the sync push `plot` entry kind should reuse `registry.service.create_plot` + `enqueue_plot_check` (after the per-entry commit); `create_plot` takes the registry `PlotIn` schema, which other modules may not import (D-004), so B06 needs a service entry that accepts the entry's dict (add it to `service.__all__` then).
 - [ ] B03 → B08: `rules.check_plot` owns the checks the plot API does not do: GPS accuracy threshold (FR67 "acceptable accuracy"), farmer/plot taluk vs `gi_region_versions.taluks` (FR53 second GI check), the walked-vs-declared gap flag (the API only reports `area_gap_exceeds`).
 - [ ] B03 product question: FR67 says a confirmed location activates the farmer; the pilot activates only on `POST /v1/farmers/{id}/approve` (Stage 0 "admin approval plus confirmed location"). Decide whether approval should also require a confirmed plot.
 - [ ] B03 → B02: `CurrentUser` carries no super-admin flag, so the registry reads `users.is_super_admin` per super-admin call; if B02 adds it to the token, switch `registry.service._is_super_admin` to it.

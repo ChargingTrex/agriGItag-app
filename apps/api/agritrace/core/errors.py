@@ -14,6 +14,7 @@ from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DBAPIError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 log = logging.getLogger(__name__)
@@ -369,6 +370,43 @@ class ConsentConflictError(AppError):
     fix = "Generate a new client_id for a new consent; resend the same body only to retry."
 
 
+# Events and sync (B06; FR25, FR59, D-005). Reuses `client_id_conflict`, `payload_too_large`,
+# `append_only_violation` and `not_implemented_pilot` from above.
+
+
+class StaleVersionError(AppError):
+    """An event version's `version_no` is not the next one (max + 1), e.g. two devices corrected at once."""
+
+    code, status, message_key = "stale_version", 409, "error.stale_version"
+    message = "This event was changed since your copy; the version number is not the next one."
+    fix = "Pull the latest version of the event, re-apply your change on it and send it with version max + 1."
+
+
+class UndoWindowClosedError(AppError):
+    """A farmer tried to undo an own entry more than 24 hours after it was captured (FR6, FR25)."""
+
+    code, status, message_key = "undo_window_closed", 409, "error.undo_window_closed"
+    message = "Entries can be undone only within 24 hours."
+    fix = "Ask your field officer to correct the entry with a reason instead."
+
+
+SQLSTATE_RESTRICT_VIOLATION = "23001"
+
+
+def append_only_error(exc: BaseException) -> AppendOnlyViolationError | None:
+    """Translate the append-only trigger's database error into the registered AppError (TODO B06/B07).
+
+    Args:
+        exc: any exception, typically `sqlalchemy.exc.DBAPIError` from a flush or execute.
+
+    Returns:
+        `AppendOnlyViolationError` when the driver reports SQLSTATE 23001 (`restrict_violation`, raised by
+        `forbid_change()` in migration 0001), else None.
+    """
+    sqlstate = getattr(getattr(exc, "orig", None), "sqlstate", None)
+    return AppendOnlyViolationError() if sqlstate == SQLSTATE_RESTRICT_VIOLATION else None
+
+
 def _envelope(
     status: int, code: str, message: str, details: Any = None, headers: Mapping[str, str] | None = None
 ) -> JSONResponse:
@@ -442,6 +480,25 @@ async def _http_error(request: Request, exc: Exception) -> JSONResponse:
     return _envelope(exc.status_code, cls.code, cls.message, None, headers)
 
 
+async def _db_error(request: Request, exc: Exception) -> JSONResponse:
+    """Render the append-only trigger's SQLSTATE 23001 as `append_only_violation`; hide every other error.
+
+    Args:
+        request: the request (passed on to `_unhandled`).
+        exc: a `sqlalchemy.exc.DBAPIError`.
+
+    Returns:
+        409 `append_only_violation` envelope, or the `internal_error` envelope from `_unhandled`.
+
+    Side effects:
+        Logs non-23001 errors with their traceback (through `_unhandled`).
+    """
+    mapped = append_only_error(exc)
+    if mapped is None:
+        return await _unhandled(request, exc)
+    return _envelope(mapped.status, mapped.code, mapped.detail_message)
+
+
 async def _unhandled(_: Request, exc: Exception) -> JSONResponse:
     """Hide unexpected exceptions behind `internal_error`.
 
@@ -471,4 +528,5 @@ def install_handlers(app: FastAPI) -> None:
     app.add_exception_handler(AppError, _app_error)
     app.add_exception_handler(RequestValidationError, _validation_error)
     app.add_exception_handler(StarletteHTTPException, _http_error)
+    app.add_exception_handler(DBAPIError, _db_error)
     app.add_exception_handler(Exception, _unhandled)
