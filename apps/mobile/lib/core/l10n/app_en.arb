@@ -259,5 +259,361 @@
         "example": "3"
       }
     }
+  },
+  "eventLandPreparation": "Land prep",
+  "@eventLandPreparation": {
+    "description": "Event card: Stage 1 land preparation (ploughing). At most two words. Also its voice prompt id."
+  },
+  "eventNursery": "Nursery",
+  "@eventNursery": {
+    "description": "Event card: nursery bed with the seed variety. At most two words. Also its voice prompt id."
+  },
+  "eventSowing": "Sowing",
+  "@eventSowing": {
+    "description": "Event card: sowing or transplanting in the main field. At most two words. Also its voice prompt id."
+  },
+  "eventInputApplication": "Fertiliser, spray",
+  "@eventInputApplication": {
+    "description": "Event card: fertiliser or pesticide application. At most two words. Also its voice prompt id."
+  },
+  "eventHarvest": "Harvest",
+  "@eventHarvest": {
+    "description": "Event card: a harvest round. At most two words. Also its voice prompt id."
+  },
+  "eventDrying": "Drying",
+  "@eventDrying": {
+    "description": "Event card: drying the crop on the farm. At most two words. Also its voice prompt id."
+  },
+  "eventPacking": "Packing",
+  "@eventPacking": {
+    "description": "Event card: packing the dried crop into bags. At most two words. Also its voice prompt id."
+  },
+  "eventProblem": "Problem",
+  "@eventProblem": {
+    "description": "Event card: report a pest, disease or rain damage. At most two words. Also its voice prompt id."
+  },
+  "orderAskLandPreparation": "Did you already prepare the land?",
+  "@orderAskLandPreparation": {
+    "description": "Out-of-order question (F09) when land preparation is missing before this event. Also its voice prompt id."
+  },
+  "orderAskNursery": "Did you already make the nursery?",
+  "@orderAskNursery": {
+    "description": "Out-of-order question (F09) when the nursery is missing before this event. Also its voice prompt id."
+  },
+  "orderAskSowing": "Did you already sow?",
+  "@orderAskSowing": {
+    "description": "Out-of-order question (F09) when sowing is missing, e.g. harvest before sowing. Also its voice prompt id."
+  },
+  "orderAskInputApplication": "Did you already put fertiliser or spray?",
+  "@orderAskInputApplication": {
+    "description": "Out-of-order question (F09) when a fertiliser step is missing. Also its voice prompt id."
+  },
+  "orderAskHarvest": "Did you already harvest?",
+  "@orderAskHarvest": {
+    "description": "Out-of-order question (F09) when the harvest is missing, e.g. drying before harvest. Also its voice prompt id."
+  },
+  "orderAskDrying": "Did you already dry the crop?",
+  "@orderAskDrying": {
+    "description": "Out-of-order question (F09) when drying is missing before packing. Also its voice prompt id."
+  },
+  "orderAskPacking": "Did you already pack the bags?",
+  "@orderAskPacking": {
+    "description": "Out-of-order question (F09) when packing is missing. Also its voice prompt id."
+  },
+  "orderAskProblem": "Did you already report the problem?",
+  "@orderAskProblem": {
+    "description": "Out-of-order question (F09); problems are in no order track, kept for completeness. Also its voice prompt id."
+  },
+  "chooseEventTitle": "Log event",
+  "@chooseEventTitle": {
+    "description": "App bar title of the event grid (F04)."
+  },
+  "chooseEventPrompt": "What did you do on the farm today?",
+  "@chooseEventPrompt": {
+    "description": "Spoken sentence above the eight event cards (F04). Also its voice prompt id."
+  },
+  "choosePlotPrompt": "Which field?",
+  "@choosePlotPrompt": {
+    "description": "Spoken sentence above the field cards when the farmer has more than one active lot. Also its voice prompt id."
+  },
+  "plotNumber": "Field {number}",
+  "@plotNumber": {
+    "description": "Card label of the farmer's n-th field (lot) in the field picker. At most two words.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "nurseryPrompt": "Which seed? Or take a photo of the seed packet.",
+  "@nurseryPrompt": {
+    "description": "Spoken sentence above the seed variety cards (nursery). Also its voice prompt id."
+  },
+  "seedPacket": "Seed packet",
+  "@seedPacket": {
+    "description": "Card: no variety chosen; the photo will show the seed packet instead. At most two words. Also its voice prompt id."
+  },
+  "inputPrompt": "How many bags? Then tap the product.",
+  "@inputPrompt": {
+    "description": "Spoken sentence above the bags stepper and the product cards (fertiliser or spray). Also its voice prompt id."
+  },
+  "bagsPrompt": "How many bags?",
+  "@bagsPrompt": {
+    "description": "Spoken sentence above the bags stepper (harvest, packing). Also its voice prompt id."
+  },
+  "bagsUnit": "bags",
+  "@bagsUnit": {
+    "description": "Unit word under the bags stepper value (used when the field configuration has no label)."
+  },
+  "next": "Next",
+  "@next": {
+    "description": "Button under the bags stepper that opens the camera. At most two words. Also its voice prompt id."
+  },
+  "yieldWarn": "More than usual for this field.",
+  "@yieldWarn": {
+    "description": "Orange note under the harvest stepper when the yield is 20-30 % above the field's ceiling (preview only; nothing is blocked)."
+  },
+  "yieldHold": "Much more than usual. The officer will review it.",
+  "@yieldHold": {
+    "description": "Orange note under the harvest stepper when the yield is more than 30 % above the ceiling: saved, reviewed by the officer."
+  },
+  "dryingPrompt": "Starting to dry, or drying done?",
+  "@dryingPrompt": {
+    "description": "Spoken sentence above the Start drying / Drying done buttons. Also its voice prompt id."
+  },
+  "dryingStart": "Start drying",
+  "@dryingStart": {
+    "description": "Button: drying starts today (a reminder to log the end is set). At most two words. Also its voice prompt id."
+  },
+  "dryingDone": "Drying done",
+  "@dryingDone": {
+    "description": "Button: drying finished today. At most two words. Also its voice prompt id."
+  },
+  "problemPrompt": "What is the problem?",
+  "@problemPrompt": {
+    "description": "Spoken sentence above the problem kind cards. Also its voice prompt id."
+  },
+  "problemPest": "Pest",
+  "@problemPest": {
+    "description": "Problem kind card: insects or other pests. At most two words. Also its voice prompt id."
+  },
+  "problemDisease": "Disease",
+  "@problemDisease": {
+    "description": "Problem kind card: plant disease. At most two words. Also its voice prompt id."
+  },
+  "problemWeather": "Rain damage",
+  "@problemWeather": {
+    "description": "Problem kind card: rain, wind or other weather damage. At most two words. Also its voice prompt id."
+  },
+  "problemOther": "Other",
+  "@problemOther": {
+    "description": "Problem kind card: anything else. At most two words. Also its voice prompt id."
+  },
+  "cameraPrompt": "Take a photo of the work.",
+  "@cameraPrompt": {
+    "description": "Spoken sentence above the camera preview (F06). Also its voice prompt id."
+  },
+  "takePhoto": "Take photo",
+  "@takePhoto": {
+    "description": "Shutter button under the camera preview. At most two words. Also its voice prompt id."
+  },
+  "photoSaving": "Saving the photo",
+  "@photoSaving": {
+    "description": "Screen-reader label of the progress ring while the photo is compressed."
+  },
+  "cameraOff": "The camera is off. Allow the camera, then try again.",
+  "@cameraOff": {
+    "description": "Shown when camera access is refused or the camera fails (never an error code). Also its voice prompt id."
+  },
+  "tryAgain": "Try again",
+  "@tryAgain": {
+    "description": "Button that opens the camera again. At most two words. Also its voice prompt id."
+  },
+  "phoneFull": "Phone is full. Send your entries now?",
+  "@phoneFull": {
+    "description": "Sheet when the photo or entry cannot be stored (UserFlows: low storage). Also its voice prompt id."
+  },
+  "sendNow": "Send now",
+  "@sendNow": {
+    "description": "Button on the phone-full sheet that starts sending saved entries. At most two words. Also its voice prompt id."
+  },
+  "noLot": "No crop is registered for you yet. Call your field officer.",
+  "@noLot": {
+    "description": "Shown when the farmer has no active lot to log an event on. Also its voice prompt id."
+  },
+  "goHome": "Home",
+  "@goHome": {
+    "description": "Button that returns to the farmer home screen. At most two words. Also its voice prompt id."
+  },
+  "yes": "Yes",
+  "@yes": {
+    "description": "Yes button (out-of-order question). At most two words. Also its voice prompt id."
+  },
+  "no": "No",
+  "@no": {
+    "description": "No button (out-of-order question). At most two words. Also its voice prompt id."
+  },
+  "confirmPlain": "{event}, today. Correct?",
+  "@confirmPlain": {
+    "description": "Confirm screen sentence read aloud for events without a quantity. Also its voice prompt id.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Sowing"
+      }
+    }
+  },
+  "confirmBags": "{event}, {bags} bags, today. Correct?",
+  "@confirmBags": {
+    "description": "Confirm screen sentence with the number of bags (harvest, packing). Also its voice prompt id.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Harvest"
+      },
+      "bags": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "confirmProduct": "{event}, {product}, {bags} bags, today. Correct?",
+  "@confirmProduct": {
+    "description": "Confirm screen sentence for fertiliser or spray: product name (FPO master data) and bags. Also its voice prompt id.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Fertiliser"
+      },
+      "product": {
+        "type": "String",
+        "example": "Panjakavya"
+      },
+      "bags": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "confirmChoice": "{event}, {choice}, today. Correct?",
+  "@confirmChoice": {
+    "description": "Confirm screen sentence with the chosen seed variety or problem kind. Also its voice prompt id.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Nursery"
+      },
+      "choice": {
+        "type": "String",
+        "example": "K2"
+      }
+    }
+  },
+  "voiceNote": "Voice note",
+  "@voiceNote": {
+    "description": "Button that records up to 30 seconds of voice for a problem report. At most two words. Also its voice prompt id."
+  },
+  "voiceStop": "Stop",
+  "@voiceStop": {
+    "description": "Button that stops the voice note recording. At most two words. Also its voice prompt id."
+  },
+  "voiceAdded": "Voice added",
+  "@voiceAdded": {
+    "description": "Button state after a voice note was recorded; a tap records it again. At most two words. Also its voice prompt id."
+  },
+  "micOff": "The microphone is off. Allow it, then try again.",
+  "@micOff": {
+    "description": "Sheet when microphone access is refused. Also its voice prompt id."
+  },
+  "okay": "OK",
+  "@okay": {
+    "description": "Button that closes an information sheet. At most two words. Also its voice prompt id."
+  },
+  "recordFailed": "The recording did not work. Record again?",
+  "@recordFailed": {
+    "description": "Sheet when the voice note recording failed. Also its voice prompt id."
+  },
+  "recordAgain": "Record again",
+  "@recordAgain": {
+    "description": "Button that records the voice note again. At most two words. Also its voice prompt id."
+  },
+  "savedTitle": "Saved",
+  "@savedTitle": {
+    "description": "App bar title of the saved screen (F08)."
+  },
+  "savedOnline": "Saved.",
+  "@savedOnline": {
+    "description": "Saved screen sentence when nothing waits to send. Also its voice prompt id."
+  },
+  "savedOffline": "Saved. Will send when signal comes.",
+  "@savedOffline": {
+    "description": "Saved screen sentence next to the grey cloud while entries wait to send (UserFlows: no signal). Also its voice prompt id."
+  },
+  "lotReady": "Ready to sell.",
+  "@lotReady": {
+    "description": "Saved screen sentence after packing when the lot became ready to sell. Also its voice prompt id."
+  },
+  "undo": "Undo",
+  "@undo": {
+    "description": "Button that undoes the entry just saved (allowed for 24 hours). At most two words. Also its voice prompt id."
+  },
+  "logAgain": "Again",
+  "@logAgain": {
+    "description": "Button on the saved screen after sowing: log a second sowing round. At most two words. Also its voice prompt id."
+  },
+  "keepDrying": "Not dry enough yet. Keep drying; the officer will check the moisture.",
+  "@keepDrying": {
+    "description": "Sheet after packing when the last moisture reading is above the limit (or missing): the lot is not ready to sell. Also its voice prompt id."
+  },
+  "homeLog": "Log",
+  "@homeLog": {
+    "description": "Home button: log a farm event. At most two words. Also its voice prompt id."
+  },
+  "homeSell": "Sell",
+  "@homeSell": {
+    "description": "Home button: show the QR code to sell a lot. At most two words. Also its voice prompt id."
+  },
+  "homeMoney": "Money",
+  "@homeMoney": {
+    "description": "Home button: payments and benefits. At most two words. Also its voice prompt id."
+  },
+  "homeMyFarm": "My farm",
+  "@homeMyFarm": {
+    "description": "Home button: the farmer's fields and crops. At most two words. Also its voice prompt id."
+  },
+  "homeNoTask": "Nothing due now. Log what you did today.",
+  "@homeNoTask": {
+    "description": "Home card sentence when no task is due. Also its voice prompt id."
+  },
+  "homeNextTask": "Next: {event}, by {date}",
+  "@homeNextTask": {
+    "description": "Home card sentence for the next task; date reads like \"14 Feb\".",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Harvest"
+      },
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "homeLogEvent": "Log event",
+  "@homeLogEvent": {
+    "description": "Button of the home card when no task is due: opens the event grid. At most two words. Also its voice prompt id."
+  },
+  "taskDryingDone": "Time to log: drying done",
+  "@taskDryingDone": {
+    "description": "Voice prompt id of the local reminder task created by \"Start drying\"."
+  },
+  "comingSoon": "Coming soon.",
+  "@comingSoon": {
+    "description": "Spoken sentence on screens that a later update fills in. Also its voice prompt id."
+  },
+  "notFound": "This page is not here.",
+  "@notFound": {
+    "description": "Page for a link that does not exist; a Home button follows. Also its voice prompt id."
   }
 }

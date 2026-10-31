@@ -30,6 +30,8 @@ dependencies:
   go_router: ^17.5.0
   image: ^4.12.0
   intl: ^0.20.2
+  # App support folder for evidence photos (M07, lib/features/event_log); already in the tree through drift_flutter.
+  path_provider: ^2.1.6
   record: ^6.2.1
   # Plays the bundled Opus voice prompts (lib/core/voice/voice_player.dart, D-016).
   just_audio: ^0.10.6
@@ -40,6 +42,9 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  # On-device runs of integration_test/farmer_flows_test.dart (M07 scripted flows; Q01 runs them on the Go AVD).
+  integration_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   drift_dev: ^2.31.0
@@ -58,6 +63,8 @@ flutter:
     - assets/prompts.json
     - assets/audio/ta/
     - assets/audio/en/
+    # Placeholder pictures of the eight event cards and the product card (M07); replace with drawn art.
+    - assets/images/events/
   fonts:
     # Tamil-block subset of Noto Sans Tamil Regular (35 KB, SIL OFL 1.1, licence in assets/fonts/).
     # DECISION D-016: Tamil ships inside the app so first run works offline with consistent glyphs.

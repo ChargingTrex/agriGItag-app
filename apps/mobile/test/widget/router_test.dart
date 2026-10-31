@@ -7,6 +7,7 @@
 import 'package:agritrace/app.dart';
 import 'package:agritrace/core/router/app_router.dart';
 import 'package:agritrace/core/router/session.dart';
+import 'package:agritrace/features/farmer_home/farmer_home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -29,7 +30,7 @@ void main() {
     await tester.runAsync(() => session.openSession(sessionOut()));
     await tester.pumpAndSettle();
     expect(path(), '/home');
-    expect(find.text('விவசாயி'), findsOneWidget);
+    expect(find.byType(FarmerHomeScreen), findsOneWidget);
 
     for (final forbidden in ['/officer', '/qc', '/assist/F-7', '/auth']) {
       router.go(forbidden);
