@@ -1,4 +1,4 @@
-// Accessibility sweep over every new M07 screen state, reached through the real router: 56 dp tap targets, labelled
+// Accessibility sweep over every new M07 and M08 screen state, reached through the real router: 56 dp tap targets, labelled
 // tap targets, text contrast, and no overflow, on the smallest phone (360 x 640) in Tamil and English at 1.0x and 1.5x.
 // Requirement: UserFlows §Design rules ("Big targets ... at least 56 dp", "Pictures and voice before words");
 //   mobile-design.md §6 (textScaler 1.0–1.5, Semantics on icon controls, contrast ≥ 4.5:1); M05 sweep (kit_test.dart).
@@ -31,7 +31,7 @@ typedef ScreenState = ({
 /// Taps the English [label] and settles. Returns when settled; fails when [label] is not on screen.
 Future<void> _tap(WidgetTester tester, FlowHarness h, String label) => h.tap(tester, find.text(label));
 
-/// Every new screen and sheet of M07.
+/// Every new screen and sheet of M07 and M08.
 final List<ScreenState> screens = [
   (name: 'F03 home', make: FlowHarness.new, start: '/home', lots: 1, withHistory: true, drive: null),
   (name: 'F04 choose event', make: FlowHarness.new, start: '/log', lots: 1, withHistory: true, drive: null),
@@ -104,9 +104,77 @@ final List<ScreenState> screens = [
     },
   ),
   (name: 'not found', make: FlowHarness.new, start: '/home/nowhere', lots: 1, withHistory: true, drive: null),
-  (name: 'placeholder (Sell)', make: FlowHarness.new, start: '/home/sell', lots: 1, withHistory: true, drive: null),
+  (name: 'placeholder (My farm)', make: FlowHarness.new, start: '/home/farm', lots: 1, withHistory: true, drive: null),
   (name: 'settings', make: FlowHarness.new, start: '/settings', lots: 1, withHistory: true, drive: null),
+  // M08 screens.
+  (
+    name: 'F10 sell QR',
+    make: FlowHarness.new,
+    start: '/home',
+    lots: 1,
+    withHistory: true,
+    drive: (tester, h) => _goAfter(tester, h, '/home/sell', () => h.setLot('lot-1', 'ready_for_sale', kgPacked: 300)),
+  ),
+  (
+    name: 'F10 sell pick field',
+    make: FlowHarness.new,
+    start: '/home',
+    lots: 2,
+    withHistory: true,
+    drive: (tester, h) => _goAfter(tester, h, '/home/sell', () async {
+      await h.setLot('lot-1', 'ready_for_sale', kgPacked: 300);
+      await h.setLot('lot-2', 'ready_for_sale', kgPacked: 150);
+    }),
+  ),
+  (name: 'F10 sell nothing ready', make: FlowHarness.new, start: '/home/sell', lots: 1, withHistory: true, drive: null),
+  (
+    name: 'F11 money',
+    make: FlowHarness.new,
+    start: '/home',
+    lots: 2,
+    withHistory: true,
+    drive: (tester, h) => _goAfter(tester, h, '/home/money', () => h.setLot('lot-2', 'received', kgPacked: 1200)),
+  ),
+  (name: 'F12 history', make: FlowHarness.new, start: '/home/history', lots: 1, withHistory: true, drive: null),
+  (
+    name: 'F13 entry with Undo',
+    make: FlowHarness.new,
+    start: '/home',
+    lots: 1,
+    withHistory: true,
+    drive: (tester, h) async {
+      final id = await h.saveEntry('harvest', flowNow);
+      await _goAfter(tester, h, '/home/history/$id', () async {});
+    },
+  ),
+  (
+    name: 'F13 entry past 24 h',
+    make: FlowHarness.new,
+    start: '/home',
+    lots: 1,
+    withHistory: true,
+    drive: (tester, h) async {
+      final id = await h.saveEntry('harvest', flowNow.subtract(const Duration(days: 2)));
+      await _goAfter(tester, h, '/home/history/$id', () async {});
+    },
+  ),
+  (
+    name: 'F14 settings, 7-day unsent warning',
+    make: FlowHarness.new,
+    start: '/home',
+    lots: 1,
+    withHistory: false,
+    drive: (tester, h) =>
+        _goAfter(tester, h, '/settings', () => h.saveEntry('harvest', flowNow.subtract(const Duration(days: 8)))),
+  ),
 ];
+
+/// Runs [seed], then opens [location] and settles. Returns when settled; throws what [seed] throws.
+Future<void> _goAfter(WidgetTester tester, FlowHarness h, String location, Future<void> Function() seed) async {
+  await seed();
+  h.go(location);
+  await tester.pumpAndSettle();
+}
 
 void main() {
   for (final s in screens) {

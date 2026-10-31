@@ -604,4 +604,84 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get notFound => 'இந்தப் பக்கம் இல்லை.';
+
+  @override
+  String get homeHistory => 'வரலாறு';
+
+  @override
+  String get sellPrompt => 'சேகரிப்பு மையத்தில் இந்தக் குறியீட்டைக் காட்டுங்கள்.';
+
+  @override
+  String get sellPick => 'எந்த வயலின் பயிரை விற்கிறீர்கள்?';
+
+  @override
+  String get sellNoLot => 'விற்க இன்னும் எதுவும் தயாராக இல்லை. முதலில் பேக்கிங்கைப் பதிவு செய்யுங்கள்.';
+
+  @override
+  String sellQrLabel(String field) {
+    return '$field விற்பனைக் குறியீடு';
+  }
+
+  @override
+  String kgAmount(String kg) {
+    return '$kg கிலோ';
+  }
+
+  @override
+  String lotCodeLabel(String code) {
+    return 'லாட் $code';
+  }
+
+  @override
+  String get moneyPrompt => 'உங்கள் பயிரும் அதன் விற்பனையும்.';
+
+  @override
+  String moneyPacked(String kg) {
+    return 'பேக் செய்தது: $kg கிலோ';
+  }
+
+  @override
+  String get lotStatusOpen => 'வளர்கிறது';
+
+  @override
+  String get lotStatusDrying => 'உலர்த்துகிறது';
+
+  @override
+  String get lotStatusReady => 'விற்கத் தயார்';
+
+  @override
+  String get lotStatusReceived => 'FPO பெற்றது';
+
+  @override
+  String get lotStatusBatched => 'தொகுப்பில் உள்ளது';
+
+  @override
+  String get lotStatusClosed => 'முடிந்தது';
+
+  @override
+  String get historyPrompt => 'நீங்கள் பதிவு செய்தவை. பார்க்க ஒன்றைத் தொடுங்கள்.';
+
+  @override
+  String get historyEmpty => 'இன்னும் எதுவும் பதிவு செய்யவில்லை.';
+
+  @override
+  String historyDetail(String event, String date) {
+    return '$date அன்று $event.';
+  }
+
+  @override
+  String get entrySent => 'அனுப்பியது';
+
+  @override
+  String get entryWaiting => 'அனுப்பவில்லை';
+
+  @override
+  String get undoClosed => 'இப்போது கள அலுவலர் மட்டுமே இதைத் திருத்த முடியும்.';
+
+  @override
+  String get wifiOnlyPhotos => 'வைஃபையில் மட்டும் படங்கள்';
+
+  @override
+  String get unsentOld =>
+      'சில பதிவுகள் 7 நாட்களுக்கு மேல் காத்திருக்கின்றன. அனுப்ப சிக்னல் உள்ள இடத்துக்குச் செல்லுங்கள், அல்லது அலுவலரை அழையுங்கள்.';
 }

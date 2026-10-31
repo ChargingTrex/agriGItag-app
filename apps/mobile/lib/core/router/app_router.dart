@@ -5,6 +5,7 @@
 //   M09 adds /officer/onboard (UserFlows §Onboarding a farmer).
 //   M07 adds the farmer home and event routes (UserFlows §Farmer home screen, §Logging a farm event; F17 deep link
 //   `/log/<eventType>`) and a farmer-friendly page for unknown routes (UserFlows §When things go wrong).
+//   M08 adds Sell, Money, History (+ entry detail) and the real Settings (UserFlows §Selling to the FPO).
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
 //   test/widget/router_test.dart.
 
@@ -24,14 +25,19 @@ import '../../features/event_log/event_log_controller.dart';
 import '../../features/event_log/farm_event.dart';
 import '../../features/event_log/saved_screen.dart';
 import '../../features/farmer_home/farmer_home_screen.dart';
+import '../../features/history/history_screen.dart';
+import '../../features/money/money_screen.dart';
 import '../../features/onboarding_farmer/onboarding_wizard.dart';
+import '../../features/sell/sell_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../l10n/gen/app_localizations.dart';
 import 'placeholder_screen.dart';
 import 'session.dart';
 
 /// Route prefixes each role may open; the first entry is the role's home.
 /// A signed-out user (null role) may only open /auth (phone, /auth/otp, /auth/pin); every signed-in role may open
-/// /settings (sign-out; M08 replaces the placeholder). A farmer's event flow lives under /log (F04–F07, deep links).
+/// /settings (language, Wi-Fi-only photos, voice tour, sign-out). A farmer's event flow lives under /log (F04–F07,
+/// deep links).
 const Map<Role?, List<String>> allowedPrefixes = {
   null: ['/auth'],
   Role.farmer: ['/home', '/log', '/settings'],
@@ -83,7 +89,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(path: '/settings', builder: (context, _) => const SettingsPlaceholder()),
+      GoRoute(path: '/settings', builder: (context, _) => const SettingsScreen()),
       GoRoute(
         path: '/home',
         builder: (context, _) => const FarmerHomeScreen(),
@@ -94,15 +100,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             redirect: (context, _) => ref.read(eventLogProvider).savedEntryId == null ? '/home' : null,
             builder: (context, _) => const SavedScreen(),
           ),
-          // Placeholders until M08 (Sell, Money) and M09 (My farm).
+          GoRoute(path: 'sell', builder: (context, _) => const SellScreen()),
+          GoRoute(path: 'money', builder: (context, _) => const MoneyScreen()),
           GoRoute(
-            path: 'sell',
-            builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeSell),
+            path: 'history',
+            builder: (context, _) => const HistoryScreen(),
+            routes: [
+              GoRoute(
+                path: ':entryId',
+                builder: (context, state) => HistoryDetailScreen(entryId: state.pathParameters['entryId']!),
+              ),
+            ],
           ),
-          GoRoute(
-            path: 'money',
-            builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeMoney),
-          ),
+          // Placeholder until My farm lands.
           GoRoute(
             path: 'farm',
             builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeMyFarm),

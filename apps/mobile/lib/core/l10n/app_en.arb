@@ -879,5 +879,131 @@
   "notFound": "This page is not here.",
   "@notFound": {
     "description": "Page for a link that does not exist; a Home button follows. Also its voice prompt id."
+  },
+  "homeHistory": "History",
+  "@homeHistory": {
+    "description": "Farmer home button: opens the list of logged entries (History, Undo). At most two words. Also its voice prompt id."
+  },
+  "sellPrompt": "Show this code at the collection centre.",
+  "@sellPrompt": {
+    "description": "Spoken sentence above the Sell QR. Also its voice prompt id."
+  },
+  "sellPick": "Which field's crop are you selling?",
+  "@sellPick": {
+    "description": "Sell screen when several lots are ready: the farmer taps a field. Also its voice prompt id."
+  },
+  "sellNoLot": "Nothing is ready to sell yet. Log packing first.",
+  "@sellNoLot": {
+    "description": "Sell screen when no lot is ready for sale. Also its voice prompt id."
+  },
+  "sellQrLabel": "Sell code for {field}",
+  "@sellQrLabel": {
+    "description": "Screen-reader label of the Sell QR image.",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "Field 1"
+      }
+    }
+  },
+  "kgAmount": "{kg} kg",
+  "@kgAmount": {
+    "description": "Packed quantity in large type under the Sell QR; kg is already formatted with Indian grouping.",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "1,200"
+      }
+    }
+  },
+  "lotCodeLabel": "Lot {code}",
+  "@lotCodeLabel": {
+    "description": "Short lot code under the Sell QR, for staff who type it when the scan fails.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "A1B2C3"
+      }
+    }
+  },
+  "moneyPrompt": "Your crop and its sale.",
+  "@moneyPrompt": {
+    "description": "Spoken sentence at the top of the Money screen. Also its voice prompt id."
+  },
+  "moneyPacked": "Packed: {kg} kg",
+  "@moneyPacked": {
+    "description": "Money card line: packed kilograms of the lot (Indian grouping).",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "300"
+      }
+    }
+  },
+  "lotStatusOpen": "Growing",
+  "@lotStatusOpen": {
+    "description": "Lot status word on the Money card: server status open (crop in the field)."
+  },
+  "lotStatusDrying": "Drying now",
+  "@lotStatusDrying": {
+    "description": "Lot status word on the Money card: server status drying."
+  },
+  "lotStatusReady": "Ready to sell",
+  "@lotStatusReady": {
+    "description": "Lot status word on the Money card: server status ready_for_sale."
+  },
+  "lotStatusReceived": "Received by FPO",
+  "@lotStatusReceived": {
+    "description": "Lot status word on the Money card: server status received (intake done)."
+  },
+  "lotStatusBatched": "In a batch",
+  "@lotStatusBatched": {
+    "description": "Lot status word on the Money card: server status batched."
+  },
+  "lotStatusClosed": "Closed",
+  "@lotStatusClosed": {
+    "description": "Lot status word on the Money card: server status closed."
+  },
+  "historyPrompt": "What you logged. Tap one to see it.",
+  "@historyPrompt": {
+    "description": "Spoken sentence at the top of History. Also its voice prompt id."
+  },
+  "historyEmpty": "Nothing logged yet.",
+  "@historyEmpty": {
+    "description": "History when there are no entries. Also its voice prompt id."
+  },
+  "historyDetail": "{event}, {date}.",
+  "@historyDetail": {
+    "description": "Spoken sentence of one History entry: event name and the day it was logged (\"14 Feb\").",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Harvest"
+      },
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "entrySent": "Sent",
+  "@entrySent": {
+    "description": "Status word of an entry the server confirmed (green tick)."
+  },
+  "entryWaiting": "Not sent",
+  "@entryWaiting": {
+    "description": "Status word of an entry still waiting on the phone (orange circle)."
+  },
+  "undoClosed": "Only the field officer can correct this now.",
+  "@undoClosed": {
+    "description": "Entry detail after the 24-hour undo window (or for a refused entry). Also its voice prompt id."
+  },
+  "wifiOnlyPhotos": "Photos on Wi-Fi only",
+  "@wifiOnlyPhotos": {
+    "description": "Settings switch: photos wait for Wi-Fi before sending (default off). Also its voice prompt id."
+  },
+  "unsentOld": "Some entries have waited more than 7 days. Get signal to send them, or call your officer.",
+  "@unsentOld": {
+    "description": "Settings warning with a red triangle when the oldest unsent entry is 7 days old. Also its voice prompt id."
   }
 }

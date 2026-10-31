@@ -12,6 +12,7 @@ import 'package:agritrace/features/event_log/farm_event.dart';
 import 'package:agritrace/features/event_log/choose_event_screen.dart';
 import 'package:agritrace/features/event_log/event_log_controller.dart';
 import 'package:agritrace/core/router/placeholder_screen.dart';
+import 'package:agritrace/features/sell/sell_screen.dart';
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,7 +39,7 @@ void main() {
     h.taps = 0;
     expect(find.text('Next: Harvest, by 14 Feb'), findsOneWidget);
     expect(find.text('To do'), findsOneWidget);
-    for (final label in ['Log', 'Sell', 'Money', 'My farm', 'Call officer']) {
+    for (final label in ['Log', 'Sell', 'Money', 'My farm', 'History', 'Call officer']) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
     await h.tap(tester, find.text('Harvest'));
@@ -56,7 +57,7 @@ void main() {
     await h.dispose(tester);
   });
 
-  testWidgets('home: fallback card, grey cloud while entries wait, Sell opens a placeholder', (tester) async {
+  testWidgets('home: fallback card, grey cloud while entries wait, Sell opens the Sell screen', (tester) async {
     final h = FlowHarness(pending: 3);
     await h.start(tester);
     expect(find.text('Nothing due now. Log what you did today.'), findsOneWidget);
@@ -66,8 +67,7 @@ void main() {
     h.go('/home');
     await tester.pumpAndSettle();
     await h.tap(tester, find.text('Sell'));
-    expect(find.byType(PlaceholderScreen), findsOneWidget);
-    expect(find.text('Coming soon.'), findsOneWidget);
+    expect(find.byType(SellScreen), findsOneWidget);
     await h.dispose(tester);
   });
 
