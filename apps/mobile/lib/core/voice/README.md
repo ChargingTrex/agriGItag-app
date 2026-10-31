@@ -1,1 +1,1 @@
-Recorded voice prompts: catalog and player for assets/audio/{ta,en}/*.ogg; no TTS (M05, D-016). Empty until M05.
+Recorded voice prompts (D-016, no TTS): prompt_catalog.dart reads assets/prompts.json; voice_player.dart plays assets/audio/{ta,en}/<promptId>.ogg through just_audio and counts missing clips (M05).

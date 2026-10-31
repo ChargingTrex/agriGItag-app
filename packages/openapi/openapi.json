@@ -3829,6 +3829,79 @@
         "title": "MultiPolygonGeoJSON",
         "type": "object"
       },
+      "NotificationChannel": {
+        "description": "Delivery channel of a notification (FR7).",
+        "enum": [
+          "push",
+          "sms",
+          "whatsapp",
+          "console"
+        ],
+        "title": "NotificationChannel",
+        "type": "string"
+      },
+      "NotificationOut": {
+        "description": "One message sent (or attempted) to the caller.",
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/NotificationChannel",
+            "description": "push, sms, whatsapp or console."
+          },
+          "created_at": {
+            "description": "When the message was queued, ISO 8601 UTC.",
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "description": "Notification id (UUIDv7, so newer ids sort later).",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "lang": {
+            "description": "Language the message was rendered in: `ta` or `en`.",
+            "title": "Lang",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "description": "Template variables; secrets (the OTP code) appear as `***`.",
+            "title": "Payload",
+            "type": "object"
+          },
+          "status": {
+            "$ref": "#/components/schemas/NotificationStatus",
+            "description": "queued, sent or failed."
+          },
+          "template_key": {
+            "description": "Template, e.g. `harvest_reminder`; the app may show its own text.",
+            "title": "Template Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "template_key",
+          "channel",
+          "lang",
+          "payload",
+          "status",
+          "created_at"
+        ],
+        "title": "NotificationOut",
+        "type": "object"
+      },
+      "NotificationStatus": {
+        "description": "Delivery state of a notification (FR7).",
+        "enum": [
+          "queued",
+          "sent",
+          "failed"
+        ],
+        "title": "NotificationStatus",
+        "type": "string"
+      },
       "NurseryPayload": {
         "additionalProperties": false,
         "description": "Nursery preparation, split from main-field sowing (FR55); seeding date is `occurred_on`.",
@@ -4449,6 +4522,41 @@
           "has_more"
         ],
         "title": "Page[InstrumentOut]",
+        "type": "object"
+      },
+      "Page_NotificationOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/NotificationOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[NotificationOut]",
         "type": "object"
       },
       "Page_QualityReadingOut_": {
@@ -11430,6 +11538,126 @@
         "summary": "Me",
         "tags": [
           "identity"
+        ]
+      }
+    },
+    "/v1/notifications": {
+      "get": {
+        "description": "Messages sent to the caller (any role), newest first; secrets in payloads appear as `***`.",
+        "operationId": "list_my_notifications_v1_notifications_get",
+        "parameters": [
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_NotificationOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unauthorized`: no valid access token."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List my notifications",
+        "tags": [
+          "notifications"
         ]
       }
     },

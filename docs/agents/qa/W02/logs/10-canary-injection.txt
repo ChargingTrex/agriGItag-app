@@ -1,0 +1,18 @@
+# Template copy /tmp/w02v/tpl/agritrace_page (diff vs repo below); built from cwd /tmp/w02v/tpl with the app venv python so the copy is imported
+54c54
+< <main>
+---
+> <main><p>Call <phone canary></p>
+$ (cd /tmp/w02v/tpl) apps/public-page/.venv/bin/python -c "import agritrace_page; print(agritrace_page.__file__)"
+/private/tmp/w02v/tpl/agritrace_page/__init__.py
+$ (cd /tmp/w02v/tpl) apps/public-page/.venv/bin/python -m agritrace_page build apps/public-page/fixtures/batch_sample.json /tmp/w02v/tplout
+build exit=0
+$ bash tools/check_output.sh /tmp/w02v/tplout
+/tmp/w02v/tplout/index.html:55:15: canary: <redacted>
+/tmp/w02v/tplout/index.html:55:15: phone: <redacted>
+privacy-lint: 2 hit(s) in 2 file(s) scanned, 0 non-text skipped
+exit=1
+# lines echoing the canary digits in lint output: 0
+# control: clean build still passes
+privacy-lint: 0 hit(s) in 2 file(s) scanned, 0 non-text skipped
+exit=0

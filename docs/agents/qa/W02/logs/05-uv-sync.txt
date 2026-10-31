@@ -1,0 +1,4 @@
+$ uv sync
+Resolved 23 packages in 15ms
+Checked 23 packages in 10ms
+exit=0
