@@ -1191,6 +1191,138 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'இந்தப் பக்கம் இல்லை.'**
   String get notFound;
+
+  /// Farmer home button: opens the list of logged entries (History, Undo). At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'வரலாறு'**
+  String get homeHistory;
+
+  /// Spoken sentence above the Sell QR. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'சேகரிப்பு மையத்தில் இந்தக் குறியீட்டைக் காட்டுங்கள்.'**
+  String get sellPrompt;
+
+  /// Sell screen when several lots are ready: the farmer taps a field. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'எந்த வயலின் பயிரை விற்கிறீர்கள்?'**
+  String get sellPick;
+
+  /// Sell screen when no lot is ready for sale. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'விற்க இன்னும் எதுவும் தயாராக இல்லை. முதலில் பேக்கிங்கைப் பதிவு செய்யுங்கள்.'**
+  String get sellNoLot;
+
+  /// Screen-reader label of the Sell QR image.
+  ///
+  /// In ta, this message translates to:
+  /// **'{field} விற்பனைக் குறியீடு'**
+  String sellQrLabel(String field);
+
+  /// Packed quantity in large type under the Sell QR; kg is already formatted with Indian grouping.
+  ///
+  /// In ta, this message translates to:
+  /// **'{kg} கிலோ'**
+  String kgAmount(String kg);
+
+  /// Spoken sentence at the top of the Money screen. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'உங்கள் பயிரும் அதன் விற்பனையும்.'**
+  String get moneyPrompt;
+
+  /// Money card line: packed kilograms of the lot (Indian grouping).
+  ///
+  /// In ta, this message translates to:
+  /// **'பேக் செய்தது: {kg} கிலோ'**
+  String moneyPacked(String kg);
+
+  /// Lot status word on the Money card: server status open (crop in the field).
+  ///
+  /// In ta, this message translates to:
+  /// **'வளர்கிறது'**
+  String get lotStatusOpen;
+
+  /// Lot status word on the Money card: server status drying.
+  ///
+  /// In ta, this message translates to:
+  /// **'உலர்த்துகிறது'**
+  String get lotStatusDrying;
+
+  /// Lot status word on the Money card: server status ready_for_sale.
+  ///
+  /// In ta, this message translates to:
+  /// **'விற்கத் தயார்'**
+  String get lotStatusReady;
+
+  /// Lot status word on the Money card: server status received (intake done).
+  ///
+  /// In ta, this message translates to:
+  /// **'FPO பெற்றது'**
+  String get lotStatusReceived;
+
+  /// Lot status word on the Money card: server status batched.
+  ///
+  /// In ta, this message translates to:
+  /// **'தொகுப்பில் உள்ளது'**
+  String get lotStatusBatched;
+
+  /// Lot status word on the Money card: server status closed.
+  ///
+  /// In ta, this message translates to:
+  /// **'முடிந்தது'**
+  String get lotStatusClosed;
+
+  /// Spoken sentence at the top of History. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நீங்கள் பதிவு செய்தவை. பார்க்க ஒன்றைத் தொடுங்கள்.'**
+  String get historyPrompt;
+
+  /// History when there are no entries. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்னும் எதுவும் பதிவு செய்யவில்லை.'**
+  String get historyEmpty;
+
+  /// Spoken sentence of one History entry: event name and the day it was logged ("14 Feb").
+  ///
+  /// In ta, this message translates to:
+  /// **'{date} அன்று {event}.'**
+  String historyDetail(String event, String date);
+
+  /// Status word of an entry the server confirmed (green tick).
+  ///
+  /// In ta, this message translates to:
+  /// **'அனுப்பியது'**
+  String get entrySent;
+
+  /// Status word of an entry still waiting on the phone (orange circle).
+  ///
+  /// In ta, this message translates to:
+  /// **'அனுப்பவில்லை'**
+  String get entryWaiting;
+
+  /// Entry detail after the 24-hour undo window (or for a refused entry). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இப்போது கள அலுவலர் மட்டுமே இதைத் திருத்த முடியும்.'**
+  String get undoClosed;
+
+  /// Settings switch: photos wait for Wi-Fi before sending (default off). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'வைஃபையில் மட்டும் படங்கள்'**
+  String get wifiOnlyPhotos;
+
+  /// Settings warning with a red triangle when the oldest unsent entry is 7 days old. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'சில பதிவுகள் 7 நாட்களுக்கு மேல் காத்திருக்கின்றன. அனுப்ப சிக்னல் உள்ள இடத்துக்குச் செல்லுங்கள், அல்லது அலுவலரை அழையுங்கள்.'**
+  String get unsentOld;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

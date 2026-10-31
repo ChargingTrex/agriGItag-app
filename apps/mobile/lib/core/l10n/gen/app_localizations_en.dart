@@ -609,4 +609,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notFound => 'This page is not here.';
+
+  @override
+  String get homeHistory => 'History';
+
+  @override
+  String get sellPrompt => 'Show this code at the collection centre.';
+
+  @override
+  String get sellPick => 'Which field\'s crop are you selling?';
+
+  @override
+  String get sellNoLot => 'Nothing is ready to sell yet. Log packing first.';
+
+  @override
+  String sellQrLabel(String field) {
+    return 'Sell code for $field';
+  }
+
+  @override
+  String kgAmount(String kg) {
+    return '$kg kg';
+  }
+
+  @override
+  String get moneyPrompt => 'Your crop and its sale.';
+
+  @override
+  String moneyPacked(String kg) {
+    return 'Packed: $kg kg';
+  }
+
+  @override
+  String get lotStatusOpen => 'Growing';
+
+  @override
+  String get lotStatusDrying => 'Drying now';
+
+  @override
+  String get lotStatusReady => 'Ready to sell';
+
+  @override
+  String get lotStatusReceived => 'Received by FPO';
+
+  @override
+  String get lotStatusBatched => 'In a batch';
+
+  @override
+  String get lotStatusClosed => 'Closed';
+
+  @override
+  String get historyPrompt => 'What you logged. Tap one to see it.';
+
+  @override
+  String get historyEmpty => 'Nothing logged yet.';
+
+  @override
+  String historyDetail(String event, String date) {
+    return '$event, $date.';
+  }
+
+  @override
+  String get entrySent => 'Sent';
+
+  @override
+  String get entryWaiting => 'Not sent';
+
+  @override
+  String get undoClosed => 'Only the field officer can correct this now.';
+
+  @override
+  String get wifiOnlyPhotos => 'Photos on Wi-Fi only';
+
+  @override
+  String get unsentOld => 'Some entries have waited more than 7 days. Get signal to send them, or call your officer.';
 }

@@ -39,6 +39,7 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-032 | Assist context travels per sync entry (`assist_session` push kind + `SyncEntry.assist_session_id`), not only via the request header | 2026-10-31 | Accepted | [D-032.md](docs/adr/D-032.md) |
 | D-033 | Lifecycle gates answer one 409 listing every unmet reason; gate records are append-only | 2026-10-31 | Accepted | [D-033.md](docs/adr/D-033.md) |
 | D-034 | Public page publishing: W01 schema is the allow-list (page-required fields are public in YAML and no tenant may narrow them; tenant YAML hides optional fields only), WebP-only photo copies in public-pages, 60 s / immutable cache policy, Pillow labels | 2026-10-31 | Accepted | [D-034.md](docs/adr/D-034.md) |
+| D-035 | Sell QR `sig` is an unkeyed SHA-256 checksum, not an HMAC; authenticity comes from the server's lot record | 2026-10-31 | Accepted | [D-035.md](docs/adr/D-035.md) |
 | D-037 | Dashboard completeness and stage progress derived from live events and the crop's `event_schema` (complete = every mandatory type live; tile = furthest stage while in the field) | 2026-10-31 | Accepted | [D-037.md](docs/adr/D-037.md) |
 | D-038 | Public scans: body-less `POST /v1/public/scans?batch_code=` (sendBeacon, no CORS), fixed 1-minute window per IP hash in Valkey, no IP stored | 2026-10-31 | Accepted | [D-038.md](docs/adr/D-038.md) |
 | D-039 | Audit log viewer scoped to an FPO by ownership of the described row (`audit_log` has no `fpo_id`) | 2026-10-31 | Accepted | [D-039.md](docs/adr/D-039.md) |

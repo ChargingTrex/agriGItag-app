@@ -1,5 +1,5 @@
-// F03 Farmer home: the next task as one big card, four buttons (Log / Sell / Money / My farm), Call officer, the cloud
-// icon, and the assist bar while a field officer logs for the farmer.
+// F03 Farmer home: the next task as one big card, four buttons (Log / Sell / Money / My farm), History (M08, where the
+// 24-hour Undo lives), Call officer, the cloud icon, and the assist bar while a field officer logs for the farmer.
 // Requirement: UserFlows §Farmer home screen ("the card at the top always holds the single most useful next step, and
 //   the four buttons cover everything else"), §Design rules (one job, pictures + voice, "Works with no signal": cloud
 //   icon, "Help is a person"), §Field officer flows (assist bar "Logging for: [farmer name]"); FR7 (next event);
@@ -99,6 +99,8 @@ class FarmerHomeScreen extends ConsumerWidget {
                 gap,
                 button(Icons.agriculture, l10n.homeMyFarm, 'homeMyFarm', '/home/farm'),
                 gap,
+                button(Icons.history, l10n.homeHistory, 'homeHistory', '/home/history'),
+                gap,
                 const CallFieldOfficerButton(),
               ],
             ),
@@ -156,7 +158,12 @@ class _TaskCard extends ConsumerWidget {
             FarmerButton(
               icon: Icons.arrow_forward,
               label: event?.label(l10n) ?? l10n.homeLogEvent,
-              onPressed: () => context.push(event == null ? '/log' : '/log/${event.wireName}'),
+              // The task's lot rides along (D-043), so a farmer with two fields skips the field picker.
+              onPressed: () => context.push(switch ((event, task?.lotId)) {
+                (null, _) => '/log',
+                (final e?, null) => '/log/${e.wireName}',
+                (final e?, final lot?) => '/log/${e.wireName}?lot=$lot',
+              }),
               onSpeak: () => playPrompt(ref, context, event?.promptId ?? 'homeLogEvent'),
               prominent: true,
             ),
