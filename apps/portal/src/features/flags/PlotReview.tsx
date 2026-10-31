@@ -55,7 +55,7 @@ const reviewForm = z
       error: 'Choose how you checked.',
     }),
     reason_code: z.string().min(1, 'Choose a reason.'),
-    reason_text: z.string().trim().max(1000, 'Keep the note under 1000 characters.'),
+    reason_text: z.string().trim().max(500, 'Keep the note under 500 characters.'),
     lat: coordinate(90),
     lon: coordinate(180),
   })

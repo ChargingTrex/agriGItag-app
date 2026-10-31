@@ -27,45 +27,65 @@ const ONE_PAGE = 200;
 /**
  * The lot's active hold flags. Every flag query key starts with `flags`, so resolving any flag refreshes it.
  * @param lotId The lot.
- * @returns TanStack query whose `data` is the list of active holds (empty: flags do not block the lot).
+ * @returns TanStack query whose `data` is `{ holds, complete }`: the lot's active holds, and false when a page
+ *   was cut off, so an empty `holds` does not prove the lot is free (fail closed).
  */
 export function useLotHold(lotId: string) {
   const { api } = useAuth();
   // shortcut: the contract has no lot read with `gi_eligible` and no `subject_id` flag filter, so the hold is
-  // derived from the first 200 hold flags of the FPO; read `lots.gi_eligible` once B09 exposes the lot.
+  // derived from the first 200 open and 200 escalated hold flags of the FPO (both statuses keep a lot held);
+  // read `lots.gi_eligible` once B09 exposes the lot.
   return useQuery({
     queryKey: ['flags', 'holds'],
     queryFn: ({ signal }) =>
-      unwrap(
-        api.GET('/v1/flags', { params: { query: { severity: 'hold', limit: ONE_PAGE } }, signal }),
+      Promise.all(
+        (['open', 'escalated'] as const).map((status) =>
+          unwrap(
+            api.GET('/v1/flags', {
+              params: { query: { severity: 'hold', status, limit: ONE_PAGE } },
+              signal,
+            }),
+          ),
+        ),
       ),
-    select: (page) => activeHolds(page.items, lotId),
+    select: (pages) => ({
+      holds: activeHolds(
+        pages.flatMap((page) => page.items),
+        lotId,
+      ),
+      complete: pages.every((page) => !page.has_more),
+    }),
   });
 }
 
 /**
- * One line saying whether the lot can be ticked for a GI-labelled batch.
+ * One line saying whether flags keep the lot out of GI-labelled batches.
  * @param props Component props.
  * @param props.lotId The lot.
- * @returns An error alert naming the holds, a success alert, or a progress bar.
+ * @returns An error alert naming the holds, a warning when the hold list was cut off, a success alert, or a
+ *   progress bar.
  */
 export function LotHoldState({ lotId }: { lotId: string }) {
-  const holds = useLotHold(lotId);
-  if (holds.isPending) return <LinearProgress aria-label="Loading GI state" />;
-  if (holds.isError) return <Alert severity="error">{errorMessage(holds.error)}</Alert>;
-  if (holds.data.length === 0) {
+  const hold = useLotHold(lotId);
+  if (hold.isPending) return <LinearProgress aria-label="Loading GI state" />;
+  if (hold.isError) return <Alert severity="error">{errorMessage(hold.error)}</Alert>;
+  const { holds, complete } = hold.data;
+  if (holds.length > 0) {
     return (
-      <Alert severity="success">
-        GI eligible: no hold flag, so this lot can be ticked for a GI-labelled batch.
+      <Alert severity="error">
+        On hold: not eligible for GI-labelled batches until an FPO admin clears{' '}
+        {holds.map((flag) => ruleText(flag.rule_code).en).join(', ')}.
       </Alert>
     );
   }
-  return (
-    <Alert severity="error">
-      On hold: not eligible for GI-labelled batches until an FPO admin clears{' '}
-      {holds.data.map((flag) => ruleText(flag.rule_code).en).join(', ')}.
-    </Alert>
-  );
+  if (!complete) {
+    return (
+      <Alert severity="warning">
+        GI state unknown: too many hold flags to check here; open this lot&apos;s flags.
+      </Alert>
+    );
+  }
+  return <Alert severity="success">No hold flag on this lot.</Alert>;
 }
 
 /**

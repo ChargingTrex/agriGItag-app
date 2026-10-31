@@ -159,6 +159,10 @@ describe('Flag detail and resolve', () => {
     const photo = await screen.findByRole('img', { name: 'Evidence photo: harvest, 12 Feb' });
     expect(photo.getAttribute('src')).toMatch(/^data:image\/svg/);
     await expectNoAxeViolations(container);
+    // The FPO admin is not offered "escalate to the FPO admin".
+    expect(
+      within(screen.getByLabelText(/Outcome/)).queryByRole('option', { name: /Escalate/ }),
+    ).toBeNull();
 
     await user.selectOptions(screen.getByLabelText(/Outcome/), 'looks_fine');
     await user.selectOptions(screen.getByLabelText(/Reason/), 'land_record_checked');
@@ -166,10 +170,19 @@ describe('Flag detail and resolve', () => {
     await user.click(screen.getByRole('button', { name: 'Save review' }));
 
     expect(await screen.findByText(/Cleared on .*land record checked/)).toBeInTheDocument();
-    expect(
-      await screen.findByText(/GI eligible: no hold flag, so this lot can be ticked/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('No hold flag on this lot.')).toBeInTheDocument();
     expect(mockState.flags.find((f) => f.id === MOCK_HOLD_FLAG_ID)?.status).toBe('cleared');
+  });
+
+  it('fails closed: a cut-off hold list shows "GI state unknown", not eligible', async () => {
+    server.use(
+      http.get('/v1/flags', () =>
+        HttpResponse.json({ items: [], next_cursor: 'x', has_more: true }),
+      ),
+    );
+    renderApp(`/lots/${MOCK_LOT_ID}`, true);
+    expect(await screen.findByText(/GI state unknown/)).toBeInTheDocument();
+    expect(screen.queryByText('No hold flag on this lot.')).not.toBeInTheDocument();
   });
 
   it('required fields block submit with inline messages and send nothing', async () => {
@@ -178,12 +191,15 @@ describe('Flag detail and resolve', () => {
     server.events.on('request:start', ({ request }) => {
       if (request.method === 'POST' && request.url.includes('/resolve')) posted();
     });
-    renderApp(`/flags/${MOCK_QTY_FLAG_ID}`, true);
-    await user.click(await screen.findByRole('button', { name: 'Save review' }));
-    expect(await screen.findByText('Choose an outcome.')).toBeInTheDocument();
-    expect(screen.getByText('Choose a reason.')).toBeInTheDocument();
-    expect(posted).not.toHaveBeenCalled();
-    server.events.removeAllListeners();
+    try {
+      renderApp(`/flags/${MOCK_QTY_FLAG_ID}`, true);
+      await user.click(await screen.findByRole('button', { name: 'Save review' }));
+      expect(await screen.findByText('Choose an outcome.')).toBeInTheDocument();
+      expect(screen.getByText('Choose a reason.')).toBeInTheDocument();
+      expect(posted).not.toHaveBeenCalled();
+    } finally {
+      server.events.removeAllListeners();
+    }
   });
 
   it('a field officer sees a hold flag with the button disabled and the reason', async () => {

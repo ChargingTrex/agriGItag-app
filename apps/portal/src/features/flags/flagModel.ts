@@ -168,7 +168,11 @@ export const REASON_CODES = {
  * @returns Day and short month in en-IN.
  */
 export const dayMonth = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  new Date(iso).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'Asia/Kolkata',
+  });
 
 /**
  * Whether a flag still waits for a reviewer.

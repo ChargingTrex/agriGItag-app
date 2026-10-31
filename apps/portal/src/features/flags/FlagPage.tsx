@@ -158,7 +158,9 @@ const resolveForm = z.object({
  * @returns The form; disabled with the reason when `blocked`.
  */
 function ResolveForm({ flag, blocked }: { flag: FlagOut; blocked: string | null }) {
-  const { api } = useAuth();
+  const { api, session } = useAuth();
+  // Escalating hands the flag to the FPO admin, so the admin is not offered it.
+  const isAdmin = session?.roles.includes('fpo_admin') === true;
   const queryClient = useQueryClient();
   const form = useForm({
     resolver: zodResolver(resolveForm),
@@ -210,11 +212,13 @@ function ResolveForm({ flag, blocked }: { flag: FlagOut; blocked: string | null 
           slotProps={{ select: { native: true }, inputLabel: { shrink: true } }}
         >
           <option value="">Choose an outcome</option>
-          {Object.entries(RESOLUTIONS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
+          {Object.entries(RESOLUTIONS)
+            .filter(([value]) => value !== 'escalated' || !isAdmin)
+            .map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
         </TextField>
         <TextField
           {...form.register('reason_code')}
