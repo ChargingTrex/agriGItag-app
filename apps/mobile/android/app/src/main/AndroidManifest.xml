@@ -2,6 +2,11 @@
     <!-- Release builds need sockets for sync, OTP and the healthz probe (plan §13 A1). Debug and profile
          inherit this through manifest merging, so they have no manifest of their own. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- M04 capture kit: evidence photo (camera only, no gallery), event GPS (FR26), problem voice note. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="AgriTrace"
         android:name="${applicationName}"
