@@ -25,7 +25,7 @@ client authors. Source of truth for shared types: apps/api/agritrace/core/schema
     `{kind: "pin_required", pin_token, expires_in: 300, pin_set}`. No refresh token, role or FPO id before
     the PIN.
   Wrong code `otp_invalid` (422), expired `otp_expired` (422), the 5th wrong code and after `otp_locked`
-  (409). Never a bare 401 for a wrong code. A `device_id` that is signed in for another user → 409
+  (409). Never a bare 401 for a wrong code. The right code for a known account that has no FPO membership left or is suspended (e.g. a farmer the FPO rejected, B14) → 403 `account_inactive`; this answer comes only after the code check, so a phone number alone reveals nothing. A `device_id` that is signed in for another user → 409
   `device_in_use` (sign out on that device first).
 - **PIN.** `POST /v1/auth/pin/verify {pin}` with `Authorization: Bearer <pin_token>` → session. When
   `pin_set` was false this first PIN becomes the user's PIN. Wrong PIN `pin_invalid` (422, with

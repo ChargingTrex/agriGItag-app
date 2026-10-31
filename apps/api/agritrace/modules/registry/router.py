@@ -162,7 +162,7 @@ async def create_fpo(body: FpoIn, session: Session, user: AnyRole) -> FpoOut:
 async def get_fpo(
     fpo_id: Annotated[uuid.UUID, Path(description="FPO id.")], session: Session, user: AnyRole
 ) -> FpoOut:
-    """Read the caller's FPO (super-admin: any FPO) with `bbox` from its plots or the GI regions.
+    """Read the caller's FPO (super-admin: any FPO); staff get `bbox` from its plots or the GI regions.
 
     \f
     Args:
@@ -395,12 +395,17 @@ async def approve_farmer(farmer_id: FarmerId, session: Session, user: Admin) -> 
     response_model=FarmerPhoneOut,
     summary="Reveal a farmer's full phone number (FPO admin, audited)",
 )
-async def reveal_phone(farmer_id: FarmerId, session: Session, user: Admin) -> FarmerPhoneOut:
+async def reveal_phone(
+    farmer_id: FarmerId, response: Response, session: Session, user: Admin
+) -> FarmerPhoneOut:
     """Return the full phone of a farmer of the caller's FPO; every call writes an audit row (D-017).
+
+    Sent with `Cache-Control: no-store`, so shared office browsers and proxies keep no copy.
 
     \f
     Args:
         farmer_id: farmer id.
+        response: used to set `Cache-Control: no-store`.
         session: database session.
         user: the caller (FPO admin).
 
@@ -420,6 +425,7 @@ async def reveal_phone(farmer_id: FarmerId, session: Session, user: Admin) -> Fa
     #   COMPROMISE: one extra request and audit row when the admin needs to call a farmer.
     out = await service.reveal_phone(session, user, farmer_id)
     await session.commit()
+    response.headers["Cache-Control"] = "no-store"
     return out
 
 

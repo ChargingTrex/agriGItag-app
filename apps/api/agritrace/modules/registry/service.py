@@ -56,7 +56,7 @@ from agritrace.core.errors import (
 from agritrace.core.ids import uuid7
 from agritrace.core.schemas import Address, GeoPoint, Page, Quantity
 from agritrace.core.time import utcnow
-from agritrace.modules.identity.models import ConsentRecord, Membership, User
+from agritrace.modules.identity.models import ConsentRecord, Device, Membership, User
 from agritrace.modules.registry import geo
 from agritrace.modules.registry.geo import (
     GeoResult,
@@ -1378,6 +1378,10 @@ async def create_id_document(
 # --- B14: portal gaps (PLAN gap analysis "Members", FR8, FR14, FR53, FR70) -------------------------------
 
 MASKED_DIGITS = 4  # digits of the phone left visible in `phone_masked`
+# Response fields computed from a configured field: hidden together when the tenant disables the source.
+DERIVED_FIELDS = {"address": "address_line", "phone": "phone_masked"}
+# Roles that see the plot-derived map frame; farmers and viewers get the FPO without it (B14 r1 P3-3).
+BBOX_ROLES = {Role.FPO_ADMIN, Role.FIELD_OFFICER, Role.QC_OFFICER}
 # FPO frame: plots (walked outline where there is one, else the pin); ST_Extent of no rows is NULL.
 _BBOX_PLOTS_SQL = text(
     """
@@ -1484,11 +1488,12 @@ def farmer_fields(fpo_code: str | None) -> set[str]:
 
     Returns:
         Every `FarmerOut` field and computed field, minus those `fields/farmer.yaml` disables for this
-        tenant (D-017: a disabled field is hidden from clients).
+        tenant and the fields computed from them (`DERIVED_FIELDS`; D-017: a disabled field is hidden).
     """
     configured = {f.name for f in fieldconfig.load().entities["farmer"].fields}
-    enabled = {f.name for f in fieldconfig.fields_for("farmer", fpo_code)}
-    return (set(FarmerOut.model_fields) | set(FarmerOut.model_computed_fields)) - (configured - enabled)
+    hidden = configured - {f.name for f in fieldconfig.fields_for("farmer", fpo_code)}
+    hidden |= {DERIVED_FIELDS[h] for h in hidden if h in DERIVED_FIELDS}
+    return (set(FarmerOut.model_fields) | set(FarmerOut.model_computed_fields)) - hidden
 
 
 def parse_fields(raw: str, allowed: set[str]) -> set[str]:
@@ -1522,6 +1527,9 @@ async def _audit(
         action: e.g. `farmer.phone_reveal`, `farmer.reject`.
         entity_id: the farmer.
         diff: what to record (reason codes; never the phone itself).
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
         Inserts an `audit_log` row in the caller's transaction (FR25).
@@ -1557,6 +1565,7 @@ async def reveal_phone(session: AsyncSession, user: CurrentUser, farmer_id: uuid
 
     Raises:
         NotFoundError: missing or another FPO's (never 403, FR24).
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
         Inserts an `audit_log` row `farmer.phone_reveal` (the number itself is not logged).
@@ -1565,6 +1574,52 @@ async def reveal_phone(session: AsyncSession, user: CurrentUser, farmer_id: uuid
     phone = await _account_phone(session, farmer)
     await _audit(session, user, "farmer.phone_reveal", farmer.id, {})
     return FarmerPhoneOut(farmer_id=farmer.id, phone=phone)
+
+
+async def _end_farmer_access(session: AsyncSession, farmer: Farmer) -> dict[str, Any]:
+    """End a rejected farmer's sign-in: drop the FPO's farmer membership; revoke devices if none is left.
+
+    Args:
+        session: open database session.
+        farmer: the farmer being rejected.
+
+    Returns:
+        `{membership_removed: bool, devices_revoked: int}` for the `farmer.reject` audit diff.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+
+    Side effects:
+        Deletes the `memberships` row (audited by the listener); with no membership left, sets
+        `revoked_at` and clears the refresh hashes on the user's devices, so the next request is 401
+        (`current_user` reads the device row) and refresh fails.
+    """
+    result: dict[str, Any] = {"membership_removed": False, "devices_revoked": 0}
+    if farmer.user_id is None:
+        return result
+    membership = await session.scalar(
+        select(Membership).where(
+            Membership.user_id == farmer.user_id,
+            Membership.fpo_id == farmer.fpo_id,
+            Membership.role == Role.FARMER,  # an officer who is also a farmer keeps the office role
+        )
+    )
+    if membership is not None:
+        await session.delete(membership)
+        await session.flush()
+        result["membership_removed"] = True
+    if await session.scalar(select(Membership.id).where(Membership.user_id == farmer.user_id).limit(1)):
+        return result
+    devices = (
+        await session.scalars(
+            select(Device).where(Device.user_id == farmer.user_id, Device.revoked_at.is_(None))
+        )
+    ).all()
+    for device in devices:  # same as identity's sign-out (`_sign_out`, not exported, D-004)
+        device.refresh_token_hash, device.previous_refresh_token_hash = None, None
+        device.revoked_at = utcnow()
+    result["devices_revoked"] = len(devices)
+    return result
 
 
 async def reject_farmer(
@@ -1584,21 +1639,26 @@ async def reject_farmer(
     Raises:
         NotFoundError: missing or another FPO's.
         FarmerNotPendingError: the farmer is not pending.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Updates `farmers.status` (audited by the listener) and inserts an `audit_log` row `farmer.reject`
-        with the reason.
+        Updates `farmers.status` (audited by the listener); deletes the farmer's membership of this FPO and,
+        with none left, revokes the user's devices (`_end_farmer_access`); inserts an `audit_log` row
+        `farmer.reject` with the reason, `membership_removed` and `devices_revoked`.
     """
     # DECISION D-020: the `farmers.status` CHECK allows pending/active/suspended only; a rejection is
-    #   `suspended` with the reason in audit_log, so no migration and no new enum value inside /v1.
+    #   `suspended` with the reason in audit_log, so no migration and no new enum value inside /v1. The
+    #   farmer membership is deleted (memberships has no status column) and devices revoked, so a rejected
+    #   farmer can neither push entries nor sign in again (`account_inactive` after the OTP, B14 r2).
     #   ADV: additive; old clients already know `suspended`.  COMPROMISE: rejected and later-suspended
-    #   farmers share a status; the audit action `farmer.reject` tells them apart.
+    #   farmers share a status; the audit action `farmer.reject` tells them apart; undo is not possible yet.
     farmer = await _farmer_in_scope(session, user, farmer_id)
     if farmer.status != FarmerStatus.PENDING:
         raise FarmerNotPendingError(details={"status": str(farmer.status)})
     farmer.status = FarmerStatus.SUSPENDED
     await session.flush()
-    await _audit(session, user, "farmer.reject", farmer.id, body.model_dump())
+    access = await _end_farmer_access(session, farmer)
+    await _audit(session, user, "farmer.reject", farmer.id, body.model_dump() | access)
     await session.refresh(farmer)
     return await _farmer_view(session, farmer)
 
@@ -1621,6 +1681,7 @@ async def list_farmer_plots(
     Raises:
         NotFoundError: farmer missing, another FPO's, or (farmer caller) someone else.
         ValidationFailedError: invalid cursor.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     farmer = await _farmer_in_scope(session, user, farmer_id)
     query = select(Plot).where(Plot.farmer_id == farmer.id)
@@ -1671,12 +1732,16 @@ async def get_fpo(session: AsyncSession, user: CurrentUser, fpo_id: uuid.UUID) -
         fpo_id: the FPO.
 
     Returns:
-        The FPO with `bbox` filled.
+        The FPO; `bbox` filled for super-admins and `BBOX_ROLES`, null for farmers and viewers (the frame
+        comes from other farmers' plots).
 
     Raises:
         NotFoundError: missing or not the caller's (never 403, FR24).
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     fpo = await session.get(Fpo, fpo_id)
-    if fpo is None or (fpo.id != user.fpo_id and not await _is_super_admin(session, user)):
+    super_admin = await _is_super_admin(session, user)
+    if fpo is None or (fpo.id != user.fpo_id and not super_admin):
         raise NotFoundError(details={"fpo_id": str(fpo_id)})
-    return FpoOut.model_validate(fpo).model_copy(update={"bbox": await fpo_bbox(session, fpo.id)})
+    bbox = await fpo_bbox(session, fpo.id) if super_admin or user.role in BBOX_ROLES else None
+    return FpoOut.model_validate(fpo).model_copy(update={"bbox": bbox})

@@ -3,7 +3,8 @@
 One test per acceptance line of docs/agents/acceptance/B14.md: masked phone and the audited reveal (403 /
 200 + one audit row / 404), reject with reason and 409 `farmer_not_pending`, a farmer's plot list with
 `gi_tag_id`, `?village_id=` / `?q=` / `?fields=` on the farmer list, and `bbox` on GET /v1/fpos/{id}
-(plots, else the GI region).
+(plots, else the GI region); round 2 (review B14-r1 P2-R): a rejected farmer's old token gets 401 and a
+new OTP sign-in gets 403 `account_inactive`.
 Serves: FR8, FR14, FR53, FR70, PLAN gap analysis "Members", D-017, D-020.
 Callers: pytest (`make test`); needs Docker (PostGIS, Valkey, LocalStack from tests/conftest.py `stack`).
 Reuses the seeding fixtures and helpers of test_registry.py (same folder, imported by module name).
@@ -11,16 +12,21 @@ Reuses the seeding fixtures and helpers of test_registry.py (same folder, import
 
 import secrets
 import uuid
+from datetime import timedelta
 from typing import Any
 
 import pytest
 import test_registry
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from test_registry import REFERENCE, Caller, _as, _farmer, _plot, _region
 
 from agritrace.core.db import get_sessionmaker
 from agritrace.core.enums import Role
+from agritrace.core.time import utcnow
+from agritrace.main import create_app
+from agritrace.modules.identity.models import OtpChallenge
+from agritrace.modules.identity.service import hash_otp
 from agritrace.modules.registry.models import Village
 
 pytestmark = pytest.mark.integration
@@ -168,3 +174,32 @@ async def test_fpo_bbox(api: tuple[AsyncClient, Caller], ids: dict[str, Any]) ->
     empty = await client.get(f"/v1/fpos/{ids['fpo_b']}")  # no plots → region extent
     lon0, lat0, lon1, lat1 = empty.json()["bbox"]
     assert lon0 < lon1 and lat0 < lat1
+
+
+async def test_rejected_farmer_loses_sign_in(api: tuple[AsyncClient, Caller], ids: dict[str, Any]) -> None:
+    """Rejecting a signed-in farmer: old token → 401 on push; a new OTP → 403 `account_inactive`.
+
+    Args:
+        api: client and caller holder (admin side, caller overridden).
+        ids: the seeded ids.
+    """
+    client, caller = api
+    phone, code = _phone(), "123456"  # tests/conftest.py sets OTP_DEV_CODE=123456
+    farmer = await _farmer(client, caller, ids, phone=phone)
+    otp = {"phone": phone, "code": code, "platform": "android"}
+    async with AsyncClient(transport=ASGITransport(app=create_app()), base_url="http://test") as real:
+        assert (await real.post("/v1/auth/otp/request", json={"phone": phone})).status_code == 204
+        signed_in = await real.post("/v1/auth/otp/verify", json=otp | {"device_id": str(uuid.uuid4())})
+        assert signed_in.status_code == 200, signed_in.text
+        bearer = {"Authorization": f"Bearer {signed_in.json()['access_token']}"}
+        body = {"reason_code": "not_a_member"}
+        assert (await client.post(f"/v1/farmers/{farmer['id']}/reject", json=body)).status_code == 200
+        [diff] = await _audit(farmer["id"], "farmer.reject")
+        assert diff["membership_removed"] is True and diff["devices_revoked"] == 1
+        assert (await real.post("/v1/sync/push", json={}, headers=bearer)).status_code == 401
+        async with get_sessionmaker()() as s:  # a second request within 60 s would be 429 `rate_limited`
+            expires = utcnow() + timedelta(minutes=5)
+            s.add(OtpChallenge(phone=phone, code_hash=hash_otp(phone, code), expires_at=expires))
+            await s.commit()
+        again = await real.post("/v1/auth/otp/verify", json=otp | {"device_id": str(uuid.uuid4())})
+        assert (again.status_code, again.json()["error"]["code"]) == (403, "account_inactive")

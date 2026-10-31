@@ -124,7 +124,8 @@ class FpoOut(_Out):
         min_length=4,
         max_length=4,
         description="[min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI "
-        "regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id}; null on "
+        "regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for "
+        "fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on "
         "lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.",
     )
 

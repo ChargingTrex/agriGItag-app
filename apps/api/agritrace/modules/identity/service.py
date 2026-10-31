@@ -6,7 +6,8 @@ database; the async functions below apply them to the identity tables.
 
 Serves: FR1 (OTP sign-in), FR14 (roles), FR24 (tenant scoping), FR41 (consent), Arch §Security and privacy
 (device-bound session, office PIN, consent with witness), UserFlows §Onboarding a farmer steps 1–2,
-UserFlows §Log in once, CLAUDE.md §6 (assist mode recorded), D-005, D-022, D-024.
+UserFlows §Log in once, CLAUDE.md §6 (assist mode recorded), D-005, D-022, D-024; B14 r2 (a farmer rejected
+by the FPO gets `account_inactive` after a correct code).
 Callers: identity router (B02); other modules may call the names in `__all__` (D-004);
 tests/unit/test_identity_*.py, tests/integration/test_identity.py.
 """
@@ -42,6 +43,7 @@ from agritrace.core.auth import (
 from agritrace.core.config import get_settings
 from agritrace.core.enums import Role, UserStatus
 from agritrace.core.errors import (
+    AccountInactiveError,
     ConflictError,
     ConsentConflictError,
     DeviceInUseError,
@@ -398,7 +400,8 @@ async def request_otp(session: AsyncSession, phone: str) -> None:
     """Create an OTP challenge for a phone and send the code by SMS.
 
     Unknown phones get a challenge too (no SMS), so the answer never reveals whether a number is
-    registered.
+    registered. Any known phone gets the SMS, also one without an active membership (B14: a rejected
+    farmer), so `verify_otp` can answer `account_inactive` after a correct code.
 
     Args:
         session: database session.
@@ -429,10 +432,10 @@ async def request_otp(session: AsyncSession, phone: str) -> None:
     dev_code = settings.otp_dev_code
     code = dev_code or new_otp_code()
     session.add(OtpChallenge(phone=phone, code_hash=hash_otp(phone, code), expires_at=utcnow() + OTP_TTL))
-    account = await _account(session, phone=phone)
+    user = await session.scalar(select(User).where(User.phone == phone))
     await session.commit()
-    if account is not None and dev_code is None:
-        await _send_otp_sms(account[0], code)
+    if user is not None and dev_code is None:
+        await _send_otp_sms(user, code)
 
 
 async def _bind_device(session: AsyncSession, user_id: uuid.UUID, body: OtpVerifyIn) -> Device:
@@ -525,15 +528,17 @@ async def verify_otp(session: AsyncSession, body: OtpVerifyIn) -> SessionOut | P
         every super-admin.
 
     Raises:
-        OtpInvalidError: wrong code, no open challenge, or a phone that cannot sign in (same answer).
+        OtpInvalidError: wrong code, no open challenge, or an unknown phone (same answer).
+        AccountInactiveError: the code matched, but the user is suspended or has no membership left
+            (`account_inactive`, 403; never before the code check, D-024).
         OtpExpiredError: the challenge is older than 5 minutes.
         OtpLockedError: 5 wrong codes on this challenge.
         DeviceInUseError: the device is signed in for another user.
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Counts the attempt or consumes the challenge; binds the device; on a farmer session stores the
-        refresh hash. Commits.
+        Counts the attempt or consumes the challenge (also for `account_inactive`); binds the device; on a
+        farmer session stores the refresh hash. Commits.
     """
     newest = (
         select(OtpChallenge)
@@ -545,11 +550,12 @@ async def verify_otp(session: AsyncSession, body: OtpVerifyIn) -> SessionOut | P
     challenge = (await session.execute(newest)).scalar()
     if challenge is None or challenge.consumed_at is not None:
         raise OtpInvalidError()
-    # Look the account up whatever the code, so known and unknown phones cost the same.
+    # Look the user and account up whatever the code, so known and unknown phones cost the same.
+    known = await session.scalar(select(User.id).where(User.phone == body.phone))
     account = await _account(session, phone=body.phone)
     code_ok = hmac.compare_digest(challenge.code_hash, hash_otp(body.phone, body.code))
     outcome, challenge.attempts = otp_outcome(
-        challenge.attempts, challenge.expires_at, utcnow(), code_ok and account is not None
+        challenge.attempts, challenge.expires_at, utcnow(), code_ok and known is not None
     )
     if outcome != "ok":
         await session.commit()  # keep the counted attempt
@@ -559,9 +565,14 @@ async def verify_otp(session: AsyncSession, body: OtpVerifyIn) -> SessionOut | P
         raise OtpExpiredError()
     if outcome == "invalid":
         raise OtpInvalidError()
-    assert account is not None  # outcome ok implies an account
-    user, membership = account
     challenge.consumed_at = utcnow()
+    if account is None:
+        # DECISION D-024: the inactive-account answer comes only after a correct code (B14 r2).
+        #   ADV: a rejected farmer learns why sign-in fails; a phone number alone still reveals nothing.
+        #   COMPROMISE: such accounts now get an SMS code (cost), so the answer is reachable at all.
+        await session.commit()
+        raise AccountInactiveError()
+    user, membership = account
     device = await _bind_device(session, user.id, body)
     if not needs_pin(user, membership):
         return await _open_session(session, user, membership, device, sign_in=True)

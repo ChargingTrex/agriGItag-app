@@ -1997,7 +1997,7 @@
                 "type": "null"
               }
             ],
-            "description": "[min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id}; null on lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.",
+            "description": "[min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.",
             "title": "Bbox"
           },
           "code": {
@@ -11336,7 +11336,7 @@
     },
     "/v1/farmers/{farmer_id}/phone": {
       "get": {
-        "description": "Return the full phone of a farmer of the caller's FPO; every call writes an audit row (D-017).",
+        "description": "Return the full phone of a farmer of the caller's FPO; every call writes an audit row (D-017).\n\nSent with `Cache-Control: no-store`, so shared office browsers and proxies keep no copy.",
         "operationId": "reveal_phone_v1_farmers__farmer_id__phone_get",
         "parameters": [
           {
@@ -11811,7 +11811,7 @@
     },
     "/v1/fpos/{fpo_id}": {
       "get": {
-        "description": "Read the caller's FPO (super-admin: any FPO) with `bbox` from its plots or the GI regions.",
+        "description": "Read the caller's FPO (super-admin: any FPO); staff get `bbox` from its plots or the GI regions.",
         "operationId": "get_fpo_v1_fpos__fpo_id__get",
         "parameters": [
           {
