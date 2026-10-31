@@ -49,13 +49,13 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B07 — Reference bundle + sync pull — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK r1 + r2 confirm — verifier: PENDING (merged conditionally 2026-10-31; 7 integration tests deferred)
 - [ ] B08 — Rules & flags — wave 4 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / r2 confirmed by Orchestrator — verifier: PENDING (merged conditionally 2026-10-31; 14 integration tests deferred)
 - [ ] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: Opus (round 2 in progress) — reviewer: MOB FAIL r1 (P1: LIBRARIES ledger cell breaks CI) — verifier:
-- [ ] P02 — Flags & plot review — wave 4 — worker: Opus (done, 1de5fa0) — reviewer: WEB r1 in progress — verifier:
+- [ ] P02 — Flags & plot review — wave 4 — worker: Opus (micro-patch in progress) — reviewer: WEB PASS r1 (1 P2 fail-open hold state, fixed before merge) — verifier:
 - [ ] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: — reviewer: — verifier:
 - [ ] **Gate G2 signed** (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G3 Mobile core
 
-- [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (round 2 in progress) — reviewer: BE FAIL r1 (P1: line-4 test faked a hold; P2 row locks, intake correction) — verifier:
+- [ ] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (2 rounds, 8b47d27) — reviewer: BE FAIL r1 / r2 in progress — verifier:
 - [ ] B15 — Backend gaps from B08 review and M09 (grading-loss split D-030, `farmer` push kind + `client_id` D-031, assist_session kind D-032) — wave 5 — worker: Opus (done, fa843c9) — reviewer: BE r1 in progress — verifier:
 - [ ] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: — reviewer: — verifier:
 - [ ] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (round 2 in progress) — reviewer: MOB FAIL r1 (P1: self-crossing boundary rejects the plot) — verifier:
