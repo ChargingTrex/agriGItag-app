@@ -18,12 +18,12 @@ from geoalchemy2 import WKTElement
 from agritrace.core import fieldconfig
 from agritrace.core.auth import CurrentUser
 from agritrace.core.config import get_settings
-from agritrace.core.enums import InputCategory, Role
+from agritrace.core.enums import FarmerStatus, InputCategory, Role
 from agritrace.core.errors import GiRegionMissingError, ValidationFailedError
 from agritrace.modules.events import bundle_service as bs
 from agritrace.modules.events.schemas import BundlePart, PartVersion
 from agritrace.modules.events.sync_router import etag_matches
-from agritrace.modules.registry.models import Crop, GiRegionVersion, InputMaster, Plot
+from agritrace.modules.registry.models import Crop, Farmer, GiRegionVersion, InputMaster, Plot
 
 GOLDEN = json.loads(
     (Path(__file__).parents[4] / "apps/mobile/test/fixtures/reference_bundle.json").read_text(
@@ -339,3 +339,12 @@ def test_etag_matches_if_none_match_forms() -> None:
     assert etag_matches("*", tag)
     assert not etag_matches('"other"', tag)
     assert not etag_matches(None, tag)
+
+
+def test_farmer_profile_is_an_allow_list() -> None:
+    """Privacy allow-list: a farmer item has exactly these keys, so a phone or address never slips in."""
+    farmer = Farmer(
+        id=uuid.uuid4(), code="F-001", name="Muthu", status=FarmerStatus.ACTIVE, no_smartphone=False
+    )
+    keys = {"id", "code", "name", "name_local", "village_id", "status", "no_smartphone"}
+    assert set(bs.farmer_json(farmer)) == keys

@@ -103,18 +103,20 @@ def test_presign_get_signs_public_endpoint() -> None:
 
 
 @pytest.mark.usefixtures("s3")
-def test_signed_variants_presigns_urls_and_keeps_sizes() -> None:
-    """Each stored `*_url` becomes a presigned GET of the same key; width/height stay; None stays None."""
+def test_signed_variants_presigns_webp_and_drops_original() -> None:
+    """Thumb and medium become presigned GETs of the same keys; the EXIF JPEG is dropped (B07-r1 P2-1)."""
     base = "evidence/f/2026/e/p"
     stored = {
         "thumb_url": evidence._public_url(f"{base}.thumb.webp"),
+        "medium_url": evidence._public_url(f"{base}.medium.webp"),
         "jpeg_url": evidence._public_url(f"{base}.jpg"),
         "width": 480,
         "height": 360,
     }
     signed = evidence.signed_variants(stored)
     assert signed is not None
+    assert set(signed) == {"thumb_url", "medium_url", "width", "height"}
     assert urlsplit(signed["thumb_url"]).path == f"/evidence/{base}.thumb.webp"
-    assert "X-Amz-Signature" in parse_qs(urlsplit(signed["jpeg_url"]).query)
+    assert "X-Amz-Signature" in parse_qs(urlsplit(signed["medium_url"]).query)
     assert (signed["width"], signed["height"]) == (480, 360)
     assert evidence.signed_variants(None) is None

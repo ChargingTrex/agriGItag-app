@@ -343,8 +343,9 @@ class EventPhotoOut(BaseModel):
     variants: dict[str, Any] | None = Field(
         None,
         description=(
-            "{thumb_url, medium_url, jpeg_url, width, height} once variants exist; each `*_url` is a "
-            "presigned GET valid for 1 hour (the evidence bucket is private). Re-read for fresh links."
+            "{thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of "
+            "the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never "
+            "listed (it keeps exact EXIF GPS). Re-read for fresh links."
         ),
     )
 

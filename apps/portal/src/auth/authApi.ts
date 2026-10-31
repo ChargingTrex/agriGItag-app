@@ -1,81 +1,121 @@
 /**
- * Sign-in calls: OTP request, OTP verify and the office PIN step.
- * Serves: System Architecture "Login: phone number plus one-time SMS code ... admins add a 4-digit PIN",
- * FR14 role-based access, plan §7.3 P00 (auth guard + login against MSW). Called by: src/auth/LoginPage.tsx.
- *
- * TODO(B02): `/v1/auth/*` is not in openapi.json yet. These calls use plain fetch and the request/response
- * shapes below are P00's assumption (mirrored in src/mocks/handlers.ts). When B02 lands, regenerate the
- * client and replace this file with `unwrap(api.POST('/v1/auth/...'))` calls; adjust the zod schema to the
- * real response.
+ * Sign-in calls of the final B02 contract: OTP request, OTP verify, the office PIN step, cookie refresh and
+ * sign-out, all through the generated client.
+ * Serves: FR14 role-based access, System Architecture "Login" (OTP, admins add a 4-digit PIN), D-024, D-022,
+ * docs/api/conventions.md "Authentication" (web transport), plan §7.3 P01 (portal adapts to the B02 contract).
+ * Called by: src/auth/LoginPage.tsx (requestOtp, verifyOtp, verifyPin), src/auth/AuthProvider.tsx
+ * (refreshSession, logout).
  */
-import { z } from 'zod';
-import { toApiError } from '../api/errors';
+import createClient from 'openapi-fetch';
+import { unwrap } from '../api/client';
+import type { components, paths } from '../api/generated/schema';
 
-/** Response of OTP verify and PIN verify (assumed until B02). */
-export const tokenResponseSchema = z.object({
-  access_token: z.string(),
-  refresh_token: z.string(),
-  role: z.string(),
-  fpo_id: z.string(),
-  /** True when the role must also enter its 4-digit PIN before the tokens are full session tokens. */
-  pin_required: z.boolean(),
+/** A full session as the API returns it; `refresh_token` is always null for the portal (cookie transport). */
+export type SessionOut = components['schemas']['SessionOut'];
+/** OTP verify result for office roles: the PIN step must follow. */
+export type PinRequiredOut = components['schemas']['PinRequiredOut'];
+
+/** localStorage key of this browser's device id (the API ties the session to it). */
+export const DEVICE_ID_KEY = 'agritrace.device_id';
+
+// DECISION D-022: every auth call says `X-Client: web`, so the API delivers the refresh token only as the
+// httpOnly, SameSite=Strict `agritrace_refresh` cookie and nulls it in the body (D-024 "Web").
+//   ADV: page scripts never see the refresh token; the portal and API share one origin, so fetch's default
+//   `credentials: 'same-origin'` already sends and stores the cookie (no `include`, no CORS).
+//   COMPROMISE: the portal cannot refresh from another origin; a second tab refreshing at the same moment can
+//   trip reuse detection (`refresh_reused`) and sign this browser out.
+const authClient = createClient<paths>({
+  baseUrl: window.location.origin,
+  headers: { 'X-Client': 'web' },
+  // Look fetch up per call: this client is built at import time, before test mocks patch `fetch`.
+  fetch: (request) => globalThis.fetch(request),
 });
 
-/** Parsed token response. */
-export type TokenResponse = z.infer<typeof tokenResponseSchema>;
-
 /**
- * POSTs JSON to a same-origin API path.
- * @param path Path starting with `/v1/`.
- * @param body Request body, serialised as JSON.
- * @param accessToken Bearer token for the PIN step; omitted for the OTP calls.
- * @returns The parsed JSON body (null when the body is not JSON).
- * @throws {ApiError} When the status is not 2xx (code from the error envelope).
- * @throws {TypeError} When the network request fails.
+ * Returns this browser's device id, creating and storing one on first use.
+ * @returns A UUID kept in localStorage (not a secret: it only names the browser installation).
+ * @throws {DOMException} When localStorage is unavailable (private mode with storage disabled).
  */
-async function postJson(path: string, body: unknown, accessToken?: string): Promise<unknown> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-  const response = await fetch(new URL(path, window.location.origin), {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-  });
-  const json: unknown = await response.json().catch(() => null);
-  if (!response.ok) throw toApiError(response.status, json);
-  return json;
+export function deviceId(): string {
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
 }
 
 /**
- * Asks the API to send a one-time code by SMS.
+ * Asks the API to send a one-time code by SMS (204, the same for unknown numbers).
  * @param phone Phone number in E.164 form, e.g. `+919876543210`.
  * @returns Resolves when the code has been requested.
- * @throws {ApiError} E.g. `rate_limited` when asked twice within 60 s (B02 acceptance).
+ * @throws {ApiError} `rate_limited` (429, `details.retry_after_s`) within 60 s or over the daily cap.
+ * @throws {TypeError} When the network request fails.
  */
 export async function requestOtp(phone: string): Promise<void> {
-  await postJson('/v1/auth/otp/request', { phone });
+  await unwrap(authClient.POST('/v1/auth/otp/request', { body: { phone } }));
 }
 
 /**
- * Exchanges the SMS code for tokens.
+ * Trades the SMS code for a session (farmers) or a pin token (office roles and super-admins).
  * @param phone The phone number the code was sent to (E.164).
- * @param code The code the user typed.
- * @returns Tokens; `pin_required` tells the login page to ask for the PIN next.
- * @throws {ApiError} When the code is wrong, expired or locked.
- * @throws {z.ZodError} When the response does not match the assumed shape.
+ * @param code The 6-digit code the user typed.
+ * @returns The `kind`-discriminated result: `session` or `pin_required` (with `pin_set`).
+ * @throws {ApiError} `otp_invalid`/`otp_expired` (422), `otp_locked` or `device_in_use` (409).
+ * @throws {TypeError} When the network request fails.
+ * @throws {DOMException} When localStorage is unavailable for the device id.
  */
-export async function verifyOtp(phone: string, code: string): Promise<TokenResponse> {
-  return tokenResponseSchema.parse(await postJson('/v1/auth/otp/verify', { phone, code }));
+export async function verifyOtp(phone: string, code: string): Promise<SessionOut | PinRequiredOut> {
+  return unwrap(
+    authClient.POST('/v1/auth/otp/verify', {
+      body: { phone, code, device_id: deviceId(), platform: 'web' },
+    }),
+  );
 }
 
 /**
- * Completes sign-in for office roles with the 4-digit PIN.
- * @param accessToken The token returned by `verifyOtp`.
- * @param pin The PIN the user typed.
- * @returns Full session tokens (`pin_required` false).
- * @throws {ApiError} When the PIN is wrong or locked.
- * @throws {z.ZodError} When the response does not match the assumed shape.
+ * Completes an office sign-in with the PIN; when `pin_set` was false this PIN becomes the user's PIN.
+ * @param pinToken The `pin_token` from `verifyOtp` (sent as Bearer; never an access token).
+ * @param pin The 4-digit PIN.
+ * @returns The full session; the refresh token arrives as the httpOnly cookie.
+ * @throws {ApiError} `pin_invalid` (422, `details.attempts_left`), `pin_locked` (409, `details.locked_until`),
+ *   `unauthorized` (401, pin token expired or spent).
+ * @throws {TypeError} When the network request fails.
  */
-export async function verifyPin(accessToken: string, pin: string): Promise<TokenResponse> {
-  return tokenResponseSchema.parse(await postJson('/v1/auth/pin/verify', { pin }, accessToken));
+export async function verifyPin(pinToken: string, pin: string): Promise<SessionOut> {
+  return unwrap(
+    authClient.POST('/v1/auth/pin/verify', {
+      body: { pin },
+      headers: { Authorization: `Bearer ${pinToken}` },
+    }),
+  );
+}
+
+let refreshing: Promise<SessionOut> | null = null;
+
+/**
+ * Rotates the refresh cookie and returns a new session. Concurrent callers share one request because the
+ * API treats two refreshes of the same token as reuse and signs the device out (conventions.md "Refresh").
+ * @returns The new session (`refresh_token` null; the rotated token is in the cookie).
+ * @throws {ApiError} `unauthorized` (no or unknown cookie) or `refresh_reused` (401).
+ * @throws {TypeError} When the network request fails.
+ */
+export function refreshSession(): Promise<SessionOut> {
+  refreshing ??= unwrap(authClient.POST('/v1/auth/refresh', { body: {} })).finally(() => {
+    refreshing = null;
+  });
+  return refreshing;
+}
+
+/**
+ * Signs this device out on the server: the refresh cookie is cleared and every token of the device dies.
+ * @param accessToken The current access token.
+ * @returns Resolves when the server answered 204.
+ * @throws {ApiError} `unauthorized` (401) when the token is already dead.
+ * @throws {TypeError} When the network request fails.
+ */
+export async function logout(accessToken: string): Promise<void> {
+  await unwrap(
+    authClient.POST('/v1/auth/logout', { headers: { Authorization: `Bearer ${accessToken}` } }),
+  );
 }

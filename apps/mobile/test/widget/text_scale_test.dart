@@ -3,10 +3,11 @@
 // Callers: flutter test (CI mobile job).
 
 import 'package:agritrace/app.dart';
-import 'package:agritrace/core/router/session.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../auth/harness.dart';
 
 /// Pumps the app at several system text scales and reads the scaler a screen actually gets.
 void main() {
@@ -15,8 +16,7 @@ void main() {
     testWidgets('system text scale $system -> 10 sp renders at $expected', (tester) async {
       tester.platformDispatcher.textScaleFactorTestValue = system;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      final container = ProviderContainer.test();
-      container.read(sessionProvider.notifier).signIn(Role.farmer);
+      final container = await signedIn('farmer');
       await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const AgriTraceApp()));
       await tester.pumpAndSettle();
 

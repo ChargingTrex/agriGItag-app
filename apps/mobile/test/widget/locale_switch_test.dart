@@ -8,13 +8,13 @@ import 'package:agritrace/core/router/session.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../auth/harness.dart';
+
 /// Starts in English as a farmer, taps the language button, expects Tamil strings.
 void main() {
   testWidgets('language button switches the farmer screen from English to Tamil', (tester) async {
-    final container = ProviderContainer.test();
-    container.read(sessionProvider.notifier)
-      ..setLocale(english)
-      ..signIn(Role.farmer);
+    final container = await signedIn('farmer');
+    container.read(sessionProvider.notifier).setLocale(english);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const AgriTraceApp()));
     await tester.pumpAndSettle();
 

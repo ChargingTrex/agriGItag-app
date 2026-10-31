@@ -29,6 +29,7 @@ import pytest
 from geoalchemy2 import WKTElement
 from httpx import ASGITransport, AsyncClient
 from PIL import Image
+from sqlalchemy import select
 
 from agritrace.core.auth import CurrentUser, get_current_user
 from agritrace.core.db import get_sessionmaker
@@ -208,8 +209,6 @@ async def test_standards_part_carries_full_rules(world: tuple[World, AsyncClient
     Args:
         world: seeded FPO and client (fixture).
     """
-    from sqlalchemy import select
-
     from agritrace.modules.quality.models import StandardsProfile, StandardsProfileVersion
 
     w, client = world
@@ -399,5 +398,47 @@ async def test_photo_pending_after_24_hours_and_presigned_variants(world: tuple[
     assert await asyncio.to_thread(tasks.make_variants, str(fresh)) is not None
     timeline = (await client.get(f"/v1/lots/{w.lot}/events")).json()["items"]
     variants = next(p["variants"] for e in timeline for p in e["photos"] if p["id"] == str(fresh))
-    assert "X-Amz-Signature" in variants["thumb_url"]
+    assert "X-Amz-Signature" in variants["thumb_url"] and "jpeg_url" not in variants
     assert httpx.get(variants["thumb_url"]).status_code == 200
+
+
+async def test_officer_sees_own_fpo_only(world: tuple[World, AsyncClient]) -> None:
+    """An officer of FPO A gets A's plots, farmers, lots and flags, never those of a second seeded FPO.
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    other = await _seed()  # a second FPO with its own farmers, plots and lots
+    raised = datetime.now(UTC) - timedelta(minutes=5)
+    async with get_sessionmaker()() as s:
+        officer = User(phone=f"+9195{secrets.randbelow(10**8):08d}", name="Officer")
+        s.add(officer)
+        s.add_all(
+            Flag(
+                fpo_id=fpo,
+                subject_type=FlagSubject.LOT,
+                subject_id=lot,
+                rule_code="quantity_mismatch",
+                severity=Severity.WARN,
+                dedupe_key=f"quantity_mismatch:{lot}:{secrets.token_hex(4)}",
+                raised_at=raised,
+                created_at=raised,
+                updated_at=raised,
+            )
+            for fpo, lot in ((w.fpo, w.lot), (other["fpo"], other["lot"]))
+        )
+        await s.commit()
+    w.caller = CurrentUser(user_id=officer.id, fpo_id=w.fpo, role=Role.FIELD_OFFICER)
+    plots = (await client.get("/v1/sync/bundle/plots")).json()["plots"]
+    assert len(plots) == 2 and str(w.plot) in {p["id"] for p in plots}
+    async with get_sessionmaker()() as s:
+        own_farmers = {str(f) for f in await s.scalars(select(Farmer.id).where(Farmer.fpo_id == w.fpo))}
+    assert {
+        f["id"] for f in (await client.get("/v1/sync/bundle/farmer_profile")).json()["farmers"]
+    } == own_farmers
+    changes, _ = await _drain(client)
+    lots = {c["data"]["id"] for c in changes if c["entity"] == "lot"}
+    flags = [c["data"]["subject_id"] for c in changes if c["entity"] == "flag"]
+    assert lots == {str(w.lot), str(w.neighbour_lot)}
+    assert flags == [str(w.lot)]

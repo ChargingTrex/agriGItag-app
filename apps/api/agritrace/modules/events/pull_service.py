@@ -18,7 +18,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Literal
 
-from sqlalchemy import and_, or_, select, true, tuple_
+from sqlalchemy import ColumnElement, and_, func, or_, select, true, tuple_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -108,13 +108,15 @@ def is_photo_pending(status: PhotoStatus, created_at: datetime, now: datetime) -
     return status == PhotoStatus.PENDING_UPLOAD and now - created_at >= PHOTO_PENDING_AFTER
 
 
-def _window(model: Any, after: tuple[datetime, uuid.UUID] | None, bound: datetime, limit: int) -> Any:
+def _window(
+    model: Any, after: tuple[datetime, uuid.UUID] | None, bound: ColumnElement[datetime], limit: int
+) -> Any:
     """Build the changed-rows SELECT for one table.
 
     Args:
         model: the mapped class (has `updated_at` and `id`).
         after: the cursor position, or None for everything.
-        bound: newest `updated_at` served (now − PULL_SETTLE).
+        bound: newest `updated_at` served (SQL `now() − PULL_SETTLE`).
         limit: page size.
 
     Returns:
@@ -221,7 +223,7 @@ async def _changes(
     session: AsyncSession,
     user: CurrentUser,
     after: tuple[datetime, uuid.UUID] | None,
-    bound: datetime,
+    bound: ColumnElement[datetime],
     limit: int,
 ) -> list[Change]:
     """Collect up to `limit + 1` changes per table inside the caller's scope.
@@ -235,6 +237,9 @@ async def _changes(
 
     Returns:
         Unordered changes as (updated_at, id, entity, data).
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     fpo = user.fpo_id
     farmer = user.role == Role.FARMER
@@ -302,6 +307,9 @@ async def _pending_photos(
 
     Returns:
         `photo_pending` changes, oldest first.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     # Oldest first, so photos still inside their 24 h are the ones cut by `limit`; `is_photo_pending` is the
     # one place the rule lives.
@@ -345,13 +353,15 @@ async def pull(session: AsyncSession, user: CurrentUser, cursor: str | None, lim
 
     Raises:
         ValidationFailedError: the cursor is invalid.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
         Upserts `sync_cursors` for the token's device (when the token names one) and commits.
     """
     after = decode_cursor(cursor) if cursor else None
     now = utcnow()
-    page, has_more = merge_page(await _changes(session, user, after, now - PULL_SETTLE, limit), limit)
+    # The bound uses the database clock, the same clock that stamps `updated_at` (review B07-r1 P3-4).
+    page, has_more = merge_page(await _changes(session, user, after, func.now() - PULL_SETTLE, limit), limit)
     changes = [PullChange(entity=entity, op="upsert", data=data) for _, _, entity, data in page]
     if not has_more:
         changes += await _pending_photos(session, user, now, limit)
@@ -361,7 +371,8 @@ async def pull(session: AsyncSession, user: CurrentUser, cursor: str | None, lim
             pg_insert(SyncCursor)
             .values(device_id=user.device_id, last_pull_cursor=next_cursor)
             .on_conflict_do_update(
-                index_elements=[SyncCursor.device_id], set_={"last_pull_cursor": next_cursor}
+                index_elements=[SyncCursor.device_id],
+                set_={"last_pull_cursor": next_cursor, "updated_at": func.now()},
             )
         )
         await session.commit()

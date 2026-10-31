@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Checks allowed paths return null and every other path returns the role's home.
 void main() {
-  const paths = ['/auth', '/home', '/officer', '/qc', '/assist/F-1', '/homework', '/qcx'];
+  const paths = ['/auth', '/home', '/officer', '/qc', '/assist/F-1', '/homework', '/qcx', '/settings', '/auth/otp'];
   const expected = <Role?, Map<String, String?>>{
     null: {
       '/auth': null,
@@ -18,6 +18,8 @@ void main() {
       '/assist/F-1': '/auth',
       '/homework': '/auth',
       '/qcx': '/auth',
+      '/settings': '/auth',
+      '/auth/otp': null,
     },
     Role.farmer: {
       '/auth': '/home',
@@ -27,6 +29,8 @@ void main() {
       '/assist/F-1': '/home',
       '/homework': '/home',
       '/qcx': '/home',
+      '/settings': null,
+      '/auth/otp': '/home',
     },
     Role.fieldOfficer: {
       '/auth': '/officer',
@@ -36,6 +40,8 @@ void main() {
       '/assist/F-1': null,
       '/homework': '/officer',
       '/qcx': '/officer',
+      '/settings': null,
+      '/auth/otp': '/officer',
     },
     Role.qc: {
       '/auth': '/qc',
@@ -45,6 +51,8 @@ void main() {
       '/assist/F-1': '/qc',
       '/homework': '/qc',
       '/qcx': '/qc',
+      '/settings': null,
+      '/auth/otp': '/qc',
     },
   };
 

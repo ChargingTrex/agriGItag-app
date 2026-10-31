@@ -83,7 +83,15 @@ const members = useCursorList<Member>({
 
 ## Not in P00
 
-- `/v1/auth/*` does not exist yet: `src/auth/authApi.ts` and the auth MSW handlers use an assumed contract,
-  marked `TODO(B02)`. Token refresh and server logout are also `TODO(B02)`.
+- (Done in P01) Auth follows the final B02 contract: `src/auth/authApi.ts` uses the generated client with
+  `X-Client: web`; the refresh token is an httpOnly cookie, the access token lives in React state only, and a
+  reload restores the session with one `POST /v1/auth/refresh`.
 - English only; Tamil strings arrive with the screens that need them.
 - Icons (`@mui/icons-material`) are not installed; the sidebar is text-only.
+
+## Members (P01)
+
+- Routes: `/members` (pending approvals + roster), `/members/:farmerId`, `/members/plots/:plotId`, `/processors`.
+- The plot map (`src/features/members/PlotMap.tsx`, maplibre-gl) is a `React.lazy` chunk; only plot pages
+  download it. Satellite tiles are requested only after "Show satellite view".
+- `npm run e2e` without `PORTAL_URL` starts `npm run dev:mock` on port 5174 and runs the mock-mode specs.

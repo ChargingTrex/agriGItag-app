@@ -99,20 +99,19 @@ def presign_put(
     return url
 
 
-def presign_get(key: str, expires: int = 900, bucket: str | None = None) -> str:
-    """Presign a GET of a private object, so phones and the portal can show it without S3 credentials.
+def presign_get(key: str, expires: int) -> str:
+    """Presign a GET of an evidence object, so phones and the portal can show it without S3 credentials.
 
     Args:
-        key: object key inside the bucket.
+        key: object key inside the evidence bucket.
         expires: URL lifetime in seconds.
-        bucket: source bucket; default the evidence bucket.
 
     Returns:
         The presigned URL on `S3_PUBLIC_ENDPOINT` (signing needs no network).
     """
     url: str = _client_for(get_settings().s3_public_endpoint).generate_presigned_url(
         "get_object",
-        Params={"Bucket": bucket or get_settings().s3_bucket_evidence, "Key": key},
+        Params={"Bucket": get_settings().s3_bucket_evidence, "Key": key},
         ExpiresIn=expires,
     )
     return url

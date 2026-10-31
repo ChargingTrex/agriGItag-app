@@ -1037,7 +1037,7 @@
                 "type": "null"
               }
             ],
-            "description": "{thumb_url, medium_url, jpeg_url, width, height} once variants exist; each `*_url` is a presigned GET valid for 1 hour (the evidence bucket is private). Re-read for fresh links.",
+            "description": "{thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never listed (it keeps exact EXIF GPS). Re-read for fresh links.",
             "title": "Variants"
           }
         },
@@ -1197,7 +1197,7 @@
         "type": "object"
       },
       "FarmerOut": {
-        "description": "A farmer as returned by the API (no phone number: it lives on the sign-in account).",
+        "description": "A farmer as returned by the API; the phone (on the sign-in account) only masked (B14).",
         "properties": {
           "address": {
             "anyOf": [
@@ -1293,6 +1293,18 @@
             "title": "No Smartphone",
             "type": "boolean"
           },
+          "phone_masked": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Phone of the sign-in account with all but the last 4 digits hidden, e.g. `XXXXXX3210`; null without a phone. FPO admins read the full number via GET /v1/farmers/{id}/phone (audited).",
+            "title": "Phone Masked"
+          },
           "photo_key": {
             "anyOf": [
               {
@@ -1307,7 +1319,7 @@
           },
           "status": {
             "$ref": "#/components/schemas/FarmerStatus",
-            "description": "pending until an FPO admin approves; then active."
+            "description": "pending until an FPO admin approves; then active; suspended when rejected (B14)."
           },
           "user_id": {
             "anyOf": [
@@ -1450,6 +1462,65 @@
           }
         },
         "title": "FarmerPatch",
+        "type": "object"
+      },
+      "FarmerPhoneOut": {
+        "description": "A farmer's full phone number, revealed to an FPO admin and audited (B14, D-017 `internal`).",
+        "properties": {
+          "farmer_id": {
+            "description": "Farmer id.",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Phone in E.164 from the sign-in account; null without one.",
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "farmer_id",
+          "phone"
+        ],
+        "title": "FarmerPhoneOut",
+        "type": "object"
+      },
+      "FarmerReject": {
+        "description": "Why an FPO admin turns down a pending farmer (Stage 0 approval, FR70).",
+        "properties": {
+          "reason_code": {
+            "description": "Coded reason, e.g. `duplicate`, `not_a_member`, `outside_gi_area`, `incomplete`.",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-text explanation.",
+            "title": "Reason Text"
+          }
+        },
+        "required": [
+          "reason_code"
+        ],
+        "title": "FarmerReject",
         "type": "object"
       },
       "FarmerStatus": {
@@ -1950,6 +2021,23 @@
             "readOnly": true,
             "title": "Address Line",
             "type": "string"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 4,
+                "minItems": 4,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "[min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.",
+            "title": "Bbox"
           },
           "code": {
             "description": "Stable upper-case code.",
@@ -4973,6 +5061,41 @@
           "has_more"
         ],
         "title": "Page[NotificationOut]",
+        "type": "object"
+      },
+      "Page_PlotOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/PlotOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[PlotOut]",
         "type": "object"
       },
       "Page_QualityReadingOut_": {
@@ -10666,7 +10789,7 @@
     },
     "/v1/farmers": {
       "get": {
-        "description": "List farmers of the caller's FPO (a farmer sees only themself).",
+        "description": "List farmers of the caller's FPO (a farmer sees only themself), filtered and searched on the server.",
         "operationId": "list_farmers_v1_farmers_get",
         "parameters": [
           {
@@ -10717,6 +10840,63 @@
               ],
               "description": "Status filter.",
               "title": "Status"
+            }
+          },
+          {
+            "description": "Only farmers of this village.",
+            "in": "query",
+            "name": "village_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only farmers of this village.",
+              "title": "Village Id"
+            }
+          },
+          {
+            "description": "Part of the name, local name or farmer code; 1\u20134 digits also match the last digits of the phone (the `phone_masked` suffix).",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Part of the name, local name or farmer code; 1\u20134 digits also match the last digits of the phone (the `phone_masked` suffix).",
+              "title": "Q"
+            }
+          },
+          {
+            "description": "Comma-separated item fields to return, e.g. `id,code,name` (lean list); items then carry only those keys. Unknown or tenant-disabled names \u2192 422 `validation_error`.",
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 500,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated item fields to return, e.g. `id,code,name` (lean list); items then carry only those keys. Unknown or tenant-disabled names \u2192 422 `validation_error`.",
+              "title": "Fields"
             }
           },
           {
@@ -11337,6 +11517,315 @@
         ]
       }
     },
+    "/v1/farmers/{farmer_id}/phone": {
+      "get": {
+        "description": "Return the full phone of a farmer of the caller's FPO; every call writes an audit row (D-017).\n\nSent with `Cache-Control: no-store`, so shared office browsers and proxies keep no copy.",
+        "operationId": "reveal_phone_v1_farmers__farmer_id__phone_get",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerPhoneOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Reveal a farmer's full phone number (FPO admin, audited)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}/plots": {
+      "get": {
+        "description": "List the plots of one farmer of the caller's FPO; each carries `gi_tag_id` for the region to draw.",
+        "operationId": "list_farmer_plots_v1_farmers__farmer_id__plots_get",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Cursor from the previous page's `next_cursor`.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cursor from the previous page's `next_cursor`.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size (1\u2013200).",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size (1\u2013200).",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PlotOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List a farmer's plots",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}/reject": {
+      "post": {
+        "description": "Turn down a pending farmer (FPO admin): status `suspended`, reason kept in the audit trail.",
+        "operationId": "reject_farmer_v1_farmers__farmer_id__reject_post",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FarmerReject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Reject a pending farmer",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
     "/v1/fpos": {
       "get": {
         "description": "List FPOs visible to the caller.",
@@ -11498,6 +11987,95 @@
           }
         ],
         "summary": "Create an FPO",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/fpos/{fpo_id}": {
+      "get": {
+        "description": "Read the caller's FPO (super-admin: any FPO); staff get `bbox` from its plots or the GI regions.",
+        "operationId": "get_fpo_v1_fpos__fpo_id__get",
+        "parameters": [
+          {
+            "description": "FPO id.",
+            "in": "path",
+            "name": "fpo_id",
+            "required": true,
+            "schema": {
+              "description": "FPO id.",
+              "format": "uuid",
+              "title": "Fpo Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FpoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Read an FPO with its map frame (bbox)",
         "tags": [
           "registry"
         ]

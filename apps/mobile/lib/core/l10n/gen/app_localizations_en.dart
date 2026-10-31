@@ -99,4 +99,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoNotClear => 'Photo is not clear. Take again?';
+
+  @override
+  String get authPhoneTitle => 'Enter mobile number';
+
+  @override
+  String get authGetCode => 'Get code';
+
+  @override
+  String get authOtpTitle => 'Enter the 6-digit code from the SMS';
+
+  @override
+  String get authResend => 'Send again';
+
+  @override
+  String get authPinTitle => 'Enter your 4-digit PIN';
+
+  @override
+  String get authPinChoose => 'Choose a 4-digit PIN';
+
+  @override
+  String get authPinRepeat => 'Enter the same PIN again';
+
+  @override
+  String get authPinMismatch => 'The two PINs are different. Choose again.';
+
+  @override
+  String get authStartAgain => 'Start again';
+
+  @override
+  String get authDelete => 'Delete';
+
+  @override
+  String get errorOtpInvalid => 'Wrong code. Check the SMS and try again.';
+
+  @override
+  String get errorOtpExpired => 'This code is too old. Tap Send again.';
+
+  @override
+  String get errorOtpLocked => 'Too many wrong codes. Tap Send again for a new one.';
+
+  @override
+  String errorPinInvalid(int attempts) {
+    return 'Wrong PIN. $attempts tries left.';
+  }
+
+  @override
+  String errorPinLocked(int minutes) {
+    return 'Too many wrong PINs. Try again in $minutes min.';
+  }
+
+  @override
+  String errorRateLimited(int minutes) {
+    return 'Please wait $minutes min before asking for a new code.';
+  }
+
+  @override
+  String get errorDeviceInUse => 'This phone is signed in as someone else. Sign out first.';
+
+  @override
+  String get errorSignInExpired => 'Sign-in took too long. Start again.';
+
+  @override
+  String get errorPhoneInvalid => 'Check the mobile number.';
+
+  @override
+  String get errorNetwork => 'No signal. Try again when signal comes.';
+
+  @override
+  String get errorPortalOnly => 'This account works on the web portal, not on the phone.';
+
+  @override
+  String get errorUnknown => 'Something went wrong. Try again.';
+
+  @override
+  String get sessionEnded => 'You were signed out. Please sign in again.';
+
+  @override
+  String get signOut => 'Sign out';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String unsentReminder(int count) {
+    return 'Entries not sent yet: $count. They stay on this phone; get signal to send them.';
+  }
 }

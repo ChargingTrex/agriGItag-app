@@ -13,6 +13,7 @@ tests/unit/test_bundle_service.py, tests/integration/test_bundle_pull.py.
 """
 
 import json
+import logging
 import uuid
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -39,6 +40,8 @@ from agritrace.modules.events.schemas import (
 from agritrace.modules.quality import service as quality_service
 from agritrace.modules.registry import service as registry_service
 from agritrace.modules.registry.models import Crop, Farmer, Fpo, GiRegionVersion, InputMaster, Plot, Village
+
+log = logging.getLogger(__name__)
 
 # Parts whose source tables carry the `bump_reference_version` trigger (migration 0001 REFERENCE_PARTS).
 DB_PARTS = frozenset(
@@ -268,6 +271,9 @@ async def _scope(session: AsyncSession, user: CurrentUser) -> Scope:
 
     Returns:
         The FPO, and the caller's own farmer ids when the caller is a farmer.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     if user.role != Role.FARMER:
         return Scope(user.fpo_id, None)
@@ -297,6 +303,9 @@ async def _plots(session: AsyncSession, scope: Scope) -> dict[str, Any]:
 
     Returns:
         `{"plots": [plot_json]}`.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     query = (
         select(Plot)
@@ -314,6 +323,9 @@ async def _active_crops(session: AsyncSession) -> list[Crop]:
 
     Returns:
         Active crops ordered by code.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     return list(await session.scalars(select(Crop).where(Crop.active.is_(True)).order_by(Crop.code)))
 
@@ -327,6 +339,9 @@ async def _crops(session: AsyncSession, scope: Scope) -> dict[str, Any]:
 
     Returns:
         `{"crops": [crop_json]}`.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     return {"crops": [crop_json(c) for c in await _active_crops(session)]}
 
@@ -359,6 +374,9 @@ async def _inputs(session: AsyncSession, scope: Scope) -> dict[str, Any]:
 
     Returns:
         `{"inputs": [input_json]}`.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     return {"inputs": [input_json(i) for i in await session.scalars(_inputs_query(scope))]}
 
@@ -372,6 +390,9 @@ async def _standards(session: AsyncSession, scope: Scope) -> dict[str, Any]:
 
     Returns:
         `{"profiles": {crop_id: rules JSON}}`; crops without a published version are absent.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     # DECISION D-006: the phone gets the exact `standards_profile_versions.rules` JSON the server grades with,
     #   not a trimmed subset (Orchestrator decision 2026-10-31 after M03).
@@ -395,6 +416,10 @@ async def _gi_region(session: AsyncSession, scope: Scope) -> dict[str, Any] | No
     Returns:
         `region_json(...)` (the coarsest attempt if none fits 50 KB), or None when no region version of
         an active crop's GI tag is in effect.
+
+    Raises:
+        NotFoundError: the region version vanished between lookup and simplification.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     # shortcut: one GI tag per bundle (pilot GI 883); a second GI crop needs a list of regions in the part.
     tags = select(Crop.gi_tag_id).where(Crop.active.is_(True), Crop.gi_tag_id.is_not(None))
@@ -408,8 +433,13 @@ async def _gi_region(session: AsyncSession, scope: Scope) -> dict[str, Any] | No
         return None
     for tolerance in REGION_TOLERANCES_M:
         geometry = await registry_service.simplify_region(session, version.id, tolerance)
-        if len(json.dumps(geometry)) <= MAX_REGION_BYTES:
+        size = len(json.dumps(geometry))
+        if size <= MAX_REGION_BYTES:
             break
+    else:
+        log.warning(
+            "gi_region %s is %d bytes at %s m, over %d", version.id, size, tolerance, MAX_REGION_BYTES
+        )
     return region_json(version, geometry, tolerance)
 
 
@@ -422,6 +452,9 @@ async def _farmer_profile(session: AsyncSession, scope: Scope) -> dict[str, Any]
 
     Returns:
         `{"farmers": [farmer_json]}`.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     query = (
         select(Farmer)
@@ -440,6 +473,9 @@ async def _villages(session: AsyncSession, scope: Scope) -> dict[str, Any]:
 
     Returns:
         `{"villages": [village_json]}`.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     fpo = await session.get(Fpo, scope.fpo_id)
     district = ((fpo.address if fpo else None) or {}).get("district")
@@ -462,6 +498,9 @@ async def _fields(session: AsyncSession, scope: Scope) -> dict[str, Any]:
 
     Returns:
         `fieldconfig.bundle_part(fpo_code)`: `{version, entities, features}`.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     # DECISION D-017: forms on the phone render from the same YAML field configuration the API enforces.
     #   ADV: a tenant override reaches the phone with the next bundle check, no app release.
@@ -494,6 +533,9 @@ async def _images(session: AsyncSession, scope: Scope) -> dict[str, Any]:
 
     Returns:
         `{"images": [{id, kind: "input", key, url}]}`.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     # DECISION D-016: FPO content (product pictures, voice packs) is a downloadable bundle; the manifest
     #   lists keys and plain URLs into the anonymous-read public bucket instead of carrying the bytes.
@@ -554,6 +596,9 @@ async def _db_versions(session: AsyncSession, fpo_id: uuid.UUID) -> dict[str, in
         Part -> sum of its global row and the FPO's row. Each row only grows in commit order (bumped under
         its row lock), so the sum grows with every visible change; a max would not (a late-committing
         global bump below the FPO's value would be hidden).
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     query = (
         select(ReferenceVersion.part, func.sum(ReferenceVersion.version))
@@ -572,6 +617,9 @@ async def _snapshot(session: AsyncSession, user: CurrentUser) -> dict[BundlePart
 
     Returns:
         Part -> version, ETag and body; `gi_region` is left out while no region is in effect.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     scope = await _scope(session, user)
     versions = await _db_versions(session, user.fpo_id)
@@ -618,6 +666,7 @@ async def part_body(session: AsyncSession, user: CurrentUser, part: BundlePart) 
 
     Raises:
         GiRegionMissingError: `gi_region` asked while no region version is in effect.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     body = await BUILDERS[part](session, await _scope(session, user))
     if body is None:
@@ -638,6 +687,7 @@ async def reference(session: AsyncSession, user: CurrentUser, since: str | None)
 
     Raises:
         ValidationFailedError: `since` is malformed.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
     """
     held = parse_since(since)
     snapshot = await _snapshot(session, user)

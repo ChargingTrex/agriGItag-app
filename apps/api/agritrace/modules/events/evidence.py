@@ -225,6 +225,7 @@ def _read_object(key: str) -> bytes:
 
 # Long enough for a phone on 2G to load a timeline's thumbnails; short enough that a leaked link dies soon.
 VARIANT_URL_TTL_S = 3600
+SIGNED_VARIANTS = ("thumb_url", "medium_url")
 
 
 def _public_url(key: str) -> str:
@@ -240,27 +241,26 @@ def _public_url(key: str) -> str:
     return f"{s.s3_public_endpoint.rstrip('/')}/{s.s3_bucket_evidence}/{key}"
 
 
-def signed_variants(
-    variants: dict[str, Any] | None, expires: int = VARIANT_URL_TTL_S
-) -> dict[str, Any] | None:
-    """Swap the stored variant URLs for presigned GETs; the evidence bucket is private (B06 review P3).
+def signed_variants(variants: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Prepare stored variants for the timeline and pull: presign the WebP links, drop the original JPEG.
 
     Args:
-        variants: the stored `variants` record (`*_url` values made by `_public_url`), or None.
-        expires: URL lifetime in seconds.
+        variants: the stored `variants` record (URLs made by `_public_url`), or None.
 
     Returns:
-        A copy with every `*_url` presigned, other keys (width, height) unchanged; None for None.
+        A copy with `thumb_url` and `medium_url` presigned (1 h; the evidence bucket is private, B06 review
+        P3) and sizes unchanged, without `jpeg_url`; None for None.
     """
     if variants is None:
         return None
     # Split on the bucket, not the whole public prefix, so links stored under an older endpoint still resolve.
     marker = f"/{get_settings().s3_bucket_evidence}/"
+    # The original JPEG keeps the phone's exact EXIF GPS (M04), so it never leaves through these views
+    # (review B07-r1 P2-1); the WebP variants carry no EXIF.
     return {
-        k: storage.presign_get(v.split(marker, 1)[-1], expires)
-        if k.endswith("_url") and isinstance(v, str)
-        else v
+        k: storage.presign_get(v.split(marker, 1)[-1], VARIANT_URL_TTL_S) if k in SIGNED_VARIANTS else v
         for k, v in variants.items()
+        if k != "jpeg_url"
     }
 
 

@@ -2,12 +2,13 @@
  * The portal's API client: `openapi-fetch` over the types generated from packages/openapi/openapi.json.
  * Serves: plan §7.3 P00 (generated client), docs/api/conventions.md (error envelope, `/v1` base path).
  * Called by: src/auth/AuthProvider.tsx (creates one client per session and exposes it as `useAuth().api`),
- * screens via `unwrap(api.GET('/v1/...'))`.
+ * screens via `unwrap(api.GET('/v1/...'))`, src/auth/authApi.ts (`unwrap`).
  *
  * DECISION D-003: the client is `openapi-fetch` typed by `openapi-typescript` output that is never edited.
  *   ADV: paths, params and bodies are checked against the contract at compile time; the runtime is ~6 KB and
  *   regeneration is one command (`npm run gen:api`) with a CI diff check.
- *   COMPROMISE: endpoints missing from the spec (B02's /v1/auth/*) cannot use it yet, see src/auth/authApi.ts.
+ *   COMPROMISE: an endpoint missing from the spec cannot be called until the backend WP adds it (P01 leaves
+ *   TODOs for the phone reveal, farmer reject and per-farmer plot list instead of hand-typed calls).
  */
 import createClient, { type Client } from 'openapi-fetch';
 import { toApiError } from './errors';
@@ -18,11 +19,16 @@ export type ApiClient = Client<paths>;
 
 /**
  * Creates a client that sends the bearer token and reports 401 responses.
- * @param accessToken Current access token, or null when signed out (no Authorization header is sent).
- * @param onUnauthorized Called on every 401 response so the session can be cleared and the guard redirects.
+ * @param getToken Returns the current access token, or null when signed out (no Authorization header is
+ *   sent). Read per request, so a query refetched right after a refresh already carries the new token.
+ * @param onUnauthorized Called on every 401 response with the token that request carried, so the session can
+ *   be recovered or cleared.
  * @returns The typed client. Requests go to the page's own origin (paths already start with `/v1`, D-020).
  */
-export function createApiClient(accessToken: string | null, onUnauthorized: () => void): ApiClient {
+export function createApiClient(
+  getToken: () => string | null,
+  onUnauthorized: (token: string) => void,
+): ApiClient {
   const client = createClient<paths>({ baseUrl: window.location.origin });
   client.use({
     /**
@@ -32,17 +38,22 @@ export function createApiClient(accessToken: string | null, onUnauthorized: () =
      * @returns The same request with an Authorization header when signed in.
      */
     onRequest({ request }) {
-      if (accessToken) request.headers.set('Authorization', `Bearer ${accessToken}`);
+      const token = getToken();
+      if (token) request.headers.set('Authorization', `Bearer ${token}`);
       return request;
     },
     /**
-     * Reports 401 responses. TODO(B02): try `POST /v1/auth/refresh` once before signing out.
+     * Reports 401 responses. AuthProvider's handler tries the refresh cookie once and signs out only when
+     * that is refused (revoked or signed-out device).
      * @param params Middleware parameters.
+     * @param params.request The request that was answered (its Authorization header names the token).
      * @param params.response The incoming response.
      * @returns The response unchanged.
      */
-    onResponse({ response }) {
-      if (response.status === 401) onUnauthorized();
+    onResponse({ request, response }) {
+      if (response.status === 401) {
+        onUnauthorized(request.headers.get('Authorization')?.replace(/^Bearer /, '') ?? '');
+      }
       return response;
     },
   });

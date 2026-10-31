@@ -1,6 +1,7 @@
 // go_router configuration: role-based redirect and the /assist/:farmerId scope.
 // Requirement: plan §7.2 M00 and M06 ("farmer never reaches officer routes"), D-013, UserFlows §"Who uses
 //   what" (a farmer only ever sees the farmer screens; the field officer can act for a farmer).
+//   M06 wires the real sign-in screens (UserFlows §Log in once) and the /settings placeholder with sign-out.
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
 //   test/widget/router_test.dart.
 
@@ -8,17 +9,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:agritrace_api/agritrace_api.dart' show PinRequiredOut;
+
+import '../../features/auth/otp_screen.dart';
+import '../../features/auth/phone_screen.dart';
+import '../../features/auth/pin_screen.dart';
 import '../l10n/gen/app_localizations.dart';
 import 'placeholder_screen.dart';
 import 'session.dart';
 
 /// Route prefixes each role may open; the first entry is the role's home.
-/// A signed-out user (null role) may only open /auth.
+/// A signed-out user (null role) may only open /auth (phone, /auth/otp, /auth/pin); every signed-in role may open
+/// /settings (sign-out; M08 replaces the placeholder).
 const Map<Role?, List<String>> allowedPrefixes = {
   null: ['/auth'],
-  Role.farmer: ['/home'],
-  Role.fieldOfficer: ['/officer', '/assist'],
-  Role.qc: ['/qc'],
+  Role.farmer: ['/home', '/settings'],
+  Role.fieldOfficer: ['/officer', '/assist', '/settings'],
+  Role.qc: ['/qc', '/settings'],
 };
 
 /// Decides where a navigation to [location] must go for [role].
@@ -46,10 +53,25 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: role,
     redirect: (context, state) => redirectFor(role.value, state.matchedLocation),
     routes: [
+      // The OTP and PIN steps need what the previous step returned (`extra`); without it (deep link, restored
+      // route) they fall back to the phone step.
       GoRoute(
         path: '/auth',
-        builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).signIn),
+        builder: (context, _) => const PhoneScreen(),
+        routes: [
+          GoRoute(
+            path: 'otp',
+            builder: (context, state) =>
+                state.extra is String ? OtpScreen(phone: state.extra! as String) : const PhoneScreen(),
+          ),
+          GoRoute(
+            path: 'pin',
+            builder: (context, state) =>
+                state.extra is PinRequiredOut ? PinScreen(step: state.extra! as PinRequiredOut) : const PhoneScreen(),
+          ),
+        ],
       ),
+      GoRoute(path: '/settings', builder: (context, _) => const SettingsPlaceholder()),
       GoRoute(
         path: '/home',
         builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).roleFarmer),
