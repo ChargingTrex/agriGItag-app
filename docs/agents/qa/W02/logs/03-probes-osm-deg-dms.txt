@@ -1,0 +1,25 @@
+probe            rc   expect   rules
+G_dms_coarse     0    0         | <p>9°33' N 78°08' E</p>
+G_hash3dp        0    0         | <a href="https://www.openstreetmap.org/#map=12/9.560/78.134">map</a>
+G_osm3dp         0    0         | <a href="https://www.openstreetmap.org/?mlat=9.560&mlon=78.134">map</a>
+G_pair3dp        0    0         | <p>Approx. 9.560, 78.134</p>
+G_temp           0    0         | <p>Dried at 45.5 °C</p>
+P21_garmin       0    1(P2-1 known)  | <p>N 9.559806 E 78.133521</p>
+P21_hemi         0    1(P2-1 known)  | <p>9.559806 N, 78.133521 E</p>
+P21_meta         0    1(P2-1 known)  | <meta name="geo.position" content="9.559806;78.133521">
+P21_semi         0    1(P2-1 known)  | <p>9.559806;78.133521</p>
+Q1a              1    1        coordinate_precision  | <a href="https://www.openstreetmap.org/?mlat=9.559806&mlon=78.133521">map</a>
+Q1amp            1    1        coordinate_precision  | <a href="https://www.openstreetmap.org/?mlat=9.559806&amp;mlon=78.133521">map</a>
+Q1c              1    1        coordinate_precision  | <a href="https://www.openstreetmap.org/#map=17/9.559806/78.133521">map</a>
+Q1data           1    1        coordinate_precision  | <div data-lat="9.5598061"></div>
+Q1geo            1    1        coordinate_precision  | <a href="geo:9.5598061,78.1335214">map</a>
+Q1hash4          1    1        coordinate_precision  | <a href="https://www.openstreetmap.org/#map=16/9.5598/78.1335">map</a>
+Q1lat            1    1        coordinate_precision  | <a href="https://www.openstreetmap.org/?lat=9.559806&lon=78.133521">map</a>
+Q1layers         1    1        coordinate_precision  | <a href="https://www.openstreetmap.org/#map=17/9.559806/78.133521&layers=H">map</a>
+Q1mlon           1    1        coordinate_precision  | <a href="https://www.openstreetmap.org/?mlon=78.133521">map</a>
+X10_deg_NE       1    1        coordinate_precision  | <p>9.5598061° N, 78.1335214° E</p>
+X10_entity       1    1        coordinate_precision  | <p>9.5598061&deg; N, 78.1335214&deg; E</p>
+X11_dms          1    1        coordinate_precision  | <p>9°33'35.3"N 78°08'00.7"E</p>
+X11_dms_jinja    1    1        coordinate_precision  | <p>9&deg;33&#39;35.3&#34;N 78&deg;08&#39;00.7&#34;E</p>
+X11_prime        1    1        coordinate_precision  | <p>9°33′35.3″N 78°08′00.7″E</p>
+X12_space_pair   1    1        coordinate_precision  | <p>GPS 9.5598061 78.1335214</p>

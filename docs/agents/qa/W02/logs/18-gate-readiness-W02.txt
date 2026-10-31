@@ -1,0 +1,4 @@
+$ /tmp/w02rv/bin/python qa/scripts/gate-readiness.py W02
+W02: 6 real Robot test(s)
+gate-readiness W02: PASS
+exit=0

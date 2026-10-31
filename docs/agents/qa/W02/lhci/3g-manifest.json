@@ -1,0 +1,29 @@
+[
+  {
+    "url": "http://localhost:55645/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/lhci/3g/localhost-index_html-2026_10_31_06_13_58.report.html",
+    "jsonPath": "/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/lhci/3g/localhost-index_html-2026_10_31_06_13_58.report.json",
+    "summary": {
+      "performance": 0.98
+    }
+  },
+  {
+    "url": "http://localhost:55645/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/lhci/3g/localhost-index_html-2026_10_31_06_14_38.report.html",
+    "jsonPath": "/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/lhci/3g/localhost-index_html-2026_10_31_06_14_38.report.json",
+    "summary": {
+      "performance": 1
+    }
+  },
+  {
+    "url": "http://localhost:55645/index.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/lhci/3g/localhost-index_html-2026_10_31_06_14_17.report.html",
+    "jsonPath": "/Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/lhci/3g/localhost-index_html-2026_10_31_06_14_17.report.json",
+    "summary": {
+      "performance": 0.94
+    }
+  }
+]
