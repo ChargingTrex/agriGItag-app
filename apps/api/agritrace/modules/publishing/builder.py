@@ -61,6 +61,13 @@ REVIEW_METHODS = {
     "satellite": "satellite image",
     "field_visit": "field visit",
 }
+# YAML fields behind the W01 schema's required page fields, by entity (D-034 ruling): farm area, farming type
+# and the grade readings. They stay `public` and enabled for every tenant; `agritrace.main` passes this to
+# `fieldconfig.check_page_required` at start-up (core cannot import a module, D-004).
+PAGE_REQUIRED_FIELDS: dict[str, tuple[str, ...]] = {
+    "plot": ("declared_area", "farming_type"),
+    "quality_reading": ("parameter_code", "measurement", "source"),
+}
 
 
 @dataclass
@@ -260,6 +267,9 @@ def photo_copies(photo: EvidencePhoto, code: str) -> list[tuple[str, str]]:
         `[(evidence key, public-pages key)]` for the thumbnail and the medium image. The public key is
         content-addressed (`batches/<code>/evidence/<sha256[:16]>.<thumb|medium>.webp`), so it never shows the
         raw evidence key (FPO and event ids) and can be cached as immutable (plan §13 E3).
+
+    Raises:
+        KeyError: the variants record lacks `thumb_url` or `medium_url`.
     """
     variants = photo.variants or {}
     marker = f"/{get_settings().s3_bucket_evidence}/"  # same split as events.evidence.signed_variants
@@ -280,6 +290,9 @@ def _photo(photo: EvidencePhoto, code: str, alt: str) -> dict[str, Any]:
 
     Returns:
         The `Photo` record.
+
+    Raises:
+        KeyError: the variants record lacks a URL, `width` or `height`.
     """
     base = get_settings().public_base_url.rstrip("/")
     (_, thumb), (_, medium) = photo_copies(photo, code)
@@ -328,6 +341,9 @@ def _event(
 
     Returns:
         The `Event` record; only fields the tenant marks public are filled (D-034).
+
+    Raises:
+        KeyError: a photo's variants record is incomplete (from `_photo`).
     """
     stage = STAGES[event.event_type]
     fields = public.get(f"event_{event.event_type.value}", [])
@@ -433,6 +449,10 @@ def _lot(rows: BatchRows, lr: LotRows, public: Mapping[str, list[str]]) -> dict[
 
     Returns:
         The `Lot` record.
+
+    Raises:
+        KeyError: `public` lacks an entity, or a photo's variants record is incomplete.
+        AssertionError: the plot pin is not a point (the column is geography(POINT)).
     """
     farmer_fields, plot_fields = public["farmer"], public["plot"]
     # Name only with the FPO switch on, the field public for the tenant and an unrevoked consent; otherwise
@@ -526,14 +546,19 @@ def assemble(rows: BatchRows, build: PageBuild, now: datetime) -> dict[str, Any]
 
     Returns:
         The raw record. Lots are sorted by lot code so "Farmer N" stays the same between rebuilds.
+
+    Raises:
+        KeyError: `fieldconfig.public_fields` does not know an entity, or a photo's variants record is
+            incomplete.
+        AssertionError: a plot pin is not a point (the column is geography(POINT)).
     """
     # DECISION D-034: W01's `PublicBatchRecord` is the page allow-list; tenant field rules (B13) can only hide
     #   the fields the schema makes optional. Fields the PRD fixes on the page (farm area, lot quantity and
     #   share, place, farming type, grade readings) are always sent, at village level.
     #   ADV: the page keeps its PRD §12.1 shape for every tenant; a tenant can still hide quantities, inputs,
     #     seed varieties, names and GI numbers.
-    #   COMPROMISE: `plot.declared_area` and `quality_reading` are `partner` in the YAML yet appear here; a
-    #     tenant cannot hide them without a schema change (TODO.md B10).
+    #   COMPROMISE: the YAML behind those fields is `public` (`PAGE_REQUIRED_FIELDS`) and a tenant cannot
+    #     narrow it; the app refuses to start on such an override (`fieldconfig.check_page_required`).
     fpo, batch, gi = rows.fpo, rows.batch, rows.gi_tag
     entities = ("farmer", "plot", "event_intake", "event_grading", "event_final_packing")
     public = {e: fieldconfig.public_fields(e, fpo.code) for e in entities} | {

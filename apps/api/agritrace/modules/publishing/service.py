@@ -269,13 +269,14 @@ def _invalidate(code: str, build_no: int) -> None:
         botocore.exceptions.ClientError: CloudFront refused the request.
 
     Side effects:
-        One CloudFront `CreateInvalidation` for `/b/<code>*` when `CLOUDFRONT_DISTRIBUTION_ID` is set.
+        One CloudFront `CreateInvalidation` for `/b/<code>*` and `/batches/<code>/*` (data.json and photos are
+        linked under the bucket path) when `CLOUDFRONT_DISTRIBUTION_ID` is set.
     """
     if distribution := get_settings().cloudfront_distribution_id:
         boto3.client("cloudfront").create_invalidation(
             DistributionId=distribution,
             InvalidationBatch={
-                "Paths": {"Quantity": 1, "Items": [f"/b/{code}*"]},
+                "Paths": {"Quantity": 2, "Items": [f"/b/{code}*", f"/batches/{code}/*"]},
                 "CallerReference": f"{code}-{build_no}",
             },
         )
@@ -295,18 +296,26 @@ async def build_page(session: AsyncSession, page_build_id: uuid.UUID) -> PageBui
     Raises:
         PublicRecordInvalidError: `public_record_invalid` when the renderer's allow-list or privacy check
             refuses the record; the row is `failed` with the reasons (paths, never values) before raising.
-        botocore.exceptions.ClientError: S3 or CloudFront refused; the row stays `queued` for a retry.
-        KeyError: a page label is missing (renderer bug).
+        botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError: S3 refused or is unreachable;
+            the row stays `queued` and the task retries with backoff. A CloudFront failure comes after the
+            commit (row `built`); the 60 s page cache bounds the staleness.
+        KeyError: a page label is missing (renderer bug), or a photo's variants lack a URL.
+        AssertionError: a plot pin is not a point (the column is geography(POINT)).
+        LookupError: a row a foreign key guarantees is missing (from `builder.load`).
 
     Side effects:
-        Copies photo variants and writes `batches/<code>/{index.html,data.json,qr.png}` to public-pages; sets
-        `snapshot`, the keys, `status` and `built_at`; commits; invalidates the CDN path.
+        Locks the batch row until the commit (one build per batch at a time). Copies photo variants and writes
+        `batches/<code>/{index.html,data.json,qr.png}` to public-pages; sets `snapshot`, the keys, `status`,
+        and `built_at`; commits; invalidates the CDN paths.
     """
     build = await session.get(PageBuild, page_build_id)
     if build is None:
         return None
-    batch = await session.get(Batch, build.batch_id)
+    # The batch row lock (as in `rebuild`) is held until the commit below, so builds of one batch run one at a
+    # time and the check and the S3 writes cannot interleave with a newer build (review B10-r1 P2-2).
+    batch = await session.get(Batch, build.batch_id, with_for_update=True, populate_existing=True)
     assert batch is not None  # foreign key
+    await session.refresh(build)  # re-read under the lock: another worker may have built it meanwhile
     # A duplicate delivery (D-009) or a delayed older build must never overwrite the latest page.
     if build.status != "queued" or build.build_no < batch.current_build_no:
         if build.status == "queued":

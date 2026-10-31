@@ -419,3 +419,52 @@ def test_label_sheet_is_a_pdf_with_the_qr() -> None:
     """The label sheet is a one-page PDF."""
     pdf = service.labels_pdf(["Virudhunagar Samba Vathal", f"Batch {CODE}"], service.public_url(CODE))
     assert pdf.startswith(b"%PDF") and pdf.count(b"/Type /Page\n") + pdf.count(b"/Type /Page ") >= 1
+
+
+async def test_build_checks_supersession_under_the_batch_lock() -> None:
+    """build_page locks the batch row, re-reads the build, and skips a build older than the batch's latest."""
+    batch = Batch(id=uuid.uuid4(), current_build_no=2)
+    build = PageBuild(
+        id=uuid.uuid4(),
+        batch_id=batch.id,
+        build_no=1,
+        generation=1,
+        snapshot={},
+        status="queued",
+        trigger="publish",
+    )
+    calls: list[Any] = []
+
+    class FakeSession:
+        """Records the calls build_page makes; holds one build and its batch."""
+
+        async def get(self, model: type, key: uuid.UUID, **options: Any) -> Any:
+            """Return the build or the batch.
+
+            Args:
+                model: ORM class.
+                key: primary key.
+                **options: lock options.
+
+            Returns:
+                The row.
+            """
+            calls.append((model, options))
+            return build if model is PageBuild else batch
+
+        async def refresh(self, row: Any) -> None:
+            """Record a refresh.
+
+            Args:
+                row: the refreshed row.
+            """
+            calls.append(("refresh", row))
+
+        async def commit(self) -> None:
+            """Record a commit."""
+            calls.append("commit")
+
+    out = await service.build_page(FakeSession(), build.id)  # type: ignore[arg-type]
+    assert out is build and build.status == "superseded"
+    lock = (Batch, {"with_for_update": True, "populate_existing": True})
+    assert calls.index(lock) < calls.index(("refresh", build)) < calls.index("commit")

@@ -4,9 +4,12 @@ Serves: B10 acceptance, one test per line: after publish objects exist and `gene
 phone/survey/`temp_uploads`; revoked name consent → "Farmer 2"; correction → new build_no, old S3 versions
 kept; QR decodes to `{PUBLIC_BASE_URL}/b/<code>`; events ascending. Also the dev proxy, labels, lot QR and the
 rebuild gate. FR12, FR15-FR17, FR62, FR63, plan §13 E3, CLAUDE.md §6, D-007.
-Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`). Reuses the seeded
-world of test_lots_batches.py; the recorded `publishing.build_page` message is run through the real task.
+Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`). Uses the seeded
+`world` of tests/integration/conftest.py and the helpers of test_lots_batches.py; the recorded
+`publishing.build_page` message is run through the real task.
 """
+
+from __future__ import annotations
 
 import asyncio
 import json
@@ -16,20 +19,14 @@ import uuid
 from datetime import UTC, date, datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import zxingcpp
 from httpx import AsyncClient
 from PIL import Image
 from sqlalchemy import select
-from test_lots_batches import (  # noqa: F401  (`migrated` and `world` are fixtures used by name)
-    World,
-    _batch,
-    _moisture,
-    migrated,
-    world,
-)
+from test_lots_batches import _batch, _moisture
 
 from agritrace.core import storage
 from agritrace.core.config import get_settings
@@ -40,6 +37,9 @@ from agritrace.modules.events.models import Event, EventVersion
 from agritrace.modules.identity.models import ConsentRecord, User
 from agritrace.modules.publishing.models import PageBuild
 from agritrace.modules.registry.models import Farmer, Fpo, Plot, Processor
+
+if TYPE_CHECKING:
+    from conftest import World  # tests/integration/conftest.py (type only)
 
 pytestmark = pytest.mark.integration
 
@@ -97,13 +97,14 @@ async def _make_publishable(w: World, consent: bool = True) -> uuid.UUID:
         return farmer.id
 
 
-async def _publish(w: World, client: AsyncClient, *kgs: str) -> dict[str, Any]:
+async def _publish(w: World, client: AsyncClient, *kgs: str, build: bool = True) -> dict[str, Any]:
     """Make a batch of one lot per quantity, grade, approve, pack and publish it; run the build task.
 
     Args:
         w: the seeded world.
         client: the API client.
         *kgs: intake kilograms per lot.
+        build: run the queued build task (False leaves build 1 queued).
 
     Returns:
         The batch response body (before publishing).
@@ -125,24 +126,27 @@ async def _publish(w: World, client: AsyncClient, *kgs: str) -> dict[str, Any]:
     }
     assert (await client.post(f"/v1/batches/{batch['id']}/final-packing", json=packing)).status_code == 200
     assert (await client.post(f"/v1/batches/{batch['id']}/publish")).status_code == 202
-    await _run_last_build(w)
+    if build:
+        await _run_last_build(w)
     return batch
 
 
-async def _run_last_build(w: World) -> None:
-    """Run the last recorded `publishing.build_page` message through the real task.
+async def _run_last_build(w: World, index: int = -1, expect: str = "built") -> None:
+    """Run a recorded `publishing.build_page` message through the real task.
 
     Args:
         w: the seeded world (holds the recorded messages).
+        index: which recorded message, default the last.
+        expect: the status the task must return.
 
     Side effects:
         Builds the page: S3 objects and the build row.
     """
     from agritrace.modules.publishing import tasks  # late: importing the worker reads the settings
 
-    name, kwargs = w.sent[-1]
+    name, kwargs = w.sent[index]
     assert name == "publishing.build_page"
-    assert await asyncio.to_thread(tasks.build_page, **kwargs) == "built"
+    assert await asyncio.to_thread(tasks.build_page, **kwargs) == expect
 
 
 def _get(key: str, version: str | None = None) -> dict[str, Any]:
@@ -375,3 +379,21 @@ async def test_rebuild_needs_a_published_batch(world: tuple[World, AsyncClient])
         r.status_code == 409 and r.json()["error"]["details"]["reasons"][0]["code"] == "final_packing_missing"
     )
     assert (await client.get(f"/v1/public/batches/{batch['code']}")).status_code == 404
+
+
+async def test_older_build_never_overwrites_a_newer_page(world: tuple[World, AsyncClient]) -> None:
+    """Build 1 delivered after build 2 has run is `superseded` and leaves build 2's objects latest (r1 P2-2).
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    await _make_publishable(w)
+    batch = await _publish(w, client, "100", build=False)
+    assert (await client.post(f"/v1/batches/{batch['id']}/rebuild")).status_code == 202
+    await _run_last_build(w)  # build 2
+    await _run_last_build(w, index=-2, expect="superseded")  # the delayed build 1
+    data = json.loads(_get(f"batches/{batch['code']}/data.json")["Body"])
+    assert data["footer"]["generation"] == "2"
+    r = await client.get(f"/v1/batches/{batch['id']}/builds")
+    assert [(b["build_no"], b["status"]) for b in r.json()["items"]] == [(1, "superseded"), (2, "built")]
