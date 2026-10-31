@@ -22,4 +22,24 @@ Initial HTML CSS And JS Are Under 100 KB :: `python -m agritrace_p... | PASS |
 ------------------------------------------------------------------------------
 Lighthouse 3G Performance Is At Least 90 With LCP At Most 2 s :: l... | PASS |
 ------------------------------------------------------------------------------
-Lighthouse Normal 4G Transfers Under 100 KB With LCP At Most 2.5 s... 
+Lighthouse Normal 4G Transfers Under 100 KB With LCP At Most 2.5 s... | PASS |
+------------------------------------------------------------------------------
+OG Tags Pass The Privacy Lint                                         | SKIP |
+Placeholder: written when W03 merges.
+------------------------------------------------------------------------------
+Tamil Renders With The System Font                                    | SKIP |
+Placeholder: written when W03 merges.
+------------------------------------------------------------------------------
+Page Is Served From Object Storage With The Backend Down              | SKIP |
+Placeholder: written when Q03 merges.
+------------------------------------------------------------------------------
+Old Page Version Is Retrievable                                       | SKIP |
+Placeholder: written when Q03 merges.
+------------------------------------------------------------------------------
+Page :: Public batch page: render, privacy lint, HTML validity, si... | PASS |
+15 tests, 11 passed, 0 failed, 4 skipped
+==============================================================================
+Output:  /tmp/w02robot/output.xml
+Log:     /tmp/w02robot/log.html
+Report:  /tmp/w02robot/report.html
+exit=0

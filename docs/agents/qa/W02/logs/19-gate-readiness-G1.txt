@@ -1,0 +1,9 @@
+$ /tmp/w02rv/bin/python qa/scripts/gate-readiness.py G1
+B00: 1 real Robot test(s)
+B01: 0 real Robot test(s)
+M00: 0 real Robot test(s)
+P00: 1 real Robot test(s)
+Q00: 3 real Robot test(s)
+W01: 5 real Robot test(s)
+gate-readiness G1: PASS
+exit=0

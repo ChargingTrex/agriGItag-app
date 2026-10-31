@@ -1,0 +1,20 @@
+$ grep -n "html-validate\|@lhci/cli\|^| lighthouse" docs/LIBRARIES.md
+13:| html5lib | 1.1 | MIT | apps/public-page/tests/test_render.py (dev) | Strict HTML5 parse of the rendered page (fails on any parse error) and element queries | Pure-Python WHATWG parser with a strict mode; no compiled deps | lxml (`recover=False` is not an HTML5 conformance check); html-validate is Node (W02 adds it) |
+100:| html-validate | 11.4.0 | MIT | apps/public-page/package.json, .htmlvalidate.mjs, qa/robot/public/page.robot (dev, CI) | W02 "0 HTML errors": HTML conformance and a11y rules on the built page | Offline, no Java or network; maintained `standard` and `a11y` presets. 11.4.0 is the newest that runs on Node 24.7 (11.17 needs ≥ 24.8). Adding or upgrading it needs `npm install --legacy-peer-deps` 
+101:| @lhci/cli | 0.15.1 | Apache-2.0 | apps/public-page/package.json, lighthouserc.3g.yml, lighthouserc.4g.yml, qa/robot/public/page.robot (dev, CI) | Lighthouse CI: serves out/site with gzip, runs Lighthouse 3×, asserts BM-03 and BM-16 thresholds | The official Lighthouse CI runner; built-in static server and assertions, no extra server | treosh/lighthouse-ci-action (GitHub-only, not runnable l
+102:| lighthouse | 12.6.1 | Apache-2.0 | transitive via @lhci/cli (dev, CI) | The audit engine; simulated throttling (`throttlingMethod: simulate`) | Comes with @lhci/cli; pinned by its lockfile | — (not a direct choice) |
+# installed versions/licences (node_modules)
+html-validate 11.4.0 MIT
+@lhci/cli 0.15.1 Apache-2.0
+lighthouse 12.6.1 Apache-2.0
+$ uv run --no-project --with pyyaml python infra/scripts/libraries-check.py
+check   apps/mobile/pubspec.yaml: 12 dependencies, ok
+check   apps/portal/package.json: 33 dependencies, ok
+check   apps/public-page/package.json: 2 dependencies, ok
+check   qa/robot/requirements.txt: 7 dependencies, ok
+libraries-check: PASS (119 ledger rows)
+exit=0
+$ grep -n "W02" CHANGELOG.md
+13:- WP-W02 — public page validators and CI gates: privacy-lint catches OSM `mlat/mlon` and `#map=z/lat/lon`, degree, DMS and space-separated coordinates (Q00-1, Q00-r2 P2-3); canary check `tools/check_output.sh`; html-validate; Lighthouse CI 3G (BM-03) and normal 4G (BM-16); `public-page` CI job; real Robot public-page tests — reviewer pending, verifier pending (2026-10-30). — reviewer PASS
+$ grep -n "Unreleased" CHANGELOG.md
+6:## [Unreleased]
