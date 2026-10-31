@@ -28,7 +28,12 @@ void main() {
     expect(fromWire(SyncKind.values, 'quality_reading'), SyncKind.qualityReading);
     expect(fromWire(SyncKind.values, 'harvest'), isNull);
     final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
-    expect(SyncKind.values.map(wireName), unorderedEquals((kind['enum'] as List).cast<String>()));
+    final pending = {SyncKind.farmer, SyncKind.assistSession}; // D-031/D-032, served by B15 (not on main yet)
+    expect(
+      SyncKind.values.where((k) => !pending.contains(k)).map(wireName),
+      unorderedEquals((kind['enum'] as List).cast<String>()),
+    );
+    expect(eventTypes, unorderedEquals(((schemas['EventType'] as Map)['enum'] as List).cast<String>()));
     final changeKinds = ((schemas['ChangeKind'] as Map)['enum'] as List).cast<String>();
     expect(changeKinds, containsAll(ChangeKind.values.map(wireName)));
   });
@@ -37,7 +42,7 @@ void main() {
     final w = World();
     await w.init();
     final id = await w.save(photos: 1);
-    final wire = await entryToWire(w.db, await w.entry(id));
+    final wire = (await entryToWire(w.db, await w.entry(id)))!;
     final data = wire['data']! as Map<String, Object?>;
     expect(props('SyncEntry'), containsAll(wire.keys));
     expect(props('HarvestVersion'), containsAll(data.keys));
@@ -99,9 +104,60 @@ void main() {
     await w.init();
     final id = await w.save();
     final undoId = await w.db.entriesDao.undo(id, now: t0.add(const Duration(hours: 1)));
-    final data = (await entryToWire(w.db, await w.entry(undoId)))['data']! as Map<String, Object?>;
+    final data = (await entryToWire(w.db, await w.entry(undoId)))!['data']! as Map<String, Object?>;
     expect((data['event_id'], data['version_no'], data['change_kind'], data['event_type']), (id, 2, 'undo', 'harvest'));
     expect((data['payload']! as Map)['bags'], 13);
+    await w.dispose();
+  });
+
+  // RE-RUN WHEN B15 LANDS: until then the two kinds and the per-entry key are checked against the spec wording in
+  // docs/agents/specs/backend-design.md §3 (D-031, D-032); afterwards assert them against SyncEntry in openapi.json.
+  test(
+    'D-031/D-032 (pending B15): spec §3 names kinds farmer and assist_session and a top-level assist_session_id',
+    () {
+      final spec = File('../../docs/agents/specs/backend-design.md').readAsStringSync();
+      expect(spec, contains('"kind": "${wireName(SyncKind.farmer)}"'));
+      expect(spec, contains('"kind": "${wireName(SyncKind.assistSession)}"'));
+      expect(
+        spec,
+        contains('"kind": "consent", "assist_session_id"'),
+        reason: 'on the entry, beside kind, not in data',
+      );
+    },
+  );
+
+  test(
+    'onboarding push from [farmer, assist_session, consent, plot] Entries: kinds, order and lifted session id',
+    () async {
+      final w = World();
+      await w.init();
+      // Saved out of order on purpose: the batch puts the farmer, then the session, first (D-031).
+      final consent = await w.saveEntry('consent', {'farmer_id': 'f-new', 'assist_session_id': 'as-1', 'type': 'x'});
+      final farmer = await w.saveEntry('farmer', {'name': 'Muthu', 'assist_session_id': 'ignored-by-server'});
+      final plot = await w.saveEntry('plot', {'farmer_id': 'f-new', 'assist_session_id': 'as-1'});
+      final session = await w.saveEntry('assist_session', {'farmer_id': 'f-new', 'started_at': t0.toIso8601String()});
+      final unknown = await w.saveEntry('mystery', {});
+      await w.sync.runOnce();
+
+      final entries = ((w.server.seen('POST', '/v1/sync/push').single.body! as Map)['entries'] as List)
+          .cast<Map<String, Object?>>();
+      expect(entries.map((e) => e['client_id']), [farmer, session, consent, plot]);
+      expect(entries.map((e) => e['kind']), ['farmer', 'assist_session', 'consent', 'plot']);
+      expect(entries.map((e) => e['assist_session_id']), ['ignored-by-server', null, 'as-1', 'as-1']);
+      expect(entries.every((e) => !(e['data']! as Map).containsKey('assist_session_id')), isTrue);
+      final rejected = await w.outboxOf(unknown);
+      expect((rejected.status, rejected.lastError), (OutboxStatus.needsAttention, 'unknown_entry_type'));
+      await w.dispose();
+    },
+  );
+
+  test('an event captured in an assist session carries the session id on the entry, not in its payload', () async {
+    final w = World();
+    await w.init();
+    final id = await w.saveEntry('harvest', {'bags': 2, 'assist_session_id': 'as-9'}, lotId: 'lot-1');
+    final wire = (await entryToWire(w.db, await w.entry(id)))!;
+    expect(wire['assist_session_id'], 'as-9');
+    expect(((wire['data']! as Map)['payload'] as Map).containsKey('assist_session_id'), isFalse);
     await w.dispose();
   });
 }

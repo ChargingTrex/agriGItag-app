@@ -173,4 +173,47 @@ void main() {
       expect((crops.version, crops.etag, crops.fetchedAt.isAfter(fetchedAt)), (5, '"c5"', true));
     },
   );
+
+  test('the plots part never overwrites a known plot\'s accuracy, method, GI status, lock or version', () async {
+    await w.db
+        .into(w.db.plots)
+        .insert(
+          PlotsCompanion.insert(
+            plotId: 'plot-1',
+            farmerId: 'farmer-1',
+            pinLat: 1,
+            pinLng: 2,
+            pinAccuracyM: 4.2,
+            pinMethod: 'map_pin',
+            declaredArea: 1,
+            areaUnit: 'cent',
+            surveyNoLocalOnly: const Value('S-12'),
+            giStatus: 'inside',
+            locked: true,
+            version: 3,
+          ),
+        );
+    w.server.reference['plots'] = (
+      42,
+      '"p42"',
+      {
+        'plots': [
+          {
+            'id': 'plot-1',
+            'farmer_id': 'farmer-1',
+            'pin': {'lat': 9.5598, 'lon': 78.1335},
+            'declared_area': '1.5',
+            'area_unit': 'acre',
+          },
+        ],
+      },
+    );
+    await fetchBundles(w.contextFor());
+    final p = await w.db.select(w.db.plots).getSingle();
+    expect((p.pinAccuracyM, p.pinMethod, p.giStatus, p.locked, p.version), (4.2, 'map_pin', 'inside', true, 3));
+    expect(
+      (p.pinLat, p.pinLng, p.declaredArea, p.areaUnit, p.surveyNoLocalOnly),
+      (9.5598, 78.1335, 1.5, 'acre', 'S-12'),
+    );
+  });
 }

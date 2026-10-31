@@ -20,8 +20,16 @@ import '../db/db_fixtures.dart';
 
 export '../db/db_fixtures.dart';
 
-/// One request the fake server saw: method, path (or full URL for storage), query, decoded body and headers.
-typedef Seen = ({String method, String path, Map<String, String> query, Object? body, Map<String, dynamic> headers});
+/// One request the fake server saw: method, path (or full URL for storage), query, decoded body, headers, and
+/// whether it carried the `extra['secure']` AccessToken marker M06's auth interceptor keys on.
+typedef Seen = ({
+  String method,
+  String path,
+  Map<String, String> query,
+  Object? body,
+  Map<String, dynamic> headers,
+  bool secure,
+});
 
 /// Answers a request instead of the fake server's default; return null to fall through to the default.
 typedef Intercept = FutureOr<ResponseBody?> Function(Seen request);
@@ -77,6 +85,8 @@ class FakeServer implements HttpClientAdapter {
       query: o.uri.queryParameters,
       body: isJson ? jsonDecode(utf8.decode(bytes)) : bytes,
       headers: o.headers,
+      secure:
+          o.extra['secure'] is List && (o.extra['secure'] as List).any((s) => s is Map && s['name'] == 'AccessToken'),
     );
     requests.add(request);
     if (offline) throw DioException.connectionError(requestOptions: o, reason: 'airplane mode');
@@ -197,6 +207,9 @@ class World {
   /// Whether the reachability probe succeeds.
   bool reachable = true;
 
+  /// How many reachability probes ran.
+  int probes = 0;
+
   /// Connectivity change events for [SyncService.start].
   final networkChanges = StreamController<Object?>.broadcast();
 
@@ -217,7 +230,10 @@ class World {
       api: api,
       networkType: () async => network,
       networkChanges: networkChanges.stream,
-      reachable: () async => reachable,
+      reachable: () async {
+        probes++;
+        return reachable;
+      },
       now: () => clock,
       random: MidRandom(),
     );
@@ -270,6 +286,17 @@ class World {
 
   /// Writes the photo bytes [save] uses back to [path] (a full-size file the test pretends was not purged).
   void restoreFile(String path) => File(path).writeAsBytesSync(List.filled(1000, 7));
+
+  /// Saves an entry of [type] with [payload] (owner `user-1`, no lot or plot unless given) and returns its id.
+  /// For non-event kinds such as `farmer`, `assist_session`, `consent` and `plot` (D-031, D-032).
+  Future<String> saveEntry(String type, Map<String, Object?> payload, {String? lotId}) async {
+    final entry = entryAt(
+      at: clock,
+      payload: jsonEncode(payload),
+    ).copyWith(entryType: Value(type), lotId: Value(lotId), plotId: const Value(null));
+    await db.entriesDao.save(entry, const []);
+    return entry.entryId.value;
+  }
 
   /// The signed-in user's pending count right now.
   Future<int> pending() => db.outboxDao.pendingCount().first;

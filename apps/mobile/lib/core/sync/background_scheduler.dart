@@ -17,7 +17,8 @@ import '../router/session.dart' show sessionProvider;
 /// Unique name of the periodic sync task; also the iOS BGTaskScheduler identifier.
 const syncTaskName = 'in.agritrace.sync';
 
-/// Registers the periodic sync for [config] (kept on re-registration, so app restarts do not reset the period).
+/// Registers the periodic sync for [config]. Re-registration keeps the timing but refreshes the input, so an app
+/// update with a new API URL reaches the background task.
 ///
 /// Android runs it every 15 min (WorkManager's minimum) when a network is connected; iOS treats the period as a hint.
 /// Returns when registered. Throws [PlatformException] when the plugin is missing (tests do not call this).
@@ -29,7 +30,7 @@ Future<void> scheduleBackgroundSync(AppConfig config) async {
     syncTaskName,
     frequency: const Duration(minutes: 15),
     constraints: Constraints(networkType: NetworkType.connected),
-    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
     inputData: {'flavor': config.flavor.name, 'apiBaseUrl': config.apiBaseUrl},
   );
 }

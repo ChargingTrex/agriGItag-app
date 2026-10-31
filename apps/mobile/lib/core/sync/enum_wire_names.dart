@@ -1,14 +1,37 @@
 // Dart enum names (camelCase, also how Drift stores them on disk) to the server's snake_case wire values, and back.
 // Requirement: backend-design.md §3 (push `kind` values), D-023 (server enums are snake_case strings), M01 review
 //   P3-6 ("camelCase enum names on disk, M02 maps them"); PLAN §13 A2–A4 (the push envelope).
-// Callers: outbox_processor.dart (entry kind, change kind), test/sync/enum_wire_names_test.dart (checks every value
-//   against packages/openapi/openapi.json).
+// Callers: outbox_processor.dart (entry kind, change kind, event types), test/sync/contract_test.dart (checks every
+//   value against packages/openapi/openapi.json, and the D-031/D-032 kinds against backend-design.md §3 until B15).
 
-/// Kind of a push entry (`SyncEntry.kind` on the server). An entry whose `entryType` equals one of these wire names
-/// is sent as that kind with its payload as `data`; every other entry type is an `eventVersion`.
+/// Event types the server accepts in an `event_version` (`EventType`); an entry of one of these types (or `undo`)
+/// is pushed as an event version.
+const eventTypes = {
+  'land_preparation',
+  'nursery',
+  'sowing',
+  'input_application',
+  'harvest',
+  'drying',
+  'packing',
+  'problem',
+  'intake',
+  'grading',
+  'final_packing',
+};
+
+/// Kind of a push entry (`SyncEntry.kind` on the server). An entry whose `entryType` is one of [eventTypes] (or
+/// `undo`) is an `eventVersion`; one whose `entryType` equals another kind's wire name is sent as that kind with its
+/// payload as `data`; any other type cannot be sent.
 enum SyncKind {
   /// A farm or processing event version (`EventVersionIn`).
   eventVersion,
+
+  /// A farmer registered offline by an officer, `data` = `FarmerIn`, id = client id (D-031).
+  farmer,
+
+  /// An assist session started offline, `data` = farmer, start time and GPS, id = client id (D-032).
+  assistSession,
 
   /// A quality reading (QC, moisture, ...).
   qualityReading,

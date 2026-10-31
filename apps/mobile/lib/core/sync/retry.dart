@@ -44,7 +44,8 @@ FailureAction classify(Object error) {
 Duration backoff(int attempts, Random random, [Object? error]) {
   final hinted = error is DioException ? _retryAfter(error.response) : null;
   if (hinted != null) return hinted > maxBackoff ? maxBackoff : hinted;
-  final base = 2000 * pow(2, max(attempts, 1) - 1);
+  // Exponent clamped at 8 (2 s × 2^8 = 512 s, already over the cap): an int power wraps past 2^63 after ~54 failures.
+  final base = 2000 * pow(2, min(max(attempts, 1) - 1, 8));
   final ms = min(base * (0.8 + 0.4 * random.nextDouble()), maxBackoff.inMilliseconds.toDouble());
   return Duration(milliseconds: ms.round());
 }

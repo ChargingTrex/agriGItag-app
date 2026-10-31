@@ -1,9 +1,10 @@
 // Push phase: send the signed-in user's saved entries to `POST /v1/sync/push` oldest first, in batches of at most 50
 // entries and 256 KB, and apply each entry's result (accepted / duplicate → confirmed with upload URLs; rejected →
-// needs_attention; stale_version → one more try).
+// needs_attention; stale_version → one more try). New farmers and offline assist sessions go first (D-031, D-032).
 // Requirement: FR4; PLAN §13 A2 (tick only on server ack), A3 (client-UUID idempotency), A4 (≤ 50 entries or
 //   256 KB), A6 (retry policy), F1 (`metrics[]`); mobile-design.md §3; backend-design.md §3 (envelope, per-entry
-//   results); Arch §Offline-first "Outbox queue"; D-005, D-029.
+//   results, kinds `farmer` / `assist_session`, per-entry `assist_session_id`); Arch §Offline-first "Outbox queue";
+//   D-005, D-029, D-031, D-032.
 // Callers: sync_service.dart (pushEntries each run), photo_uploader.dart (refreshUploadUrls); tests.
 
 import 'dart:convert';
@@ -27,6 +28,13 @@ const maxPushBytes = 256 * 1024;
 /// when present (feature screens store them there because Entries has no column for them).
 const _versionKeys = ['occurred_on', 'occurred_end_on', 'batch_id', 'reason_text'];
 
+/// Reserved payload key holding the offline assist session an entry was captured in (D-032); lifted onto the push
+/// entry, never sent inside `data`.
+const assistSessionKey = 'assist_session_id';
+
+/// `lastError` of an entry whose type the engine cannot send (not an event type, not a push kind).
+const unknownEntryType = 'unknown_entry_type';
+
 /// Pushes the signed-in user's due entries, batch after batch, until none is due or a request fails.
 ///
 /// [c] is the run. Returns when done; throws only on database errors. Side effects: outbox, entry, media and metric
@@ -44,7 +52,8 @@ Future<void> pushEntries(SyncContext c) async {
 /// Returns when the URLs are stored. Throws [DioException] (or another error for an unparseable body) when the
 /// request fails; the caller applies the retry policy to the photos.
 Future<void> refreshUploadUrls(SyncContext c, List<Entry> entries) async {
-  final data = await _post(c, [for (final e in entries) await entryToWire(c.db, e)], const []);
+  final wires = [for (final e in entries) await entryToWire(c.db, e)];
+  final data = await _post(c, wires.nonNulls.toList(), const []);
   for (final r in (data['results'] as List).cast<Map<String, Object?>>()) {
     if (r['status'] != 'rejected') await _storeUploads(c, r['client_id'] as String, r['photo_uploads']);
   }
@@ -52,21 +61,29 @@ Future<void> refreshUploadUrls(SyncContext c, List<Entry> entries) async {
 
 /// Builds the push entry (`SyncEntry`) for [e], reading its media and, for an undo, the version it undoes from [db].
 ///
-/// Entry types `plot`, `consent`, `quality_reading` and `flag_resolution` are sent as that kind with the payload as
-/// `data`; every other type is an `event_version` built from the columns and the payload. Returns the JSON map.
-/// Throws [FormatException] when `payloadJson` is not a JSON object and [StateError] when an undo's original is
-/// missing (cannot happen: entries are never deleted).
-Future<Map<String, Object?>> entryToWire(AppDatabase db, Entry e) async {
+/// Event types ([eventTypes]) and `undo` become an `event_version` built from the columns and the payload. Entry
+/// types named like another push kind (`farmer`, `assist_session`, `plot`, `consent`, `quality_reading`,
+/// `flag_resolution`) are sent as that kind with the payload as `data`. The payload key [assistSessionKey], when
+/// present, moves to the push entry's top-level `assist_session_id` for every kind (D-032).
+/// Returns the JSON map, or null for any other entry type (the caller marks it needs_attention; it is never guessed
+/// to be an event). Throws [FormatException] when `payloadJson` is not a JSON object and [StateError] when an undo's
+/// original is missing (cannot happen: entries are never deleted).
+Future<Map<String, Object?>?> entryToWire(AppDatabase db, Entry e) async {
   var payload = (jsonDecode(e.payloadJson) as Map).cast<String, Object?>();
-  final kind = fromWire(SyncKind.values, e.entryType) ?? SyncKind.eventVersion;
-  if (kind != SyncKind.eventVersion) return {'client_id': e.entryId, 'kind': wireName(kind), 'data': payload};
+  final session = payload.remove(assistSessionKey);
+  final kind = eventTypes.contains(e.entryType) || e.entryType == undoEntryType
+      ? SyncKind.eventVersion
+      : fromWire(SyncKind.values.where((k) => k != SyncKind.eventVersion), e.entryType);
+  if (kind == null) return null;
+  final head = {'client_id': e.entryId, 'kind': wireName(kind), 'assist_session_id': ?session};
+  if (kind != SyncKind.eventVersion) return {...head, 'data': payload};
 
   var eventType = e.entryType;
   if (e.entryType == undoEntryType) {
     // The server stores an undo as a full version of the same type; the phone's undo row carries no payload.
     final original = await (db.select(db.entries)..where((o) => o.entryId.equals(e.supersedesEntryId!))).getSingle();
     eventType = original.entryType;
-    payload = (jsonDecode(original.payloadJson) as Map).cast<String, Object?>();
+    payload = (jsonDecode(original.payloadJson) as Map).cast<String, Object?>()..remove(assistSessionKey);
   }
   final lifted = {for (final k in _versionKeys) k: payload.remove(k)};
   final media = await (db.select(db.media)..where((m) => m.entryId.equals(e.entryId))).get();
@@ -74,8 +91,7 @@ Future<Map<String, Object?>> entryToWire(AppDatabase db, Entry e) async {
       ? ChangeKind.create
       : (e.entryType == undoEntryType ? ChangeKind.undo : ChangeKind.correct);
   return {
-    'client_id': e.entryId,
-    'kind': wireName(SyncKind.eventVersion),
+    ...head,
     'data': {
       'event_id': e.rootId,
       'version_no': e.version,
@@ -113,10 +129,29 @@ Future<Map<String, Object?>> entryToWire(AppDatabase db, Entry e) async {
 String contentTypeOf(MediaFile m) =>
     m.kind != 'voice' ? 'image/jpeg' : (m.localPath.endsWith('.ogg') ? 'audio/ogg' : 'audio/mp4');
 
-/// Pushes [batch] (trimmed to the 256 KB body limit) and applies the results. Returns false when the request
-/// failed, so the caller stops for this run. Throws only on database errors.
+/// Pushes [batch] (new farmers and assist sessions first, trimmed to the 256 KB body limit) and applies the
+/// results. An entry of unknown type is marked needs_attention ([unknownEntryType]) and left out. Returns false
+/// when the request failed, so the caller stops for this run. Throws only on database errors.
 Future<bool> _pushBatch(SyncContext c, List<OutboxBatchItem> batch) async {
-  final wires = [for (final i in batch) await entryToWire(c.db, i.entry)];
+  // DECISION D-031: `farmer` entries, then `assist_session` entries, go to the front of the batch (stable otherwise),
+  //   so the consent and plot entries that name them are processed after them (the server keeps the order).
+  //   ADV: no id rewriting on the phone; one outbox path.  COMPROMISE: the order holds within a batch; across
+  //   batches it relies on M09 saving the farmer and the session first (oldest-first outbox).
+  final ordered = [
+    for (final rank in [0, 1, 2]) ...batch.where((i) => _rank(i.entry.entryType) == rank),
+  ];
+  final items = <OutboxBatchItem>[];
+  final wires = <Map<String, Object?>>[];
+  for (final i in ordered) {
+    final wire = await entryToWire(c.db, i.entry);
+    if (wire == null) {
+      await c.db.entriesDao.markRejected(i.entry.entryId, unknownEntryType);
+    } else {
+      items.add(i);
+      wires.add(wire);
+    }
+  }
+  if (items.isEmpty) return true;
   final metrics = await c.db.syncMetricsDao.unshipped();
   // nextBatch measures payloads only; the real body (clocks, photos, metrics) decides. One entry always goes, so an
   // oversized one gets its 413 and needs_attention instead of blocking the queue.
@@ -124,13 +159,13 @@ Future<bool> _pushBatch(SyncContext c, List<OutboxBatchItem> batch) async {
   while (n > 1 && utf8.encode(jsonEncode(_envelope(c, wires.sublist(0, n), metrics))).length > maxPushBytes) {
     n--;
   }
-  final sent = batch.sublist(0, n);
+  final sent = items.sublist(0, n);
   await c.db.outboxDao.markSending([for (final i in sent) i.row.seq], c.now());
   final Map<String, Object?> data;
   try {
     data = await _post(c, wires.sublist(0, n), metrics);
   } catch (e) {
-    await _failed(c, sent, e);
+    await _failed(c, sent, e, metrics);
     return false;
   }
   await c.db.syncMetricsDao.markShipped([for (final m in metrics) m.id]);
@@ -155,9 +190,10 @@ Future<Map<String, Object?>> _post(SyncContext c, List<Map<String, Object?>> ent
 /// The push envelope (`SyncPushIn`) for [entries] and [metrics]. Returns the JSON map; throws nothing.
 ///
 /// DECISION D-003: the sync engine posts JSON maps through the generated client's dio instead of the generated
-///   built_value models; test/sync/contract_test.dart pins every key against packages/openapi/openapi.json.
-///   ADV: the entry payload is stored as JSON and goes out as JSON (no 11-variant model round trip); `/sync/pull`
-///   and `/sync/reference` (B07) are not in main's spec yet, so they could not use generated methods anyway.
+///   built_value models; test/sync/contract_test.dart pins every key it sends and reads against
+///   packages/openapi/openapi.json.
+///   ADV: the entry payload is stored as JSON and goes out as JSON (no 11-variant model round trip, no rebuild of
+///   append-only payloads into typed objects).
 ///   COMPROMISE: the compiler does not check these keys; the contract test does, against the committed spec.
 Map<String, Object?> _envelope(SyncContext c, List<Map<String, Object?>> entries, List<SyncMetric> metrics) => {
   'device_id': c.deviceId,
@@ -241,13 +277,15 @@ Future<void> _storeUploads(SyncContext c, String entryId, Object? uploads) async
 
 /// Applies the retry policy (retry.dart) to the [sent] rows after the push failed with [error]: retryable and
 /// session errors wait for their backoff; other 4xx reject every entry of the batch with the error code (the
-/// server refused the envelope). Returns when written; throws nothing. Side effect: one log line.
-Future<void> _failed(SyncContext c, List<OutboxBatchItem> sent, Object error) async {
+/// server refused the envelope) and drop the envelope's [metrics], which may be what it refused (they are marked
+/// shipped: telemetry can be lost, entries cannot). Returns when written; throws nothing. Side effect: one log line.
+Future<void> _failed(SyncContext c, List<OutboxBatchItem> sent, Object error, List<SyncMetric> metrics) async {
   final code = errorCode(error);
   if (classify(error) == FailureAction.attention) {
     for (final i in sent) {
       await c.db.entriesDao.markRejected(i.entry.entryId, code);
     }
+    await c.db.syncMetricsDao.markShipped([for (final m in metrics) m.id]);
     developer.log('push refused ($code): ${sent.length} entries need attention', name: 'agritrace.sync');
     return;
   }
@@ -271,3 +309,11 @@ Future<void> _recordSkew(SyncContext c, DateTime serverTime) async {
 
 /// [t] as ISO 8601 UTC with `Z` (the server refuses naive timestamps), or null. Throws nothing.
 String? _iso(DateTime? t) => t?.toUtc().toIso8601String();
+
+/// Batch rank of [entryType]: 0 for a new farmer, 1 for an assist session, 2 for everything else (D-031, D-032).
+/// Returns the rank; throws nothing.
+int _rank(String entryType) => switch (fromWire(SyncKind.values, entryType)) {
+  SyncKind.farmer => 0,
+  SyncKind.assistSession => 1,
+  _ => 2,
+};

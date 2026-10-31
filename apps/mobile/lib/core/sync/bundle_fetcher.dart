@@ -11,6 +11,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart';
 
 import '../db/database.dart';
 import 'sync_context.dart';
@@ -58,29 +59,35 @@ Future<void> fetchBundles(SyncContext c) async {
 ///   BundleRepository (D-006 preview rules) reads; the M01 Plots table is filled from the same payload in the same
 ///   transaction, so screens reading either agree.
 ///   ADV: one download, no second plot endpoint; RefBundles and Plots never disagree after a fetch.
-///   COMPROMISE: the part carries no accuracy, pin method, GI status, lock or version, so those columns get
-///   placeholders; plots missing from the part are not deleted (a plot captured on this phone may not have reached
-///   the server yet), and the phone-only survey number is never overwritten.
+///   COMPROMISE: the part carries no accuracy, pin method, GI status, lock or version, so a plot new to the phone
+///   gets placeholders for them, and an existing row keeps its own values (only farmer, pin and area are updated);
+///   plots missing from the part are not deleted (a plot captured on this phone may not have reached the server
+///   yet), and the phone-only survey number is never overwritten.
 /// [plots] is the part's `plots` list. Returns when written; throws [TypeError] for an unreadable plot.
 Future<void> _mirrorPlots(SyncContext c, List<Object?> plots) async {
   for (final p in plots.cast<Map<String, Object?>>()) {
     final pin = (p['pin'] as Map).cast<String, Object?>();
+    final carried = PlotsCompanion(
+      farmerId: Value(p['farmer_id'] as String),
+      pinLat: Value((pin['lat'] as num).toDouble()),
+      pinLng: Value((pin['lon'] as num).toDouble()),
+      declaredArea: Value(double.parse('${p['declared_area']}')),
+      areaUnit: Value(p['area_unit'] as String),
+    );
     await c.db
         .into(c.db.plots)
-        .insertOnConflictUpdate(
-          PlotsCompanion.insert(
-            plotId: p['id'] as String,
-            farmerId: p['farmer_id'] as String,
-            pinLat: (pin['lat'] as num).toDouble(),
-            pinLng: (pin['lon'] as num).toDouble(),
-            pinAccuracyM: (pin['accuracy_m'] as num? ?? 0).toDouble(),
-            pinMethod: p['pin_method'] as String? ?? 'live_gps',
-            declaredArea: double.parse('${p['declared_area']}'),
-            areaUnit: p['area_unit'] as String,
-            giStatus: p['gi_status'] as String? ?? 'unknown',
-            locked: p['locked'] as bool? ?? false,
-            version: p['version'] as int? ?? 1,
+        .insert(
+          carried.copyWith(
+            plotId: Value(p['id'] as String),
+            pinAccuracyM: const Value(0),
+            pinMethod: const Value('live_gps'),
+            giStatus: const Value('unknown'),
+            locked: const Value(false),
+            version: const Value(1),
           ),
+          // Placeholders only for a new row: an existing plot keeps its real accuracy, lock and version (the next
+          // correction sends version + 1 and would otherwise be refused as stale_version).
+          onConflict: DoUpdate((_) => carried),
         );
   }
 }

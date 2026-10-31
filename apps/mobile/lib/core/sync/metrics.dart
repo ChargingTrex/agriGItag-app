@@ -25,12 +25,17 @@ Future<void> recordAck(SyncContext c, OutboxBatchItem item) => c.db.syncMetricsD
   ),
 );
 
-/// Records [ms] of photo upload time (and [failures] failed PUTs) for [entryId]: on its unshipped metric row if one
-/// exists, else on a new row (the acknowledgement row already went out with an earlier push). Returns when written;
-/// throws nothing.
+/// Records [ms] of photo upload time (and [failures] failed PUTs, never below 0) for [entryId]: added to its
+/// unshipped metric row if one exists (the push failures stay counted), else on a new row (the acknowledgement row
+/// already went out with an earlier push). Returns when written; throws nothing.
 Future<void> recordPhotoTime(SyncContext c, String entryId, int ms, int failures) async {
   final updated = await (c.db.update(c.db.syncMetrics)..where((m) => m.entryId.equals(entryId) & m.shipped.not()))
-      .write(SyncMetricsCompanion(photoUploadMs: Value(ms), failures: Value(failures)));
+      .write(
+        SyncMetricsCompanion.custom(
+          photoUploadMs: Variable(ms),
+          failures: c.db.syncMetrics.failures + Variable(max(0, failures)),
+        ),
+      );
   if (updated > 0) return;
   final entry = await (c.db.select(c.db.entries)..where((e) => e.entryId.equals(entryId))).getSingle();
   await c.db.syncMetricsDao.record(

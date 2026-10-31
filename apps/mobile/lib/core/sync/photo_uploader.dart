@@ -104,9 +104,19 @@ Future<void> _put(SyncContext c, MediaUpload u, Map<String, int> msByEntry) asyn
 
 /// Applies the retry policy to [u] after [error]. A 403 from storage means the URL expired or no longer matches:
 /// the URL is dropped so the next run asks for a fresh one. A missing local file can never upload and needs an
-/// officer (`file_missing`). Returns when written; throws nothing. Side effect: one log line.
+/// officer (`file_missing`), unless the other isolate (foreground vs WorkManager) confirmed the photo and deleted the
+/// file meanwhile (`purgedAt` set, which only happens after confirm): then this run's in-flight marks are undone
+/// (media done, outbox confirmed). Returns when written; throws nothing. Side effect: one log line.
 Future<void> _failed(SyncContext c, MediaUpload u, Object error) async {
   final m = u.media;
+  if (error is FileSystemException) {
+    final current = await (c.db.select(c.db.media)..where((x) => x.mediaId.equals(m.mediaId))).getSingle();
+    if (current.purgedAt != null) {
+      await c.db.mediaDao.setUploadState(m.mediaId, const MediaCompanion(uploadStatus: Value(UploadStatus.done)));
+      await c.db.outboxDao.markConfirmed([u.row.seq]);
+      return;
+    }
+  }
   final code = error is FileSystemException ? 'file_missing' : errorCode(error);
   final action = error is FileSystemException ? FailureAction.attention : classify(error);
   final expired = error is DioException && error.response?.statusCode == 403 && error.requestOptions.method == 'PUT';
@@ -179,7 +189,8 @@ Future<void> _received(SyncContext c, MediaUpload u, Map<String, int> msByEntry)
   final key = m.uploadUrl == null ? null : Uri.parse(m.uploadUrl!).path.replaceFirst('/', '');
   await c.db.mediaDao.setUploadState(
     m.mediaId,
-    MediaCompanion(uploadStatus: const Value(UploadStatus.done), objectKey: Value(key)),
+    // The presigned URL is dropped: it is only needed until the confirm (kill-safety).
+    MediaCompanion(uploadStatus: const Value(UploadStatus.done), objectKey: Value(key), uploadUrl: const Value(null)),
   );
   await c.db.outboxDao.markConfirmed([u.row.seq]);
   await c.db.mediaDao.purgeFullSize(m.mediaId, now: c.now());
