@@ -102,7 +102,7 @@ export const mockState = {
   features: seedFeatures(),
   /** Every `POST /v1/imports/{kind}` received, in order: the file text and the `dry_run` flag. */
   imports: [] as { kind: string; dryRun: boolean; text: string }[],
-  /** The `users.is_super_admin` flag (not a role in the token); only a super-admin may import villages. */
+  /** The `users.is_super_admin` flag: adds `super_admin` to the session roles and `/v1/me`; villages need it. */
   superAdmin: false,
 };
 
@@ -540,7 +540,7 @@ const session = (token = MOCK_ACCESS_TOKEN): SessionOut => ({
   access_token: token,
   refresh_token: null,
   expires_in: 900,
-  roles: mockState.roles,
+  roles: [...mockState.roles, ...(mockState.superAdmin ? ['super_admin'] : [])],
   fpo_id: MOCK_FPO_ID,
 });
 
@@ -825,7 +825,7 @@ export const handlers = [
       ? HttpResponse.json<Schemas['MeOut']>({
           user: {
             id: mockState.userId,
-            is_super_admin: false,
+            is_super_admin: mockState.superAdmin,
             lang: 'en',
             name: 'Office user',
             name_local: null,

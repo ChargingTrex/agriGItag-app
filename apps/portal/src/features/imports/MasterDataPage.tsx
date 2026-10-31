@@ -5,7 +5,8 @@
  * imports exactly the checked bytes.
  * Serves: PLAN gap analysis "Master data uploads", plan §7.3 P08 (template, dry-run preview, row-level error
  * report), FR53 (structured village directory with LGD code), FR56 (input list), D-017 (columns from
- * apps/api/config/fields), CLAUDE.md §6 (phone numbers masked on screen).
+ * apps/api/config/fields), CLAUDE.md §6 (phone numbers masked on screen), FR14 (tabs follow the caller's role:
+ * farmers and inputs for an FPO admin, villages for a super-admin; the server still decides).
  * Called by: src/AppRoutes.tsx (`/uploads`).
  */
 import Alert from '@mui/material/Alert';
@@ -57,6 +58,15 @@ const PATHS = {
   inputs: '/v1/imports/inputs',
 } as const;
 const PAGE_SIZE = 100;
+// Rejected row numbers listed in the status line; the rest are counted.
+const LISTED_REJECTS = 20;
+
+/**
+ * A row count with its noun.
+ * @param n Number of rows.
+ * @returns "1 row" or "N rows".
+ */
+const rowCount = (n: number): string => `${String(n)} row${n === 1 ? '' : 's'}`;
 
 /** Thrown by Confirm when the file on disk no longer has the checked bytes. */
 class FileChangedError extends Error {}
@@ -103,35 +113,47 @@ function failureText(error: unknown): string {
 
 /**
  * The Master data uploads page.
- * @returns The page with one tab per kind.
+ * @returns The page with one tab per kind the caller may import, or a note when there is none.
  */
 export function MasterDataPage() {
-  const [kind, setKind] = useState<Kind>('farmers');
+  const { session } = useAuth();
+  const [chosen, setKind] = useState<Kind | null>(null);
+  // Mirrors the routes' role checks (Admin = fpo_admin; villages = super-admin) as a preview (D-006 pattern).
+  const roles = session?.roles ?? [];
+  const kinds = (Object.keys(KINDS) as Kind[]).filter((k) =>
+    roles.includes(k === 'villages' ? 'super_admin' : 'fpo_admin'),
+  );
+  const kind = chosen ?? kinds[0];
   return (
     <Stack spacing={3}>
       <Typography component="h1" variant="h4">
         Master data uploads
       </Typography>
-      <Tabs
-        value={kind}
-        onChange={(_, value: Kind) => {
-          setKind(value);
-        }}
-        aria-label="Master data"
-      >
-        {(Object.keys(KINDS) as Kind[]).map((k) => (
-          <Tab
-            key={k}
-            value={k}
-            label={KINDS[k].label}
-            id={`tab-${k}`}
-            aria-controls="import-panel"
-          />
-        ))}
-      </Tabs>
-      <div role="tabpanel" id="import-panel" aria-labelledby={`tab-${kind}`}>
-        <ImportPanel key={kind} kind={kind} />
-      </div>
+      {!kind && <Alert severity="info">Only an FPO admin can upload master data.</Alert>}
+      {kind && (
+        <>
+          <Tabs
+            value={kind}
+            onChange={(_, value: Kind) => {
+              setKind(value);
+            }}
+            aria-label="Master data"
+          >
+            {kinds.map((k) => (
+              <Tab
+                key={k}
+                value={k}
+                label={KINDS[k].label}
+                id={`tab-${k}`}
+                aria-controls="import-panel"
+              />
+            ))}
+          </Tabs>
+          <div role="tabpanel" id="import-panel" aria-labelledby={`tab-${kind}`}>
+            <ImportPanel key={kind} kind={kind} />
+          </div>
+        </>
+      )}
     </Stack>
   );
 }
@@ -238,6 +260,8 @@ function ImportPanel({ kind }: { kind: Kind }) {
             id={`file-${kind}`}
             type="file"
             accept=".csv,text/csv"
+            // Picking another file mid-import would detach the screen from the running import.
+            disabled={commit.isPending}
             onChange={(event) => {
               const picked = event.target.files?.[0];
               // Cleared so that choosing the same (edited) file again fires another check.
@@ -263,6 +287,11 @@ function ImportPanel({ kind }: { kind: Kind }) {
           <Typography role="status" gutterBottom>
             {report.dry_run ? 'Rows that can be imported' : 'Rows imported'}: {report.accepted} ·
             Rows rejected: {report.rejected.length}
+            {report.rejected.length > 0 &&
+              ` (row ${report.rejected
+                .slice(0, LISTED_REJECTS)
+                .map((r) => String(r.row))
+                .join(', ')}${report.rejected.length > LISTED_REJECTS ? ', …' : ''})`}
           </Typography>
           {commit.isError && <Alert severity="error">{failureText(commit.error)}</Alert>}
           {report.dry_run ? (
@@ -275,11 +304,11 @@ function ImportPanel({ kind }: { kind: Kind }) {
                 commit.mutate({ picked: checked.picked, hash: checked.file.hash });
               }}
             >
-              Import {report.accepted} rows
+              Import {rowCount(report.accepted)}
             </Button>
           ) : (
             <Alert severity="success" sx={{ my: 1 }}>
-              {report.accepted} rows imported.
+              {rowCount(report.accepted)} imported.
               {report.rejected.length > 0 &&
                 ' Fix the rejected rows and upload a file with only those rows.'}
               {kind === 'farmers' && (

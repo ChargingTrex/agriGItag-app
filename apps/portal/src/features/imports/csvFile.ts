@@ -31,7 +31,7 @@ export interface CsvFile {
 /**
  * Splits CSV text into rows, numbering each by the line it ends on, exactly as the API's reader does.
  *
- * DECISION D-044: a 30-line reader instead of a CSV library.
+ * DECISION D-047: a 30-line reader instead of a CSV library.
  *   ADV: the row numbers must equal the server's `csv` `line_num` (quoted line breaks and blank lines count),
  *   which no common JS parser reports; the server stays the only judge of the file (it re-parses it).
  *   COMPROMISE: in-house parsing code; covered by a test against numbers taken from Python's `csv`.

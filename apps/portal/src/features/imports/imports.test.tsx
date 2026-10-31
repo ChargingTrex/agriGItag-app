@@ -1,8 +1,11 @@
 /**
  * Tests the Master data uploads page against the MSW mock API: the template and its column legend from the
  * field config, a file with 2 bad rows (red rows with codes, masked phones, counts), Confirm sending the same
- * bytes with `dry_run=false`, a file changed after the check, the villages role error, the server's file
- * hint, preview paging, the CSV reader's row numbers against Python's `csv`, and axe.
+ * bytes with `dry_run=false`, a file changed after the check, tabs per role (villages for a super-admin only, a
+ * note for non-admins), the server's file hint, preview paging, the CSV reader's row numbers against Python's
+ * `csv`, and axe. Limit: the template comes from the mock API, so "template matches /config/fields" is proven
+ * here only for what the portal does with the API's template; the YAML parity is B13's server test
+ * (`imports.template_columns`) and the live check is the Verifier's.
  * Serves: plan §7.3 P08 acceptance ("upload with 2 bad rows → preview shows 2 red rows with codes; confirm →
  * only valid rows created; template matches /config/fields"), PLAN gap analysis "Master data uploads", FR53.
  * Called by: Vitest (`npm test`).
@@ -12,7 +15,7 @@ import userEvent from '@testing-library/user-event';
 import axe from 'axe-core';
 import { http, HttpResponse } from 'msw';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MOCK_FIELDS, mockState } from '../../mocks/handlers';
+import { mockState } from '../../mocks/handlers';
 import { renderApp } from '../../test/render';
 import { server } from '../../test/setup';
 import { maskPhone, parseCsv } from './csvFile';
@@ -77,7 +80,7 @@ describe('Master data uploads', () => {
     globalThis.File = jsdomFile;
   });
 
-  it('offers the API template and lists its columns with the labels from /config/fields', async () => {
+  it('offers the API template and lists its columns with the labels from /config/fields (mock API)', async () => {
     const { container } = renderApp('/uploads', true);
     // First render of the file pays the module cold start; give it more than the 5 s default on a loaded runner.
     const link = await screen.findByRole(
@@ -88,9 +91,17 @@ describe('Master data uploads', () => {
     const template = decodeURIComponent(
       (link.getAttribute('href') ?? '').split(',').slice(1).join(','),
     );
-    const csvTypes = ['text', 'number', 'integer', 'boolean', 'date', 'phone', 'choice'];
-    const fromConfig = (MOCK_FIELDS['farmer'] ?? []).filter((f) => csvTypes.includes(f.type));
-    const expected = [...fromConfig.map((f) => f.name), 'village_lgd_code'];
+    // The CSV-capable fields of apps/api/config/fields/farmer.yaml in YAML order, plus the village key
+    // (imports.template_columns); written out here, not derived from the mock's field list.
+    const expected = [
+      'name',
+      'name_local',
+      'phone',
+      'lang',
+      'gi_authorised_user_no',
+      'no_smartphone',
+      'village_lgd_code',
+    ];
     expect(template.trim()).toBe(expected.join(','));
     expect(link).toHaveAttribute('download', 'farmers-template.csv');
     const legend = bodyRows('Farmers template columns');
@@ -105,7 +116,7 @@ describe('Master data uploads', () => {
     const { user, container } = await upload(FARMERS_CSV);
     await screen.findByRole('heading', { name: '3. Preview of members.csv' });
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Rows that can be imported: 3 · Rows rejected: 2',
+      'Rows that can be imported: 3 · Rows rejected: 2 (row 3, 5)',
     );
     const rows = bodyRows('Rows of members.csv');
     expect(rows.map((row) => row.cells[0]?.textContent)).toEqual(['2', '3', '4', '5', '7']);
@@ -143,19 +154,29 @@ describe('Master data uploads', () => {
     expect(mockState.imports.map((call) => call.dryRun)).toEqual([true]);
   });
 
-  it('shows the role error for villages unless the caller is a super-admin', async () => {
-    const villages = 'lgd_code,name_en,district,state\nSAMPLE0009,Sattur,Virudhunagar,Tamil Nadu';
-    await upload(villages, 'Villages');
-    expect(await screen.findByText('Your role does not allow this action.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Import/ })).not.toBeInTheDocument();
+  it('hides the Villages tab unless the caller is a super-admin', async () => {
+    renderApp('/uploads', true);
+    expect(await screen.findByRole('tab', { name: 'Farmers' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Inputs' })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Villages' })).not.toBeInTheDocument();
+  });
+
+  it('shows a note instead of the uploads to a role that cannot import', async () => {
+    mockState.roles = ['field_officer'];
+    renderApp('/uploads', true);
+    expect(
+      await screen.findByText('Only an FPO admin can upload master data.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^CSV file/)).not.toBeInTheDocument();
   });
 
   it('imports villages for a super-admin, with no Members link', async () => {
     mockState.superAdmin = true;
     const villages = 'lgd_code,name_en,district,state\nSAMPLE0009,Sattur,Virudhunagar,Tamil Nadu';
     const { user } = await upload(villages, 'Villages');
-    await user.click(await screen.findByRole('button', { name: 'Import 1 rows' }));
-    await screen.findByText(/1 rows imported\./);
+    await user.click(await screen.findByRole('button', { name: 'Import 1 row' }));
+    await screen.findByText(/1 row imported\./);
     expect(screen.queryByRole('link', { name: 'Open Members' })).not.toBeInTheDocument();
   });
 
