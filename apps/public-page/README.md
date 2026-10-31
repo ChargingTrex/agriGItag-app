@@ -77,9 +77,31 @@ medium image. Per-lot timelines use native `<details>`, so they expand with JS o
    `{{ t("farmer_n", n=2) }}`.
 3. A new stage needs a `Stage` literal in `schema.py` and a `stage.<key>` label in both files.
 
-## Not built here (later work packages)
+## W03: OG tags, print, map thumbnail, unavailable page (D-045)
 
-Print stylesheet, OG tags, unpublished/404 variant and static map thumbnail are W03.
+- **OG tags.** `og:title` is the crop (Tamil / English), `GI <number>` and the batch code;
+  `og:description` is a fixed bilingual label. Nothing in any `<meta>` comes from a lot, so no
+  farmer name, village or number can appear there. `og:url` and `og:image` need two optional record
+  fields the builder sets: `public_url` (`{PUBLIC_BASE_URL}/b/<code>`, what the QR encodes) and
+  `qr_url` (absolute URL of `batches/<code>/qr.png`). Without them those tags, the printed QR and the
+  printed link are left out.
+- **Language.** Every Tamil string is in a `lang="ta"` element and comes first; the page default is
+  `lang="en"` because untagged text is English-language data. Fonts are the system stack only.
+- **Print.** `@media print` prints black on white, keeps lot cards whole, shows one photo per event,
+  and shows the QR (a print-only background, so the screen view never downloads it) and the page
+  link. A `beforeprint` handler opens every timeline.
+- **Map thumbnail.** An inline SVG of a schematic district outline
+  (`agritrace_page/assets/district_outline.json`, not the GI area) with one dot per lot village,
+  rounded to whole map units (about 1 km). It never shows a plot pin or boundary.
+- **Unavailable page.** `render_unavailable(code, reason)` with `reason` in `unpublished`,
+  `withdrawn`, `unknown` returns a `noindex` page with no batch data. The builder writes it to
+  `public-pages/batches/<code>/index.html` (and deletes `data.json`) when a batch is unpublished or
+  withdrawn; the CDN serves the generic one for unknown codes:
+
+  ```sh
+  uv run python -m agritrace_page unavailable unknown out/404            # generic CDN 404
+  uv run python -m agritrace_page unavailable withdrawn out/x --code FGP8T4033HM7
+  ```
 
 ## Tests
 

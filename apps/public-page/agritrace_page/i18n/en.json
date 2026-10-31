@@ -65,5 +65,14 @@
   "moisture": "Moisture",
   "last_updated": "Last updated",
   "generation": "Generation",
-  "page_version": "Page version"
+  "page_version": "Page version",
+  "og_description": "Farm-to-pack record of this GI-tagged batch: farms, farming events, grade and compliance details.",
+  "map_caption": "Lot villages (dots, about 1 km) on a schematic outline of Virudhunagar district",
+  "boundary_credit": "Boundary data © geoBoundaries contributors, ODbL-1.0",
+  "public_link": "Page link",
+  "qr_alt": "QR code of this page",
+  "unavailable.title": "Batch page not available",
+  "unavailable.unpublished": "This batch page is not published yet. Please scan again later.",
+  "unavailable.withdrawn": "The producer has withdrawn this batch page.",
+  "unavailable.unknown": "No batch has this code. Check the code printed under the QR and scan again."
 }

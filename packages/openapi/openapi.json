@@ -86,6 +86,218 @@
         "title": "Address",
         "type": "object"
       },
+      "AreaByBlock": {
+        "description": "Plot areas of one development block.",
+        "properties": {
+          "block": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Development block; null groups farmers without a village/block.",
+            "title": "Block"
+          },
+          "declared_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Sum of declared areas, unit `acre`."
+          },
+          "gi_confirmed_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Declared area of plots whose location is `confirmed` inside the GI region, unit `acre`."
+          },
+          "gi_confirmed_share": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "gi_confirmed_area \u00f7 declared_area, unit `%`; null when declared_area is 0."
+          },
+          "plots": {
+            "description": "Plots (count).",
+            "title": "Plots",
+            "type": "integer"
+          },
+          "walked_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Sum of walked areas, unit `acre`."
+          },
+          "walked_declared_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Declared area of the walked plots only, unit `acre`; compare with `walked_area`."
+          },
+          "walked_plots": {
+            "description": "Plots with a GPS-walked boundary (count).",
+            "title": "Walked Plots",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "plots",
+          "declared_area",
+          "walked_plots",
+          "walked_area",
+          "walked_declared_area",
+          "gi_confirmed_area",
+          "gi_confirmed_share",
+          "block"
+        ],
+        "title": "AreaByBlock",
+        "type": "object"
+      },
+      "AreaByVillage": {
+        "description": "Plot areas of one village (the farmer's village from the villages master).",
+        "properties": {
+          "block": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Development block of the village.",
+            "title": "Block"
+          },
+          "declared_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Sum of declared areas, unit `acre`."
+          },
+          "gi_confirmed_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Declared area of plots whose location is `confirmed` inside the GI region, unit `acre`."
+          },
+          "gi_confirmed_share": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "gi_confirmed_area \u00f7 declared_area, unit `%`; null when declared_area is 0."
+          },
+          "plots": {
+            "description": "Plots (count).",
+            "title": "Plots",
+            "type": "integer"
+          },
+          "village": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village name in English.",
+            "title": "Village"
+          },
+          "village_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village id; null groups farmers without a village.",
+            "title": "Village Id"
+          },
+          "walked_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Sum of walked areas, unit `acre`."
+          },
+          "walked_declared_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Declared area of the walked plots only, unit `acre`; compare with `walked_area`."
+          },
+          "walked_plots": {
+            "description": "Plots with a GPS-walked boundary (count).",
+            "title": "Walked Plots",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "plots",
+          "declared_area",
+          "walked_plots",
+          "walked_area",
+          "walked_declared_area",
+          "gi_confirmed_area",
+          "gi_confirmed_share",
+          "village_id",
+          "village",
+          "block"
+        ],
+        "title": "AreaByVillage",
+        "type": "object"
+      },
+      "AreaStats": {
+        "description": "Plot areas of a group of plots (Land Area Analytics); areas only, never locations (CLAUDE.md \u00a76).",
+        "properties": {
+          "declared_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Sum of declared areas, unit `acre`."
+          },
+          "gi_confirmed_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Declared area of plots whose location is `confirmed` inside the GI region, unit `acre`."
+          },
+          "gi_confirmed_share": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "gi_confirmed_area \u00f7 declared_area, unit `%`; null when declared_area is 0."
+          },
+          "plots": {
+            "description": "Plots (count).",
+            "title": "Plots",
+            "type": "integer"
+          },
+          "walked_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Sum of walked areas, unit `acre`."
+          },
+          "walked_declared_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Declared area of the walked plots only, unit `acre`; compare with `walked_area`."
+          },
+          "walked_plots": {
+            "description": "Plots with a GPS-walked boundary (count).",
+            "title": "Walked Plots",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "plots",
+          "declared_area",
+          "walked_plots",
+          "walked_area",
+          "walked_declared_area",
+          "gi_confirmed_area",
+          "gi_confirmed_share"
+        ],
+        "title": "AreaStats",
+        "type": "object"
+      },
       "AssistEndIn": {
         "description": "Close an assist session.",
         "properties": {
@@ -198,6 +410,117 @@
           "farmer_id"
         ],
         "title": "AssistStartIn",
+        "type": "object"
+      },
+      "AuditRow": {
+        "description": "One `audit_log` row; device id and GPS columns are left out, location values in `diff` are hidden.",
+        "properties": {
+          "action": {
+            "description": "`create`, `update`, `delete` or a named action such as `event.correct`.",
+            "title": "Action",
+            "type": "string"
+          },
+          "actor_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "User who made the change; null for system jobs.",
+            "title": "Actor User Id"
+          },
+          "assist_session_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Assist session in force, if any.",
+            "title": "Assist Session Id"
+          },
+          "at": {
+            "description": "When the change was written (UTC).",
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "diff": {
+            "additionalProperties": true,
+            "description": "What changed, as stored; secret columns read `[redacted]`, location, boundary and land-record values (`pin`, `walked_boundary`, `land_record_ref`, `exif_gps`, ...) read `[hidden]`.",
+            "title": "Diff",
+            "type": "object"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Primary key of the changed row.",
+            "title": "Entity Id"
+          },
+          "entity_type": {
+            "description": "Table name of the changed row, e.g. `farmers`, `event_versions`.",
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "id": {
+            "description": "Audit row id (UUIDv7, time-ordered).",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "on_behalf_of_farmer_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Farmer the actor entered data for.",
+            "title": "On Behalf Of Farmer Id"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Request id for correlating with API logs.",
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "actor_user_id",
+          "on_behalf_of_farmer_id",
+          "assist_session_id",
+          "action",
+          "entity_type",
+          "entity_id",
+          "diff",
+          "request_id"
+        ],
+        "title": "AuditRow",
         "type": "object"
       },
       "BatchIn": {
@@ -668,6 +991,39 @@
         "title": "ChangeKind",
         "type": "string"
       },
+      "Completeness": {
+        "description": "Share of lots that have every mandatory event of their crop (D-037).",
+        "properties": {
+          "complete": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "complete_lots \u00f7 lots, unit `%`, one decimal; null when there are no lots."
+          },
+          "complete_lots": {
+            "description": "Lots with a live event of every type in `event_schema.mandatory`.",
+            "title": "Complete Lots",
+            "type": "integer"
+          },
+          "lots": {
+            "description": "Lots in scope (count).",
+            "title": "Lots",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "lots",
+          "complete_lots",
+          "complete"
+        ],
+        "title": "Completeness",
+        "type": "object"
+      },
       "ConsentIn": {
         "description": "Record a farmer's consent; resending the same `client_id` returns the stored record (D-005).",
         "properties": {
@@ -960,6 +1316,74 @@
           "active"
         ],
         "title": "CropOut",
+        "type": "object"
+      },
+      "Dashboard": {
+        "description": "FPO dashboard (FR13, P06). Filters narrow completeness, stage tiles and land area only.",
+        "properties": {
+          "batches": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Batches by status (whole FPO), every status present.",
+            "title": "Batches",
+            "type": "object"
+          },
+          "completeness": {
+            "$ref": "#/components/schemas/Completeness",
+            "description": "Lots with all mandatory events \u00f7 lots."
+          },
+          "finished_goods": {
+            "$ref": "#/components/schemas/FinishedGoods",
+            "description": "Finished Goods inventory (whole FPO)."
+          },
+          "flags": {
+            "$ref": "#/components/schemas/FlagCounts",
+            "description": "Active flags by severity (whole FPO)."
+          },
+          "fpo_id": {
+            "description": "FPO the numbers are for.",
+            "format": "uuid",
+            "title": "Fpo Id",
+            "type": "string"
+          },
+          "land_area": {
+            "$ref": "#/components/schemas/LandArea",
+            "description": "Land Area Analytics."
+          },
+          "scans": {
+            "$ref": "#/components/schemas/Scans",
+            "description": "Public page scans (whole FPO)."
+          },
+          "stages": {
+            "description": "Stage-progress tiles in farm order.",
+            "items": {
+              "$ref": "#/components/schemas/StageTile"
+            },
+            "title": "Stages",
+            "type": "array"
+          },
+          "sync_health": {
+            "description": "Sync timings by network type, last 7 days, from devices of the FPO's members; a member of several FPOs is counted in each.",
+            "items": {
+              "$ref": "#/components/schemas/SyncHealthRow"
+            },
+            "title": "Sync Health",
+            "type": "array"
+          }
+        },
+        "required": [
+          "fpo_id",
+          "completeness",
+          "stages",
+          "flags",
+          "batches",
+          "land_area",
+          "finished_goods",
+          "scans",
+          "sync_health"
+        ],
+        "title": "Dashboard",
         "type": "object"
       },
       "DeviceOut": {
@@ -1909,6 +2333,120 @@
         "title": "FarmerReject",
         "type": "object"
       },
+      "FarmerRow": {
+        "description": "One row of the per-farmer dashboard table; no phone, address or plot location (CLAUDE.md \u00a76).",
+        "properties": {
+          "block": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Development block of the village.",
+            "title": "Block"
+          },
+          "code": {
+            "description": "Farmer code, unique in the FPO.",
+            "title": "Code",
+            "type": "string"
+          },
+          "declared_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Sum of declared plot areas, unit `acre`."
+          },
+          "id": {
+            "description": "Farmer id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "lots": {
+            "description": "Lots, of the `crop_id` filter when given (count).",
+            "title": "Lots",
+            "type": "integer"
+          },
+          "lots_complete": {
+            "description": "Of those, lots with every mandatory event (count, D-037).",
+            "title": "Lots Complete",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name in English script.",
+            "title": "Name",
+            "type": "string"
+          },
+          "name_local": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Name in the local script.",
+            "title": "Name Local"
+          },
+          "plots": {
+            "description": "Plots (count).",
+            "title": "Plots",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/FarmerStatus",
+            "description": "Onboarding status."
+          },
+          "village": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village name in English.",
+            "title": "Village"
+          },
+          "village_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Village from the villages master, if picked.",
+            "title": "Village Id"
+          },
+          "walked_area": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Sum of walked plot areas, unit `acre`."
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "name_local",
+          "status",
+          "village_id",
+          "village",
+          "block",
+          "plots",
+          "declared_area",
+          "walked_area",
+          "lots",
+          "lots_complete"
+        ],
+        "title": "FarmerRow",
+        "type": "object"
+      },
       "FarmerStatus": {
         "description": "Farmer onboarding state (Stage 0; FR67 activates on a confirmed location).",
         "enum": [
@@ -2350,6 +2888,106 @@
         "title": "FinalPackingVersion",
         "type": "object"
       },
+      "FinishedBatch": {
+        "description": "A packed or published batch in the Finished Goods inventory.",
+        "properties": {
+          "batch_id": {
+            "description": "Batch id.",
+            "format": "uuid",
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "code": {
+            "description": "Batch code printed on the label.",
+            "title": "Code",
+            "type": "string"
+          },
+          "pack_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pack date on the label.",
+            "title": "Pack Date"
+          },
+          "packed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantity in final packs, unit `kg`; null if not recorded."
+          },
+          "remaining": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantity still in stock, unit `kg`; equals `packed` until sales are recorded."
+          },
+          "scans": {
+            "description": "Public page scans of this batch code (count, FR20).",
+            "title": "Scans",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchStatus",
+            "description": "`packed` or `published`."
+          }
+        },
+        "required": [
+          "batch_id",
+          "code",
+          "status",
+          "packed",
+          "remaining",
+          "pack_date",
+          "scans"
+        ],
+        "title": "FinishedBatch",
+        "type": "object"
+      },
+      "FinishedGoods": {
+        "description": "Finished Goods: packed batches and their quantities.",
+        "properties": {
+          "batches": {
+            "description": "Packed or published batches (count).",
+            "title": "Batches",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Newest 100 batches, latest pack date first.",
+            "items": {
+              "$ref": "#/components/schemas/FinishedBatch"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "packed": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Total in final packs, unit `kg`."
+          }
+        },
+        "required": [
+          "batches",
+          "packed",
+          "items"
+        ],
+        "title": "FinishedGoods",
+        "type": "object"
+      },
       "FlagBrief": {
         "description": "An active rule flag found by the gate checks of this request (B08 `run_gate_checks`).",
         "properties": {
@@ -2392,6 +3030,33 @@
           "status"
         ],
         "title": "FlagBrief",
+        "type": "object"
+      },
+      "FlagCounts": {
+        "description": "Active (open or escalated) flags of the FPO by severity.",
+        "properties": {
+          "hold": {
+            "description": "Active `hold` flags; each blocks GI labelling (count).",
+            "title": "Hold",
+            "type": "integer"
+          },
+          "info": {
+            "description": "Active `info` flags (count).",
+            "title": "Info",
+            "type": "integer"
+          },
+          "warn": {
+            "description": "Active `warn` flags (count).",
+            "title": "Warn",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "info",
+          "warn",
+          "hold"
+        ],
+        "title": "FlagCounts",
         "type": "object"
       },
       "FlagOut": {
@@ -4413,7 +5078,7 @@
             "title": "Intake Moisture Reading Id"
           },
           "lot_id": {
-            "description": "Lot received; must be `ready_for_sale`.",
+            "description": "Lot received; `ready_for_sale`, or `open`/`drying` with a drying-end moisture that passes the ready gate (run here, D-040).",
             "format": "uuid",
             "title": "Lot Id",
             "type": "string"
@@ -4435,10 +5100,17 @@
             "title": "Price Per Kg"
           },
           "processor_id": {
-            "description": "Receiving processor.",
-            "format": "uuid",
-            "title": "Processor Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Receiving processor (own or shared); absent \u2192 the FPO's only own processor (D-040), zero or several own processors \u2192 `field_required`.",
+            "title": "Processor Id"
           },
           "received": {
             "$ref": "#/components/schemas/Quantity-Input",
@@ -4467,7 +5139,6 @@
         "required": [
           "client_id",
           "lot_id",
-          "processor_id",
           "sale_date",
           "received"
         ],
@@ -4478,7 +5149,7 @@
         "description": "A stored intake with its quantity chain and the flags the lot rules raised.",
         "properties": {
           "accepted_by_user_id": {
-            "description": "Admin who accepted the lot.",
+            "description": "QC officer or FPO admin who accepted the lot.",
             "format": "uuid",
             "title": "Accepted By User Id",
             "type": "string"
@@ -4594,7 +5265,7 @@
       },
       "IntakePayload": {
         "additionalProperties": false,
-        "description": "Stage 7 sale of a lot to the processor, as recorded on the lot's timeline.",
+        "description": "Stage 7 sale of a lot to the processor, as a note on the lot's timeline only.\n\nIt does not receive the lot: no `lot_intakes` row, no status change (D-040). To receive a lot use push\nkind `lot_intake` or `POST /v1/intakes`.",
         "properties": {
           "moisture_reading_id": {
             "anyOf": [
@@ -4606,7 +5277,7 @@
                 "type": "null"
               }
             ],
-            "description": "Client id of the intake moisture reading taken at the gate.",
+            "description": "Client id of the intake moisture reading taken at the gate (note only).",
             "title": "Moisture Reading Id"
           },
           "price_per_kg": {
@@ -4622,7 +5293,7 @@
                 "type": "null"
               }
             ],
-            "description": "Price paid in INR per kg (optional).",
+            "description": "Price noted in INR per kg (optional).",
             "title": "Price Per Kg"
           },
           "processor_id": {
@@ -4635,7 +5306,7 @@
                 "type": "null"
               }
             ],
-            "description": "Processor that received the lot.",
+            "description": "Processor named in the note (the lot is received only by `lot_intake`).",
             "title": "Processor Id"
           },
           "received": {
@@ -4647,7 +5318,7 @@
                 "type": "null"
               }
             ],
-            "description": "Quantity received, unit `kg`."
+            "description": "Quantity noted, unit `kg` (not used for shares or reconciliation)."
           }
         },
         "title": "IntakePayload",
@@ -4875,6 +5546,38 @@
           "ta"
         ],
         "title": "Labels",
+        "type": "object"
+      },
+      "LandArea": {
+        "description": "Land Area Analytics: acres by village and block, declared vs walked, GI-confirmed share.",
+        "properties": {
+          "by_block": {
+            "description": "One row per block, by block name.",
+            "items": {
+              "$ref": "#/components/schemas/AreaByBlock"
+            },
+            "title": "By Block",
+            "type": "array"
+          },
+          "by_village": {
+            "description": "One row per village, by block then village name.",
+            "items": {
+              "$ref": "#/components/schemas/AreaByVillage"
+            },
+            "title": "By Village",
+            "type": "array"
+          },
+          "total": {
+            "$ref": "#/components/schemas/AreaStats",
+            "description": "All plots in scope."
+          }
+        },
+        "required": [
+          "total",
+          "by_block",
+          "by_village"
+        ],
+        "title": "LandArea",
         "type": "object"
       },
       "LandPreparationPayload": {
@@ -6013,6 +6716,41 @@
         "title": "PackingVersion",
         "type": "object"
       },
+      "Page_AuditRow_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/AuditRow"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[AuditRow]",
+        "type": "object"
+      },
       "Page_BatchOut_": {
         "properties": {
           "has_more": {
@@ -6186,6 +6924,41 @@
           "has_more"
         ],
         "title": "Page[FarmerOut]",
+        "type": "object"
+      },
+      "Page_FarmerRow_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/FarmerRow"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[FarmerRow]",
         "type": "object"
       },
       "Page_FlagOut_": {
@@ -9221,6 +9994,27 @@
         "title": "Role",
         "type": "string"
       },
+      "Scans": {
+        "description": "Public page scans of the FPO's batch codes (FR20).",
+        "properties": {
+          "last_7_days": {
+            "description": "Scans in the last 7 days (count).",
+            "title": "Last 7 Days",
+            "type": "integer"
+          },
+          "total": {
+            "description": "All scans (count).",
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "last_7_days"
+        ],
+        "title": "Scans",
+        "type": "object"
+      },
       "SessionOut": {
         "description": "A signed-in session: short-lived access token plus the device's refresh token.",
         "properties": {
@@ -9592,6 +10386,39 @@
         "title": "SowingVersion",
         "type": "object"
       },
+      "StageTile": {
+        "description": "Lot counts for one farm stage (D-037); done + in_progress + not_started = lots in scope.",
+        "properties": {
+          "done": {
+            "description": "Lots with this stage recorded and a later stage reached (count).",
+            "title": "Done",
+            "type": "integer"
+          },
+          "in_progress": {
+            "description": "Lots whose furthest recorded stage is this one while the lot is still in the field.",
+            "title": "In Progress",
+            "type": "integer"
+          },
+          "not_started": {
+            "description": "Lots with no live event of this stage (count).",
+            "title": "Not Started",
+            "type": "integer"
+          },
+          "stage": {
+            "description": "Event type of the stage, e.g. `land_preparation`, `harvest`.",
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage",
+          "done",
+          "in_progress",
+          "not_started"
+        ],
+        "title": "StageTile",
+        "type": "object"
+      },
       "StandardRef": {
         "additionalProperties": false,
         "description": "The published standard a profile version cites (FR47, FR51: shown on the public page with edition).",
@@ -9910,18 +10737,18 @@
                 "type": "null"
               }
             ],
-            "description": "Assist session this entry was captured in (D-032): one of the caller's sessions, open or ended, pushed earlier as an `assist_session` entry or started online. Records assist mode for this entry only (event version, audit row, consent witness); the entry's farmer must be the session's (`forbidden` otherwise); unknown or another officer's \u2192 `assist_session_invalid`. When absent, the `X-Assist-Session` header applies. Ignored on `farmer` entries.",
+            "description": "Assist session this entry was captured in (D-032): one of the caller's sessions, open or ended, pushed earlier as an `assist_session` entry or started online. Records assist mode for this entry only (event version, audit row, consent witness); the entry's farmer must be the session's (`forbidden` otherwise: consent, plot, lot event, reading on a lot); a batch reading or batch event with it \u2192 `forbidden` (D-042); unknown or another officer's \u2192 `assist_session_invalid`. When absent, the `X-Assist-Session` header applies. Ignored (no lookup, no assist fields) on `farmer`, `flag_resolution`, `assist_session` and `lot_intake` entries.",
             "title": "Assist Session Id"
           },
           "client_id": {
-            "description": "Id of the record created (event version, reading, plot, consent, farmer, assist session); idempotency key.",
+            "description": "Id of the record created (event version, reading, plot, consent, farmer, assist session, lot intake); idempotency key.",
             "format": "uuid",
             "title": "Client Id",
             "type": "string"
           },
           "data": {
             "additionalProperties": true,
-            "description": "`event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id); `farmer`: `FarmerIn` (field officer or FPO admin; stored `pending`, D-031); `assist_session`: `AssistStartIn` without `client_id` (field officer only, D-032). Otherwise the entry's `client_id` is used as the record's id.",
+            "description": "`event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id); `farmer`: `FarmerIn` (field officer or FPO admin; stored `pending`, D-031); `assist_session`: `AssistStartIn` without `client_id` (field officer only, D-032); `lot_intake`: `IntakeIn` without `client_id` (QC officer or FPO admin; receives the lot, `processor_id` optional, corrections FPO admin only; its `server_id` is the intake id, D-040). Otherwise the entry's `client_id` is used as the record's id.",
             "title": "Data",
             "type": "object"
           },
@@ -9934,7 +10761,8 @@
               "consent",
               "flag_resolution",
               "farmer",
-              "assist_session"
+              "assist_session",
+              "lot_intake"
             ],
             "title": "Kind",
             "type": "string"
@@ -9946,6 +10774,87 @@
           "data"
         ],
         "title": "SyncEntry",
+        "type": "object"
+      },
+      "SyncHealthRow": {
+        "description": "Phone sync timings of one network type over the last 7 days (plan \u00a713 F1).",
+        "properties": {
+          "entries": {
+            "description": "Entries measured (count).",
+            "title": "Entries",
+            "type": "integer"
+          },
+          "failure_rate": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Failed send attempts \u00f7 all send attempts (failures + entries), unit `%`."
+          },
+          "network_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Network at send time, e.g. `2g`, `lte`, `wifi`; null if unknown.",
+            "title": "Network Type"
+          },
+          "photo_upload_p50": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Median photo upload time, unit `ms`."
+          },
+          "photo_upload_p95": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "95th percentile photo upload time, unit `ms`."
+          },
+          "save_to_ack_p50": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Median phone save \u2192 server ack time, unit `ms`."
+          },
+          "save_to_ack_p95": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "95th percentile save \u2192 ack time, unit `ms`."
+          }
+        },
+        "required": [
+          "network_type",
+          "entries",
+          "save_to_ack_p50",
+          "save_to_ack_p95",
+          "photo_upload_p50",
+          "photo_upload_p95",
+          "failure_rate"
+        ],
+        "title": "SyncHealthRow",
         "type": "object"
       },
       "SyncMetricIn": {
@@ -10802,6 +11711,231 @@
         ]
       }
     },
+    "/v1/audit-log": {
+      "get": {
+        "description": "Audit rows about the caller's FPO's records (D-039), newest first, filtered by actor, entity and time. Diffs are returned as stored except that secret columns read `[redacted]` and location, boundary and land-record values (`pin`, `walked_boundary`, `land_record_ref`, `exif_gps`, `gps`, `started_gps`, `boundary`) read `[hidden]`; device ids and the row's GPS are not listed. FPO admin only.",
+        "operationId": "search_audit_log_v1_audit_log_get",
+        "parameters": [
+          {
+            "description": "Only changes by this user.",
+            "in": "query",
+            "name": "actor_user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only changes by this user.",
+              "title": "Actor User Id"
+            }
+          },
+          {
+            "description": "Only this table, e.g. `farmers`, `event_versions`.",
+            "in": "query",
+            "name": "entity_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this table, e.g. `farmers`, `event_versions`.",
+              "title": "Entity Type"
+            }
+          },
+          {
+            "description": "Only this record.",
+            "in": "query",
+            "name": "entity_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this record.",
+              "title": "Entity Id"
+            }
+          },
+          {
+            "description": "Rows at or after (ISO 8601).",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Rows at or after (ISO 8601).",
+              "title": "From"
+            }
+          },
+          {
+            "description": "Rows before (ISO 8601).",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Rows before (ISO 8601).",
+              "title": "To"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_AuditRow_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unauthorized`."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: role not allowed."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Search the audit log",
+        "tags": [
+          "reporting"
+        ]
+      }
+    },
     "/v1/auth/logout": {
       "post": {
         "description": "Sign this device out: its refresh token and access tokens stop working.\n\nArgs:\n    user: the signed-in caller.\n    response: the outgoing response (the web refresh cookie is cleared).\n    session: database session.\n\nRaises:\n    UnauthorizedError: not signed in.\n\nSide effects:\n    Revokes the device; deletes the refresh cookie.",
@@ -11513,6 +12647,121 @@
         ]
       }
     },
+    "/v1/batches/{batch_id}/audit-export.csv": {
+      "get": {
+        "description": "One row per version of every event of the batch and of its component lots, with `entered_by`, `entered_by_name`, `assist_session_id`, the reason and a `quantity` + `unit` pair (FR58); cells that start with `=`, `+`, `-` or `@` get a `'` prefix. FPO admin or viewer.",
+        "operationId": "export_batch_audit_v1_batches__batch_id__audit_export_csv_get",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "UTF-8 CSV with a header row."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unauthorized`."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: role not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: another FPO's id."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Download a batch's audit trail as CSV",
+        "tags": [
+          "reporting"
+        ]
+      }
+    },
     "/v1/batches/{batch_id}/builds": {
       "get": {
         "description": "Oldest first. A `failed` build carries `error` (`public_record_invalid` with field paths).",
@@ -11647,7 +12896,7 @@
     },
     "/v1/batches/{batch_id}/final-packing": {
       "post": {
-        "description": "Sign off final packing.",
+        "description": "Packed kg may not exceed graded kg. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).",
         "operationId": "final_packing_v1_batches__batch_id__final_packing_post",
         "parameters": [
           {
@@ -12014,7 +13263,7 @@
     },
     "/v1/batches/{batch_id}/grading/approve": {
       "post": {
-        "description": "Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing.",
+        "description": "Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).",
         "operationId": "approve_grading_v1_batches__batch_id__grading_approve_post",
         "parameters": [
           {
@@ -12248,7 +13497,7 @@
     },
     "/v1/batches/{batch_id}/publish": {
       "post": {
-        "description": "Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, `publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge.",
+        "description": "Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, `publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge. In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on the approval (D-041).",
         "operationId": "publish_v1_batches__batch_id__publish_post",
         "parameters": [
           {
@@ -13248,6 +14497,458 @@
         "summary": "List crops",
         "tags": [
           "registry"
+        ]
+      }
+    },
+    "/v1/dashboard/fpo/{fpo_id}": {
+      "get": {
+        "description": "Completeness (lots with every mandatory event \u00f7 lots), stage-progress tiles, active flags by severity, batches by status, Land Area Analytics, Finished Goods, public scans and sync health (last 7 days). `crop_id`, `district`, `block` and `village_id` narrow completeness and the stage tiles; the place filters also narrow land area. Office roles of the FPO only. No phones or locations (D-037).",
+        "operationId": "get_dashboard_v1_dashboard_fpo__fpo_id__get",
+        "parameters": [
+          {
+            "description": "FPO id; must be the caller's FPO.",
+            "in": "path",
+            "name": "fpo_id",
+            "required": true,
+            "schema": {
+              "description": "FPO id; must be the caller's FPO.",
+              "format": "uuid",
+              "title": "Fpo Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only lots of this crop.",
+            "in": "query",
+            "name": "crop_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only lots of this crop.",
+              "title": "Crop Id"
+            }
+          },
+          {
+            "description": "Only farmers whose village is in it.",
+            "in": "query",
+            "name": "district",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only farmers whose village is in it.",
+              "title": "District"
+            }
+          },
+          {
+            "description": "Only farmers whose village is in it.",
+            "in": "query",
+            "name": "block",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only farmers whose village is in it.",
+              "title": "Block"
+            }
+          },
+          {
+            "description": "Only farmers of this village.",
+            "in": "query",
+            "name": "village_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only farmers of this village.",
+              "title": "Village Id"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unauthorized`."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: role not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: another FPO's id."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "FPO dashboard",
+        "tags": [
+          "reporting"
+        ]
+      }
+    },
+    "/v1/dashboard/fpo/{fpo_id}/farmers": {
+      "get": {
+        "description": "Farmers of the FPO with plot areas and lot completeness, in onboarding order. Place filters narrow the farmers, `crop_id` the lots counted. `?fields=` returns only the named item fields (conventions.md); unknown or tenant-disabled names \u2192 422 `validation_error`.",
+        "operationId": "list_dashboard_farmers_v1_dashboard_fpo__fpo_id__farmers_get",
+        "parameters": [
+          {
+            "description": "FPO id; must be the caller's FPO.",
+            "in": "path",
+            "name": "fpo_id",
+            "required": true,
+            "schema": {
+              "description": "FPO id; must be the caller's FPO.",
+              "format": "uuid",
+              "title": "Fpo Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only lots of this crop.",
+            "in": "query",
+            "name": "crop_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only lots of this crop.",
+              "title": "Crop Id"
+            }
+          },
+          {
+            "description": "Only farmers whose village is in it.",
+            "in": "query",
+            "name": "district",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only farmers whose village is in it.",
+              "title": "District"
+            }
+          },
+          {
+            "description": "Only farmers whose village is in it.",
+            "in": "query",
+            "name": "block",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only farmers whose village is in it.",
+              "title": "Block"
+            }
+          },
+          {
+            "description": "Only farmers of this village.",
+            "in": "query",
+            "name": "village_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only farmers of this village.",
+              "title": "Village Id"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Comma-separated item fields to return, e.g. `id,name,lots`.",
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 500,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated item fields to return, e.g. `id,name,lots`.",
+              "title": "Fields"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_FarmerRow_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`unauthorized`."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: role not allowed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: another FPO's id."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`: bad `fields`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Per-farmer dashboard table",
+        "tags": [
+          "reporting"
         ]
       }
     },
@@ -16315,7 +18016,7 @@
     },
     "/v1/intakes": {
       "post": {
-        "description": "Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched, send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).",
+        "description": "Stage 7 intake of a lot by a QC officer or FPO admin (D-040; the QC phone sends the same body as push kind `lot_intake`). The lot is `ready_for_sale`, or `open`/`drying` and passes the ready gate here (latest drying-end moisture at or under the limit). Without `processor_id` the FPO's only own processor receives it. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched (FPO admin only), send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).",
         "operationId": "create_intake_v1_intakes_post",
         "parameters": [
           {
@@ -16388,6 +18089,16 @@
             },
             "description": "Successful Response"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`forbidden`: not a QC officer or FPO admin, or a correction by a QC officer."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -16406,7 +18117,17 @@
                 }
               }
             },
-            "description": "`client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_ready`, `lot_already_batched`, `intake_not_current`."
+            "description": "`client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `moisture_gate_failed`, `lot_not_ready`, `lot_already_batched`, `intake_not_current`."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`field_required` (`processor_id`: the FPO has zero or several own processors), `validation_error`."
           },
           "default": {
             "content": {
@@ -17433,6 +19154,100 @@
         ]
       }
     },
+    "/v1/partner/batches/{code}": {
+      "get": {
+        "description": "Planned: a partner with the farmers' `partner_share` consent reads a batch's traceability record (lots, shares, grade, GI status) at `partner` visibility (D-017). Pilot: always 501.",
+        "operationId": "get_partner_batch_v1_partner_batches__code__get",
+        "parameters": [
+          {
+            "description": "Batch code.",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "description": "Batch code.",
+              "maxLength": 32,
+              "title": "Code",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_implemented_pilot`: planned after the pilot."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Read a batch for a partner (planned)",
+        "tags": [
+          "partner_api"
+        ]
+      }
+    },
+    "/v1/partner/benefits": {
+      "post": {
+        "description": "Planned: a partner reports a premium or benefit paid against a batch, shared back to its farmers by lot share. Pilot: always 501.",
+        "operationId": "post_partner_benefit_v1_partner_benefits_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_implemented_pilot`: planned after the pilot."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Report a partner benefit payment (planned)",
+        "tags": [
+          "partner_api"
+        ]
+      }
+    },
     "/v1/plots": {
       "post": {
         "description": "Register a plot and run the GI region check; a resend returns 200 with the stored plot.",
@@ -17715,6 +19530,86 @@
         "summary": "Correct a plot with a reason",
         "tags": [
           "registry"
+        ]
+      }
+    },
+    "/v1/probe-readings": {
+      "post": {
+        "description": "Planned: a probe sends temperature (\u00b0C) and relative humidity (%) readings; out-of-range storage raises a flag on the stored batches. Pilot: always 501.",
+        "operationId": "post_probe_readings_v1_probe_readings_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_implemented_pilot`: planned after the pilot."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Send storage probe readings (planned)",
+        "tags": [
+          "storage_monitoring"
+        ]
+      }
+    },
+    "/v1/probes": {
+      "post": {
+        "description": "Planned: an FPO admin registers a temperature / humidity probe in a warehouse where packed batches are stored. Pilot: always 501.",
+        "operationId": "post_probe_v1_probes_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_implemented_pilot`: planned after the pilot."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Register a storage probe (planned)",
+        "tags": [
+          "storage_monitoring"
         ]
       }
     },
@@ -18099,6 +19994,65 @@
         "summary": "Latest public page of a batch (development proxy)",
         "tags": [
           "publishing"
+        ]
+      }
+    },
+    "/v1/public/scans": {
+      "post": {
+        "description": "Called by the public batch page when it opens. No body and no sign-in, so a static page can send it with `navigator.sendBeacon` without a CORS preflight (D-038). Stores the batch code, the time and a hash of the User-Agent; the IP address is never stored. `batch_code` must be a 12-character Crockford base32 code. More than 100 scans per minute from one address, or more than 10 of codes no batch has, \u2192 429 `rate_limited` with `details.retry_after_s`. While Valkey is down scans are not counted (204).",
+        "operationId": "post_scan_v1_public_scans_post",
+        "parameters": [
+          {
+            "description": "Scanned batch code.",
+            "in": "query",
+            "name": "batch_code",
+            "required": true,
+            "schema": {
+              "description": "Scanned batch code.",
+              "pattern": "^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{12}$",
+              "title": "Batch Code",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error`: bad batch code."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`rate_limited`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Count a public page scan (no sign-in)",
+        "tags": [
+          "reporting"
         ]
       }
     },
@@ -19004,7 +20958,7 @@
     },
     "/v1/sync/push": {
       "post": {
-        "description": "Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`), `farmer` (`FarmerIn`, field officer or FPO admin, D-031) and `assist_session` (`AssistStartIn`, field officer, D-032); send `farmer`, then `assist_session`, then the entries that use them. An entry's `assist_session_id` records assist mode for that entry only (ended sessions accepted). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, `assist_session_invalid`, `farmer_phone_taken`, `conflict`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.",
+        "description": "Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`), `farmer` (`FarmerIn`, field officer or FPO admin, D-031), `assist_session` (`AssistStartIn`, field officer, D-032) and `lot_intake` (`IntakeIn` without `client_id`, QC officer or FPO admin: receives the lot, D-040); send `farmer`, then `assist_session`, then the entries that use them, and a lot's intake reading before its `lot_intake`. An entry's `assist_session_id` records assist mode for that entry only (ended sessions accepted): checked against the farmer of a consent, plot, lot event or lot reading, refused on batch readings and batch events, ignored on `farmer`, `flag_resolution`, `assist_session` and `lot_intake` (D-042). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, `assist_session_invalid`, `farmer_phone_taken`, `conflict`, `field_required`, `gate_not_met`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.",
         "operationId": "sync_push_v1_sync_push_post",
         "parameters": [
           {

@@ -48,7 +48,7 @@ const BUILD_STATUS: Readonly<Record<string, string>> = {
  * @returns `url`: `{public origin}/b/<code>`; `preview`: the API's dev proxy in development, else the URL.
  */
 function pageUrls(code: string): { url: string; preview: string } {
-  // DECISION D-044: the public origin comes from `VITE_PUBLIC_BASE_URL` (same origin when unset); the dev
+  // DECISION D-050: the public origin comes from `VITE_PUBLIC_BASE_URL` (same origin when unset); the dev
   //   preview reads the API's dev proxy because `/b/<code>` needs the CDN rewrite.
   //   ADV: no contract change; the preview works locally without a CDN; one build-time setting per environment.
   //   COMPROMISE: the setting must match the API's `PUBLIC_BASE_URL` (the QR encodes the API's value).

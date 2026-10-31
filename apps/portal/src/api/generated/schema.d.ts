@@ -71,6 +71,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/audit-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search the audit log
+         * @description Audit rows about the caller's FPO's records (D-039), newest first, filtered by actor, entity and time. Diffs are returned as stored except that secret columns read `[redacted]` and location, boundary and land-record values (`pin`, `walked_boundary`, `land_record_ref`, `exif_gps`, `gps`, `started_gps`, `boundary`) read `[hidden]`; device ids and the row's GPS are not listed. FPO admin only.
+         */
+        get: operations["search_audit_log_v1_audit_log_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/logout": {
         parameters: {
             query?: never;
@@ -313,6 +333,26 @@ export interface paths {
          * @description Read one batch.
          */
         get: operations["get_batch_v1_batches__batch_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/audit-export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a batch's audit trail as CSV
+         * @description One row per version of every event of the batch and of its component lots, with `entered_by`, `entered_by_name`, `assist_session_id`, the reason and a `quantity` + `unit` pair (FR58); cells that start with `=`, `+`, `-` or `@` get a `'` prefix. FPO admin or viewer.
+         */
+        get: operations["export_batch_audit_v1_batches__batch_id__audit_export_csv_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -658,6 +698,46 @@ export interface paths {
          * @description List active crops.
          */
         get: operations["list_crops_v1_crops_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dashboard/fpo/{fpo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * FPO dashboard
+         * @description Completeness (lots with every mandatory event ÷ lots), stage-progress tiles, active flags by severity, batches by status, Land Area Analytics, Finished Goods, public scans and sync health (last 7 days). `crop_id`, `district`, `block` and `village_id` narrow completeness and the stage tiles; the place filters also narrow land area. Office roles of the FPO only. No phones or locations (D-037).
+         */
+        get: operations["get_dashboard_v1_dashboard_fpo__fpo_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dashboard/fpo/{fpo_id}/farmers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Per-farmer dashboard table
+         * @description Farmers of the FPO with plot areas and lot completeness, in onboarding order. Place filters narrow the farmers, `crop_id` the lots counted. `?fields=` returns only the named item fields (conventions.md); unknown or tenant-disabled names → 422 `validation_error`.
+         */
+        get: operations["list_dashboard_farmers_v1_dashboard_fpo__fpo_id__farmers_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1395,6 +1475,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/batches/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a batch for a partner (planned)
+         * @description Planned: a partner with the farmers' `partner_share` consent reads a batch's traceability record (lots, shares, grade, GI status) at `partner` visibility (D-017). Pilot: always 501.
+         */
+        get: operations["get_partner_batch_v1_partner_batches__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/benefits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a partner benefit payment (planned)
+         * @description Planned: a partner reports a premium or benefit paid against a batch, shared back to its farmers by lot share. Pilot: always 501.
+         */
+        post: operations["post_partner_benefit_v1_partner_benefits_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/plots": {
         parameters: {
             query?: never;
@@ -1449,6 +1569,46 @@ export interface paths {
          * @description Correct an onboarded plot (FPO admin), keeping the old state as a revision.
          */
         post: operations["correct_plot_v1_plots__plot_id__correct_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/probe-readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send storage probe readings (planned)
+         * @description Planned: a probe sends temperature (°C) and relative humidity (%) readings; out-of-range storage raises a flag on the stored batches. Pilot: always 501.
+         */
+        post: operations["post_probe_readings_v1_probe_readings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/probes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register a storage probe (planned)
+         * @description Planned: an FPO admin registers a temperature / humidity probe in a warehouse where packed batches are stored. Pilot: always 501.
+         */
+        post: operations["post_probe_v1_probes_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1517,6 +1677,26 @@ export interface paths {
         get: operations["public_page_v1_public_batches__code__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/scans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Count a public page scan (no sign-in)
+         * @description Called by the public batch page when it opens. No body and no sign-in, so a static page can send it with `navigator.sendBeacon` without a CORS preflight (D-038). Stores the batch code, the time and a hash of the User-Agent; the IP address is never stored. `batch_code` must be a 12-character Crockford base32 code. More than 100 scans per minute from one address, or more than 10 of codes no batch has, → 429 `rate_limited` with `details.retry_after_s`. While Valkey is down scans are not counted (204).
+         */
+        post: operations["post_scan_v1_public_scans_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1786,6 +1966,104 @@ export interface components {
             village?: string | null;
         };
         /**
+         * AreaByBlock
+         * @description Plot areas of one development block.
+         */
+        AreaByBlock: {
+            /**
+             * Block
+             * @description Development block; null groups farmers without a village/block.
+             */
+            block: string | null;
+            /** @description Sum of declared areas, unit `acre`. */
+            declared_area: components["schemas"]["Quantity-Output"];
+            /** @description Declared area of plots whose location is `confirmed` inside the GI region, unit `acre`. */
+            gi_confirmed_area: components["schemas"]["Quantity-Output"];
+            /** @description gi_confirmed_area ÷ declared_area, unit `%`; null when declared_area is 0. */
+            gi_confirmed_share: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Plots
+             * @description Plots (count).
+             */
+            plots: number;
+            /** @description Sum of walked areas, unit `acre`. */
+            walked_area: components["schemas"]["Quantity-Output"];
+            /** @description Declared area of the walked plots only, unit `acre`; compare with `walked_area`. */
+            walked_declared_area: components["schemas"]["Quantity-Output"];
+            /**
+             * Walked Plots
+             * @description Plots with a GPS-walked boundary (count).
+             */
+            walked_plots: number;
+        };
+        /**
+         * AreaByVillage
+         * @description Plot areas of one village (the farmer's village from the villages master).
+         */
+        AreaByVillage: {
+            /**
+             * Block
+             * @description Development block of the village.
+             */
+            block: string | null;
+            /** @description Sum of declared areas, unit `acre`. */
+            declared_area: components["schemas"]["Quantity-Output"];
+            /** @description Declared area of plots whose location is `confirmed` inside the GI region, unit `acre`. */
+            gi_confirmed_area: components["schemas"]["Quantity-Output"];
+            /** @description gi_confirmed_area ÷ declared_area, unit `%`; null when declared_area is 0. */
+            gi_confirmed_share: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Plots
+             * @description Plots (count).
+             */
+            plots: number;
+            /**
+             * Village
+             * @description Village name in English.
+             */
+            village: string | null;
+            /**
+             * Village Id
+             * @description Village id; null groups farmers without a village.
+             */
+            village_id: string | null;
+            /** @description Sum of walked areas, unit `acre`. */
+            walked_area: components["schemas"]["Quantity-Output"];
+            /** @description Declared area of the walked plots only, unit `acre`; compare with `walked_area`. */
+            walked_declared_area: components["schemas"]["Quantity-Output"];
+            /**
+             * Walked Plots
+             * @description Plots with a GPS-walked boundary (count).
+             */
+            walked_plots: number;
+        };
+        /**
+         * AreaStats
+         * @description Plot areas of a group of plots (Land Area Analytics); areas only, never locations (CLAUDE.md §6).
+         */
+        AreaStats: {
+            /** @description Sum of declared areas, unit `acre`. */
+            declared_area: components["schemas"]["Quantity-Output"];
+            /** @description Declared area of plots whose location is `confirmed` inside the GI region, unit `acre`. */
+            gi_confirmed_area: components["schemas"]["Quantity-Output"];
+            /** @description gi_confirmed_area ÷ declared_area, unit `%`; null when declared_area is 0. */
+            gi_confirmed_share: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Plots
+             * @description Plots (count).
+             */
+            plots: number;
+            /** @description Sum of walked areas, unit `acre`. */
+            walked_area: components["schemas"]["Quantity-Output"];
+            /** @description Declared area of the walked plots only, unit `acre`; compare with `walked_area`. */
+            walked_declared_area: components["schemas"]["Quantity-Output"];
+            /**
+             * Walked Plots
+             * @description Plots with a GPS-walked boundary (count).
+             */
+            walked_plots: number;
+        };
+        /**
          * AssistEndIn
          * @description Close an assist session.
          */
@@ -1856,6 +2134,66 @@ export interface components {
             started_at?: string | null;
             /** @description Where the session started, if a fix was taken. */
             started_gps?: components["schemas"]["GeoPoint"] | null;
+        };
+        /**
+         * AuditRow
+         * @description One `audit_log` row; device id and GPS columns are left out, location values in `diff` are hidden.
+         */
+        AuditRow: {
+            /**
+             * Action
+             * @description `create`, `update`, `delete` or a named action such as `event.correct`.
+             */
+            action: string;
+            /**
+             * Actor User Id
+             * @description User who made the change; null for system jobs.
+             */
+            actor_user_id: string | null;
+            /**
+             * Assist Session Id
+             * @description Assist session in force, if any.
+             */
+            assist_session_id: string | null;
+            /**
+             * At
+             * Format: date-time
+             * @description When the change was written (UTC).
+             */
+            at: string;
+            /**
+             * Diff
+             * @description What changed, as stored; secret columns read `[redacted]`, location, boundary and land-record values (`pin`, `walked_boundary`, `land_record_ref`, `exif_gps`, ...) read `[hidden]`.
+             */
+            diff: {
+                [key: string]: unknown;
+            };
+            /**
+             * Entity Id
+             * @description Primary key of the changed row.
+             */
+            entity_id: string | null;
+            /**
+             * Entity Type
+             * @description Table name of the changed row, e.g. `farmers`, `event_versions`.
+             */
+            entity_type: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Audit row id (UUIDv7, time-ordered).
+             */
+            id: string;
+            /**
+             * On Behalf Of Farmer Id
+             * @description Farmer the actor entered data for.
+             */
+            on_behalf_of_farmer_id: string | null;
+            /**
+             * Request Id
+             * @description Request id for correlating with API logs.
+             */
+            request_id: string | null;
         };
         /**
          * BatchIn
@@ -2115,6 +2453,24 @@ export interface components {
          */
         ChangeKind: "create" | "correct" | "undo" | "system";
         /**
+         * Completeness
+         * @description Share of lots that have every mandatory event of their crop (D-037).
+         */
+        Completeness: {
+            /** @description complete_lots ÷ lots, unit `%`, one decimal; null when there are no lots. */
+            complete: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Complete Lots
+             * @description Lots with a live event of every type in `event_schema.mandatory`.
+             */
+            complete_lots: number;
+            /**
+             * Lots
+             * @description Lots in scope (count).
+             */
+            lots: number;
+        };
+        /**
          * ConsentIn
          * @description Record a farmer's consent; resending the same `client_id` returns the stored record (D-005).
          */
@@ -2267,6 +2623,45 @@ export interface components {
              * @description Crop name in the local script.
              */
             name_local: string | null;
+        };
+        /**
+         * Dashboard
+         * @description FPO dashboard (FR13, P06). Filters narrow completeness, stage tiles and land area only.
+         */
+        Dashboard: {
+            /**
+             * Batches
+             * @description Batches by status (whole FPO), every status present.
+             */
+            batches: {
+                [key: string]: number;
+            };
+            /** @description Lots with all mandatory events ÷ lots. */
+            completeness: components["schemas"]["Completeness"];
+            /** @description Finished Goods inventory (whole FPO). */
+            finished_goods: components["schemas"]["FinishedGoods"];
+            /** @description Active flags by severity (whole FPO). */
+            flags: components["schemas"]["FlagCounts"];
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description FPO the numbers are for.
+             */
+            fpo_id: string;
+            /** @description Land Area Analytics. */
+            land_area: components["schemas"]["LandArea"];
+            /** @description Public page scans (whole FPO). */
+            scans: components["schemas"]["Scans"];
+            /**
+             * Stages
+             * @description Stage-progress tiles in farm order.
+             */
+            stages: components["schemas"]["StageTile"][];
+            /**
+             * Sync Health
+             * @description Sync timings by network type, last 7 days, from devices of the FPO's members; a member of several FPOs is counted in each.
+             */
+            sync_health: components["schemas"]["SyncHealthRow"][];
         };
         /**
          * DeviceOut
@@ -2750,6 +3145,69 @@ export interface components {
             reason_text?: string | null;
         };
         /**
+         * FarmerRow
+         * @description One row of the per-farmer dashboard table; no phone, address or plot location (CLAUDE.md §6).
+         */
+        FarmerRow: {
+            /**
+             * Block
+             * @description Development block of the village.
+             */
+            block: string | null;
+            /**
+             * Code
+             * @description Farmer code, unique in the FPO.
+             */
+            code: string;
+            /** @description Sum of declared plot areas, unit `acre`. */
+            declared_area: components["schemas"]["Quantity-Output"];
+            /**
+             * Id
+             * Format: uuid
+             * @description Farmer id.
+             */
+            id: string;
+            /**
+             * Lots
+             * @description Lots, of the `crop_id` filter when given (count).
+             */
+            lots: number;
+            /**
+             * Lots Complete
+             * @description Of those, lots with every mandatory event (count, D-037).
+             */
+            lots_complete: number;
+            /**
+             * Name
+             * @description Name in English script.
+             */
+            name: string;
+            /**
+             * Name Local
+             * @description Name in the local script.
+             */
+            name_local: string | null;
+            /**
+             * Plots
+             * @description Plots (count).
+             */
+            plots: number;
+            /** @description Onboarding status. */
+            status: components["schemas"]["FarmerStatus"];
+            /**
+             * Village
+             * @description Village name in English.
+             */
+            village: string | null;
+            /**
+             * Village Id
+             * @description Village from the villages master, if picked.
+             */
+            village_id: string | null;
+            /** @description Sum of walked plot areas, unit `acre`. */
+            walked_area: components["schemas"]["Quantity-Output"];
+        };
+        /**
          * FarmerStatus
          * @description Farmer onboarding state (Stage 0; FR67 activates on a confirmed location).
          * @enum {string}
@@ -2989,6 +3447,57 @@ export interface components {
             version_no: number;
         };
         /**
+         * FinishedBatch
+         * @description A packed or published batch in the Finished Goods inventory.
+         */
+        FinishedBatch: {
+            /**
+             * Batch Id
+             * Format: uuid
+             * @description Batch id.
+             */
+            batch_id: string;
+            /**
+             * Code
+             * @description Batch code printed on the label.
+             */
+            code: string;
+            /**
+             * Pack Date
+             * @description Pack date on the label.
+             */
+            pack_date: string | null;
+            /** @description Quantity in final packs, unit `kg`; null if not recorded. */
+            packed: components["schemas"]["Quantity-Output"] | null;
+            /** @description Quantity still in stock, unit `kg`; equals `packed` until sales are recorded. */
+            remaining: components["schemas"]["Quantity-Output"] | null;
+            /**
+             * Scans
+             * @description Public page scans of this batch code (count, FR20).
+             */
+            scans: number;
+            /** @description `packed` or `published`. */
+            status: components["schemas"]["BatchStatus"];
+        };
+        /**
+         * FinishedGoods
+         * @description Finished Goods: packed batches and their quantities.
+         */
+        FinishedGoods: {
+            /**
+             * Batches
+             * @description Packed or published batches (count).
+             */
+            batches: number;
+            /**
+             * Items
+             * @description Newest 100 batches, latest pack date first.
+             */
+            items: components["schemas"]["FinishedBatch"][];
+            /** @description Total in final packs, unit `kg`. */
+            packed: components["schemas"]["Quantity-Output"];
+        };
+        /**
          * FlagBrief
          * @description An active rule flag found by the gate checks of this request (B08 `run_gate_checks`).
          */
@@ -3016,6 +3525,27 @@ export interface components {
             subject_id: string;
             /** @description Kind of row flagged. */
             subject_type: components["schemas"]["FlagSubject"];
+        };
+        /**
+         * FlagCounts
+         * @description Active (open or escalated) flags of the FPO by severity.
+         */
+        FlagCounts: {
+            /**
+             * Hold
+             * @description Active `hold` flags; each blocks GI labelling (count).
+             */
+            hold: number;
+            /**
+             * Info
+             * @description Active `info` flags (count).
+             */
+            info: number;
+            /**
+             * Warn
+             * @description Active `warn` flags (count).
+             */
+            warn: number;
         };
         /**
          * FlagOut
@@ -4352,6 +4882,24 @@ export interface components {
             ta: string;
         };
         /**
+         * LandArea
+         * @description Land Area Analytics: acres by village and block, declared vs walked, GI-confirmed share.
+         */
+        LandArea: {
+            /**
+             * By Block
+             * @description One row per block, by block name.
+             */
+            by_block: components["schemas"]["AreaByBlock"][];
+            /**
+             * By Village
+             * @description One row per village, by block then village name.
+             */
+            by_village: components["schemas"]["AreaByVillage"][];
+            /** @description All plots in scope. */
+            total: components["schemas"]["AreaStats"];
+        };
+        /**
          * LandPreparationPayload
          * @description Stage 1 land preparation: cultivated area and the last ploughing date.
          */
@@ -4944,6 +5492,24 @@ export interface components {
              */
             version_no: number;
         };
+        /** Page[AuditRow] */
+        Page_AuditRow_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["AuditRow"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
         /** Page[BatchOut] */
         Page_BatchOut_: {
             /**
@@ -5028,6 +5594,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["FarmerOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[FarmerRow] */
+        Page_FarmerRow_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["FarmerRow"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -6617,6 +7201,22 @@ export interface components {
          */
         Role: "farmer" | "field_officer" | "qc_officer" | "fpo_admin" | "viewer";
         /**
+         * Scans
+         * @description Public page scans of the FPO's batch codes (FR20).
+         */
+        Scans: {
+            /**
+             * Last 7 Days
+             * @description Scans in the last 7 days (count).
+             */
+            last_7_days: number;
+            /**
+             * Total
+             * @description All scans (count).
+             */
+            total: number;
+        };
+        /**
          * SessionOut
          * @description A signed-in session: short-lived access token plus the device's refresh token.
          */
@@ -6819,6 +7419,32 @@ export interface components {
             version_no: number;
         };
         /**
+         * StageTile
+         * @description Lot counts for one farm stage (D-037); done + in_progress + not_started = lots in scope.
+         */
+        StageTile: {
+            /**
+             * Done
+             * @description Lots with this stage recorded and a later stage reached (count).
+             */
+            done: number;
+            /**
+             * In Progress
+             * @description Lots whose furthest recorded stage is this one while the lot is still in the field.
+             */
+            in_progress: number;
+            /**
+             * Not Started
+             * @description Lots with no live event of this stage (count).
+             */
+            not_started: number;
+            /**
+             * Stage
+             * @description Event type of the stage, e.g. `land_preparation`, `harvest`.
+             */
+            stage: string;
+        };
+        /**
          * StandardRef
          * @description The published standard a profile version cites (FR47, FR51: shown on the public page with edition).
          */
@@ -7018,6 +7644,32 @@ export interface components {
              * @enum {string}
              */
             kind: "event_version" | "quality_reading" | "plot" | "consent" | "flag_resolution" | "farmer" | "assist_session";
+        };
+        /**
+         * SyncHealthRow
+         * @description Phone sync timings of one network type over the last 7 days (plan §13 F1).
+         */
+        SyncHealthRow: {
+            /**
+             * Entries
+             * @description Entries measured (count).
+             */
+            entries: number;
+            /** @description Failed send attempts ÷ all send attempts (failures + entries), unit `%`. */
+            failure_rate: components["schemas"]["Quantity-Output"];
+            /**
+             * Network Type
+             * @description Network at send time, e.g. `2g`, `lte`, `wifi`; null if unknown.
+             */
+            network_type: string | null;
+            /** @description Median photo upload time, unit `ms`. */
+            photo_upload_p50: components["schemas"]["Quantity-Output"] | null;
+            /** @description 95th percentile photo upload time, unit `ms`. */
+            photo_upload_p95: components["schemas"]["Quantity-Output"] | null;
+            /** @description Median phone save → server ack time, unit `ms`. */
+            save_to_ack_p50: components["schemas"]["Quantity-Output"] | null;
+            /** @description 95th percentile save → ack time, unit `ms`. */
+            save_to_ack_p95: components["schemas"]["Quantity-Output"] | null;
         };
         /**
          * SyncMetricIn
@@ -7483,6 +8135,73 @@ export interface operations {
             };
         };
     };
+    search_audit_log_v1_audit_log_get: {
+        parameters: {
+            query?: {
+                /** @description Only changes by this user. */
+                actor_user_id?: string | null;
+                /** @description Only this table, e.g. `farmers`, `event_versions`. */
+                entity_type?: string | null;
+                /** @description Only this record. */
+                entity_id?: string | null;
+                /** @description Rows at or after (ISO 8601). */
+                from?: string | null;
+                /** @description Rows before (ISO 8601). */
+                to?: string | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AuditRow_"];
+                };
+            };
+            /** @description `unauthorized`. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `forbidden`: role not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     logout_v1_auth_logout_post: {
         parameters: {
             query?: never;
@@ -7886,6 +8605,70 @@ export interface operations {
                 };
             };
             /** @description `not_found`. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    export_batch_audit_v1_batches__batch_id__audit_export_csv_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Batch id. */
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description UTF-8 CSV with a header row. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `unauthorized`. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `forbidden`: role not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: another FPO's id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -8723,6 +9506,167 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CropOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_dashboard_v1_dashboard_fpo__fpo_id__get: {
+        parameters: {
+            query?: {
+                /** @description Only lots of this crop. */
+                crop_id?: string | null;
+                /** @description Only farmers whose village is in it. */
+                district?: string | null;
+                /** @description Only farmers whose village is in it. */
+                block?: string | null;
+                /** @description Only farmers of this village. */
+                village_id?: string | null;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description FPO id; must be the caller's FPO. */
+                fpo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dashboard"];
+                };
+            };
+            /** @description `unauthorized`. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `forbidden`: role not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: another FPO's id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_dashboard_farmers_v1_dashboard_fpo__fpo_id__farmers_get: {
+        parameters: {
+            query?: {
+                /** @description Only lots of this crop. */
+                crop_id?: string | null;
+                /** @description Only farmers whose village is in it. */
+                district?: string | null;
+                /** @description Only farmers whose village is in it. */
+                block?: string | null;
+                /** @description Only farmers of this village. */
+                village_id?: string | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+                /** @description Comma-separated item fields to return, e.g. `id,name,lots`. */
+                fields?: string | null;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description FPO id; must be the caller's FPO. */
+                fpo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_FarmerRow_"];
+                };
+            };
+            /** @description `unauthorized`. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `forbidden`: role not allowed. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: another FPO's id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error`: bad `fields`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */
@@ -10573,6 +11517,85 @@ export interface operations {
             };
         };
     };
+    get_partner_batch_v1_partner_batches__code__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Batch code. */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description `not_implemented_pilot`: planned after the pilot. */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    post_partner_benefit_v1_partner_benefits_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description `not_implemented_pilot`: planned after the pilot. */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     create_plot_v1_plots_post: {
         parameters: {
             query?: never;
@@ -10685,6 +11708,82 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlotOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    post_probe_readings_v1_probe_readings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description `not_implemented_pilot`: planned after the pilot. */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    post_probe_v1_probes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description `not_implemented_pilot`: planned after the pilot. */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */
@@ -10865,6 +11964,54 @@ export interface operations {
             };
             /** @description `not_found`: no page built for this code. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    post_scan_v1_public_scans_post: {
+        parameters: {
+            query: {
+                /** @description Scanned batch code. */
+                batch_code: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `validation_error`: bad batch code. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `rate_limited`. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

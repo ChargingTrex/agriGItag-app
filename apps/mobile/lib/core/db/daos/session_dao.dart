@@ -1,6 +1,7 @@
 // Session DAO: reads and writes the single Session row (who is signed in on this phone), without tokens.
 // Requirement: FR1 (OTP sign-in), UserFlows §Log in once (stay signed in), mobile-design.md §2 (Session row), D-024.
-// Callers: SessionNotifier (lib/core/router/session.dart) on sign-in, restore, locale change and sign-out.
+// Callers: SessionNotifier (lib/core/router/session.dart) on sign-in, restore, locale change and sign-out;
+//   features/settings/settings_screen.dart (Wi-Fi-only photos, M08).
 
 import 'package:drift/drift.dart';
 
@@ -48,6 +49,14 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
 
   /// Changes the stored UI language to [locale] (`ta`/`en`); a no-op when signed out. Throws nothing.
   Future<void> setLocale(String locale) => update(sessionTable).write(SessionTableCompanion(locale: Value(locale)));
+
+  /// Stores the "photos on Wi-Fi only" setting [on] (PLAN §13 B5, default off) that the sync engine reads before each
+  /// photo phase; a no-op when signed out. Throws nothing.
+  Future<void> setWifiOnlyPhotos(bool on) =>
+      update(sessionTable).write(SessionTableCompanion(wifiOnlyPhotos: Value(on)));
+
+  /// The session row as a stream (null while signed out), for the Settings switches. Never errors on its own.
+  Stream<SessionRow?> watch() => select(sessionTable).watchSingleOrNull();
 
   /// Deletes the row (sign-out). Every other table, the outbox included, is left alone. Throws nothing.
   Future<void> clear() => delete(sessionTable).go();
