@@ -1,0 +1,3 @@
+$ uv run python -m agritrace_page build fixtures/batch_sample.json /tmp/w02v/out && bash tools/check_output.sh /tmp/w02v/out
+privacy-lint: 0 hit(s) in 2 file(s) scanned, 0 non-text skipped
+exit=0
