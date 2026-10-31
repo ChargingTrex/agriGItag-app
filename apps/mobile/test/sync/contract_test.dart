@@ -62,6 +62,38 @@ void main() {
     await w.dispose();
   });
 
+  test('every response key and enum value the engine reads exists in the spec (push, confirm, pull, reference)', () {
+    Set<String> enumOf(String schema, [String? property]) {
+      final s = schemas[schema] as Map;
+      final e = property == null ? s : (s['properties'] as Map)[property] as Map;
+      return (e['enum'] as List).cast<String>().toSet();
+    }
+
+    final paths = (jsonDecode(File('../../packages/openapi/openapi.json').readAsStringSync()) as Map)['paths'] as Map;
+    Set<String> params(String path) => {
+      for (final p in (((paths[path] as Map)['get'] as Map)['parameters'] as List).cast<Map<String, Object?>>())
+        p['name']! as String,
+    };
+
+    // Push and confirm answers (outbox_processor.dart, photo_uploader.dart).
+    expect(props('SyncPushOut'), containsAll({'server_time', 'results'}));
+    expect(props('SyncResult'), containsAll({'client_id', 'status', 'photo_uploads', 'error'}));
+    expect(enumOf('SyncResult', 'status'), {'accepted', 'duplicate', 'rejected'});
+    expect(props('PhotoUpload'), containsAll({'photo_client_id', 'url', 'expires_at'}));
+    expect(props('PhotoConfirmOut'), containsAll({'client_id', 'status'}));
+    expect(enumOf('PhotoConfirmOut', 'status'), {'received', 'missing'});
+    // Pull (pull_service.dart): entities the engine applies, and the paging keys.
+    expect(params('/v1/sync/pull'), containsAll({'cursor', 'limit'}));
+    expect(props('PullOut'), containsAll({'changes', 'next_cursor', 'has_more'}));
+    expect(props('PullChange'), containsAll({'entity', 'op', 'data'}));
+    expect(enumOf('PullChange', 'entity'), containsAll({'lot', 'flag', 'event', 'photo_pending'}));
+    // Reference delta (bundle_fetcher.dart).
+    expect(params('/v1/sync/reference'), contains('since'));
+    expect(props('ReferenceOut'), contains('parts'));
+    expect(props('ReferencePart'), containsAll({'version', 'etag', 'body'}));
+    expect(enumOf('BundlePart'), containsAll({'plots', 'gi_region'}));
+  });
+
   test('an undo is sent as an undo version of the original event type and payload', () async {
     final w = World();
     await w.init();

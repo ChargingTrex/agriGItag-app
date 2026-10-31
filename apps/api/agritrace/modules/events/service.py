@@ -8,15 +8,16 @@ Serves: FR3, FR4 (offline sync), FR6 (farmer undo), FR25 (immutable events, corr
 FR26 (GPS at submission), FR59 (person vs system entries), FR61 (evidence photos), FR63 (date-ordered
 timeline), FR69 (`entered_remotely` in assist mode), Arch §Offline-first, backend-design.md §3 (binding),
 plan §13 A3, A4, F1, CLAUDE.md §6 (assist mode recorded), D-005, D-011, D-014.
-Callers: `events.router`, `events.sync_router`; tests/unit/test_events_service.py,
-tests/integration/test_sync.py. No other module calls it yet (`__all__` is empty).
+Callers: `events.router`, `events.sync_router`, `events.pull_service` (`event_outs`);
+tests/unit/test_events_service.py, tests/integration/test_sync.py. No other module calls it yet (`__all__` is
+empty).
 """
 
 import asyncio
 import inspect
 import logging
 import uuid
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
@@ -996,19 +997,36 @@ async def list_lot_events(session: AsyncSession, user: CurrentUser, lot_id: uuid
         if owner != user.user_id:
             raise NotFoundError(details={"lot_id": str(lot_id)})
     rows = (
-        await session.execute(
-            select(Event, EventVersion)
-            .join(EventVersion, EventVersion.id == Event.current_version_id)
-            .where(Event.lot_id == lot_id)
-            .order_by(Event.occurred_on, Event.instance_no, Event.id)
+        (
+            await session.execute(
+                select(Event, EventVersion)
+                .join(EventVersion, EventVersion.id == Event.current_version_id)
+                .where(Event.lot_id == lot_id)
+                .order_by(Event.occurred_on, Event.instance_no, Event.id)
+            )
         )
-    ).all()
+        .tuples()
+        .all()
+    )
+    return await event_outs(session, rows)
+
+
+async def event_outs(session: AsyncSession, rows: Sequence[tuple[Event, EventVersion]]) -> list[EventOut]:
+    """Shape events with their current versions and photos for the timeline and `/sync/pull` (B07).
+
+    Args:
+        session: database session.
+        rows: (event, its current version) pairs, in the order to return.
+
+    Returns:
+        One `EventOut` per row; photo variant URLs are presigned GETs (the evidence bucket is private).
+    """
     photos: dict[uuid.UUID, list[EventPhotoOut]] = {}
     query = select(EvidencePhoto).where(EvidencePhoto.event_version_id.in_([v.id for _, v in rows]))
     for p in await session.scalars(query):
         assert p.event_version_id is not None
         photos.setdefault(p.event_version_id, []).append(
-            EventPhotoOut(id=p.id, status=p.status, variants=p.variants)
+            EventPhotoOut(id=p.id, status=p.status, variants=evidence.signed_variants(p.variants))
         )
     return [
         EventOut(

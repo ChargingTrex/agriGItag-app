@@ -6,6 +6,7 @@
 export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   refresh_reused: "This sign-in was used elsewhere and has been closed.",
   unauthorized: "Sign-in is required.",
+  account_inactive: "This account is not active in any FPO.",
   assist_session_invalid: "The assist session is not open for you.",
   forbidden: "Your role does not allow this action.",
   feature_disabled: "This feature is not switched on for your FPO.",

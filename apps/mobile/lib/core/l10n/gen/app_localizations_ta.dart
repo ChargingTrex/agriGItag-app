@@ -99,4 +99,90 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get photoNotClear => 'புகைப்படம் தெளிவாக இல்லை. மீண்டும் எடுக்கவா?';
+
+  @override
+  String get authPhoneTitle => 'கைபேசி எண்ணை உள்ளிடுக';
+
+  @override
+  String get authGetCode => 'குறியீடு பெறு';
+
+  @override
+  String get authOtpTitle => 'SMS-இல் வந்த 6 இலக்கக் குறியீட்டை உள்ளிடுக';
+
+  @override
+  String get authResend => 'மீண்டும் அனுப்பு';
+
+  @override
+  String get authPinTitle => 'உங்கள் 4 இலக்க PIN-ஐ உள்ளிடுக';
+
+  @override
+  String get authPinChoose => '4 இலக்க PIN ஒன்றைத் தேர்ந்தெடுக்கவும்';
+
+  @override
+  String get authPinRepeat => 'அதே PIN-ஐ மீண்டும் உள்ளிடுக';
+
+  @override
+  String get authPinMismatch => 'இரண்டு PIN-களும் வேறுபடுகின்றன. மீண்டும் தேர்ந்தெடுக்கவும்.';
+
+  @override
+  String get authStartAgain => 'மீண்டும் தொடங்கு';
+
+  @override
+  String get authDelete => 'அழி';
+
+  @override
+  String get errorOtpInvalid => 'தவறான குறியீடு. SMS-ஐப் பார்த்து மீண்டும் முயலவும்.';
+
+  @override
+  String get errorOtpExpired => 'இந்தக் குறியீடு காலாவதியானது. மீண்டும் அனுப்பு என்பதைத் தட்டவும்.';
+
+  @override
+  String get errorOtpLocked => 'பல முறை தவறான குறியீடு. புதிய குறியீட்டிற்கு மீண்டும் அனுப்பு என்பதைத் தட்டவும்.';
+
+  @override
+  String errorPinInvalid(int attempts) {
+    return 'தவறான PIN. இன்னும் $attempts முறை முயலலாம்.';
+  }
+
+  @override
+  String errorPinLocked(int minutes) {
+    return 'பல முறை தவறான PIN. $minutes நிமிடத்தில் மீண்டும் முயலவும்.';
+  }
+
+  @override
+  String errorRateLimited(int minutes) {
+    return 'புதிய குறியீடு கேட்க $minutes நிமிடம் காத்திருக்கவும்.';
+  }
+
+  @override
+  String get errorDeviceInUse => 'இந்தக் கைபேசி வேறொருவர் பெயரில் உள்நுழைந்துள்ளது. முதலில் வெளியேறவும்.';
+
+  @override
+  String get errorSignInExpired => 'உள்நுழைவு நேரம் முடிந்தது. மீண்டும் தொடங்கவும்.';
+
+  @override
+  String get errorPhoneInvalid => 'கைபேசி எண்ணைச் சரிபார்க்கவும்.';
+
+  @override
+  String get errorNetwork => 'சிக்னல் இல்லை. சிக்னல் வந்ததும் மீண்டும் முயலவும்.';
+
+  @override
+  String get errorPortalOnly => 'இந்தக் கணக்கு இணைய தளத்தில் மட்டுமே செயல்படும், கைபேசியில் அல்ல.';
+
+  @override
+  String get errorUnknown => 'ஏதோ தவறு நடந்தது. மீண்டும் முயலவும்.';
+
+  @override
+  String get sessionEnded => 'நீங்கள் வெளியேற்றப்பட்டீர்கள். மீண்டும் உள்நுழையவும்.';
+
+  @override
+  String get signOut => 'வெளியேறு';
+
+  @override
+  String get settingsTitle => 'அமைப்புகள்';
+
+  @override
+  String unsentReminder(int count) {
+    return 'இன்னும் அனுப்பப்படாத பதிவுகள்: $count. அவை இந்தக் கைபேசியிலேயே இருக்கும்; அனுப்ப சிக்னல் பெறவும்.';
+  }
 }

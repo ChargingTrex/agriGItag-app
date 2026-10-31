@@ -1,13 +1,23 @@
-// Thin HTTP layer: one configured dio shared by the generated agritrace_api client.
-// Requirement: plan §13 A6 (timeouts connect 10 s / request 30 s), mobile-design.md §1 core/api
-//   (dio + auth interceptor, X-Device-Id), D-003 (generated client, never hand-edited), D-020 (/v1 routes).
-// Callers: test/unit/api_client_test.dart in M00; the sync engine (M02) and auth (M06) via a provider.
+// Thin HTTP layer: one configured dio shared by the generated agritrace_api client, with bearer auth and
+//   refresh-on-401.
+// Requirement: plan §13 A6 (timeouts connect 10 s / request 30 s), mobile-design.md §1 core/api (dio + auth
+//   interceptor), D-003 (generated client, never hand-edited), D-020 (/v1 routes), D-024 contract (bearer access
+//   token, refresh rotation, `refresh_reused`; docs/api/conventions.md "Authentication"), UserFlows §Log in once.
+// Callers: SessionNotifier (lib/core/router/session.dart) and, through apiClientProvider, the sync engine (M02) and
+//   feature screens; test/unit/api_client_test.dart, test/auth/*.
 
 import 'package:agritrace_api/agritrace_api.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../bootstrap.dart' show appConfigProvider;
+import '../router/session.dart';
 
 /// Returns the current access token, or null when signed out.
 typedef AccessTokenReader = String? Function();
+
+/// Obtains a new access token (one refresh at a time); completes with null when the session cannot be renewed.
+typedef TokenRefresher = Future<String?> Function();
 
 /// Owns the dio instance and the generated API facade.
 ///
@@ -18,13 +28,14 @@ typedef AccessTokenReader = String? Function();
 class ApiClient {
   /// Creates the client.
   ///
-  /// [baseUrl] is the API origin without `/v1` (the generated paths carry `/v1`, D-020); [deviceId] is
-  /// sent as `X-Device-Id` on every request; [accessToken] supplies the bearer token (null = none);
-  /// [httpClientAdapter] replaces the network layer in tests. Throws nothing.
+  /// [baseUrl] is the API origin without `/v1` (the generated paths carry `/v1`, D-020); [accessToken] supplies the
+  /// bearer token (null = none); [refresh] renews it after a 401 (null = never retry); [httpClientAdapter] replaces
+  /// the network layer in tests. No `X-Client` header is sent: mobile keeps the refresh token in the body (D-024).
+  /// Throws nothing.
   ApiClient({
     required String baseUrl,
-    required String deviceId,
     AccessTokenReader? accessToken,
+    TokenRefresher? refresh,
     HttpClientAdapter? httpClientAdapter,
   }) : dio = Dio(
          BaseOptions(
@@ -32,11 +43,10 @@ class ApiClient {
            connectTimeout: connectTimeout,
            receiveTimeout: requestTimeout,
            sendTimeout: requestTimeout,
-           headers: {'X-Device-Id': deviceId},
          ),
        ) {
     if (httpClientAdapter != null) dio.httpClientAdapter = httpClientAdapter;
-    dio.interceptors.add(AuthInterceptor(accessToken ?? () => null));
+    dio.interceptors.add(AuthInterceptor(dio, accessToken ?? () => null, refresh ?? () async => null));
     // Empty list: our dio already carries the interceptors; the generator's own auth interceptors are unused.
     api = AgritraceApi(dio: dio, interceptors: const []);
   }
@@ -69,22 +79,78 @@ class ApiClient {
   }
 }
 
-/// Adds `Authorization: Bearer <token>` when a token is available.
+/// Adds `Authorization: Bearer <access token>` to operations the contract secures with `AccessToken`, and on a 401
+/// renews the token once and retries the request once.
 ///
-/// shortcut: no refresh-on-401 yet; M06 adds token refresh and sign-out on refresh failure.
+/// Requests to public operations (healthz, OTP, refresh), raw URLs (presigned photo PUTs) and requests that carry
+/// their own Authorization header (PIN verify with the pin token) are left untouched, so the refresh call itself can
+/// never trigger another refresh.
 class AuthInterceptor extends Interceptor {
-  /// Creates the interceptor. [accessToken] is read on every request so a new token applies at once.
-  AuthInterceptor(this.accessToken);
+  /// Creates the interceptor. [dio] re-sends the retried request; [accessToken] is read on every request so a new
+  /// token applies at once; [refresh] renews the token (the caller makes it single-flight).
+  AuthInterceptor(this.dio, this.accessToken, this.refresh);
+
+  /// The dio the retried request goes through (its interceptors run again).
+  final Dio dio;
 
   /// Reads the current access token; null means send no Authorization header.
   final AccessTokenReader accessToken;
 
-  /// Adds the bearer header to [options] when a token exists, then passes the request to [handler].
-  /// Returns nothing; throws nothing. Side effect: mutates [options.headers].
+  /// Renews the access token after a 401; null result means signed out or offline.
+  final TokenRefresher refresh;
+
+  static const _sentKey = 'agritrace.bearer';
+  static const _retriedKey = 'agritrace.retried';
+
+  /// Adds the bearer header to [options] when the operation needs it and a token exists, then passes the request to
+  /// [handler]. Returns nothing; throws nothing. Side effect: mutates [options.headers] and [options.extra].
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    // The generator lists each operation's security schemes in `extra['secure']`.
+    final secure = options.extra['secure'];
+    final needsAccess = secure is List && secure.any((s) => s is Map && s['name'] == 'AccessToken');
     final token = accessToken();
-    if (token != null) options.headers['Authorization'] = 'Bearer $token';
+    if (needsAccess && token != null && !options.headers.containsKey('Authorization')) {
+      options.headers['Authorization'] = 'Bearer $token';
+      options.extra[_sentKey] = token;
+    }
     handler.next(options);
   }
+
+  /// On a 401 for a request this interceptor authorised, gets a fresh token and retries once.
+  ///
+  /// [err] is the failed request; [handler] receives the retried response or the original (or retry) error.
+  /// If another request already rotated the token, the retry uses the current token without a second refresh
+  /// (the API treats two racing refreshes as reuse, D-024). Returns nothing; throws nothing (errors go to
+  /// [handler]). Side effect: may call [refresh], which stores new tokens or signs the phone out.
+  @override
+  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+    final options = err.requestOptions;
+    final sent = options.extra[_sentKey];
+    if (err.response?.statusCode != 401 || sent == null || options.extra[_retriedKey] == true) {
+      return handler.next(err);
+    }
+    final current = accessToken();
+    final token = current != null && current != sent ? current : await refresh();
+    if (token == null) return handler.next(err);
+    options
+      ..extra[_retriedKey] = true
+      ..extra[_sentKey] = token
+      ..headers['Authorization'] = 'Bearer $token';
+    try {
+      handler.resolve(await dio.fetch<Object?>(options));
+    } on DioException catch (retryError) {
+      handler.next(retryError);
+    }
+  }
 }
+
+/// The app's API client, bound to the session's tokens. Built on first use; tests override it.
+final apiClientProvider = Provider<ApiClient>((ref) {
+  final session = ref.read(sessionProvider.notifier);
+  return ApiClient(
+    baseUrl: ref.read(appConfigProvider).apiBaseUrl,
+    accessToken: () => session.accessToken,
+    refresh: session.refreshAccessToken,
+  );
+});

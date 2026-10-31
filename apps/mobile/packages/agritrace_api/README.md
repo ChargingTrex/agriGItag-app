@@ -50,13 +50,15 @@ Please follow the [installation procedure](#installation--usage) and then run th
 import 'package:agritrace_api/agritrace_api.dart';
 
 
-final api = AgritraceApi().getHealthApi();
+final api = AgritraceApi().getConfigApi();
+final String xAssistSession = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Open assist session id (field officer entering data for a farmer).
+final String xRequestId = xRequestId_example; // String | Client request id, copied to audit rows.
 
 try {
-    final response = await api.healthzV1HealthzGet();
+    final response = await api.getFeaturesV1ConfigFeaturesGet(xAssistSession, xRequestId);
     print(response);
 } on DioException catch (e) {
-    print("Exception when calling HealthApi->healthzV1HealthzGet: $e\n");
+    print("Exception when calling ConfigApi->getFeaturesV1ConfigFeaturesGet: $e\n");
 }
 
 ```
@@ -67,20 +69,265 @@ All URIs are relative to *http://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+[*ConfigApi*](doc/ConfigApi.md) | [**getFeaturesV1ConfigFeaturesGet**](doc/ConfigApi.md#getfeaturesv1configfeaturesget) | **GET** /v1/config/features | Feature flags in force for the caller&#39;s FPO
+[*ConfigApi*](doc/ConfigApi.md) | [**getFieldsV1ConfigFieldsGet**](doc/ConfigApi.md#getfieldsv1configfieldsget) | **GET** /v1/config/fields | Fields captured by the caller&#39;s FPO, by entity
+[*EventsApi*](doc/EventsApi.md) | [**correctEventV1EventsEventIdVersionsPost**](doc/EventsApi.md#correcteventv1eventseventidversionspost) | **POST** /v1/events/{event_id}/versions | Correct an event
+[*EventsApi*](doc/EventsApi.md) | [**listLotEventsV1LotsLotIdEventsGet**](doc/EventsApi.md#listloteventsv1lotslotideventsget) | **GET** /v1/lots/{lot_id}/events | List a lot&#39;s events
+[*EventsApi*](doc/EventsApi.md) | [**syncBundlePartV1SyncBundlePartGet**](doc/EventsApi.md#syncbundlepartv1syncbundlepartget) | **GET** /v1/sync/bundle/{part} | Download one reference-bundle part
+[*EventsApi*](doc/EventsApi.md) | [**syncBundlePartV1SyncBundlePartGet_0**](doc/EventsApi.md#syncbundlepartv1syncbundlepartget_0) | **GET** /v1/sync/bundle/{part} | Download one reference-bundle part
+[*EventsApi*](doc/EventsApi.md) | [**syncBundleV1SyncBundleGet**](doc/EventsApi.md#syncbundlev1syncbundleget) | **GET** /v1/sync/bundle | List reference-bundle parts
+[*EventsApi*](doc/EventsApi.md) | [**syncBundleV1SyncBundleGet_0**](doc/EventsApi.md#syncbundlev1syncbundleget_0) | **GET** /v1/sync/bundle | List reference-bundle parts
+[*EventsApi*](doc/EventsApi.md) | [**syncPhotosConfirmV1SyncPhotosConfirmPost**](doc/EventsApi.md#syncphotosconfirmv1syncphotosconfirmpost) | **POST** /v1/sync/photos/confirm | Confirm uploaded photos
+[*EventsApi*](doc/EventsApi.md) | [**syncPhotosConfirmV1SyncPhotosConfirmPost_0**](doc/EventsApi.md#syncphotosconfirmv1syncphotosconfirmpost_0) | **POST** /v1/sync/photos/confirm | Confirm uploaded photos
+[*EventsApi*](doc/EventsApi.md) | [**syncPullV1SyncPullGet**](doc/EventsApi.md#syncpullv1syncpullget) | **GET** /v1/sync/pull | Pull server-side changes
+[*EventsApi*](doc/EventsApi.md) | [**syncPullV1SyncPullGet_0**](doc/EventsApi.md#syncpullv1syncpullget_0) | **GET** /v1/sync/pull | Pull server-side changes
+[*EventsApi*](doc/EventsApi.md) | [**syncPushV1SyncPushPost**](doc/EventsApi.md#syncpushv1syncpushpost) | **POST** /v1/sync/push | Push offline entries
+[*EventsApi*](doc/EventsApi.md) | [**syncPushV1SyncPushPost_0**](doc/EventsApi.md#syncpushv1syncpushpost_0) | **POST** /v1/sync/push | Push offline entries
+[*EventsApi*](doc/EventsApi.md) | [**syncReferenceV1SyncReferenceGet**](doc/EventsApi.md#syncreferencev1syncreferenceget) | **GET** /v1/sync/reference | Changed reference-bundle parts
+[*EventsApi*](doc/EventsApi.md) | [**syncReferenceV1SyncReferenceGet_0**](doc/EventsApi.md#syncreferencev1syncreferenceget_0) | **GET** /v1/sync/reference | Changed reference-bundle parts
+[*EventsApi*](doc/EventsApi.md) | [**undoEventV1EventsEventIdUndoPost**](doc/EventsApi.md#undoeventv1eventseventidundopost) | **POST** /v1/events/{event_id}/undo | Undo an own entry
 [*HealthApi*](doc/HealthApi.md) | [**healthzV1HealthzGet**](doc/HealthApi.md#healthzv1healthzget) | **GET** /v1/healthz | Healthz
 [*HealthApi*](doc/HealthApi.md) | [**reachableV1HealthzHead**](doc/HealthApi.md#reachablev1healthzhead) | **HEAD** /v1/healthz | Reachable
+[*IdentityApi*](doc/IdentityApi.md) | [**assistEndV1AssistEndPost**](doc/IdentityApi.md#assistendv1assistendpost) | **POST** /v1/assist/end | Assist End
+[*IdentityApi*](doc/IdentityApi.md) | [**assistStartV1AssistStartPost**](doc/IdentityApi.md#assiststartv1assiststartpost) | **POST** /v1/assist/start | Assist Start
+[*IdentityApi*](doc/IdentityApi.md) | [**consentCreateV1ConsentsPost**](doc/IdentityApi.md#consentcreatev1consentspost) | **POST** /v1/consents | Consent Create
+[*IdentityApi*](doc/IdentityApi.md) | [**consentListV1FarmersFarmerIdConsentsGet**](doc/IdentityApi.md#consentlistv1farmersfarmeridconsentsget) | **GET** /v1/farmers/{farmer_id}/consents | Consent List
+[*IdentityApi*](doc/IdentityApi.md) | [**consentRevokeV1ConsentsConsentIdRevokePost**](doc/IdentityApi.md#consentrevokev1consentsconsentidrevokepost) | **POST** /v1/consents/{consent_id}/revoke | Consent Revoke
+[*IdentityApi*](doc/IdentityApi.md) | [**logoutV1AuthLogoutPost**](doc/IdentityApi.md#logoutv1authlogoutpost) | **POST** /v1/auth/logout | Logout
+[*IdentityApi*](doc/IdentityApi.md) | [**meV1MeGet**](doc/IdentityApi.md#mev1meget) | **GET** /v1/me | Me
+[*IdentityApi*](doc/IdentityApi.md) | [**otpRequestV1AuthOtpRequestPost**](doc/IdentityApi.md#otprequestv1authotprequestpost) | **POST** /v1/auth/otp/request | Otp Request
+[*IdentityApi*](doc/IdentityApi.md) | [**otpVerifyV1AuthOtpVerifyPost**](doc/IdentityApi.md#otpverifyv1authotpverifypost) | **POST** /v1/auth/otp/verify | Otp Verify
+[*IdentityApi*](doc/IdentityApi.md) | [**pinSetV1AuthPinPost**](doc/IdentityApi.md#pinsetv1authpinpost) | **POST** /v1/auth/pin | Pin Set
+[*IdentityApi*](doc/IdentityApi.md) | [**pinVerifyV1AuthPinVerifyPost**](doc/IdentityApi.md#pinverifyv1authpinverifypost) | **POST** /v1/auth/pin/verify | Pin Verify
+[*IdentityApi*](doc/IdentityApi.md) | [**refreshV1AuthRefreshPost**](doc/IdentityApi.md#refreshv1authrefreshpost) | **POST** /v1/auth/refresh | Refresh
+[*NotificationsApi*](doc/NotificationsApi.md) | [**listMyNotificationsV1NotificationsGet**](doc/NotificationsApi.md#listmynotificationsv1notificationsget) | **GET** /v1/notifications | List my notifications
+[*QualityApi*](doc/QualityApi.md) | [**createInstrumentV1InstrumentsPost**](doc/QualityApi.md#createinstrumentv1instrumentspost) | **POST** /v1/instruments | Register an instrument
+[*QualityApi*](doc/QualityApi.md) | [**createQualityReadingV1QualityReadingsPost**](doc/QualityApi.md#createqualityreadingv1qualityreadingspost) | **POST** /v1/quality-readings | Record a quality reading
+[*QualityApi*](doc/QualityApi.md) | [**createStandardsProfileVersionV1StandardsProfilesProfileIdVersionsPost**](doc/QualityApi.md#createstandardsprofileversionv1standardsprofilesprofileidversionspost) | **POST** /v1/standards-profiles/{profile_id}/versions | Create a Standards Profile version (super-admin)
+[*QualityApi*](doc/QualityApi.md) | [**getBatchGradeV1BatchesBatchIdGradeGet**](doc/QualityApi.md#getbatchgradev1batchesbatchidgradeget) | **GET** /v1/batches/{batch_id}/grade | Get a batch&#39;s latest grade
+[*QualityApi*](doc/QualityApi.md) | [**getStandardsProfileVersionV1StandardsProfilesProfileIdVersionsVersionNoGet**](doc/QualityApi.md#getstandardsprofileversionv1standardsprofilesprofileidversionsversionnoget) | **GET** /v1/standards-profiles/{profile_id}/versions/{version_no} | Get one Standards Profile version
+[*QualityApi*](doc/QualityApi.md) | [**gradeBatchV1BatchesBatchIdGradingPost**](doc/QualityApi.md#gradebatchv1batchesbatchidgradingpost) | **POST** /v1/batches/{batch_id}/grading | Grade a batch
+[*QualityApi*](doc/QualityApi.md) | [**listBatchReadingsV1BatchesBatchIdReadingsGet**](doc/QualityApi.md#listbatchreadingsv1batchesbatchidreadingsget) | **GET** /v1/batches/{batch_id}/readings | List a batch&#39;s quality readings
+[*QualityApi*](doc/QualityApi.md) | [**listInstrumentsV1InstrumentsGet**](doc/QualityApi.md#listinstrumentsv1instrumentsget) | **GET** /v1/instruments | List the FPO&#39;s instruments
+[*QualityApi*](doc/QualityApi.md) | [**listLotReadingsV1LotsLotIdReadingsGet**](doc/QualityApi.md#listlotreadingsv1lotslotidreadingsget) | **GET** /v1/lots/{lot_id}/readings | List a lot&#39;s quality readings
+[*QualityApi*](doc/QualityApi.md) | [**listStandardsProfilesV1StandardsProfilesGet**](doc/QualityApi.md#liststandardsprofilesv1standardsprofilesget) | **GET** /v1/standards-profiles | List Standards Profiles
+[*RegistryApi*](doc/RegistryApi.md) | [**approveFarmerV1FarmersFarmerIdApprovePost**](doc/RegistryApi.md#approvefarmerv1farmersfarmeridapprovepost) | **POST** /v1/farmers/{farmer_id}/approve | Approve a pending farmer
+[*RegistryApi*](doc/RegistryApi.md) | [**correctPlotV1PlotsPlotIdCorrectPost**](doc/RegistryApi.md#correctplotv1plotsplotidcorrectpost) | **POST** /v1/plots/{plot_id}/correct | Correct a plot with a reason
+[*RegistryApi*](doc/RegistryApi.md) | [**createFarmerV1FarmersPost**](doc/RegistryApi.md#createfarmerv1farmerspost) | **POST** /v1/farmers | Onboard a farmer
+[*RegistryApi*](doc/RegistryApi.md) | [**createFpoV1FposPost**](doc/RegistryApi.md#createfpov1fpospost) | **POST** /v1/fpos | Create an FPO
+[*RegistryApi*](doc/RegistryApi.md) | [**createIdDocumentV1FarmersFarmerIdIdDocumentsPost**](doc/RegistryApi.md#createiddocumentv1farmersfarmerididdocumentspost) | **POST** /v1/farmers/{farmer_id}/id-documents | Start an ID document upload (flag id_document_capture)
+[*RegistryApi*](doc/RegistryApi.md) | [**createInputV1InputsPost**](doc/RegistryApi.md#createinputv1inputspost) | **POST** /v1/inputs | Add an input
+[*RegistryApi*](doc/RegistryApi.md) | [**createPlotV1PlotsPost**](doc/RegistryApi.md#createplotv1plotspost) | **POST** /v1/plots | Register a plot (idempotent on client_id)
+[*RegistryApi*](doc/RegistryApi.md) | [**createProcessorV1ProcessorsPost**](doc/RegistryApi.md#createprocessorv1processorspost) | **POST** /v1/processors | Register a processor
+[*RegistryApi*](doc/RegistryApi.md) | [**createProducerGroupV1ProducerGroupsPost**](doc/RegistryApi.md#createproducergroupv1producergroupspost) | **POST** /v1/producer-groups | Create a producer group (flag producer_groups)
+[*RegistryApi*](doc/RegistryApi.md) | [**createRegionVersionV1GiTagsGiTagIdRegionVersionsPost**](doc/RegistryApi.md#createregionversionv1gitagsgitagidregionversionspost) | **POST** /v1/gi-tags/{gi_tag_id}/region-versions | Upload a GI region version (super-admin)
+[*RegistryApi*](doc/RegistryApi.md) | [**getFarmerV1FarmersFarmerIdGet**](doc/RegistryApi.md#getfarmerv1farmersfarmeridget) | **GET** /v1/farmers/{farmer_id} | Read a farmer
+[*RegistryApi*](doc/RegistryApi.md) | [**getFpoV1FposFpoIdGet**](doc/RegistryApi.md#getfpov1fposfpoidget) | **GET** /v1/fpos/{fpo_id} | Read an FPO with its map frame (bbox)
+[*RegistryApi*](doc/RegistryApi.md) | [**getPlotV1PlotsPlotIdGet**](doc/RegistryApi.md#getplotv1plotsplotidget) | **GET** /v1/plots/{plot_id} | Read a plot
+[*RegistryApi*](doc/RegistryApi.md) | [**getRegionV1GiTagsGiTagIdRegionGet**](doc/RegistryApi.md#getregionv1gitagsgitagidregionget) | **GET** /v1/gi-tags/{gi_tag_id}/region | Current GI region (simplified)
+[*RegistryApi*](doc/RegistryApi.md) | [**importFarmersV1ImportsFarmersPost**](doc/RegistryApi.md#importfarmersv1importsfarmerspost) | **POST** /v1/imports/farmers | Import farmers from CSV
+[*RegistryApi*](doc/RegistryApi.md) | [**importInputsV1ImportsInputsPost**](doc/RegistryApi.md#importinputsv1importsinputspost) | **POST** /v1/imports/inputs | Import inputs from CSV
+[*RegistryApi*](doc/RegistryApi.md) | [**importTemplateV1ImportsKindTemplateCsvGet**](doc/RegistryApi.md#importtemplatev1importskindtemplatecsvget) | **GET** /v1/imports/{kind}/template.csv | CSV template for an import
+[*RegistryApi*](doc/RegistryApi.md) | [**importVillagesV1ImportsVillagesPost**](doc/RegistryApi.md#importvillagesv1importsvillagespost) | **POST** /v1/imports/villages | Import villages from CSV (super-admin)
+[*RegistryApi*](doc/RegistryApi.md) | [**listCropsV1CropsGet**](doc/RegistryApi.md#listcropsv1cropsget) | **GET** /v1/crops | List crops
+[*RegistryApi*](doc/RegistryApi.md) | [**listFarmerPlotsV1FarmersFarmerIdPlotsGet**](doc/RegistryApi.md#listfarmerplotsv1farmersfarmeridplotsget) | **GET** /v1/farmers/{farmer_id}/plots | List a farmer&#39;s plots
+[*RegistryApi*](doc/RegistryApi.md) | [**listFarmersV1FarmersGet**](doc/RegistryApi.md#listfarmersv1farmersget) | **GET** /v1/farmers | List the FPO&#39;s farmers
+[*RegistryApi*](doc/RegistryApi.md) | [**listFposV1FposGet**](doc/RegistryApi.md#listfposv1fposget) | **GET** /v1/fpos | List FPOs (super-admin: all; others: own)
+[*RegistryApi*](doc/RegistryApi.md) | [**listInputsV1InputsGet**](doc/RegistryApi.md#listinputsv1inputsget) | **GET** /v1/inputs | List the input master list
+[*RegistryApi*](doc/RegistryApi.md) | [**listProcessorsV1ProcessorsGet**](doc/RegistryApi.md#listprocessorsv1processorsget) | **GET** /v1/processors | List processors
+[*RegistryApi*](doc/RegistryApi.md) | [**listProducerGroupsV1ProducerGroupsGet**](doc/RegistryApi.md#listproducergroupsv1producergroupsget) | **GET** /v1/producer-groups | List producer groups (flag producer_groups)
+[*RegistryApi*](doc/RegistryApi.md) | [**listVillagesV1VillagesGet**](doc/RegistryApi.md#listvillagesv1villagesget) | **GET** /v1/villages | Search the village directory
+[*RegistryApi*](doc/RegistryApi.md) | [**rejectFarmerV1FarmersFarmerIdRejectPost**](doc/RegistryApi.md#rejectfarmerv1farmersfarmeridrejectpost) | **POST** /v1/farmers/{farmer_id}/reject | Reject a pending farmer
+[*RegistryApi*](doc/RegistryApi.md) | [**revealPhoneV1FarmersFarmerIdPhoneGet**](doc/RegistryApi.md#revealphonev1farmersfarmeridphoneget) | **GET** /v1/farmers/{farmer_id}/phone | Reveal a farmer&#39;s full phone number (FPO admin, audited)
+[*RegistryApi*](doc/RegistryApi.md) | [**updateFarmerV1FarmersFarmerIdPatch**](doc/RegistryApi.md#updatefarmerv1farmersfarmeridpatch) | **PATCH** /v1/farmers/{farmer_id} | Change a farmer&#39;s profile
 
 
 ## Documentation For Models
 
+ - [Address](doc/Address.md)
+ - [AssistEndIn](doc/AssistEndIn.md)
+ - [AssistSessionOut](doc/AssistSessionOut.md)
+ - [AssistStartIn](doc/AssistStartIn.md)
+ - [AvgSalePricePerKg](doc/AvgSalePricePerKg.md)
+ - [BundleManifest](doc/BundleManifest.md)
+ - [BundlePart](doc/BundlePart.md)
+ - [CeilingKgPerAcre](doc/CeilingKgPerAcre.md)
+ - [ChangeKind](doc/ChangeKind.md)
+ - [ConsentIn](doc/ConsentIn.md)
+ - [ConsentOut](doc/ConsentOut.md)
+ - [ConsentType](doc/ConsentType.md)
+ - [CorrectionIn](doc/CorrectionIn.md)
+ - [CropOut](doc/CropOut.md)
+ - [Data](doc/Data.md)
+ - [DeviceOut](doc/DeviceOut.md)
+ - [DryingPayload](doc/DryingPayload.md)
+ - [DryingVersion](doc/DryingVersion.md)
  - [ErrorBody](doc/ErrorBody.md)
  - [ErrorEnvelope](doc/ErrorEnvelope.md)
+ - [EventOut](doc/EventOut.md)
+ - [EventPhotoOut](doc/EventPhotoOut.md)
+ - [EventStatus](doc/EventStatus.md)
+ - [EventSubject](doc/EventSubject.md)
+ - [EventType](doc/EventType.md)
+ - [FarmerIn](doc/FarmerIn.md)
+ - [FarmerOut](doc/FarmerOut.md)
+ - [FarmerPatch](doc/FarmerPatch.md)
+ - [FarmerPhoneOut](doc/FarmerPhoneOut.md)
+ - [FarmerReject](doc/FarmerReject.md)
+ - [FarmerStatus](doc/FarmerStatus.md)
+ - [FarmingType](doc/FarmingType.md)
+ - [Features](doc/Features.md)
+ - [FieldSpec](doc/FieldSpec.md)
+ - [FinalPackingPayload](doc/FinalPackingPayload.md)
+ - [FinalPackingVersion](doc/FinalPackingVersion.md)
+ - [FpoIn](doc/FpoIn.md)
+ - [FpoOut](doc/FpoOut.md)
+ - [GeoPoint](doc/GeoPoint.md)
+ - [GiRegionOut](doc/GiRegionOut.md)
+ - [GiRegionVersionIn](doc/GiRegionVersionIn.md)
+ - [GiRegionVersionOut](doc/GiRegionVersionOut.md)
+ - [GradeOut](doc/GradeOut.md)
+ - [GradeStatus](doc/GradeStatus.md)
+ - [GradingIn](doc/GradingIn.md)
+ - [GradingPayload](doc/GradingPayload.md)
+ - [GradingVersion](doc/GradingVersion.md)
+ - [HarvestPayload](doc/HarvestPayload.md)
+ - [HarvestVersion](doc/HarvestVersion.md)
  - [Health](doc/Health.md)
+ - [HoldMarginPct](doc/HoldMarginPct.md)
+ - [IdDocumentIn](doc/IdDocumentIn.md)
+ - [IdDocumentUpload](doc/IdDocumentUpload.md)
+ - [ImportReport](doc/ImportReport.md)
+ - [ImportRowError](doc/ImportRowError.md)
+ - [InputApplicationPayload](doc/InputApplicationPayload.md)
+ - [InputApplicationVersion](doc/InputApplicationVersion.md)
+ - [InputCategory](doc/InputCategory.md)
+ - [InputIn](doc/InputIn.md)
+ - [InputOut](doc/InputOut.md)
+ - [InstrumentIn](doc/InstrumentIn.md)
+ - [InstrumentKind](doc/InstrumentKind.md)
+ - [InstrumentOut](doc/InstrumentOut.md)
+ - [IntakePayload](doc/IntakePayload.md)
+ - [IntakeVersion](doc/IntakeVersion.md)
+ - [IrrigationSource](doc/IrrigationSource.md)
+ - [LabCertifiedRequires](doc/LabCertifiedRequires.md)
+ - [Labels](doc/Labels.md)
+ - [LandPreparationPayload](doc/LandPreparationPayload.md)
+ - [LandPreparationVersion](doc/LandPreparationVersion.md)
+ - [LocationStatus](doc/LocationStatus.md)
+ - [LotGateInput](doc/LotGateInput.md)
+ - [LotGateOutput](doc/LotGateOutput.md)
+ - [Max](doc/Max.md)
+ - [MeOut](doc/MeOut.md)
+ - [MembershipOut](doc/MembershipOut.md)
+ - [Min](doc/Min.md)
+ - [MultiPolygonGeoJSON](doc/MultiPolygonGeoJSON.md)
+ - [NotificationChannel](doc/NotificationChannel.md)
+ - [NotificationOut](doc/NotificationOut.md)
+ - [NotificationStatus](doc/NotificationStatus.md)
+ - [NurseryPayload](doc/NurseryPayload.md)
+ - [NurseryVersion](doc/NurseryVersion.md)
+ - [OrgKind](doc/OrgKind.md)
+ - [OtpRequestIn](doc/OtpRequestIn.md)
+ - [OtpVerifyIn](doc/OtpVerifyIn.md)
+ - [PackSize](doc/PackSize.md)
+ - [PackingPayload](doc/PackingPayload.md)
+ - [PackingVersion](doc/PackingVersion.md)
+ - [PageConsentOut](doc/PageConsentOut.md)
+ - [PageEventOut](doc/PageEventOut.md)
+ - [PageFarmerOut](doc/PageFarmerOut.md)
+ - [PageInstrumentOut](doc/PageInstrumentOut.md)
+ - [PageNotificationOut](doc/PageNotificationOut.md)
+ - [PagePlotOut](doc/PagePlotOut.md)
+ - [PageQualityReadingOut](doc/PageQualityReadingOut.md)
+ - [PageStandardsProfileOut](doc/PageStandardsProfileOut.md)
+ - [PageVillageOut](doc/PageVillageOut.md)
+ - [ParameterInput](doc/ParameterInput.md)
+ - [ParameterOutput](doc/ParameterOutput.md)
+ - [ParameterResult](doc/ParameterResult.md)
+ - [PartVersion](doc/PartVersion.md)
+ - [PhotoConfirmOut](doc/PhotoConfirmOut.md)
+ - [PhotoIn](doc/PhotoIn.md)
+ - [PhotoRef](doc/PhotoRef.md)
+ - [PhotoStatus](doc/PhotoStatus.md)
+ - [PhotoUpload](doc/PhotoUpload.md)
+ - [PhotosConfirmIn](doc/PhotosConfirmIn.md)
+ - [PinChangeIn](doc/PinChangeIn.md)
+ - [PinIn](doc/PinIn.md)
+ - [PinMethod](doc/PinMethod.md)
+ - [PinRequiredOut](doc/PinRequiredOut.md)
+ - [PlotCorrection](doc/PlotCorrection.md)
+ - [PlotIn](doc/PlotIn.md)
+ - [PlotOut](doc/PlotOut.md)
+ - [PolygonGeoJSON](doc/PolygonGeoJSON.md)
+ - [PricePerKg](doc/PricePerKg.md)
+ - [ProblemPayload](doc/ProblemPayload.md)
+ - [ProblemVersion](doc/ProblemVersion.md)
+ - [ProcessorIn](doc/ProcessorIn.md)
+ - [ProcessorOut](doc/ProcessorOut.md)
+ - [ProducerGroupIn](doc/ProducerGroupIn.md)
+ - [ProducerGroupKind](doc/ProducerGroupKind.md)
+ - [ProducerGroupOut](doc/ProducerGroupOut.md)
+ - [ProfileVersionIn](doc/ProfileVersionIn.md)
+ - [ProfileVersionOut](doc/ProfileVersionOut.md)
+ - [ProfileVersionStatus](doc/ProfileVersionStatus.md)
+ - [PullChange](doc/PullChange.md)
+ - [PullOut](doc/PullOut.md)
+ - [QualityReadingIn](doc/QualityReadingIn.md)
+ - [QualityReadingOut](doc/QualityReadingOut.md)
+ - [QuantityInput](doc/QuantityInput.md)
+ - [QuantityOutput](doc/QuantityOutput.md)
+ - [RangeInput](doc/RangeInput.md)
+ - [RangeOutput](doc/RangeOutput.md)
+ - [ReadingSource](doc/ReadingSource.md)
+ - [ReadingStage](doc/ReadingStage.md)
+ - [ReferenceOut](doc/ReferenceOut.md)
+ - [ReferencePart](doc/ReferencePart.md)
+ - [RefreshIn](doc/RefreshIn.md)
+ - [RegionCheckOut](doc/RegionCheckOut.md)
+ - [ResponseOtpVerifyV1AuthOtpVerifyPost](doc/ResponseOtpVerifyV1AuthOtpVerifyPost.md)
+ - [Role](doc/Role.md)
+ - [SessionOut](doc/SessionOut.md)
+ - [SignedQuantityInput](doc/SignedQuantityInput.md)
+ - [SignedQuantityOutput](doc/SignedQuantityOutput.md)
+ - [SowingPayload](doc/SowingPayload.md)
+ - [SowingVersion](doc/SowingVersion.md)
+ - [StandardRef](doc/StandardRef.md)
+ - [StandardsProfileOut](doc/StandardsProfileOut.md)
+ - [StandardsProfileRulesInput](doc/StandardsProfileRulesInput.md)
+ - [StandardsProfileRulesOutput](doc/StandardsProfileRulesOutput.md)
+ - [StandardsScheme](doc/StandardsScheme.md)
+ - [SyncEntry](doc/SyncEntry.md)
+ - [SyncMetricIn](doc/SyncMetricIn.md)
+ - [SyncPushIn](doc/SyncPushIn.md)
+ - [SyncPushOut](doc/SyncPushOut.md)
+ - [SyncResult](doc/SyncResult.md)
+ - [ThreeClocks](doc/ThreeClocks.md)
+ - [Tolerance](doc/Tolerance.md)
+ - [ToleranceBufferM](doc/ToleranceBufferM.md)
+ - [TrailRuleInput](doc/TrailRuleInput.md)
+ - [TrailRuleOutput](doc/TrailRuleOutput.md)
+ - [UndoIn](doc/UndoIn.md)
+ - [UserOut](doc/UserOut.md)
+ - [Value](doc/Value.md)
+ - [Value1](doc/Value1.md)
+ - [VillageOut](doc/VillageOut.md)
+ - [WarnMarginPct](doc/WarnMarginPct.md)
+ - [YieldRuleInput](doc/YieldRuleInput.md)
+ - [YieldRuleOutput](doc/YieldRuleOutput.md)
 
 
 ## Documentation For Authorization
 
-Endpoints do not require authorization.
+
+Authentication schemes defined for the API:
+### AccessToken
+
+- **Type**: HTTP Bearer Token authentication
+
+### PinToken
+
+- **Type**: HTTP Bearer Token authentication
 
 
 ## Author
