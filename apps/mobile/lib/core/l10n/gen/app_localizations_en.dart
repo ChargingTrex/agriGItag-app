@@ -1013,4 +1013,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get qcLotUnverified =>
       'Not on this phone yet: farmer and weight come from the farmer\'s QR and are not checked. Sync to check.';
+
+  @override
+  String get remindersToggle => 'Reminders';
+
+  @override
+  String get remindersRationale =>
+      'AgriTrace can remind you when it is time to log the next step, like harvest. Allow reminders?';
+
+  @override
+  String reminderTitle(String event) {
+    return 'Time to log: $event';
+  }
 }
