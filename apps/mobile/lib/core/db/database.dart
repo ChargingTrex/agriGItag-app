@@ -16,6 +16,7 @@ import 'daos/flags_dao.dart';
 import 'daos/media_dao.dart';
 import 'daos/outbox_dao.dart';
 import 'daos/ref_bundles_dao.dart';
+import 'daos/session_dao.dart';
 import 'daos/sync_metrics_dao.dart';
 import 'daos/sync_state_dao.dart';
 import 'daos/tasks_dao.dart';
@@ -64,6 +65,7 @@ part 'database.g.dart';
     TasksDao,
     FlagsDao,
     FieldConfigDao,
+    SessionDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
