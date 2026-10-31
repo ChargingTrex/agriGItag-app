@@ -2,8 +2,9 @@
  * Plot detail: GI location status, how the location was set, declared vs walked area, review outcome, and
  * the map (lazy chunk) with the pin and the GI region outline.
  * Serves: FR28 (GI region check), FR66/FR70 (area gap and flagged plot review), Dataflow Stage 0 (flagged
- * plot review), plan §7.3 P01 (plot detail map), §13 D3. Called by: src/AppRoutes.tsx
- * (`/members/plots/:plotId`); P02 links flagged plots here.
+ * plot review), plan §7.3 P01 (plot detail map), §13 D3, P02 (review form and the plot's open flags).
+ * Called by: src/AppRoutes.tsx (`/members/plots/:plotId`); flags and the farmer's plot list link here;
+ * `LOCATION_CHIP` also by FarmerPage.tsx.
  */
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -19,6 +20,7 @@ import { unwrap } from '../../api/client';
 import { errorMessage } from '../../api/errors';
 import type { components } from '../../api/generated/schema';
 import { useAuth } from '../../auth/AuthProvider';
+import { PlotReview } from '../flags/PlotReview';
 
 type LocationStatus = components['schemas']['LocationStatus'];
 type Quantity = components['schemas']['Quantity-Output'];
@@ -26,7 +28,7 @@ type Quantity = components['schemas']['Quantity-Output'];
 // The map and maplibre-gl (~300 KB gz) load only when a plot page opens, keeping the initial bundle small.
 const PlotMap = lazy(() => import('./PlotMap'));
 
-const LOCATION_CHIP: Record<
+export const LOCATION_CHIP: Record<
   LocationStatus,
   { label: string; color: 'success' | 'warning' | 'error' | 'info' }
 > = {
@@ -124,6 +126,10 @@ export function PlotPage() {
       ) : (
         <LinearProgress aria-label="Loading map" />
       )}
+      <PlotReview plot={p} />
+      <Button component={Link} to={`/flags?subject=${p.id}`} sx={{ alignSelf: 'start' }}>
+        Open flags on this plot
+      </Button>
     </Stack>
   );
 }
