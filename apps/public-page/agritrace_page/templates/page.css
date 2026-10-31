@@ -1,5 +1,6 @@
-/* Public batch page styles, inlined by batch.html.j2 (W01; plan §13 E1 budget: < 12 KB).
-   Mobile-first; system fonts only so Tamil renders without a webfont. Print CSS: W03. */
+/* Public batch page styles, inlined by batch.html.j2 and unavailable.html.j2 (W01, W03; plan §13 E1
+   budget: < 12 KB). Mobile-first; system fonts only so Tamil renders without a webfont download.
+   Print (W03): black on white, QR and link shown, one photo per event, lot cards kept whole. */
 :root{--fg:#1d2b1f;--mut:#56615b;--line:#d6ddd6;--ok:#1b5e20;--okb:#e5f3e6;--warn:#8a4500;--warnb:#fff0d9;--lab:#0d47a1;--labb:#e3edfb}
 *{box-sizing:border-box}
 body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Tamil","Noto Sans",sans-serif;color:var(--fg);background:#f5f7f4}
@@ -36,4 +37,19 @@ summary{cursor:pointer;font-weight:600;padding:.6rem 0;min-height:44px}
 .ph.big img{width:100%}
 footer{color:var(--mut);font-size:.85rem}
 footer p{margin:.2rem 0}
+.map{margin:.75rem 0 0}
+.map svg{display:block;width:100%;max-width:240px;height:auto}
+.map path{fill:var(--okb);stroke:var(--ok);stroke-width:.8}
+.map circle{fill:var(--warn);stroke:#fff;stroke-width:.6}
+.qr{display:none}
 @media (min-width:40rem){h1{font-size:1.7rem}.ph img{width:160px}}
+@media print{
+:root{--fg:#000;--mut:#000;--line:#999;--ok:#000;--okb:#fff;--warn:#000;--warnb:#fff;--lab:#000;--labb:#fff}
+body,header{background:#fff;font-size:11pt}
+header,main,footer{max-width:none;padding:0}
+section,article{border:0;padding:0}
+article,.ev{break-inside:avoid}
+a{color:#000}
+.ph~.ph{display:none}
+.qr{display:block;width:120px;height:120px;margin:.5rem 0;background:center/contain no-repeat;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
