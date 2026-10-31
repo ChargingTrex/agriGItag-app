@@ -1009,4 +1009,16 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get qcLotUnverified =>
       'இந்தப் போனில் இன்னும் இல்லை: விவசாயி, எடை விவசாயியின் QR-இலிருந்து வந்தவை, சரிபார்க்கப்படவில்லை. சரிபார்க்க ஒத்திசையுங்கள்.';
+
+  @override
+  String get remindersToggle => 'நினைவூட்டல்கள்';
+
+  @override
+  String get remindersRationale =>
+      'அறுவடை போன்ற அடுத்த வேலையைப் பதிவு செய்யும் நேரம் வந்தால் AgriTrace உங்களுக்கு நினைவூட்டும். நினைவூட்டல்களை அனுமதிக்கவா?';
+
+  @override
+  String reminderTitle(String event) {
+    return 'பதிவு செய்யும் நேரம்: $event';
+  }
 }

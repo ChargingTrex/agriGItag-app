@@ -2,7 +2,7 @@
  * The portal's planned screens, in sidebar order, with the work package that builds each one.
  * Serves: plan §7.3 (P01–P06, P08 screen list), User Flows "FPO admin and QC flows". Called by:
  * src/layout/AppLayout.tsx (sidebar) and src/AppRoutes.tsx (placeholder routes for screens not built yet).
- * P01 added Processors (gap analysis "Processor management").
+ * P01 added Processors (gap analysis "Processor management"); P06 added Audit log (FR25).
  */
 
 /** One sidebar entry and route. */
@@ -24,5 +24,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { path: '/batches', label: 'Batches', wp: 'P04' },
   { path: '/exports', label: 'Labels & exports', wp: 'P05' },
   { path: '/uploads', label: 'Master data uploads', wp: 'P08' },
+  { path: '/audit', label: 'Audit log', wp: 'P06' },
   { path: '/settings', label: 'Settings', wp: 'P06' },
 ];

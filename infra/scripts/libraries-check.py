@@ -38,6 +38,10 @@ REJECTED = re.compile(
     r"|\bCC[\s-]BY[\s-](?:\w+[\s-])*?(?:NC|SA)\b|non-?commercial",
     re.IGNORECASE,
 )
+# DECISION D-018 (amendment 2026-10-31): exact (library, licence) pairs the ADR accepts despite matching REJECTED.
+#   ADV: the exception is named per library, so a new GPL row still fails.
+#   COMPROMISE: one more list to keep in step with docs/adr/D-018.md.
+ACCEPTED_BY_AMENDMENT = {("desugar-jdk-libs", "GPL-2.0-with-classpath-exception")}
 NAME_RE = re.compile(r"\s*([A-Za-z0-9@][A-Za-z0-9._/@-]*)")
 
 
@@ -196,7 +200,11 @@ def main() -> int:
         failed |= bool(missing)
         status = f"MISSING {len(missing)}: {', '.join(missing)}" if missing else "ok"
         print(f"check   {rel}: {len(names)} dependencies, {status}")
-    rejected = sorted(f"{name} ({lic})" for name, lic in ledger.items() if REJECTED.search(lic))
+    rejected = sorted(
+        f"{name} ({lic})"
+        for name, lic in ledger.items()
+        if REJECTED.search(lic) and (name, lic) not in ACCEPTED_BY_AMENDMENT
+    )
     if rejected:
         failed = True
         print("REJECTED licence (D-018): " + ", ".join(rejected))

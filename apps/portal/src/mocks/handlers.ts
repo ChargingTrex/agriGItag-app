@@ -571,7 +571,7 @@ const session = (token = MOCK_ACCESS_TOKEN): SessionOut => ({
  * @param details Optional details object.
  * @returns The mock response.
  */
-const fail = (
+export const fail = (
   status: number,
   code: string,
   details: Record<string, unknown> | null = null,
@@ -593,7 +593,7 @@ async function body(request: Request): Promise<Record<string, unknown>> {
  * @param request The intercepted request.
  * @returns True when signed in.
  */
-const authed = (request: Request) =>
+export const authed = (request: Request) =>
   request.headers.get('Authorization')?.startsWith(`Bearer ${MOCK_ACCESS_TOKEN}`) === true;
 
 /** A 1×1 transparent PNG, the mock QR image. */

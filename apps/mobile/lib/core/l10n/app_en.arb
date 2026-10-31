@@ -1527,5 +1527,23 @@
   "qcLotUnverified": "Not on this phone yet: farmer and weight come from the farmer's QR and are not checked. Sync to check.",
   "@qcLotUnverified": {
     "description": "Lot card line when the lot is known only from the farmer's Sell QR (checksum, not a signature)."
+  },
+  "remindersToggle": "Reminders",
+  "@remindersToggle": {
+    "description": "Settings switch: phone reminders when a farm task is due (default on, M12). At most two words. Also its voice prompt id."
+  },
+  "remindersRationale": "AgriTrace can remind you when it is time to log the next step, like harvest. Allow reminders?",
+  "@remindersRationale": {
+    "description": "Asked once before the phone's notification permission prompt (Android 13+, iOS), answered with Yes / No (M12). Also its voice prompt id."
+  },
+  "reminderTitle": "Time to log: {event}",
+  "@reminderTitle": {
+    "description": "Title of a phone reminder (M12, FR7) at the task's due time; event is the event's name, e.g. Harvest. The body names the field.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Harvest"
+      }
+    }
   }
 }

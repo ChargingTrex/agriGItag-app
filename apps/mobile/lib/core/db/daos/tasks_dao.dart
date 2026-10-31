@@ -1,6 +1,6 @@
 // Tasks DAO: the farmer's next task, shown on the farmer home screen with its voice prompt.
 // Requirement: mobile-design.md §2 (Tasks); plan §7.2 farmer home (F01 "what to do next").
-// Callers: M07 farmer_home feature.
+// Callers: M07 farmer_home feature; M12 features/notifications/reminders.dart (local reminders, watchOpen).
 
 import 'package:drift/drift.dart';
 
@@ -23,4 +23,12 @@ class TasksDao extends DatabaseAccessor<AppDatabase> with _$TasksDaoMixin {
             ..orderBy([(t) => OrderingTerm.asc(t.dueDate.julianday)])
             ..limit(1))
           .watchSingleOrNull();
+
+  /// Every open task on this phone, earliest due first, re-emitted when tasks change (a save, an undo, a pull).
+  /// Never errors on its own.
+  Stream<List<FarmTask>> watchOpen() =>
+      (select(tasks)
+            ..where((t) => t.done.not())
+            ..orderBy([(t) => OrderingTerm.asc(t.dueDate.julianday)]))
+          .watch();
 }
