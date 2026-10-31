@@ -22,6 +22,7 @@ import 'package:agritrace_api/src/model/avg_sale_price_per_kg.dart';
 import 'package:agritrace_api/src/model/batch_in.dart';
 import 'package:agritrace_api/src/model/batch_out.dart';
 import 'package:agritrace_api/src/model/batch_status.dart';
+import 'package:agritrace_api/src/model/build_out.dart';
 import 'package:agritrace_api/src/model/bundle_manifest.dart';
 import 'package:agritrace_api/src/model/bundle_part.dart';
 import 'package:agritrace_api/src/model/ceiling_kg_per_acre.dart';
@@ -120,6 +121,7 @@ import 'package:agritrace_api/src/model/pack_size.dart';
 import 'package:agritrace_api/src/model/packing_payload.dart';
 import 'package:agritrace_api/src/model/packing_version.dart';
 import 'package:agritrace_api/src/model/page_batch_out.dart';
+import 'package:agritrace_api/src/model/page_build_out.dart';
 import 'package:agritrace_api/src/model/page_consent_out.dart';
 import 'package:agritrace_api/src/model/page_event_out.dart';
 import 'package:agritrace_api/src/model/page_farmer_out.dart';
@@ -222,6 +224,7 @@ part 'serializers.g.dart';
   BatchIn,
   BatchOut,
   BatchStatus,
+  BuildOut,
   BundleManifest,
   BundlePart,
   CeilingKgPerAcre,
@@ -320,6 +323,7 @@ part 'serializers.g.dart';
   PackingPayload,
   PackingVersion,
   PageBatchOut,
+  PageBuildOut,
   PageConsentOut,
   PageEventOut,
   PageFarmerOut,
@@ -491,6 +495,10 @@ Serializers serializers = (_$serializers.toBuilder()
           ])
         ]),
         () => ListBuilder<BuiltList<BuiltList<num>>>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(BuildOut)]),
+        () => ListBuilder<BuildOut>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltMap, [FullType(String), FullType(LotGateOutput)]),

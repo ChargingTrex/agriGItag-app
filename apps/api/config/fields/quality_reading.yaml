@@ -2,13 +2,15 @@
 # Serves: D-017, Stage 6–8, FR42–FR50 (method, source, instrument, lab provenance).
 # Read by: agritrace/core/fieldconfig.py; served to clients (M10, M11). Not enforced by a server hook yet:
 # quality (B05) calls fieldconfig.validate_payload("quality_reading", ...) when wired. Keys: see farmer.yaml.
+# parameter_code, measurement and source are the grade readings of the public page (FR51) and must stay
+# public (D-034; agritrace.main refuses a tenant that hides them).
 entity: quality_reading
 extra: allow
 fields:
   - {name: stage, type: choice, required: true, enabled: true, core: true, visibility: partner, stage: intake, label: {en: Stage, ta: நிலை}}
-  - {name: parameter_code, type: choice, required: true, enabled: true, core: true, visibility: partner, stage: intake, label: {en: Parameter, ta: அளவுரு}}
-  - {name: measurement, type: quantity, required: true, enabled: true, core: true, visibility: partner, stage: intake, label: {en: Value, ta: அளவு}}
-  - {name: source, type: choice, required: true, enabled: true, core: true, visibility: partner, stage: intake, label: {en: Measured by, ta: அளந்த முறை}}
+  - {name: parameter_code, type: choice, required: true, enabled: true, core: true, visibility: public, stage: intake, label: {en: Parameter, ta: அளவுரு}}
+  - {name: measurement, type: quantity, required: true, enabled: true, core: true, visibility: public, stage: intake, label: {en: Value, ta: அளவு}}
+  - {name: source, type: choice, required: true, enabled: true, core: true, visibility: public, stage: intake, label: {en: Measured by, ta: அளந்த முறை}}
   - {name: method_ref, type: text, required: false, enabled: true, visibility: partner, stage: intake, label: {en: Test method, ta: சோதனை முறை}}
   - {name: instrument_id, type: id, required: false, enabled: true, visibility: internal, stage: intake, label: {en: Instrument, ta: கருவி}}
   - {name: lab_name, type: text, required: false, enabled: true, visibility: partner, stage: grading, label: {en: Laboratory, ta: ஆய்வகம்}}

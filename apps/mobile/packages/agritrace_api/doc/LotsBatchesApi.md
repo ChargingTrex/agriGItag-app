@@ -18,6 +18,7 @@ Method | HTTP request | Description
 [**getLotV1LotsLotIdGet**](LotsBatchesApi.md#getlotv1lotslotidget) | **GET** /v1/lots/{lot_id} | Read a lot
 [**listBatchesV1BatchesGet**](LotsBatchesApi.md#listbatchesv1batchesget) | **GET** /v1/batches | List batches
 [**listLotsV1LotsGet**](LotsBatchesApi.md#listlotsv1lotsget) | **GET** /v1/lots | List lots
+[**lotQrV1LotsLotIdQrGet**](LotsBatchesApi.md#lotqrv1lotslotidqrget) | **GET** /v1/lots/{lot_id}/qr | QR code of a lot
 [**markReadyV1LotsLotIdReadyPost**](LotsBatchesApi.md#markreadyv1lotslotidreadypost) | **POST** /v1/lots/{lot_id}/ready | Mark a lot ready for sale (moisture gate)
 [**publishV1BatchesBatchIdPublishPost**](LotsBatchesApi.md#publishv1batchesbatchidpublishpost) | **POST** /v1/batches/{batch_id}/publish | Publish the public page (final sign-off)
 [**secondSignoffV1BatchesBatchIdSecondSignoffPost**](LotsBatchesApi.md#secondsignoffv1batchesbatchidsecondsignoffpost) | **POST** /v1/batches/{batch_id}/second-signoff | Second admin sign-off of a large batch
@@ -457,6 +458,52 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: Not defined
  - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **lotQrV1LotsLotIdQrGet**
+> lotQrV1LotsLotIdQrGet(lotId, xAssistSession, xRequestId)
+
+QR code of a lot
+
+PNG encoding the lot code (e.g. `LOT0EF81415`) for the bag tag scanned at intake.
+
+### Example
+```dart
+import 'package:agritrace_api/api.dart';
+
+final api = AgritraceApi().getLotsBatchesApi();
+final String lotId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Lot id.
+final String xAssistSession = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Open assist session id (field officer entering data for a farmer).
+final String xRequestId = xRequestId_example; // String | Client request id, copied to audit rows.
+
+try {
+    api.lotQrV1LotsLotIdQrGet(lotId, xAssistSession, xRequestId);
+} on DioException catch (e) {
+    print('Exception when calling LotsBatchesApi->lotQrV1LotsLotIdQrGet: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **lotId** | **String**| Lot id. | 
+ **xAssistSession** | **String**| Open assist session id (field officer entering data for a farmer). | [optional] 
+ **xRequestId** | **String**| Client request id, copied to audit rows. | [optional] 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[AccessToken](../README.md#AccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: image/png, application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -15,6 +15,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(BatchIn.serializer)
       ..add(BatchOut.serializer)
       ..add(BatchStatus.serializer)
+      ..add(BuildOut.serializer)
       ..add(BundleManifest.serializer)
       ..add(BundlePart.serializer)
       ..add(CeilingKgPerAcre.serializer)
@@ -142,6 +143,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PackingVersionChangeKindEnum.serializer)
       ..add(PackingVersionEventTypeEnum.serializer)
       ..add(PageBatchOut.serializer)
+      ..add(PageBuildOut.serializer)
       ..add(PageConsentOut.serializer)
       ..add(PageEventOut.serializer)
       ..add(PageFarmerOut.serializer)
@@ -264,6 +266,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(BatchOut)]),
           () => ListBuilder<BatchOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(BuildOut)]),
+          () => ListBuilder<BuildOut>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(BuiltList, const [
@@ -505,6 +510,12 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltMap, const [const FullType(String), const FullType(String)]),
           () => MapBuilder<String, String>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
       ..addBuilderFactory(
           const FullType(BuiltMap, const [
             const FullType(String),

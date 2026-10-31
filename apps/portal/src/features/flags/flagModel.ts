@@ -2,8 +2,8 @@
  * Flag vocabulary and pure rules for the review screens: rule labels (en/ta) and families, severity glyphs,
  * reason codes, the "14 Feb" date, who may resolve a flag, and a lot's GI hold state.
  * Serves: FR70 (flag review with method and reason), FR68 (hold keeps a lot out of GI batches), FR56
- * (practice-tag contradiction for the FPO admin), Dataflow "Review & flags", plan §7.3 P02 (and P03, which
- * greys held lots with `activeHolds`). Called by: src/features/flags/*.tsx.
+ * (practice-tag contradiction for the FPO admin), Dataflow "Review & flags", plan §7.3 P02 and P03 (rule
+ * labels of a held lot). Called by: src/features/flags/*.tsx, src/features/batches/{batchModel,ReadyLotsPage}.ts(x).
  */
 import type { components } from '../../api/generated/schema';
 
