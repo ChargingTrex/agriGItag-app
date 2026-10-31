@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 34 % (22/64 items)
+Completion: 36 % (23/64 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -71,7 +71,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [ ] B10 — Publishing — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 8 integration tests deferred)
 - [ ] B11 — Reporting + stubs — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 11 integration tests deferred)
-- [ ] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite (post-merge, see CHANGELOG); device checks → Q01
+- [x] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (793 on main); device checks → Q01
 - [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (1 round) — reviewer: WEB PASS r1 — verifier: PENDING (merged 2026-10-31; 76 pytest + privacy lint + html-validate green; Lighthouse 3G re-run and print dialogs deferred)
 - [ ] **Gate G4 signed** (docs/agents/gates/G4.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
