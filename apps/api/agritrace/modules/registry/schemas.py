@@ -4,7 +4,9 @@ FPOs, processors, villages, farmers, plots, crops, GI regions and the input mast
 
 Serves: Stage 0 (onboarding), FR27–FR32 (GI region), FR53 (structured address, no repeated parts),
 FR54 (farming type vs irrigation source), FR56 (input categories), FR58 (units), FR64–FR72 (plot
-location), D-005 (client ids), D-017 (config-driven fields optional here), D-020 (additive changes).
+location), D-005 (client ids), D-017 (config-driven fields optional here), D-020 (additive changes);
+B13: village import rows, import reports, flag-gated ID documents and producer groups (FR53, FR56,
+PLAN "Gap analysis" Master data uploads).
 Callers: registry router and service only (other modules may not import schemas, D-004); OpenAPI
 generation (`agritrace.export_openapi`) builds the contract and the Dart/TS clients from these.
 """
@@ -24,6 +26,7 @@ from agritrace.core.enums import (
     LocationStatus,
     OrgKind,
     PinMethod,
+    ProducerGroupKind,
 )
 from agritrace.core.schemas import Address, GeoPoint, Quantity
 
@@ -348,6 +351,9 @@ class PlotOut(BaseModel):
     fpo_id: uuid.UUID = Field(description="Owning FPO.")
     farmer_id: uuid.UUID = Field(description="Owner.")
     code: str = Field(description="Plot code shown to people.")
+    gi_tag_id: uuid.UUID | None = Field(
+        None, description="GI tag stored at onboarding or correction; null when none was sent (fallback)."
+    )
     pin: GeoPoint = Field(description="Plot pin (WGS84) with its GPS accuracy.")
     pin_method: PinMethod = Field(description="live_gps or map_pin.")
     pin_device_time: datetime = Field(description="Phone clock when the pin was taken.")
@@ -484,3 +490,76 @@ class InputOut(_Out):
     pack_size: Decimal | None = Field(description="Typical pack size, in `unit`.")
     photo_key: str | None = Field(description="Object key of a product photo.")
     active: bool = Field(description="False hides it from new entries.")
+
+
+# --- B13: master data imports, ID documents, producer groups ------------------------------------------
+
+
+class VillageIn(BaseModel):
+    """One village row of a master data import (FR53); validated per CSV row."""
+
+    lgd_code: str = Field(min_length=1, max_length=16, description="LGD village code; the import key.")
+    name_en: str = Field(min_length=1, max_length=120, description="Village name in English.")
+    name_local: str | None = Field(None, max_length=120, description="Village name in the local script.")
+    block: str | None = Field(None, max_length=120, description="Development block.")
+    taluk: str | None = Field(None, max_length=120, description="Taluk (sub-district).")
+    district: str = Field(min_length=1, max_length=120, description="District.")
+    state: str = Field(min_length=1, max_length=120, description="State.")
+    pincode: str | None = Field(None, pattern=r"^[1-9][0-9]{5}$", description="Six-digit PIN code.")
+
+
+class ImportRowError(BaseModel):
+    """Why one CSV row was not imported."""
+
+    row: int = Field(description="Line number in the file; the header is line 1, the first data row 2.")
+    code: str = Field(description="Registered error code (docs/api/error-codes.md), e.g. `field_required`.")
+    field: str | None = Field(None, description="Column the problem is in, when known.")
+
+
+class ImportReport(BaseModel):
+    """Row-level outcome of a CSV import (dry run or commit)."""
+
+    dry_run: bool = Field(description="True: nothing was written; the counts are what a commit would do.")
+    accepted: int = Field(description="Rows imported (or importable, on a dry run).")
+    rejected: list[ImportRowError] = Field(description="Rows not imported, in file order.")
+
+
+class IdDocumentIn(BaseModel):
+    """Request to upload one identity document image (flag `id_document_capture`, consent-gated)."""
+
+    doc_type: str = Field(
+        min_length=1, max_length=32, pattern=r"^[a-z_]+$", description="Document type code, e.g. `aadhaar`."
+    )
+    consent_record_id: uuid.UUID = Field(
+        description="The farmer's unrevoked `data_collection` consent under which it is captured."
+    )
+    content_type: Literal["image/jpeg", "image/webp"] = Field(description="MIME type of the image to upload.")
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$", description="Hex SHA-256 of the image (device).")
+
+
+class IdDocumentUpload(BaseModel):
+    """Where to PUT the ID document image; the URL accepts only bytes matching `sha256`."""
+
+    id: uuid.UUID = Field(description="ID document id.")
+    method: Literal["PUT"] = Field(description="Always PUT.")
+    url: str = Field(description="Presigned URL into the private id-docs bucket (15 minutes).")
+    headers: dict[str, str] = Field(
+        description="Headers to send: `Content-Type` and `x-amz-checksum-sha256` (base64 digest)."
+    )
+    expires_at: datetime = Field(description="When the URL stops working.")
+
+
+class ProducerGroupIn(BaseModel):
+    """A new producer group (SHG) in the caller's FPO (flag `producer_groups`)."""
+
+    name: str = Field(min_length=1, max_length=120, description="Group name.")
+    kind: ProducerGroupKind = Field(ProducerGroupKind.SHG, description="shg or other.")
+
+
+class ProducerGroupOut(_Out):
+    """A producer group."""
+
+    id: uuid.UUID = Field(description="Group id.")
+    fpo_id: uuid.UUID = Field(description="Owning FPO.")
+    name: str = Field(description="Group name.")
+    kind: ProducerGroupKind = Field(description="shg or other.")

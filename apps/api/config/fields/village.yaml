@@ -1,0 +1,15 @@
+# Village master fields (LGD directory), imported by the platform team (POST /v1/imports/villages).
+# Serves: D-017, FR53 (State → District → Block → Village → PIN picked, not typed), PLAN "Gap analysis"
+# (Master data uploads). Read by: agritrace/core/fieldconfig.py; registry imports (template, required).
+# Villages are global (no FPO), so tenant overrides do not apply. Keys: see farmer.yaml.
+entity: village
+extra: forbid
+fields:
+  - {name: lgd_code, type: text, required: true, enabled: true, core: true, visibility: internal, stage: master_data, label: {en: LGD village code, ta: எல்ஜிடி கிராமக் குறியீடு}}
+  - {name: name_en, type: text, required: true, enabled: true, core: true, visibility: public, stage: master_data, label: {en: Village name, ta: கிராமத்தின் பெயர் (ஆங்கிலம்)}}
+  - {name: name_local, type: text, required: false, enabled: true, visibility: public, stage: master_data, label: {en: Village name in Tamil, ta: கிராமத்தின் பெயர்}}
+  - {name: block, type: text, required: false, enabled: true, visibility: public, stage: master_data, label: {en: Block, ta: ஒன்றியம்}}
+  - {name: taluk, type: text, required: false, enabled: true, visibility: public, stage: master_data, label: {en: Taluk, ta: வட்டம்}}
+  - {name: district, type: text, required: true, enabled: true, core: true, visibility: public, stage: master_data, label: {en: District, ta: மாவட்டம்}}
+  - {name: state, type: text, required: true, enabled: true, core: true, visibility: public, stage: master_data, label: {en: State, ta: மாநிலம்}}
+  - {name: pincode, type: text, required: false, enabled: true, visibility: public, stage: master_data, label: {en: PIN code, ta: அஞ்சல் குறியீடு}}

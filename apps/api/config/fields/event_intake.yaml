@@ -1,0 +1,13 @@
+# Payload fields of the `intake` event (Intake at the processor); keys equal B06's `events.payloads.IntakePayload`.
+# Serves: D-017, FR22 (crop event schema), FR23 (configurable capture), UserFlows §Logging an event.
+# Read by: agritrace/core/fieldconfig.py; served to clients (M07, M10, M11). Not enforced by a server
+# hook yet: events (B06) calls fieldconfig.validate_payload("event_intake", ...) when it wires it.
+# Photos and voice notes travel in the entry envelope (`photos[]`), not in the payload, so they are not
+# listed. tests/unit/test_fieldconfig_events.py keeps this file and the payload model in step.
+entity: event_intake
+extra: allow
+fields:
+  - {name: processor_id, type: id, required: false, enabled: true, visibility: internal, stage: intake, label: {en: Processor, ta: பதப்படுத்துபவர்}}
+  - {name: received, type: quantity, required: true, enabled: true, visibility: partner, stage: intake, label: {en: Received weight, ta: பெற்ற எடை}}
+  - {name: price_per_kg, type: number, required: false, enabled: true, visibility: internal, stage: intake, label: {en: Price per kg, ta: கிலோ விலை}}
+  - {name: moisture_reading_id, type: id, required: false, enabled: true, visibility: internal, stage: intake, label: {en: Moisture reading, ta: ஈரப்பதம் அளவீடு}}

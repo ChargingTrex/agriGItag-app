@@ -337,6 +337,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/config/features": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Feature flags in force for the caller's FPO
+         * @description Return the feature flags and limits with the caller's tenant overrides.
+         */
+        get: operations["get_features_v1_config_features_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/config/fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fields captured by the caller's FPO, by entity
+         * @description Return the enabled fields per entity with the caller's tenant overrides; disabled fields are absent.
+         */
+        get: operations["get_fields_v1_config_fields_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/consents": {
         parameters: {
             query?: never;
@@ -561,6 +601,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/farmers/{farmer_id}/id-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start an ID document upload (flag id_document_capture)
+         * @description Record an ID document under the farmer's consent and get a presigned PUT into the id-docs bucket.
+         *
+         *     404 `feature_disabled` while the FPO's `id_document_capture` flag is off.
+         */
+        post: operations["create_id_document_v1_farmers__farmer_id__id_documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/fpos": {
         parameters: {
             query?: never;
@@ -662,6 +724,86 @@ export interface paths {
          *         An empty 200 response.
          */
         head: operations["reachable_v1_healthz_head"];
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/farmers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import farmers from CSV
+         * @description Import farmers (FPO admin): pending approval, same rules as onboarding; one transaction per file.
+         */
+        post: operations["import_farmers_v1_imports_farmers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import inputs from CSV
+         * @description Import inputs into the FPO's list (FPO admin); key name + manufacturer; one transaction per file.
+         */
+        post: operations["import_inputs_v1_imports_inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/villages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import villages from CSV (super-admin)
+         * @description Import villages into the global directory (super-admin); key `lgd_code`; one transaction per file.
+         */
+        post: operations["import_villages_v1_imports_villages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/{kind}/template.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * CSV template for an import
+         * @description Download the import template: the tenant's enabled CSV columns from /v1/config/fields (D-017).
+         */
+        get: operations["import_template_v1_imports__kind__template_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
@@ -881,6 +1023,30 @@ export interface paths {
          * @description Register a processor for the caller's FPO (FPO admin).
          */
         post: operations["create_processor_v1_processors_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/producer-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List producer groups (flag producer_groups)
+         * @description List the FPO's producer groups; 404 `feature_disabled` while the flag is off.
+         */
+        get: operations["list_producer_groups_v1_producer_groups_get"];
+        put?: never;
+        /**
+         * Create a producer group (flag producer_groups)
+         * @description Create a producer group (FPO admin); 404 `feature_disabled` while the flag is off.
+         */
+        post: operations["create_producer_group_v1_producer_groups_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1140,6 +1306,30 @@ export interface components {
             started_at?: string | null;
             /** @description Where the session started, if a fix was taken. */
             started_gps?: components["schemas"]["GeoPoint"] | null;
+        };
+        /** Body_import_farmers_v1_imports_farmers_post */
+        Body_import_farmers_v1_imports_farmers_post: {
+            /**
+             * File
+             * @description CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.
+             */
+            file: string;
+        };
+        /** Body_import_inputs_v1_imports_inputs_post */
+        Body_import_inputs_v1_imports_inputs_post: {
+            /**
+             * File
+             * @description CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.
+             */
+            file: string;
+        };
+        /** Body_import_villages_v1_imports_villages_post */
+        Body_import_villages_v1_imports_villages_post: {
+            /**
+             * File
+             * @description CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.
+             */
+            file: string;
         };
         /**
          * ChangeKind
@@ -1751,6 +1941,104 @@ export interface components {
          * @enum {string}
          */
         FarmingType: "irrigated" | "rainfed";
+        /**
+         * Features
+         * @description Feature flags and limits (`features.yaml`, tenant overrides applied). Readers named in the YAML.
+         */
+        Features: {
+            /**
+             * Boundary Walk
+             * @description Onboarding offers the boundary walk step.
+             */
+            boundary_walk: boolean;
+            /**
+             * Farmer Pin Login
+             * @description Farmers may sign in with a PIN (not wired on the server).
+             */
+            farmer_pin_login: boolean;
+            /**
+             * Id Document Capture
+             * @description ID document upload endpoint on (consent-gated).
+             */
+            id_document_capture: boolean;
+            /**
+             * Otp Daily Cap
+             * @description Most OTP codes per phone per 24 hours (informative).
+             */
+            otp_daily_cap: number;
+            /**
+             * Producer Groups
+             * @description Producer group (SHG) endpoints on.
+             */
+            producer_groups: boolean;
+            /**
+             * Second Signoff Threshold Kg
+             * @description Batches above this weight need 2 sign-offs.
+             */
+            second_signoff_threshold_kg: number;
+            /**
+             * Sync Push Max Bytes
+             * @description Largest sync push body, in bytes.
+             */
+            sync_push_max_bytes: number;
+            /**
+             * Sync Push Max Entries
+             * @description Most entries in one sync push.
+             */
+            sync_push_max_entries: number;
+            /**
+             * Wifi Only Photos Default
+             * @description Phones upload photos on Wi-Fi only by default.
+             */
+            wifi_only_photos_default: boolean;
+        };
+        /**
+         * FieldSpec
+         * @description One configurable field of an entity, after tenant overrides (D-017).
+         */
+        FieldSpec: {
+            /**
+             * Core
+             * @description True: the database needs it, so tenants may not disable it or make it optional.
+             * @default false
+             */
+            core: boolean;
+            /**
+             * Enabled
+             * @description False: hidden from clients and dropped from payloads; never required.
+             */
+            enabled: boolean;
+            /** @description Labels shown in the apps, English and Tamil. */
+            label: components["schemas"]["Labels"];
+            /**
+             * Name
+             * @description Payload key / CSV column, snake_case.
+             */
+            name: string;
+            /**
+             * Required
+             * @description True: a payload without a value is refused (`field_required`).
+             */
+            required: boolean;
+            /**
+             * Stage
+             * @description Capture stage the field belongs to.
+             * @enum {string}
+             */
+            stage: "onboarding" | "cultivation" | "harvest" | "drying" | "packing" | "intake" | "grading" | "master_data";
+            /**
+             * Type
+             * @description Value kind; clients pick the input widget from it.
+             * @enum {string}
+             */
+            type: "text" | "number" | "integer" | "boolean" | "date" | "datetime" | "phone" | "choice" | "id" | "address" | "photo" | "audio" | "point" | "polygon" | "quantity";
+            /**
+             * Visibility
+             * @description Who may see the value: public (consumer page), partner (partner API) or internal.
+             * @enum {string}
+             */
+            visibility: "public" | "partner" | "internal";
+        };
         /**
          * FinalPackingPayload
          * @description Stage 9 final (retail) packing of a batch.
@@ -2381,6 +2669,112 @@ export interface components {
             s3: string;
         };
         /**
+         * IdDocumentIn
+         * @description Request to upload one identity document image (flag `id_document_capture`, consent-gated).
+         */
+        IdDocumentIn: {
+            /**
+             * Consent Record Id
+             * Format: uuid
+             * @description The farmer's unrevoked `data_collection` consent under which it is captured.
+             */
+            consent_record_id: string;
+            /**
+             * Content Type
+             * @description MIME type of the image to upload.
+             * @enum {string}
+             */
+            content_type: "image/jpeg" | "image/webp";
+            /**
+             * Doc Type
+             * @description Document type code, e.g. `aadhaar`.
+             */
+            doc_type: string;
+            /**
+             * Sha256
+             * @description Hex SHA-256 of the image (device).
+             */
+            sha256: string;
+        };
+        /**
+         * IdDocumentUpload
+         * @description Where to PUT the ID document image; the URL accepts only bytes matching `sha256`.
+         */
+        IdDocumentUpload: {
+            /**
+             * Expires At
+             * Format: date-time
+             * @description When the URL stops working.
+             */
+            expires_at: string;
+            /**
+             * Headers
+             * @description Headers to send: `Content-Type` and `x-amz-checksum-sha256` (base64 digest).
+             */
+            headers: {
+                [key: string]: string;
+            };
+            /**
+             * Id
+             * Format: uuid
+             * @description ID document id.
+             */
+            id: string;
+            /**
+             * Method
+             * @description Always PUT.
+             * @constant
+             */
+            method: "PUT";
+            /**
+             * Url
+             * @description Presigned URL into the private id-docs bucket (15 minutes).
+             */
+            url: string;
+        };
+        /**
+         * ImportReport
+         * @description Row-level outcome of a CSV import (dry run or commit).
+         */
+        ImportReport: {
+            /**
+             * Accepted
+             * @description Rows imported (or importable, on a dry run).
+             */
+            accepted: number;
+            /**
+             * Dry Run
+             * @description True: nothing was written; the counts are what a commit would do.
+             */
+            dry_run: boolean;
+            /**
+             * Rejected
+             * @description Rows not imported, in file order.
+             */
+            rejected: components["schemas"]["ImportRowError"][];
+        };
+        /**
+         * ImportRowError
+         * @description Why one CSV row was not imported.
+         */
+        ImportRowError: {
+            /**
+             * Code
+             * @description Registered error code (docs/api/error-codes.md), e.g. `field_required`.
+             */
+            code: string;
+            /**
+             * Field
+             * @description Column the problem is in, when known.
+             */
+            field?: string | null;
+            /**
+             * Row
+             * @description Line number in the file; the header is line 1, the first data row 2.
+             */
+            row: number;
+        };
+        /**
          * InputApplicationPayload
          * @description Stage 3 fertiliser or pesticide application, many instances per season (FR56).
          */
@@ -2811,6 +3205,22 @@ export interface components {
              * @default true
              */
             nabl_no_present: boolean;
+        };
+        /**
+         * Labels
+         * @description Field label in each app language (FR5).
+         */
+        Labels: {
+            /**
+             * En
+             * @description English label.
+             */
+            en: string;
+            /**
+             * Ta
+             * @description Tamil label.
+             */
+            ta: string;
         };
         /**
          * LandPreparationPayload
@@ -4016,6 +4426,11 @@ export interface components {
              */
             fpo_id: string;
             /**
+             * Gi Tag Id
+             * @description GI tag stored at onboarding or correction; null when none was sent (fallback).
+             */
+            gi_tag_id?: string | null;
+            /**
              * Id
              * Format: uuid
              * @description Plot id (client-generated, D-005).
@@ -4271,6 +4686,53 @@ export interface components {
             /**
              * Name
              * @description Registered name.
+             */
+            name: string;
+        };
+        /**
+         * ProducerGroupIn
+         * @description A new producer group (SHG) in the caller's FPO (flag `producer_groups`).
+         */
+        ProducerGroupIn: {
+            /**
+             * @description shg or other.
+             * @default shg
+             */
+            kind: components["schemas"]["ProducerGroupKind"];
+            /**
+             * Name
+             * @description Group name.
+             */
+            name: string;
+        };
+        /**
+         * ProducerGroupKind
+         * @description Kind of producer group (flag `producer_groups`, D-017).
+         * @enum {string}
+         */
+        ProducerGroupKind: "shg" | "other";
+        /**
+         * ProducerGroupOut
+         * @description A producer group.
+         */
+        ProducerGroupOut: {
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Group id.
+             */
+            id: string;
+            /** @description shg or other. */
+            kind: components["schemas"]["ProducerGroupKind"];
+            /**
+             * Name
+             * @description Group name.
              */
             name: string;
         };
@@ -5929,6 +6391,93 @@ export interface operations {
             };
         };
     };
+    get_features_v1_config_features_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Features"];
+                };
+            };
+            /** @description Unchanged since the ETag sent in `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_fields_v1_config_fields_get: {
+        parameters: {
+            query?: {
+                /** @description One entity, e.g. `farmer`, `plot`, `event_harvest`. */
+                entity?: string | null;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: components["schemas"]["FieldSpec"][];
+                    };
+                };
+            };
+            /** @description Unchanged since the ETag sent in `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     consent_create_v1_consents_post: {
         parameters: {
             query?: never;
@@ -6412,6 +6961,47 @@ export interface operations {
             };
         };
     };
+    create_id_document_v1_farmers__farmer_id__id_documents_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdDocumentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdDocumentUpload"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_fpos_v1_fpos_get: {
         parameters: {
             query?: never;
@@ -6616,6 +7206,166 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    import_farmers_v1_imports_farmers_post: {
+        parameters: {
+            query?: {
+                /** @description True: validate and report only; nothing is written. */
+                dry_run?: boolean;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_farmers_v1_imports_farmers_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReport"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    import_inputs_v1_imports_inputs_post: {
+        parameters: {
+            query?: {
+                /** @description True: validate and report only; nothing is written. */
+                dry_run?: boolean;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_inputs_v1_imports_inputs_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReport"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    import_villages_v1_imports_villages_post: {
+        parameters: {
+            query?: {
+                /** @description True: validate and report only; nothing is written. */
+                dry_run?: boolean;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_villages_v1_imports_villages_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReport"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    import_template_v1_imports__kind__template_csv_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description farmers, villages or inputs. */
+                kind: "farmers" | "villages" | "inputs";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One header line from the field config. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
                 };
             };
             /** @description Error */
@@ -7161,6 +7911,78 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProcessorOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_producer_groups_v1_producer_groups_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProducerGroupOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_producer_group_v1_producer_groups_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProducerGroupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProducerGroupOut"];
                 };
             };
             /** @description Error */

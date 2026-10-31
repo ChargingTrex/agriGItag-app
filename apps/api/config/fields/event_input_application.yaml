@@ -1,0 +1,12 @@
+# Payload fields of the `input_application` event (Fertiliser or pesticide); keys equal B06's `events.payloads.InputApplicationPayload`.
+# Serves: D-017, FR22 (crop event schema), FR23 (configurable capture), UserFlows §Logging an event.
+# Read by: agritrace/core/fieldconfig.py; served to clients (M07, M10, M11). Not enforced by a server
+# hook yet: events (B06) calls fieldconfig.validate_payload("event_input_application", ...) when it wires it.
+# Photos and voice notes travel in the entry envelope (`photos[]`), not in the payload, so they are not
+# listed. tests/unit/test_fieldconfig_events.py keeps this file and the payload model in step.
+entity: event_input_application
+extra: allow
+fields:
+  - {name: input_id, type: id, required: false, enabled: true, visibility: public, stage: cultivation, label: {en: Product, ta: பொருள்}}
+  - {name: input_name, type: text, required: false, enabled: true, visibility: internal, stage: cultivation, label: {en: Product name (not in list), ta: பொருளின் பெயர் (பட்டியலில் இல்லை)}}
+  - {name: quantity, type: quantity, required: true, enabled: true, visibility: partner, stage: cultivation, label: {en: Quantity, ta: அளவு}}

@@ -1,0 +1,17 @@
+# Farmer fields captured at onboarding (POST /v1/farmers, POST /v1/imports/farmers).
+# Serves: D-017, Stage 0, FR53 (village picked from the master list), FR62, PLAN "Gap analysis".
+# Read by: agritrace/core/fieldconfig.py; registry.create_farmer (required/enabled), imports template.
+# Keys: name, type, required, enabled, visibility (public|partner|internal), label {en, ta}, stage,
+# core (database needs it: tenants cannot disable or un-require it). A disabled field is never required.
+entity: farmer
+extra: forbid
+fields:
+  - {name: name, type: text, required: true, enabled: true, core: true, visibility: public, stage: onboarding, label: {en: Name, ta: பெயர்}}
+  - {name: name_local, type: text, required: false, enabled: true, visibility: public, stage: onboarding, label: {en: Name in Tamil, ta: தமிழில் பெயர்}}
+  - {name: phone, type: phone, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: Mobile number, ta: கைபேசி எண்}}
+  - {name: lang, type: choice, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: Language, ta: மொழி}}
+  - {name: village_id, type: id, required: false, enabled: true, visibility: public, stage: onboarding, label: {en: Village, ta: கிராமம்}}
+  - {name: address, type: address, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: Address, ta: முகவரி}}
+  - {name: gi_authorised_user_no, type: text, required: false, enabled: true, visibility: public, stage: onboarding, label: {en: GI authorised user number, ta: புவிசார் குறியீடு பயனர் எண்}}
+  - {name: no_smartphone, type: boolean, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: No smartphone, ta: திறன்பேசி இல்லை}}
+  - {name: photo_key, type: photo, required: false, enabled: true, visibility: internal, stage: onboarding, label: {en: Farmer photo, ta: விவசாயி புகைப்படம்}}

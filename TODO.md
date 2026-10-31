@@ -29,7 +29,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 
 ## 3. Debt ledger (from `shortcut:` comments; refreshed by /ponytail-debt)
 - [ ] B03 `registry/service.py` `create_farmer`: farmer code is `F` + 6 random hex per FPO (a collision is a 500 on UNIQUE(fpo_id, code)); switch to a per-FPO sequence before an FPO passes ~1,000 farmers.
-- [ ] B03 `registry/service.py` `_check_region`: plots do not store their GI tag; a request without `gi_tag_id` uses the only GI tag that has a region. Add `plots.gi_tag_id` (B13 migration) before a second GI crop is onboarded.
+- [x] B03 `registry/service.py` `_check_region`: plots do not store their GI tag; a request without `gi_tag_id` uses the only GI tag that has a region. Add `plots.gi_tag_id` (B13 migration) before a second GI crop is onboarded. (B13: `plots.gi_tag_id` stored and preferred; fallback only for plots without one.)
 
 - [ ] B04 `notifications/service.py` `deliver`: no error column, so a failure reason is stored in `provider_ref` as `error:<reason>`; add `notifications.error` with the first real provider.
 
@@ -101,6 +101,9 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [x] B06: reuse the registered `client_id_conflict` error code (registering it twice raises).
 - [ ] B13 migration 0003: add `plots.gi_tag_id` (B03 shortcut: when a request omits it, the only GI tag with a region is used; breaks with a second GI crop).
 - [x] B03 shortcut: farmer codes are random 6-hex per FPO; a collision surfaces as 500 — add a retry or sequence before scale. (B13 redraws on collision.)
+- [ ] B06: reuse the registered `client_id_conflict` error code (registering it twice raises).
+- [x] B13 migration 0003: add `plots.gi_tag_id` (B13 done: stored on create/correct and preferred by `_check_region`; the single-GI fallback stays for plots without one). Run the backfill SQL in `0003_masters.py` on the pilot DB before a second GI crop.
+- [x] B03 shortcut: farmer codes are random 6-hex per FPO; a collision surfaces as 500 — B13: re-drawn on collision inside the transaction (bulk import safe); concurrent requests can still race (rare 500); per-FPO sequence past ~10,000 farmers.
 - [ ] B02/B03 reconcile: B03 reads `users.is_super_admin` per call because `CurrentUser` has no super-admin flag; B02's `require_role` honours "super_admin" — one mechanism should win (prefer a claim in the access token, D-024).
 - [ ] B08: GPS accuracy threshold flag, taluk check against GI registration (FR53), raising the walked-vs-declared gap flag (B03 computes, B08 flags).
 - [x] B06: dict-accepting plot entry for sync push (`registry.service.create_plot_from_sync`).
@@ -139,7 +142,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] Infra (from B06): the 256 KB push cap is measured after the body is read; production needs a request-size cap at the ALB/CloudFront.
 - [ ] B07: `/sync/pull`, bundles and per-part `since` (B06 left them); photos attached to quality readings have no upload path yet; identity needs a dict-accepting consent entry (`TODO(B02)` in events); lot timeline has no `?fields=`; EXIF tolerances, plot radius/buffer and skew limit are constants until B13's config; explicit audit rows carry no `request_id`.
 - [ ] B06 Verifier watch-list: asyncpg `INSERT … ON CONFLICT DO NOTHING` + re-read, bulk photo insert with geography, the version row lock, LocalStack accepting WebP writes on the object-locked bucket.
-- [ ] B06/B13 reconcile at merge: the `event_*.yaml` field names (`bags`, `quantity`, `photo` …) are B13's proposal; B06's payload schemas must match before events enforce field config (one of the two adapts; Orchestrator checks at merge).
+- [x] B06/B13 reconcile at merge: the `event_*.yaml` field names (`bags`, `quantity`, `photo` …) are B13's proposal; B06's payload schemas must match before events enforce field config (one of the two adapts; Orchestrator checks at merge). (B13 r2: YAML aligned with B06 payloads; `tests/unit/test_fieldconfig_events.py` checks both ways once B06 is merged.)
 - [ ] B13 skipped: field-config checks on `PATCH /farmers` and plot correction; 7 of 9 feature flags are declared but not read yet (`farmer_pin_login`, `boundary_walk`, `second_signoff_threshold_kg`, `wifi_only_photos_default`, `sync_push_max_*`, `otp_daily_cap`); `id-docs` bucket encryption not verified; Tamil field labels need native review.
 - [x] B03 shortcut (farmer code collision → 500) closed by B13: codes are redrawn on collision.
 - [x] B07 decision (after M03): the `standards` bundle part carries the full profile rules JSON, not a trimmed subset; shapes for all parts are in docs/agents/reports/M03.md "Contract for B07".
@@ -163,6 +166,12 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B03 → B02: `CurrentUser` carries no super-admin flag, so the registry reads `users.is_super_admin` per super-admin call; if B02 adds it to the token, switch `registry.service._is_super_admin` to it.
 - [ ] B03: the plot API does not return the walked outline (internal only) and a correction cannot remove a walked boundary; concurrent first inserts of one plot `client_id` surface as 500 (IntegrityError) instead of a duplicate (rare; sync retries are sequential per device).
 - [ ] B03: integration tests `apps/api/tests/integration/test_registry.py` were written but not run (Docker daemon down); the Verifier runs them with `make test`.
+- [ ] B13 follow-ups (D-017 wiring): events (B06) call `fieldconfig.validate_payload("event_<type>", ...)` (payload keys already aligned with `config/fields/event_*.yaml`, B13 r2); lots_batches (B09) for `lot`, quality (B05) for `quality_reading`; B07 serves `fieldconfig.bundle_part` as bundle part `fields`; B10 shows only `fieldconfig.public_fields(entity, fpo_code)`; B06/B09/M02 read `sync_push_max_*`, `second_signoff_threshold_kg`, `wifi_only_photos_default` from `features_for` (declared, not wired). `PATCH /v1/farmers` and `POST /v1/plots/{id}/correct` are not field-config checked yet.
+- [ ] B13 shortcut: multipart uploads are spooled by Starlette before the 2 MB check; cap the body at the proxy (e.g. nginx `client_max_body_size 3m`) in production.
+- [ ] B13 shortcut: farmers without a phone have no import key, so re-importing them duplicates; conventions.md says re-upload only fixed rows. Add a key column if FPOs need full re-runs.
+- [ ] B13 shortcut: `id_documents` row is written before the upload and has no confirm step (abandoned upload leaves a row without object); add HEAD + sha256 confirm like evidence photos. Confirm the `id-docs` bucket has default encryption in infra (s3-init / AWS).
+- [ ] B13 (review P3-9): PLAN §13 C3 "reject product pictures > 50 KB" does not apply to CSV imports (no pictures); it belongs to the input-photo upload path when one exists.
+- [ ] B13: Tamil labels in `apps/api/config/fields/*.yaml` were written by the worker; get a native speaker review before the pilot. Sample villages fixture uses fake `SAMPLE000n` LGD codes and no PIN codes; load the real LGD list via `POST /v1/imports/villages`.
 
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).
