@@ -6,7 +6,8 @@ Each route checks the role, calls one service function, commits, and (for plots)
 
 Serves: Stage 0 (onboarding), FR14 (roles), FR24 (tenant scoping), FR27–FR32, FR53–FR56, FR64–FR72,
 backend-design.md §1 registry row, D-020 (`/v1`, additive), PLAN "Gap analysis" (Master data uploads,
-ID capture, SHG groups), D-017.
+ID capture, SHG groups), D-017; B14 (portal gaps found by P01, PLAN gap analysis "Members", FR8, FR14,
+FR53, FR70): masked phone and audited reveal, reject, farmer plots, farmer search and `?fields=`, FPO bbox.
 Callers: `agritrace.main.create_app` mounts `router` under `/v1` by discovery (D-004); the mobile app and
 portal through the generated clients.
 """
@@ -15,6 +16,7 @@ import uuid
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, File, Path, Query, Response, UploadFile, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import fieldconfig
@@ -29,6 +31,8 @@ from agritrace.modules.registry.schemas import (
     FarmerIn,
     FarmerOut,
     FarmerPatch,
+    FarmerPhoneOut,
+    FarmerReject,
     FpoIn,
     FpoOut,
     GiRegionOut,
@@ -154,6 +158,27 @@ async def create_fpo(body: FpoIn, session: Session, user: AnyRole) -> FpoOut:
     return out
 
 
+@router.get("/fpos/{fpo_id}", response_model=FpoOut, summary="Read an FPO with its map frame (bbox)")
+async def get_fpo(
+    fpo_id: Annotated[uuid.UUID, Path(description="FPO id.")], session: Session, user: AnyRole
+) -> FpoOut:
+    """Read the caller's FPO (super-admin: any FPO); staff get `bbox` from its plots or the GI regions.
+
+    \f
+    Args:
+        fpo_id: FPO id.
+        session: database session.
+        user: the caller.
+
+    Returns:
+        The FPO with `bbox`.
+
+    Raises:
+        NotFoundError: missing or not the caller's.
+    """
+    return await service.get_fpo(session, user, fpo_id)
+
+
 @router.get("/processors", response_model=list[ProcessorOut], summary="List processors")
 async def list_processors(session: Session, user: AnyRole) -> list[ProcessorOut]:
     """List the FPO's processors and shared ones.
@@ -230,8 +255,25 @@ async def list_farmers(
     cursor: Cursor = None,
     limit: Limit = 50,
     farmer_status: Annotated[FarmerStatus | None, Query(alias="status", description="Status filter.")] = None,
-) -> Page[FarmerOut]:
-    """List farmers of the caller's FPO (a farmer sees only themself).
+    village_id: Annotated[uuid.UUID | None, Query(description="Only farmers of this village.")] = None,
+    q: Annotated[
+        str | None,
+        Query(
+            max_length=120,
+            description="Part of the name, local name or farmer code; 1–4 digits also match the last digits "
+            "of the phone (the `phone_masked` suffix).",
+        ),
+    ] = None,
+    fields: Annotated[
+        str | None,
+        Query(
+            max_length=500,
+            description="Comma-separated item fields to return, e.g. `id,code,name` (lean list); items then "
+            "carry only those keys. Unknown or tenant-disabled names → 422 `validation_error`.",
+        ),
+    ] = None,
+) -> Page[FarmerOut] | Response:
+    """List farmers of the caller's FPO (a farmer sees only themself), filtered and searched on the server.
 
     \f
     Args:
@@ -240,14 +282,24 @@ async def list_farmers(
         cursor: cursor from the previous page.
         limit: page size.
         farmer_status: status filter.
+        village_id: village filter.
+        q: search text.
+        fields: item fields to keep.
 
     Returns:
-        One page in onboarding order.
+        One page in onboarding order; with `fields`, a JSON response whose items hold only those keys.
 
     Raises:
-        ValidationFailedError: invalid cursor.
+        ValidationFailedError: invalid cursor or unknown `fields` name.
     """
-    return await service.list_farmers(session, user, farmer_status, cursor, limit)
+    keep = fields and service.parse_fields(
+        fields, service.farmer_fields(await service.fpo_code(session, user.fpo_id))
+    )
+    page = await service.list_farmers(session, user, farmer_status, cursor, limit, village_id, q)
+    if not keep:
+        return page
+    include: dict[str, Any] = {"items": {"__all__": keep}, "next_cursor": True, "has_more": True}
+    return JSONResponse(page.model_dump(mode="json", include=include))
 
 
 @router.post(
@@ -336,6 +388,93 @@ async def approve_farmer(farmer_id: FarmerId, session: Session, user: Admin) -> 
     out = await service.approve_farmer(session, user, farmer_id)
     await session.commit()
     return out
+
+
+@router.get(
+    "/farmers/{farmer_id}/phone",
+    response_model=FarmerPhoneOut,
+    summary="Reveal a farmer's full phone number (FPO admin, audited)",
+)
+async def reveal_phone(
+    farmer_id: FarmerId, response: Response, session: Session, user: Admin
+) -> FarmerPhoneOut:
+    """Return the full phone of a farmer of the caller's FPO; every call writes an audit row (D-017).
+
+    Sent with `Cache-Control: no-store`, so shared office browsers and proxies keep no copy.
+
+    \f
+    Args:
+        farmer_id: farmer id.
+        response: used to set `Cache-Control: no-store`.
+        session: database session.
+        user: the caller (FPO admin).
+
+    Returns:
+        Farmer id and E.164 phone (null without an account).
+
+    Raises:
+        ForbiddenError: not an FPO admin (403).
+        NotFoundError: missing or another FPO's.
+
+    Side effects:
+        Commits an `audit_log` row `farmer.phone_reveal`.
+    """
+    # DECISION D-017: the phone's visibility is `internal`: never in lists, public pages or the sync
+    #   bundle; an FPO admin may read it here, one audited reveal at a time.
+    #   ADV: the farmer list shows only `phone_masked`, so a leaked portal screen or CSV holds no numbers.
+    #   COMPROMISE: one extra request and audit row when the admin needs to call a farmer.
+    out = await service.reveal_phone(session, user, farmer_id)
+    await session.commit()
+    response.headers["Cache-Control"] = "no-store"
+    return out
+
+
+@router.post("/farmers/{farmer_id}/reject", response_model=FarmerOut, summary="Reject a pending farmer")
+async def reject_farmer(farmer_id: FarmerId, body: FarmerReject, session: Session, user: Admin) -> FarmerOut:
+    """Turn down a pending farmer (FPO admin): status `suspended`, reason kept in the audit trail.
+
+    \f
+    Args:
+        farmer_id: farmer id.
+        body: reason code and optional text.
+        session: database session.
+        user: the caller.
+
+    Returns:
+        The farmer, status `suspended`.
+
+    Raises:
+        ForbiddenError: not an FPO admin (403).
+        NotFoundError: missing or out of scope.
+        FarmerNotPendingError: not pending.
+    """
+    out = await service.reject_farmer(session, user, farmer_id, body)
+    await session.commit()
+    return out
+
+
+@router.get("/farmers/{farmer_id}/plots", response_model=Page[PlotOut], summary="List a farmer's plots")
+async def list_farmer_plots(
+    farmer_id: FarmerId, session: Session, user: AnyRole, cursor: Cursor = None, limit: Limit = 50
+) -> Page[PlotOut]:
+    """List the plots of one farmer of the caller's FPO; each carries `gi_tag_id` for the region to draw.
+
+    \f
+    Args:
+        farmer_id: farmer id.
+        session: database session.
+        user: the caller.
+        cursor: cursor from the previous page.
+        limit: page size.
+
+    Returns:
+        One page ordered by plot id.
+
+    Raises:
+        NotFoundError: farmer missing or out of scope.
+        ValidationFailedError: invalid cursor.
+    """
+    return await service.list_farmer_plots(session, user, farmer_id, cursor, limit)
 
 
 @router.post(

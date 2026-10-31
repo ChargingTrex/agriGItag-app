@@ -19,8 +19,9 @@ Name | Type | Description | Notes
 **name** | **String** | Name in English script. | 
 **nameLocal** | **String** | Name in the local script. | 
 **noSmartphone** | **bool** | True when the officer always enters data. | 
+**phoneMasked** | **String** | Phone of the sign-in account with all but the last 4 digits hidden, e.g. `XXXXXX3210`; null without a phone. FPO admins read the full number via GET /v1/farmers/{id}/phone (audited). | [optional] 
 **photoKey** | **String** | Object key of the profile photo. | 
-**status** | [**FarmerStatus**](FarmerStatus.md) | pending until an FPO admin approves; then active. | 
+**status** | [**FarmerStatus**](FarmerStatus.md) | pending until an FPO admin approves; then active; suspended when rejected (B14). | 
 **userId** | **String** | Sign-in account; null when no phone was given. | 
 **villageId** | **String** | Village from the directory. | 
 

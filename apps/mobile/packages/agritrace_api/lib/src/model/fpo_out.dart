@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:agritrace_api/src/model/org_kind.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:agritrace_api/src/model/address.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -15,6 +16,7 @@ part 'fpo_out.g.dart';
 /// Properties:
 /// * [address] - Registered address.
 /// * [addressLine] - Address on one line, without repeated parts.
+/// * [bbox] - [min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.
 /// * [code] - Stable upper-case code.
 /// * [fssaiNo] - FSSAI licence number.
 /// * [giAuthorisedUserNo] - GI authorised-user registration number.
@@ -31,6 +33,10 @@ abstract class FpoOut implements Built<FpoOut, FpoOutBuilder> {
   /// Address on one line, without repeated parts.
   @BuiltValueField(wireName: r'address_line')
   String get addressLine;
+
+  /// [min_lon, min_lat, max_lon, max_lat] (WGS84) of the FPO's plots, or of the current GI regions when it has none; for the portal map and tile cache. Only on GET /v1/fpos/{id} for fpo_admin, field_officer, qc_officer and super-admins; null for farmers and viewers, on lists and when there is nothing to frame. One plot gives a zero-size box: pad it client-side.
+  @BuiltValueField(wireName: r'bbox')
+  BuiltList<num>? get bbox;
 
   /// Stable upper-case code.
   @BuiltValueField(wireName: r'code')
@@ -96,6 +102,13 @@ class _$FpoOutSerializer implements PrimitiveSerializer<FpoOut> {
       object.addressLine,
       specifiedType: const FullType(String),
     );
+    if (object.bbox != null) {
+      yield r'bbox';
+      yield serializers.serialize(
+        object.bbox,
+        specifiedType: const FullType.nullable(BuiltList, [FullType(num)]),
+      );
+    }
     yield r'code';
     yield serializers.serialize(
       object.code,
@@ -174,6 +187,14 @@ class _$FpoOutSerializer implements PrimitiveSerializer<FpoOut> {
             specifiedType: const FullType(String),
           ) as String;
           result.addressLine = valueDes;
+          break;
+        case r'bbox':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(num)]),
+          ) as BuiltList<num>?;
+          if (valueDes == null) continue;
+          result.bbox.replace(valueDes);
           break;
         case r'code':
           final valueDes = serializers.deserialize(

@@ -108,8 +108,17 @@ Auth: Bearer access token + `X-Device-Id` + optional `X-Assist-Session`. Client 
     { "client_id": "…", "kind": "quality_reading", "data": { } },
     { "client_id": "…", "kind": "plot", "data": { } },
     { "client_id": "…", "kind": "consent", "data": { } },
-    { "client_id": "…", "kind": "flag_resolution", "data": { } } ] }
+    { "client_id": "…", "kind": "flag_resolution", "data": { } },
+    { "client_id": "…", "kind": "farmer", "data": { } },
+    { "client_id": "…", "kind": "assist_session", "data": { "farmer_id": "…", "started_at": "…", "started_gps": { } } },
+    { "client_id": "…", "kind": "consent", "assist_session_id": "…", "data": { } } ] }
 ```
+
+Kinds `farmer` and `assist_session` and the optional per-entry `assist_session_id` were added by rulings 2026-10-31
+(D-031, D-032; implemented by B15): `farmer` is idempotent on `client_id`, officer/admin only, stored pending;
+`assist_session` goes through the idempotent `start_assist`; an entry's `assist_session_id` must belong to the caller
+(ended sessions accepted) and to the entry's farmer, and it records assist mode on that entry and its audit row.
+The `X-Assist-Session` header keeps working for online calls.
 Response always 200 if the envelope parses; per-entry outcome:
 ```json
 { "server_time": "…", "results": [
@@ -121,13 +130,13 @@ Response always 200 if the envelope parses; per-entry outcome:
 Rules: entries processed in order, each in its own transaction; `entered_by` from the token, never the body; `server_received_at` set server-side; idempotency = `INSERT … ON CONFLICT (id) DO NOTHING` then re-read; duplicate owned by another user → `client_id_conflict`; `version_no` must be max+1 else `stale_version`; entries without photos enqueue `rules.check_event` immediately.
 
 ### Photo upload and confirm
-Single presigned PUT (15-min expiry, SHA-256 and Content-Type bound; D-011). `POST /v1/sync/photos/confirm` `{ "photos": [ { "client_id": "…" } ] }` → `[ { "client_id", "status": "received" | "missing" } ]`; server HEADs, stores `s3_version_id`, enqueues `events.verify_photo` (sha256 + EXIF) then `events.make_variants` (WebP thumb ~60 KB, medium ~150 KB, record width/height, keep original JPEG URL) then `rules.check_event`. Photos unconfirmed after 24 h appear in `/sync/pull` as `photos_pending`.
+Single presigned PUT (15-min expiry, SHA-256 and Content-Type bound; D-011). `POST /v1/sync/photos/confirm` `{ "photos": [ { "client_id": "…" } ] }` → `[ { "client_id", "status": "received" | "missing" } ]`; server HEADs, stores `s3_version_id`, enqueues `events.verify_photo` (sha256 + EXIF) then `events.make_variants` (WebP thumb ~60 KB, medium ~150 KB, record width/height, keep original JPEG URL) then `rules.check_event`. Photos unconfirmed after 24 h appear on the last page of `/sync/pull` as `photo_pending`.
 
 ### GET /v1/sync/pull?cursor=&limit=200
 `{ "changes": [ { "entity": "flag | lot | event | intake | notification | photo_pending", "op": "upsert", "data": { } } ], "next_cursor": "…", "has_more": false }`; scoped to the caller (farmer) or the FPO's farmers (officer).
 
 ### Reference bundles
-`GET /v1/sync/bundle` → manifest of parts {plots, crops, inputs, standards, gi_region, farmer_profile, villages, fields (B13), prompts, images} with `version` and `etag`. `GET /v1/sync/bundle/{part}` honours `If-None-Match` → 304. `GET /v1/sync/reference?since=<version>` returns only parts newer than `since` (plan §13 C2). `standards` carries the **full** `standards_profile_versions.rules` JSON for each active profile version (Orchestrator decision 2026-10-31 after M03: the on-device grade preview needs `grades`, `fail_grade`, `trail_rules`, `lab_certified_requires` and the per-parameter fields; the JSON is a few KB); `gi_region` carries simplified geometry (≤ 50 KB) + buffer.
+`GET /v1/sync/bundle` → manifest of parts {plots, crops, inputs, standards, gi_region, farmer_profile, villages, fields (B13), prompts, images} with `version` and `etag`. `GET /v1/sync/bundle/{part}` honours `If-None-Match` → 304. `GET /v1/sync/reference?since=plots:41,crops:7,…` returns only parts whose version **differs** from the one the phone lists (per part; a bare number is 422; unlisted parts are returned) (plan §13 C2, B07). `standards` carries the **full** `standards_profile_versions.rules` JSON for each active profile version (Orchestrator decision 2026-10-31 after M03: the on-device grade preview needs `grades`, `fail_grade`, `trail_rules`, `lab_certified_requires` and the per-parameter fields; the JSON is a few KB); `gi_region` carries simplified geometry (≤ 50 KB) + buffer.
 
 ## 4. Grade computation (B05, mirrored by mobile M03)
 
@@ -161,4 +170,4 @@ Profile JSON (`standards_profile_versions.rules`), validated by `StandardsProfil
 Engine `grade_engine.compute(rules, readings) -> GradeResult`, pure: pick latest reading per parameter at `grading_stage`; missing required with non-null limits → `incomplete`; per parameter the best grade whose limits hold, else `fail_grade`, capped by `max_grade_for_source`; batch grade = worst per-parameter grade (FR48); `lab_certified` when any reading source=lab with NABL number. Parameters with `limits: null` are skipped and raise an `info` flag `profile_incomplete`. Plausibility at entry (FR50): range, instrument calibration, trail rule (override with reason → flag), unknown parameter, unit mismatch → 422.
 
 ## 5. Seed data (B12) — mirrors PRD §12 reference batch with its known problems
-FPO `VIRUDHAI_SCFC_VINOBA_BHAVA_FPO` (P Thottiyangulam, Tiruchuli, Virudhunagar, TN; FSSAI/GI numbers `DEMO-…`); crop VIRUDHUNAGAR SAMBA VATHAL / விருதுநகர் சம்பா வத்தல், GI 883; region v0 district outline and v1 taluk union from `infra/scripts/gi_boundary/build_virudhunagar.py` (D-019), buffer 150 m; inputs Organic Fertilizer Gold (Amul), Panjakavya, Azospirillum, Phospho Bacteria, Effective Micro Organism; users 1 admin, 1 field officer, 1 QC, 3 farmers with consents; lots `LOTD02DADB6` (packed 69 / used 100), `LOT3072CB6A` (140 / 200; nursery 2025-09-05 before ploughing 2025-09-30), `LOT0EF81415` (77.6 + 195 / 20); all declared Inorganic + IPM; batch `FGP8T4033HM7`, super-lot `COMBO_LOT_6C1DCCFE`, procured 320 kg, grading "A" 20 kg 2026-07-30 without readings. Expected flags: `quantity_mismatch` ×3, `practice_tag_contradiction` ×3, `ipm_without_pest_event` ×3, `yield_check_unavailable` ×2, no `event_out_of_order`, `batch_quantity_unattributed`; grade "A" → 422 `unknown_grade_for_profile`; approve → 409; publish → 409; after fixes publish succeeds (GI verified, shares 31.25/62.5/6.25, units everywhere).
+FPO `VIRUDHAI_SCFC_VINOBA_BHAVA_FPO` (P Thottiyangulam, Tiruchuli, Virudhunagar, TN; FSSAI/GI numbers `DEMO-…`); crop VIRUDHUNAGAR SAMBA VATHAL / விருதுநகர் சம்பா வத்தல், GI 883; region v0 district outline and v1 taluk union from `infra/scripts/gi_boundary/build_virudhunagar.py` (D-019), buffer 150 m; inputs Organic Fertilizer Gold (Amul), Panjakavya, Azospirillum, Phospho Bacteria, Effective Micro Organism; users 1 admin, 1 field officer, 1 QC, 3 farmers with consents; lots `LOTD02DADB6` (packed 69 / used 100), `LOT3072CB6A` (140 / 200; nursery 2025-09-05 before ploughing 2025-09-30), `LOT0EF81415` (77.6 + 195 / 20); all declared Inorganic + IPM; batch `FGP8T4033HM7`, super-lot `COMBO_LOT_6C1DCCFE`, procured 320 kg, grading "A" 20 kg 2026-07-30 without readings. Expected flags: `quantity_mismatch` ×3, `practice_tag_contradiction` ×3, `ipm_without_pest_event` ×3, `yield_check_unavailable` ×3 (no lot has a harvest quantity, PRD §12.2), no `event_out_of_order`, `grading_loss_high` ×1 (320 kg received → 20 kg graded = 93.75 % loss), no `batch_quantity_unattributed` (Σ shares 320 kg = received 320 kg) (Architect-Gate rulings 2026-10-31, D-030); warns never block publish, holds do; grade "A" → 422 `unknown_grade_for_profile`; approve → 409; publish → 409; after fixes publish succeeds (GI verified, shares 31.25/62.5/6.25, units everywhere).

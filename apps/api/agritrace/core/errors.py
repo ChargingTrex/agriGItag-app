@@ -413,6 +413,18 @@ class DeviceInUseError(AppError):
     fix = "Sign out on this device first (`POST /v1/auth/logout`), then sign in again."
 
 
+class AccountInactiveError(AppError):
+    """The OTP matched, but the account has no FPO membership left or is suspended (B14: rejected farmer).
+
+    Raised only after the code check, so a wrong code still gets `otp_invalid` and a phone number alone
+    reveals nothing (D-024).
+    """
+
+    code, status, message_key = "account_inactive", 403, "error.account_inactive"
+    message = "This account is not active in any FPO."
+    fix = "Your FPO has not approved this account; contact the FPO office."
+
+
 class ConsentConflictError(AppError):
     """A consent `client_id` already exists with different content or for another farmer (D-005)."""
 
@@ -439,6 +451,25 @@ class UndoWindowClosedError(AppError):
     code, status, message_key = "undo_window_closed", 409, "error.undo_window_closed"
     message = "Entries can be undone only within 24 hours."
     fix = "Ask your field officer to correct the entry with a reason instead."
+
+
+# Rules and flags (B08; FR70 review on flags). Reuses `reason_required`, `forbidden` and `not_found`.
+
+
+class FlagNotOpenError(AppError):
+    """A flag was already resolved (cleared or fixed); only open or escalated flags can be resolved."""
+
+    code, status, message_key = "flag_not_open", 409, "error.flag_not_open"
+    message = "This flag is already resolved."
+    fix = "Reload the flag; a later rule run reopens it if the problem comes back worse."
+
+
+class ResolutionForbiddenError(AppError):
+    """A field officer tried to resolve a `hold` flag or an escalated one; only an FPO admin may (FR70)."""
+
+    code, status, message_key = "resolution_forbidden", 403, "error.resolution_forbidden"
+    message = "Only an FPO admin can resolve this flag."
+    fix = "Escalate it, or ask an FPO admin to review and resolve it."
 
 
 SQLSTATE_RESTRICT_VIOLATION = "23001"

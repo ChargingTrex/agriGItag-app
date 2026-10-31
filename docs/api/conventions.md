@@ -25,7 +25,7 @@ client authors. Source of truth for shared types: apps/api/agritrace/core/schema
     `{kind: "pin_required", pin_token, expires_in: 300, pin_set}`. No refresh token, role or FPO id before
     the PIN.
   Wrong code `otp_invalid` (422), expired `otp_expired` (422), the 5th wrong code and after `otp_locked`
-  (409). Never a bare 401 for a wrong code. A `device_id` that is signed in for another user → 409
+  (409). Never a bare 401 for a wrong code. The right code for a known account that has no FPO membership left or is suspended (e.g. a farmer the FPO rejected, B14) → 403 `account_inactive`; this answer comes only after the code check, so a phone number alone reveals nothing. A `device_id` that is signed in for another user → 409
   `device_in_use` (sign out on that device first).
 - **PIN.** `POST /v1/auth/pin/verify {pin}` with `Authorization: Bearer <pin_token>` → session. When
   `pin_set` was false this first PIN becomes the user's PIN. Wrong PIN `pin_invalid` (422, with
@@ -83,6 +83,18 @@ Every error response, whatever the status, has this body:
   No offset pagination.
 - List endpoints accept `?fields=a,b,c` to return only those item fields (lean lists for 2G/3G
   screens, plan §13 C4). Unknown field names are a `validation_error`.
+  Allowed names are the item model's fields (computed ones included) minus fields the tenant's
+  `fields/<entity>.yaml` disables (D-017); a disabled field is also "unknown". With `?fields=` the items
+  carry only the named keys, although the OpenAPI schema shows the full item, so clients that trim must
+  type the items as partial. Wired today on `GET /v1/farmers` (B14); other lists add it when a screen needs it.
+- Filters and search run on the server as query parameters, never by fetching every page. Exact-match
+  filters use the field name (`?status=`, `?village_id=`); `?q=` is a case-insensitive "contains" search
+  over the fields the endpoint documents. `GET /v1/farmers?q=` searches name, local name and code, and
+  1–4 digits also match the end of the phone: only the suffix `phone_masked` already shows, so a search
+  cannot probe the hidden digits.
+- Internal fields (D-017 visibility `internal`, e.g. the farmer's phone) never appear in lists: lists
+  carry a masked form (`phone_masked`, last 4 digits) and the full value is a separate, role-limited,
+  audited read (`GET /v1/farmers/{id}/phone`, FPO admin, `audit_log` action `farmer.phone_reveal`).
 - Keep responses flat: return ids and codes of related objects rather than nesting them.
 
 ## Quantities carry units (FR58)
@@ -146,6 +158,62 @@ Every error response, whatever the status, has this body:
   against the entry and builds the WebP variants; a mismatch is flagged, never rejected. An expired URL is re-issued by resending the entry.
 - `metrics[]` rows (`entry_client_id`, `saved_at`, `acked_at`, `photo_upload_ms`, `failures`,
   `network_type`) are stored for the sync-health dashboard against the token's device.
+- **Pull** `GET /v1/sync/pull?cursor=&limit=200` → `{changes: [{entity, op: "upsert", data}], next_cursor,
+  has_more}`. Entities: `flag`, `lot`, `event` (the event with its current version and photos, e.g. after an
+  officer correction), `intake`, `notification` (your own) and `photo_pending`. Farmers get their own lots,
+  plots, events and flags on them; other roles the whole FPO. Apply each change as an upsert by `data.id`;
+  duplicates are harmless. Order is (change time, id); the cursor is opaque — store `next_cursor` (it equals
+  the sent cursor when nothing changed) and call again while `has_more`. A change is served about 30 s after
+  it is written (rows are ordered by transaction start, so very fresh rows wait one pull). `photo_pending`
+  (`{id, event_id, event_version_id, status}`) lists, on the last page, your photos still `pending_upload`
+  24 h after their entry arrived: resend that entry to get fresh upload URLs. The server records the
+  device's last cursor (`sync_cursors`). A cursor this endpoint did not issue → 422 `validation_error`.
+- **Photo URLs.** `variants.thumb_url` and `variants.medium_url` in the lot timeline and in pulled events are
+  presigned GETs of the WebP variants in the private `evidence` bucket, valid 1 hour
+  (`core.storage.presign_get`). The original JPEG (`jpeg_url`) is never listed: it keeps the phone's exact
+  EXIF GPS. Do not store the links; load the image, or re-read the timeline for fresh links (a pull does
+  not resend an event when only its photos change).
+
+## Reference bundles (B07, plan §13 C2/C3, D-006, D-016, D-017)
+
+- `GET /v1/sync/bundle` → `{parts: {<part>: {version, etag}}}` for the caller. `GET /v1/sync/bundle/{part}`
+  → the part body with a strong `ETag` (SHA-256 of the body); send it in `If-None-Match` for a 304 with no
+  body. An unknown part → 422. Responses are `Cache-Control: private, no-cache`.
+- `version` is an integer. For parts fed by database tables (`plots`, `crops`, `inputs`, `standards`,
+  `gi_region`, `villages`) it comes from `reference_versions`, bumped by triggers: the global row plus your
+  FPO's row, summed, so it grows with every change. The other parts carry a content fingerprint (first 48
+  bits of the ETag hash), which has no order.
+- **Delta:** `GET /v1/sync/reference?since=<part>:<version>,<part>:<version>,...`, e.g.
+  `since=plots:41,crops:7,fields:90210`. Each part is compared on its own (never one global number: the
+  shared sequence orders transaction starts, not commits). A part is returned when its version differs
+  from yours or you did not list it; unknown names are ignored; a bare number or a malformed item → 422
+  `validation_error`. Answer: `{parts: {<part>: {version, etag, body}}}`, or 304 when nothing changed.
+- **Bodies** (the shapes `apps/mobile/lib/core/refdata` parses; docs/agents/reports/M03.md):
+  - `plots` `{plots: [{id, farmer_id, code, pin: {lat, lon}, declared_area, area_unit: "acre", gi_tag_id}]}` —
+    your plots, or the FPO's for officer roles. Never boundaries or land records.
+  - `crops` `{crops: [{id, code, name_en, name_local, gi_tag_id, event_schema: {mandatory: [type], tracks:
+    {name: [type in date order]}}}]}` (active crops).
+  - `inputs` `{inputs: [{id, name_en, name_local, manufacturer, category, unit}]}` — global list + your FPO's.
+  - `standards` `{profiles: {<crop_id>: <full rules JSON>}}` — the published `standards_profile_versions.rules`
+    the server grades with (D-006), including `grades`, `fail_grade`, `parameters`, `trail_rules`,
+    `lot_gates`, `yield`, `lab_certified_requires`.
+  - `gi_region` `{geometry: <GeoJSON Polygon|MultiPolygon>, tolerance_buffer_m, version_no,
+    region_version_id, gi_tag_id, simplified_tolerance_m, source_ref, licence, confidence, effective_from}`
+    — the region in effect for the active crops' GI tag, simplified (50 m, coarser until ≤ 50 KB). Absent
+    from the manifest, and 404 `gi_region_missing` on download, while no region is in effect.
+  - `farmer_profile` `{farmers: [{id, code, name, name_local, village_id, status, no_smartphone}]}` — you, or
+    the FPO's farmers (assist mode). No phone numbers, addresses or ID numbers.
+  - `villages` `{villages: [{id, lgd_code, name_en, name_local, block, taluk, district, pincode}]}` — the
+    FPO's district (from the FPO address); empty when the FPO has no district.
+  - `fields` `{version, entities, features}` = `fieldconfig.bundle_part(fpo_code)` (D-017).
+  - `prompts` `{prompts: []}` — downloadable voice packs beyond the bundled ta/en clips; items will be
+    `{lang, prompt_id, key, url}` (none exist yet, D-016).
+  - `images` `{images: [{id, kind: "input", key, url}]}` — product pictures of the inputs; `url` is a plain
+    link into the anonymous-read `public-pages` bucket (stable, so the ETag is stable; D-016). Only
+    non-sensitive assets live there.
+  - `calendar` `{calendar: []}` — crop-calendar reminders `{event_type, due_on: "YYYY-MM-DD", prompt_id,
+    lot_id?}`; empty until lots carry sowing dates.
+
 ## Config: fields, features, imports (D-017)
 
 - **Where.** `apps/api/config/fields/<entity>.yaml` (farmer, plot, lot, quality_reading, village, input,
