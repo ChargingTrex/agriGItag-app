@@ -79,7 +79,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [ ] B12 — Demo seed, e2e, client generation — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; e2e, make seed and integration tests deferred to the stack)
 - [ ] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: — reviewer: — verifier:
-- [ ] P07 — Playwright e2e chain + axe — wave 7 — worker: — reviewer: — verifier:
+- [ ] P07 — Playwright e2e chain + axe — wave 7 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q02 — Portal verification: Vitest ≥ 80 % in features, Playwright chain, axe — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q03 — Public page verification: W02 suite + backend-down serve from MinIO + old version retrieva — wave 7 — worker: — reviewer: — verifier:
