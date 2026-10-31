@@ -27,7 +27,17 @@
       "savedOnline",
       "savedOffline",
       "keepDrying",
-      "homeNoTask"
+      "homeNoTask",
+      "homeHistory",
+      "sellPrompt",
+      "sellPick",
+      "sellNoLot",
+      "moneyPrompt",
+      "historyPrompt",
+      "historyEmpty",
+      "undoClosed",
+      "wifiOnlyPhotos",
+      "unsentOld"
     ],
     "en": [
       "callOfficer",
@@ -54,7 +64,17 @@
       "savedOnline",
       "savedOffline",
       "keepDrying",
-      "homeNoTask"
+      "homeNoTask",
+      "homeHistory",
+      "sellPrompt",
+      "sellPick",
+      "sellNoLot",
+      "moneyPrompt",
+      "historyPrompt",
+      "historyEmpty",
+      "undoClosed",
+      "wifiOnlyPhotos",
+      "unsentOld"
     ]
   },
   "clips": {
@@ -83,7 +103,17 @@
       "savedOnline",
       "savedOffline",
       "keepDrying",
-      "homeNoTask"
+      "homeNoTask",
+      "homeHistory",
+      "sellPrompt",
+      "sellPick",
+      "sellNoLot",
+      "moneyPrompt",
+      "historyPrompt",
+      "historyEmpty",
+      "undoClosed",
+      "wifiOnlyPhotos",
+      "unsentOld"
     ],
     "en": [
       "callOfficer",
@@ -110,7 +140,17 @@
       "savedOnline",
       "savedOffline",
       "keepDrying",
-      "homeNoTask"
+      "homeNoTask",
+      "homeHistory",
+      "sellPrompt",
+      "sellPick",
+      "sellNoLot",
+      "moneyPrompt",
+      "historyPrompt",
+      "historyEmpty",
+      "undoClosed",
+      "wifiOnlyPhotos",
+      "unsentOld"
     ]
   }
 }

@@ -870,6 +870,122 @@
   "@notFound": {
     "description": "Page for a link that does not exist; a Home button follows. Also its voice prompt id."
   },
+  "homeHistory": "வரலாறு",
+  "@homeHistory": {
+    "description": "Farmer home button: opens the list of logged entries (History, Undo). At most two words. Also its voice prompt id."
+  },
+  "sellPrompt": "சேகரிப்பு மையத்தில் இந்தக் குறியீட்டைக் காட்டுங்கள்.",
+  "@sellPrompt": {
+    "description": "Spoken sentence above the Sell QR. Also its voice prompt id."
+  },
+  "sellPick": "எந்த வயலின் பயிரை விற்கிறீர்கள்?",
+  "@sellPick": {
+    "description": "Sell screen when several lots are ready: the farmer taps a field. Also its voice prompt id."
+  },
+  "sellNoLot": "விற்க இன்னும் எதுவும் தயாராக இல்லை. முதலில் பேக்கிங்கைப் பதிவு செய்யுங்கள்.",
+  "@sellNoLot": {
+    "description": "Sell screen when no lot is ready for sale. Also its voice prompt id."
+  },
+  "sellQrLabel": "{field} விற்பனைக் குறியீடு",
+  "@sellQrLabel": {
+    "description": "Screen-reader label of the Sell QR image.",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "Field 1"
+      }
+    }
+  },
+  "kgAmount": "{kg} கிலோ",
+  "@kgAmount": {
+    "description": "Packed quantity in large type under the Sell QR; kg is already formatted with Indian grouping.",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "1,200"
+      }
+    }
+  },
+  "moneyPrompt": "உங்கள் பயிரும் அதன் விற்பனையும்.",
+  "@moneyPrompt": {
+    "description": "Spoken sentence at the top of the Money screen. Also its voice prompt id."
+  },
+  "moneyPacked": "பேக் செய்தது: {kg} கிலோ",
+  "@moneyPacked": {
+    "description": "Money card line: packed kilograms of the lot (Indian grouping).",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "300"
+      }
+    }
+  },
+  "lotStatusOpen": "வளர்கிறது",
+  "@lotStatusOpen": {
+    "description": "Lot status word on the Money card: server status open (crop in the field)."
+  },
+  "lotStatusDrying": "உலர்த்துகிறது",
+  "@lotStatusDrying": {
+    "description": "Lot status word on the Money card: server status drying."
+  },
+  "lotStatusReady": "விற்கத் தயார்",
+  "@lotStatusReady": {
+    "description": "Lot status word on the Money card: server status ready_for_sale."
+  },
+  "lotStatusReceived": "FPO பெற்றது",
+  "@lotStatusReceived": {
+    "description": "Lot status word on the Money card: server status received (intake done)."
+  },
+  "lotStatusBatched": "தொகுப்பில் உள்ளது",
+  "@lotStatusBatched": {
+    "description": "Lot status word on the Money card: server status batched."
+  },
+  "lotStatusClosed": "முடிந்தது",
+  "@lotStatusClosed": {
+    "description": "Lot status word on the Money card: server status closed."
+  },
+  "historyPrompt": "நீங்கள் பதிவு செய்தவை. பார்க்க ஒன்றைத் தொடுங்கள்.",
+  "@historyPrompt": {
+    "description": "Spoken sentence at the top of History. Also its voice prompt id."
+  },
+  "historyEmpty": "இன்னும் எதுவும் பதிவு செய்யவில்லை.",
+  "@historyEmpty": {
+    "description": "History when there are no entries. Also its voice prompt id."
+  },
+  "historyDetail": "{date} அன்று {event}.",
+  "@historyDetail": {
+    "description": "Spoken sentence of one History entry: event name and the day it was logged (\"14 Feb\").",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Harvest"
+      },
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "entrySent": "அனுப்பியது",
+  "@entrySent": {
+    "description": "Status word of an entry the server confirmed (green tick)."
+  },
+  "entryWaiting": "அனுப்பவில்லை",
+  "@entryWaiting": {
+    "description": "Status word of an entry still waiting on the phone (orange circle)."
+  },
+  "undoClosed": "இப்போது கள அலுவலர் மட்டுமே இதைத் திருத்த முடியும்.",
+  "@undoClosed": {
+    "description": "Entry detail after the 24-hour undo window (or for a refused entry). Also its voice prompt id."
+  },
+  "wifiOnlyPhotos": "வைஃபையில் மட்டும் படங்கள்",
+  "@wifiOnlyPhotos": {
+    "description": "Settings switch: photos wait for Wi-Fi before sending (default off). Also its voice prompt id."
+  },
+  "unsentOld": "சில பதிவுகள் 7 நாட்களுக்கு மேல் காத்திருக்கின்றன. அனுப்ப சிக்னல் உள்ள இடத்துக்குச் செல்லுங்கள், அல்லது அலுவலரை அழையுங்கள்.",
+  "@unsentOld": {
+    "description": "Settings warning with a red triangle when the oldest unsent entry is 7 days old. Also its voice prompt id."
+  },
   "officerAddFarmer": "விவசாயி சேர்",
   "@officerAddFarmer": {
     "description": "Officer home button that opens the onboarding wizard."

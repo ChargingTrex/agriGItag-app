@@ -16,9 +16,12 @@ import 'package:agritrace_api/src/api/health_api.dart';
 import 'package:agritrace_api/src/api/identity_api.dart';
 import 'package:agritrace_api/src/api/lots_batches_api.dart';
 import 'package:agritrace_api/src/api/notifications_api.dart';
+import 'package:agritrace_api/src/api/partner_api_api.dart';
 import 'package:agritrace_api/src/api/publishing_api.dart';
 import 'package:agritrace_api/src/api/quality_api.dart';
 import 'package:agritrace_api/src/api/registry_api.dart';
+import 'package:agritrace_api/src/api/reporting_api.dart';
+import 'package:agritrace_api/src/api/storage_monitoring_api.dart';
 
 class AgritraceApi {
   static const String basePath = r'http://localhost';
@@ -182,6 +185,12 @@ class AgritraceApi {
     return NotificationsApi(dio, serializers);
   }
 
+  /// Get PartnerApiApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  PartnerApiApi getPartnerApiApi() {
+    return PartnerApiApi(dio, serializers);
+  }
+
   /// Get PublishingApi instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   PublishingApi getPublishingApi() {
@@ -198,5 +207,17 @@ class AgritraceApi {
   /// by doing that all interceptors will not be executed
   RegistryApi getRegistryApi() {
     return RegistryApi(dio, serializers);
+  }
+
+  /// Get ReportingApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  ReportingApi getReportingApi() {
+    return ReportingApi(dio, serializers);
+  }
+
+  /// Get StorageMonitoringApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  StorageMonitoringApi getStorageMonitoringApi() {
+    return StorageMonitoringApi(dio, serializers);
   }
 }

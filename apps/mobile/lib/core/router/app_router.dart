@@ -7,6 +7,7 @@
 //   `/log/<eventType>`) and a farmer-friendly page for unknown routes (UserFlows §When things go wrong).
 //   M10 adds the officer home, flags and assist mode (UserFlows §Field officer flows): under `/assist/:farmerId` the
 //   farmer's home and event screens run again for the assisted farmer, only while that farmer's assist session runs.
+//   M08 adds Sell, Money, History (+ entry detail) and the real Settings (UserFlows §Selling to the FPO).
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
 //   test/widget/router_test.dart.
 
@@ -26,19 +27,24 @@ import '../../features/event_log/event_log_controller.dart';
 import '../../features/event_log/farm_event.dart';
 import '../../features/event_log/saved_screen.dart';
 import '../../features/farmer_home/farmer_home_screen.dart';
+import '../../features/history/history_screen.dart';
+import '../../features/money/money_screen.dart';
 import '../../features/officer_assist/assist_controller.dart';
 import '../../features/officer_flags/flag_actions.dart' show FlagAction;
 import '../../features/officer_flags/flags_screen.dart';
 import '../../features/officer_home/officer_home_screen.dart';
 import '../../features/officer_moisture/moisture_screen.dart';
 import '../../features/onboarding_farmer/onboarding_wizard.dart';
+import '../../features/sell/sell_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../l10n/gen/app_localizations.dart';
 import 'placeholder_screen.dart';
 import 'session.dart';
 
 /// Route prefixes each role may open; the first entry is the role's home.
 /// A signed-out user (null role) may only open /auth (phone, /auth/otp, /auth/pin); every signed-in role may open
-/// /settings (sign-out; M08 replaces the placeholder). A farmer's event flow lives under /log (F04–F07, deep links).
+/// /settings (language, Wi-Fi-only photos, voice tour, sign-out). A farmer's event flow lives under /log (F04–F07,
+/// deep links).
 const Map<Role?, List<String>> allowedPrefixes = {
   null: ['/auth'],
   Role.farmer: ['/home', '/log', '/settings'],
@@ -79,15 +85,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       redirect: (context, state) => ref.read(eventLogProvider).savedEntryId == null ? _parent(state) : null,
       builder: (context, _) => const SavedScreen(),
     ),
-    // Placeholders until M08 (Sell, Money) and M09 (My farm).
+    GoRoute(path: 'sell', builder: (context, _) => const SellScreen()),
+    GoRoute(path: 'money', builder: (context, _) => const MoneyScreen()),
     GoRoute(
-      path: 'sell',
-      builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeSell),
+      path: 'history',
+      builder: (context, _) => const HistoryScreen(),
+      routes: [
+        GoRoute(
+          path: ':entryId',
+          builder: (context, state) => HistoryDetailScreen(entryId: state.pathParameters['entryId']!),
+        ),
+      ],
     ),
-    GoRoute(
-      path: 'money',
-      builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeMoney),
-    ),
+    // Placeholder until My farm lands.
     GoRoute(
       path: 'farm',
       builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).homeMyFarm),
@@ -102,10 +112,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: ':eventType',
         redirect: (context, state) =>
             FarmEvent.fromWire(state.pathParameters['eventType']) == null ? _parent(state) : null,
-        // Keyed by event: going from /log/packing to /log/harvest must start a new flow, not reuse the state.
+        // Keyed by event and lot: going from /log/packing to /log/harvest must start a new flow, not reuse the
+        // state. `?lot=` is the home task card's lot (D-043: no field picker on the card path).
         builder: (context, state) {
           final event = FarmEvent.fromWire(state.pathParameters['eventType'])!;
-          return EventFlowScreen(key: ValueKey(event), event: event);
+          final lot = state.uri.queryParameters['lot'];
+          return EventFlowScreen(key: ValueKey((event, lot)), event: event, lotId: lot);
         },
         routes: [
           GoRoute(
@@ -143,7 +155,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(path: '/settings', builder: (context, _) => const SettingsPlaceholder()),
+      GoRoute(path: '/settings', builder: (context, _) => const SettingsScreen()),
       GoRoute(path: '/home', builder: (context, _) => const FarmerHomeScreen(), routes: homeRoutes()),
       logRoute('/log'),
       GoRoute(

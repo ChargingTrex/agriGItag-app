@@ -404,6 +404,28 @@ void main() {
     await h.dispose(tester);
   });
 
+  testWidgets('assisted History: the farmer entry the officer just logged, bar shown, no Undo', (tester) async {
+    final h = FlowHarness();
+    await startOfficer(tester, h);
+    await _assistMurugan(tester, h);
+    h.go('/assist/farmer-1/log/sowing');
+    await tester.pumpAndSettle();
+    await h.tap(tester, find.text('Take photo'));
+    await h.tap(tester, find.text('Correct'));
+    await h.tap(tester, find.text('Home'));
+    await h.tap(tester, find.text('History'));
+    expect(h.path, '/assist/farmer-1/history');
+    expect(find.text(_bar), findsOneWidget);
+    await h.tap(tester, find.text('Sowing').first);
+    expect(h.path, startsWith('/assist/farmer-1/history/'));
+    expect(find.text(_bar), findsOneWidget);
+    // The undo window is open, but only the farmer may undo: assist mode shows neither Undo nor the closed line.
+    expect(find.text('Undo'), findsNothing);
+    expect(find.text('Only the field officer can correct this now.'), findsNothing);
+    expect(h.container.read(assistProvider), isNotNull);
+    await h.dispose(tester);
+  });
+
   test('calibrationExpired: the due day itself is still in date', () {
     final due = DateTime(2026, 2, 14);
     expect(calibrationExpired(due, DateTime(2026, 2, 14, 23, 59)), isFalse);

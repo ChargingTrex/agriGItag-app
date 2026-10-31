@@ -3,7 +3,7 @@
 // (farmer, plot, lot, reference bundles) and a tap counter.
 // Requirement: plan §7.2 M07 acceptance (each event ≤ 3 taps (+1 optional) with photo/GPS/clocks; 6 bags × 50 → 300 kg;
 //   packing at 12 % not ready; "Did you already sow?" once; scripted log < 20 s), UserFlows §When things go wrong.
-// Callers: test/features/*_test.dart, integration_test/farmer_flows_test.dart.
+// Callers: test/features/*_test.dart (M07 and M08), integration_test/farmer_flows_test.dart.
 
 import 'dart:convert';
 import 'dart:io';
@@ -178,7 +178,8 @@ class FlowHarness {
         voiceRecorderFactoryProvider.overrideWithValue(
           () => VoiceNoteRecorder(recorder: FakeAudioRecorder(), now: () => flowNow),
         ),
-        clockProvider.overrideWithValue(() => flowNow),
+        // A test moves [now] to cross a deadline (M08 undo window, 7-day unsent warning).
+        clockProvider.overrideWithValue(() => now),
         // No sync engine in widget tests: the save's send kick is counted instead.
         afterSaveProvider.overrideWithValue(() => kicks++),
         pendingSendCountProvider.overrideWith((ref) => Stream.value(pending)),
@@ -211,6 +212,9 @@ class FlowHarness {
 
   /// Entries waiting to send, for the cloud icon.
   final int pending;
+
+  /// The phone clock the app reads; [flowNow] unless a test moves it.
+  DateTime now = flowNow;
 
   /// Taps on forward actions counted by [tap].
   int taps = 0;
@@ -254,6 +258,8 @@ class FlowHarness {
   Future<void> tap(WidgetTester tester, Finder finder) async {
     taps++;
     await tester.ensureVisible(finder);
+    // The jump lands at the next layout; without this pump a target scrolled in from off-screen is tapped where it was.
+    await tester.pump();
     await tester.tap(finder);
     await tester.pumpAndSettle();
   }
@@ -353,6 +359,19 @@ class FlowHarness {
   Future<void> setFieldConfig(String entity, List<Map<String, Object?>> fields) => db
       .into(db.fieldConfig)
       .insertOnConflictUpdate(FieldConfigCompanion.insert(entity: entity, json: jsonEncode(fields)));
+
+  /// Sets lot [lotId] to [status] with [kgPacked] kilograms from the server (M08 Sell, Money). Returns when written.
+  Future<void> setLot(String lotId, String status, {double kgPacked = 0}) => (db.update(
+    db.lots,
+  )..where((l) => l.lotId.equals(lotId))).write(LotsCompanion(status: Value(status), kgPacked: Value(kgPacked)));
+
+  /// Saves a [type] entry on lot-1 at [at] with [payload] and a 24 h undo window (M08 History, Settings). Returns its
+  /// id; throws what EntriesDao.save throws.
+  Future<String> saveEntry(String type, DateTime at, {String payload = '{}'}) async {
+    final e = entryAt(at: at, payload: payload).copyWith(entryType: Value(type));
+    await db.entriesDao.save(e, const []);
+    return e.entryId.value;
+  }
 
   /// Entries of [type] saved in this flow (not the seeded history), oldest first. Throws nothing.
   Future<List<Entry>> saved(String type) =>

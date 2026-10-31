@@ -11,6 +11,7 @@ import 'package:agritrace/core/sync/enum_wire_names.dart';
 import 'package:agritrace/features/event_log/farm_event.dart';
 import 'package:agritrace/features/event_log/choose_event_screen.dart';
 import 'package:agritrace/core/router/placeholder_screen.dart';
+import 'package:agritrace/features/sell/sell_screen.dart';
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,7 +19,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'harness.dart';
 
 void main() {
-  testWidgets('home: next task card with "14 Feb" opens the event preselected', (tester) async {
+  testWidgets('home: next task card with "14 Feb" opens the event on its lot, 3 (+1) taps with two lots', (
+    tester,
+  ) async {
     final h = FlowHarness();
     await h.db
         .into(h.db.tasks)
@@ -33,15 +36,17 @@ void main() {
             source: 'schedule',
           ),
         );
-    await h.start(tester);
+    // Two active lots: without the task's lot the flow would ask "Which field?" first (D-043).
+    await h.start(tester, lots: 2);
     h.taps = 0;
     expect(find.text('Next: Harvest, by 14 Feb'), findsOneWidget);
     expect(find.text('To do'), findsOneWidget);
-    for (final label in ['Log', 'Sell', 'Money', 'My farm', 'Call officer']) {
+    for (final label in ['Log', 'Sell', 'Money', 'My farm', 'History', 'Call officer']) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
     await h.tap(tester, find.text('Harvest'));
     expect(h.path, '/log/harvest');
+    expect(find.text('Which field?'), findsNothing);
     expect(find.text('How many bags?'), findsOneWidget);
 
     // Logging the harvest completes the task, so the card falls back.
@@ -50,12 +55,13 @@ void main() {
     await h.tap(tester, find.text('Correct'));
     expect(h.path, '/home/saved');
     expect(h.taps, 4, reason: 'from home: task card, Next (the +1 extra choice), shutter, tick');
+    expect((await h.saved('harvest')).single.lotId, 'lot-1');
     await h.tap(tester, find.text('Home'));
     expect(find.text('Nothing due now. Log what you did today.'), findsOneWidget);
     await h.dispose(tester);
   });
 
-  testWidgets('home: fallback card, grey cloud while entries wait, Sell opens a placeholder', (tester) async {
+  testWidgets('home: fallback card, grey cloud while entries wait, Sell opens the Sell screen', (tester) async {
     final h = FlowHarness(pending: 3);
     await h.start(tester);
     expect(find.text('Nothing due now. Log what you did today.'), findsOneWidget);
@@ -65,8 +71,7 @@ void main() {
     h.go('/home');
     await tester.pumpAndSettle();
     await h.tap(tester, find.text('Sell'));
-    expect(find.byType(PlaceholderScreen), findsOneWidget);
-    expect(find.text('Coming soon.'), findsOneWidget);
+    expect(find.byType(SellScreen), findsOneWidget);
     await h.dispose(tester);
   });
 

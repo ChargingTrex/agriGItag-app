@@ -351,10 +351,11 @@ class EventLogNotifier extends Notifier<EventDraft> {
   /// Whether packing makes the lot ready for sale: the lot's last moisture reading passes the crop's `ready_for_sale`
   /// gate (≤ 11 % for dry chilli, Stage 5). No reading, or no downloaded standards, keeps it drying. Throws nothing.
   ///
-  /// DECISION D-006: the phone sets the local lot to `ready_for_sale` from the ported `lotGate` preview at once; the
-  ///   server re-runs the gate on the packing entry and its lot status replaces this one on the next pull.
-  ///   ADV: "Ready to sell." and the Sell QR (M08) work offline right after packing.
-  ///   COMPROMISE: until the pull, the phone can show ready a lot the server holds (e.g. a newer meter reading).
+  /// DECISION D-006: the phone sets the local lot to `ready_for_sale` from the ported `lotGate` preview at once. The
+  ///   server does not set it on the packing entry: it re-runs the moisture gate at intake (Architect-Gate ruling
+  ///   2026-10-31b §1), and the pull keeps this preview while the server says open/drying (pull_service.dart).
+  ///   ADV: "Ready to sell." and the Sell QR (M08) work offline right after packing and survive a pull.
+  ///   COMPROMISE: the phone can show ready a lot that a newer meter reading fails; the intake gate refuses it then.
   bool get packingMakesReady {
     final s = state.standards;
     final moisture = state.lot?.lastMoisture;

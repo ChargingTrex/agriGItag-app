@@ -117,6 +117,8 @@ Class | Method | HTTP request | Description
 [*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**publishV1BatchesBatchIdPublishPost**](doc/LotsBatchesApi.md#publishv1batchesbatchidpublishpost) | **POST** /v1/batches/{batch_id}/publish | Publish the public page (final sign-off)
 [*LotsBatchesApi*](doc/LotsBatchesApi.md) | [**secondSignoffV1BatchesBatchIdSecondSignoffPost**](doc/LotsBatchesApi.md#secondsignoffv1batchesbatchidsecondsignoffpost) | **POST** /v1/batches/{batch_id}/second-signoff | Second admin sign-off of a large batch
 [*NotificationsApi*](doc/NotificationsApi.md) | [**listMyNotificationsV1NotificationsGet**](doc/NotificationsApi.md#listmynotificationsv1notificationsget) | **GET** /v1/notifications | List my notifications
+[*PartnerApiApi*](doc/PartnerApiApi.md) | [**getPartnerBatchV1PartnerBatchesCodeGet**](doc/PartnerApiApi.md#getpartnerbatchv1partnerbatchescodeget) | **GET** /v1/partner/batches/{code} | Read a batch for a partner (planned)
+[*PartnerApiApi*](doc/PartnerApiApi.md) | [**postPartnerBenefitV1PartnerBenefitsPost**](doc/PartnerApiApi.md#postpartnerbenefitv1partnerbenefitspost) | **POST** /v1/partner/benefits | Report a partner benefit payment (planned)
 [*PublishingApi*](doc/PublishingApi.md) | [**batchLabelsV1BatchesBatchIdLabelsPdfGet**](doc/PublishingApi.md#batchlabelsv1batchesbatchidlabelspdfget) | **GET** /v1/batches/{batch_id}/labels.pdf | Printable pack labels of a packed batch
 [*PublishingApi*](doc/PublishingApi.md) | [**batchQrV1BatchesBatchIdQrPngGet**](doc/PublishingApi.md#batchqrv1batchesbatchidqrpngget) | **GET** /v1/batches/{batch_id}/qr.png | QR code of the batch&#39;s public page
 [*PublishingApi*](doc/PublishingApi.md) | [**listBuildsV1BatchesBatchIdBuildsGet**](doc/PublishingApi.md#listbuildsv1batchesbatchidbuildsget) | **GET** /v1/batches/{batch_id}/builds | List the public page builds of a batch
@@ -161,14 +163,25 @@ Class | Method | HTTP request | Description
 [*RegistryApi*](doc/RegistryApi.md) | [**rejectFarmerV1FarmersFarmerIdRejectPost**](doc/RegistryApi.md#rejectfarmerv1farmersfarmeridrejectpost) | **POST** /v1/farmers/{farmer_id}/reject | Reject a pending farmer
 [*RegistryApi*](doc/RegistryApi.md) | [**revealPhoneV1FarmersFarmerIdPhoneGet**](doc/RegistryApi.md#revealphonev1farmersfarmeridphoneget) | **GET** /v1/farmers/{farmer_id}/phone | Reveal a farmer&#39;s full phone number (FPO admin, audited)
 [*RegistryApi*](doc/RegistryApi.md) | [**updateFarmerV1FarmersFarmerIdPatch**](doc/RegistryApi.md#updatefarmerv1farmersfarmeridpatch) | **PATCH** /v1/farmers/{farmer_id} | Change a farmer&#39;s profile
+[*ReportingApi*](doc/ReportingApi.md) | [**exportBatchAuditV1BatchesBatchIdAuditExportCsvGet**](doc/ReportingApi.md#exportbatchauditv1batchesbatchidauditexportcsvget) | **GET** /v1/batches/{batch_id}/audit-export.csv | Download a batch&#39;s audit trail as CSV
+[*ReportingApi*](doc/ReportingApi.md) | [**getDashboardV1DashboardFpoFpoIdGet**](doc/ReportingApi.md#getdashboardv1dashboardfpofpoidget) | **GET** /v1/dashboard/fpo/{fpo_id} | FPO dashboard
+[*ReportingApi*](doc/ReportingApi.md) | [**listDashboardFarmersV1DashboardFpoFpoIdFarmersGet**](doc/ReportingApi.md#listdashboardfarmersv1dashboardfpofpoidfarmersget) | **GET** /v1/dashboard/fpo/{fpo_id}/farmers | Per-farmer dashboard table
+[*ReportingApi*](doc/ReportingApi.md) | [**postScanV1PublicScansPost**](doc/ReportingApi.md#postscanv1publicscanspost) | **POST** /v1/public/scans | Count a public page scan (no sign-in)
+[*ReportingApi*](doc/ReportingApi.md) | [**searchAuditLogV1AuditLogGet**](doc/ReportingApi.md#searchauditlogv1auditlogget) | **GET** /v1/audit-log | Search the audit log
+[*StorageMonitoringApi*](doc/StorageMonitoringApi.md) | [**postProbeReadingsV1ProbeReadingsPost**](doc/StorageMonitoringApi.md#postprobereadingsv1probereadingspost) | **POST** /v1/probe-readings | Send storage probe readings (planned)
+[*StorageMonitoringApi*](doc/StorageMonitoringApi.md) | [**postProbeV1ProbesPost**](doc/StorageMonitoringApi.md#postprobev1probespost) | **POST** /v1/probes | Register a storage probe (planned)
 
 
 ## Documentation For Models
 
  - [Address](doc/Address.md)
+ - [AreaByBlock](doc/AreaByBlock.md)
+ - [AreaByVillage](doc/AreaByVillage.md)
+ - [AreaStats](doc/AreaStats.md)
  - [AssistEndIn](doc/AssistEndIn.md)
  - [AssistSessionOut](doc/AssistSessionOut.md)
  - [AssistStartIn](doc/AssistStartIn.md)
+ - [AuditRow](doc/AuditRow.md)
  - [AvgSalePricePerKg](doc/AvgSalePricePerKg.md)
  - [BatchIn](doc/BatchIn.md)
  - [BatchOut](doc/BatchOut.md)
@@ -178,11 +191,13 @@ Class | Method | HTTP request | Description
  - [BundlePart](doc/BundlePart.md)
  - [CeilingKgPerAcre](doc/CeilingKgPerAcre.md)
  - [ChangeKind](doc/ChangeKind.md)
+ - [Completeness](doc/Completeness.md)
  - [ConsentIn](doc/ConsentIn.md)
  - [ConsentOut](doc/ConsentOut.md)
  - [ConsentType](doc/ConsentType.md)
  - [CorrectionIn](doc/CorrectionIn.md)
  - [CropOut](doc/CropOut.md)
+ - [Dashboard](doc/Dashboard.md)
  - [Data](doc/Data.md)
  - [DeviceOut](doc/DeviceOut.md)
  - [DryingPayload](doc/DryingPayload.md)
@@ -199,6 +214,7 @@ Class | Method | HTTP request | Description
  - [FarmerPatch](doc/FarmerPatch.md)
  - [FarmerPhoneOut](doc/FarmerPhoneOut.md)
  - [FarmerReject](doc/FarmerReject.md)
+ - [FarmerRow](doc/FarmerRow.md)
  - [FarmerStatus](doc/FarmerStatus.md)
  - [FarmingType](doc/FarmingType.md)
  - [Features](doc/Features.md)
@@ -206,7 +222,10 @@ Class | Method | HTTP request | Description
  - [FinalPackingIn](doc/FinalPackingIn.md)
  - [FinalPackingPayload](doc/FinalPackingPayload.md)
  - [FinalPackingVersion](doc/FinalPackingVersion.md)
+ - [FinishedBatch](doc/FinishedBatch.md)
+ - [FinishedGoods](doc/FinishedGoods.md)
  - [FlagBrief](doc/FlagBrief.md)
+ - [FlagCounts](doc/FlagCounts.md)
  - [FlagOut](doc/FlagOut.md)
  - [FlagResolveIn](doc/FlagResolveIn.md)
  - [FlagStatus](doc/FlagStatus.md)
@@ -247,6 +266,7 @@ Class | Method | HTTP request | Description
  - [IrrigationSource](doc/IrrigationSource.md)
  - [LabCertifiedRequires](doc/LabCertifiedRequires.md)
  - [Labels](doc/Labels.md)
+ - [LandArea](doc/LandArea.md)
  - [LandPreparationPayload](doc/LandPreparationPayload.md)
  - [LandPreparationVersion](doc/LandPreparationVersion.md)
  - [LocationStatus](doc/LocationStatus.md)
@@ -271,11 +291,13 @@ Class | Method | HTTP request | Description
  - [PackSize](doc/PackSize.md)
  - [PackingPayload](doc/PackingPayload.md)
  - [PackingVersion](doc/PackingVersion.md)
+ - [PageAuditRow](doc/PageAuditRow.md)
  - [PageBatchOut](doc/PageBatchOut.md)
  - [PageBuildOut](doc/PageBuildOut.md)
  - [PageConsentOut](doc/PageConsentOut.md)
  - [PageEventOut](doc/PageEventOut.md)
  - [PageFarmerOut](doc/PageFarmerOut.md)
+ - [PageFarmerRow](doc/PageFarmerRow.md)
  - [PageFlagOut](doc/PageFlagOut.md)
  - [PageInstrumentOut](doc/PageInstrumentOut.md)
  - [PageLotOut](doc/PageLotOut.md)
@@ -333,6 +355,7 @@ Class | Method | HTTP request | Description
  - [RegionCheckOut](doc/RegionCheckOut.md)
  - [ResponseOtpVerifyV1AuthOtpVerifyPost](doc/ResponseOtpVerifyV1AuthOtpVerifyPost.md)
  - [Role](doc/Role.md)
+ - [Scans](doc/Scans.md)
  - [SessionOut](doc/SessionOut.md)
  - [Severity](doc/Severity.md)
  - [ShareOut](doc/ShareOut.md)
@@ -340,12 +363,14 @@ Class | Method | HTTP request | Description
  - [SignedQuantityOutput](doc/SignedQuantityOutput.md)
  - [SowingPayload](doc/SowingPayload.md)
  - [SowingVersion](doc/SowingVersion.md)
+ - [StageTile](doc/StageTile.md)
  - [StandardRef](doc/StandardRef.md)
  - [StandardsProfileOut](doc/StandardsProfileOut.md)
  - [StandardsProfileRulesInput](doc/StandardsProfileRulesInput.md)
  - [StandardsProfileRulesOutput](doc/StandardsProfileRulesOutput.md)
  - [StandardsScheme](doc/StandardsScheme.md)
  - [SyncEntry](doc/SyncEntry.md)
+ - [SyncHealthRow](doc/SyncHealthRow.md)
  - [SyncMetricIn](doc/SyncMetricIn.md)
  - [SyncPushIn](doc/SyncPushIn.md)
  - [SyncPushOut](doc/SyncPushOut.md)

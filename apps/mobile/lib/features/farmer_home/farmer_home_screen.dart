@@ -1,5 +1,5 @@
-// F03 Farmer home: the next task as one big card, four buttons (Log / Sell / Money / My farm), Call officer and the cloud
-// icon. In assist mode (M10) the same screen is the assisted farmer's home: the app draws the assist bar above it,
+// F03 Farmer home: the next task as one big card, four buttons (Log / Sell / Money / My farm), History (M08, where the
+// 24-hour Undo lives), Call officer and the cloud icon. In assist mode (M10) the same screen is the assisted farmer's home: the app draws the assist bar above it,
 // and it adds the officer's Moisture and End assist buttons; Back ends assist mode too.
 // Requirement: UserFlows §Farmer home screen ("the card at the top always holds the single most useful next step, and
 //   the four buttons cover everything else"), §Design rules (one job, pictures + voice, "Works with no signal": cloud
@@ -103,6 +103,8 @@ class FarmerHomeScreen extends ConsumerWidget {
             gap,
             button(Icons.agriculture, l10n.homeMyFarm, 'homeMyFarm', '/home/farm'),
             gap,
+            button(Icons.history, l10n.homeHistory, 'homeHistory', '/home/history'),
+            gap,
             const CallFieldOfficerButton(),
             if (assist != null) ...[
               gap,
@@ -181,7 +183,14 @@ class _TaskCard extends ConsumerWidget {
             FarmerButton(
               icon: Icons.arrow_forward,
               label: event?.label(l10n) ?? l10n.homeLogEvent,
-              onPressed: () => context.push(farmerPath(ref, event == null ? '/log' : '/log/${event.wireName}')),
+              // The task's lot rides along (D-043), so a farmer with two fields skips the field picker.
+              onPressed: () => context.push(
+                farmerPath(ref, switch ((event, task?.lotId)) {
+                  (null, _) => '/log',
+                  (final e?, null) => '/log/${e.wireName}',
+                  (final e?, final lot?) => '/log/${e.wireName}?lot=$lot',
+                }),
+              ),
               onSpeak: () => playPrompt(ref, context, event?.promptId ?? 'homeLogEvent'),
               prominent: true,
             ),

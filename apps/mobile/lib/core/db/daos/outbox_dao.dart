@@ -4,7 +4,8 @@
 //   kill-safety "sending older than 5 min → waiting on start", cloud icon = count(status != confirmed));
 //   Arch §Offline-first "Outbox queue", "Small first, photos second"; FR4.
 // Callers: M02 outbox_processor.dart, photo_uploader.dart and sync_service.dart (start-up reset);
-//   M02 lib/core/providers/sync_providers.dart (pendingCount for the M05 cloud indicator, strandedCount); tests.
+//   M02 lib/core/providers/sync_providers.dart (pendingCount for the M05 cloud indicator, strandedCount);
+//   features/settings/settings_screen.dart (pendingCount, oldestPending: the 7-day warning, M08); tests.
 // D-029 (schema v2): every query that sends or counts filters by the row's owner.
 
 import 'dart:convert';
@@ -129,6 +130,17 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   /// changes (the grey cloud icon). Emits 0 when everything is confirmed or nobody is signed in (D-029); never
   /// errors on its own.
   Stream<int> pendingCount() => _count(outbox.ownerUserId.isInQuery(_signedInUser()));
+
+  /// When the signed-in user's oldest unconfirmed outbox row was queued, re-emitted on outbox or session changes; null
+  /// when everything is confirmed or nobody is signed in. The Settings screen turns it into the 7-day "unsent"
+  /// warning (mobile-design.md §3). Never errors on its own.
+  Stream<DateTime?> oldestPending() {
+    final first = outbox.createdAt.min();
+    final query = selectOnly(outbox)
+      ..addColumns([first])
+      ..where(outbox.status.equalsValue(OutboxStatus.confirmed).not() & outbox.ownerUserId.isInQuery(_signedInUser()));
+    return query.map((r) => r.read(first)).watchSingle();
+  }
 
   /// Number of unconfirmed outbox rows that belong to users other than the signed-in one (all rows when signed
   /// out): entries stranded on a shared phone until their owner signs in again, for the officer notice (D-029,

@@ -18,7 +18,7 @@ part 'flag_out.g.dart';
 ///
 /// Properties:
 /// * [assignedRole] - Role expected to review it: field_officer, or fpo_admin.
-/// * [details] - Rule inputs and limits behind the finding; quantities carry `unit`.
+/// * [details] - {thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never listed (it keeps exact EXIF GPS). Re-read for fresh links.
 /// * [fpoId] - FPO that owns the flagged record.
 /// * [id] - Flag id (UUIDv7, so newer flags sort later).
 /// * [raisedAt] - When a rule first raised it, ISO 8601 UTC.
@@ -38,7 +38,7 @@ abstract class FlagOut implements Built<FlagOut, FlagOutBuilder> {
   Role? get assignedRole;
   // enum assignedRoleEnum {  farmer,  field_officer,  qc_officer,  fpo_admin,  viewer,  };
 
-  /// Rule inputs and limits behind the finding; quantities carry `unit`.
+  /// {thumb_url, medium_url, width, height} once variants exist; both URLs are presigned GETs of the WebP variants, valid 1 hour (the evidence bucket is private). The original JPEG is never listed (it keeps exact EXIF GPS). Re-read for fresh links.
   @BuiltValueField(wireName: r'details')
   BuiltMap<String, JsonObject?>? get details;
 

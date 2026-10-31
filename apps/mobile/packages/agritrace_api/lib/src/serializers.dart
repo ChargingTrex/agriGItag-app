@@ -15,9 +15,13 @@ import 'package:agritrace_api/src/date_serializer.dart';
 import 'package:agritrace_api/src/model/date.dart';
 
 import 'package:agritrace_api/src/model/address.dart';
+import 'package:agritrace_api/src/model/area_by_block.dart';
+import 'package:agritrace_api/src/model/area_by_village.dart';
+import 'package:agritrace_api/src/model/area_stats.dart';
 import 'package:agritrace_api/src/model/assist_end_in.dart';
 import 'package:agritrace_api/src/model/assist_session_out.dart';
 import 'package:agritrace_api/src/model/assist_start_in.dart';
+import 'package:agritrace_api/src/model/audit_row.dart';
 import 'package:agritrace_api/src/model/avg_sale_price_per_kg.dart';
 import 'package:agritrace_api/src/model/batch_in.dart';
 import 'package:agritrace_api/src/model/batch_out.dart';
@@ -27,11 +31,13 @@ import 'package:agritrace_api/src/model/bundle_manifest.dart';
 import 'package:agritrace_api/src/model/bundle_part.dart';
 import 'package:agritrace_api/src/model/ceiling_kg_per_acre.dart';
 import 'package:agritrace_api/src/model/change_kind.dart';
+import 'package:agritrace_api/src/model/completeness.dart';
 import 'package:agritrace_api/src/model/consent_in.dart';
 import 'package:agritrace_api/src/model/consent_out.dart';
 import 'package:agritrace_api/src/model/consent_type.dart';
 import 'package:agritrace_api/src/model/correction_in.dart';
 import 'package:agritrace_api/src/model/crop_out.dart';
+import 'package:agritrace_api/src/model/dashboard.dart';
 import 'package:agritrace_api/src/model/data.dart';
 import 'package:agritrace_api/src/model/device_out.dart';
 import 'package:agritrace_api/src/model/drying_payload.dart';
@@ -48,6 +54,7 @@ import 'package:agritrace_api/src/model/farmer_out.dart';
 import 'package:agritrace_api/src/model/farmer_patch.dart';
 import 'package:agritrace_api/src/model/farmer_phone_out.dart';
 import 'package:agritrace_api/src/model/farmer_reject.dart';
+import 'package:agritrace_api/src/model/farmer_row.dart';
 import 'package:agritrace_api/src/model/farmer_status.dart';
 import 'package:agritrace_api/src/model/farming_type.dart';
 import 'package:agritrace_api/src/model/features.dart';
@@ -55,7 +62,10 @@ import 'package:agritrace_api/src/model/field_spec.dart';
 import 'package:agritrace_api/src/model/final_packing_in.dart';
 import 'package:agritrace_api/src/model/final_packing_payload.dart';
 import 'package:agritrace_api/src/model/final_packing_version.dart';
+import 'package:agritrace_api/src/model/finished_batch.dart';
+import 'package:agritrace_api/src/model/finished_goods.dart';
 import 'package:agritrace_api/src/model/flag_brief.dart';
+import 'package:agritrace_api/src/model/flag_counts.dart';
 import 'package:agritrace_api/src/model/flag_out.dart';
 import 'package:agritrace_api/src/model/flag_resolve_in.dart';
 import 'package:agritrace_api/src/model/flag_status.dart';
@@ -96,6 +106,7 @@ import 'package:agritrace_api/src/model/intake_version.dart';
 import 'package:agritrace_api/src/model/irrigation_source.dart';
 import 'package:agritrace_api/src/model/lab_certified_requires.dart';
 import 'package:agritrace_api/src/model/labels.dart';
+import 'package:agritrace_api/src/model/land_area.dart';
 import 'package:agritrace_api/src/model/land_preparation_payload.dart';
 import 'package:agritrace_api/src/model/land_preparation_version.dart';
 import 'package:agritrace_api/src/model/location_status.dart';
@@ -120,11 +131,13 @@ import 'package:agritrace_api/src/model/otp_verify_in.dart';
 import 'package:agritrace_api/src/model/pack_size.dart';
 import 'package:agritrace_api/src/model/packing_payload.dart';
 import 'package:agritrace_api/src/model/packing_version.dart';
+import 'package:agritrace_api/src/model/page_audit_row.dart';
 import 'package:agritrace_api/src/model/page_batch_out.dart';
 import 'package:agritrace_api/src/model/page_build_out.dart';
 import 'package:agritrace_api/src/model/page_consent_out.dart';
 import 'package:agritrace_api/src/model/page_event_out.dart';
 import 'package:agritrace_api/src/model/page_farmer_out.dart';
+import 'package:agritrace_api/src/model/page_farmer_row.dart';
 import 'package:agritrace_api/src/model/page_flag_out.dart';
 import 'package:agritrace_api/src/model/page_instrument_out.dart';
 import 'package:agritrace_api/src/model/page_lot_out.dart';
@@ -182,6 +195,7 @@ import 'package:agritrace_api/src/model/refresh_in.dart';
 import 'package:agritrace_api/src/model/region_check_out.dart';
 import 'package:agritrace_api/src/model/response_otp_verify_v1_auth_otp_verify_post.dart';
 import 'package:agritrace_api/src/model/role.dart';
+import 'package:agritrace_api/src/model/scans.dart';
 import 'package:agritrace_api/src/model/session_out.dart';
 import 'package:agritrace_api/src/model/severity.dart';
 import 'package:agritrace_api/src/model/share_out.dart';
@@ -189,12 +203,14 @@ import 'package:agritrace_api/src/model/signed_quantity_input.dart';
 import 'package:agritrace_api/src/model/signed_quantity_output.dart';
 import 'package:agritrace_api/src/model/sowing_payload.dart';
 import 'package:agritrace_api/src/model/sowing_version.dart';
+import 'package:agritrace_api/src/model/stage_tile.dart';
 import 'package:agritrace_api/src/model/standard_ref.dart';
 import 'package:agritrace_api/src/model/standards_profile_out.dart';
 import 'package:agritrace_api/src/model/standards_profile_rules_input.dart';
 import 'package:agritrace_api/src/model/standards_profile_rules_output.dart';
 import 'package:agritrace_api/src/model/standards_scheme.dart';
 import 'package:agritrace_api/src/model/sync_entry.dart';
+import 'package:agritrace_api/src/model/sync_health_row.dart';
 import 'package:agritrace_api/src/model/sync_metric_in.dart';
 import 'package:agritrace_api/src/model/sync_push_in.dart';
 import 'package:agritrace_api/src/model/sync_push_out.dart';
@@ -217,9 +233,13 @@ part 'serializers.g.dart';
 
 @SerializersFor([
   Address,
+  AreaByBlock,
+  AreaByVillage,
+  AreaStats,
   AssistEndIn,
   AssistSessionOut,
   AssistStartIn,
+  AuditRow,
   AvgSalePricePerKg,
   BatchIn,
   BatchOut,
@@ -229,11 +249,13 @@ part 'serializers.g.dart';
   BundlePart,
   CeilingKgPerAcre,
   ChangeKind,
+  Completeness,
   ConsentIn,
   ConsentOut,
   ConsentType,
   CorrectionIn,
   CropOut,
+  Dashboard,
   Data,
   DeviceOut,
   DryingPayload,
@@ -250,6 +272,7 @@ part 'serializers.g.dart';
   FarmerPatch,
   FarmerPhoneOut,
   FarmerReject,
+  FarmerRow,
   FarmerStatus,
   FarmingType,
   Features,
@@ -257,7 +280,10 @@ part 'serializers.g.dart';
   FinalPackingIn,
   FinalPackingPayload,
   FinalPackingVersion,
+  FinishedBatch,
+  FinishedGoods,
   FlagBrief,
+  FlagCounts,
   FlagOut,
   FlagResolveIn,
   FlagStatus,
@@ -298,6 +324,7 @@ part 'serializers.g.dart';
   IrrigationSource,
   LabCertifiedRequires,
   Labels,
+  LandArea,
   LandPreparationPayload,
   LandPreparationVersion,
   LocationStatus,
@@ -322,11 +349,13 @@ part 'serializers.g.dart';
   PackSize,
   PackingPayload,
   PackingVersion,
+  PageAuditRow,
   PageBatchOut,
   PageBuildOut,
   PageConsentOut,
   PageEventOut,
   PageFarmerOut,
+  PageFarmerRow,
   PageFlagOut,
   PageInstrumentOut,
   PageLotOut,
@@ -384,6 +413,7 @@ part 'serializers.g.dart';
   RegionCheckOut,
   ResponseOtpVerifyV1AuthOtpVerifyPost,
   Role,
+  Scans,
   SessionOut,
   Severity,
   ShareOut,
@@ -391,12 +421,14 @@ part 'serializers.g.dart';
   SignedQuantityOutput,
   SowingPayload,
   SowingVersion,
+  StageTile,
   StandardRef,
   StandardsProfileOut,
   StandardsProfileRulesInput,
   StandardsProfileRulesOutput,
   StandardsScheme,
   SyncEntry,
+  SyncHealthRow,
   SyncMetricIn,
   SyncPushIn,
   SyncPushOut,
@@ -465,6 +497,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => MapBuilder<String, LotGateInput>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(AreaByBlock)]),
+        () => ListBuilder<AreaByBlock>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PullChange)]),
         () => ListBuilder<PullChange>(),
       )
@@ -483,6 +519,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ConsentOut)]),
         () => ListBuilder<ConsentOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FarmerRow)]),
+        () => ListBuilder<FarmerRow>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltMap, [FullType(String), FullType(RangeOutput)]),
@@ -521,6 +561,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<FpoOut>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(StageTile)]),
+        () => ListBuilder<StageTile>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(BatchOut)]),
         () => ListBuilder<BatchOut>(),
       )
@@ -529,8 +573,16 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<FarmerOut>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(SyncHealthRow)]),
+        () => ListBuilder<SyncHealthRow>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(InputOut)]),
         () => ListBuilder<InputOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(AuditRow)]),
+        () => ListBuilder<AuditRow>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(TrailRuleInput)]),
@@ -573,6 +625,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<PhotoRef>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(int)]),
+        () => MapBuilder<String, int>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(InstrumentOut)]),
         () => ListBuilder<InstrumentOut>(),
       )
@@ -589,6 +645,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(StandardsProfileOut)]),
         () => ListBuilder<StandardsProfileOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(AreaByVillage)]),
+        () => ListBuilder<AreaByVillage>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(EventOut)]),
@@ -631,6 +691,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(SyncResult)]),
         () => ListBuilder<SyncResult>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FinishedBatch)]),
+        () => ListBuilder<FinishedBatch>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PhotoUpload)]),
