@@ -1,0 +1,12 @@
+# Lot fields (season lot of one plot) and the sale fields captured at intake.
+# Serves: D-017, Stage 5–7, FR9 (sale to processor), FR56 (declared practice tags), PLAN "Gap analysis".
+# Read by: agritrace/core/fieldconfig.py; served to clients (M07, M11, P03). Not enforced by a server hook
+# yet: lots_batches (B09) calls fieldconfig.validate_payload("lot", ...) when it lands. Keys: see farmer.yaml.
+entity: lot
+extra: allow
+fields:
+  - {name: plot_id, type: id, required: true, enabled: true, core: true, visibility: internal, stage: cultivation, label: {en: Plot, ta: நிலம்}}
+  - {name: crop_id, type: id, required: true, enabled: true, core: true, visibility: public, stage: cultivation, label: {en: Crop, ta: பயிர்}}
+  - {name: season_label, type: text, required: false, enabled: true, visibility: public, stage: cultivation, label: {en: Season, ta: பருவம்}}
+  - {name: practice_tags_declared, type: choice, required: false, enabled: true, visibility: public, stage: cultivation, label: {en: Farming practice, ta: விவசாய முறை}}
+  - {name: price_per_kg, type: number, required: false, enabled: true, visibility: internal, stage: intake, label: {en: Price per kg, ta: கிலோ விலை}}

@@ -337,6 +337,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/config/features": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Feature flags in force for the caller's FPO
+         * @description Return the feature flags and limits with the caller's tenant overrides.
+         */
+        get: operations["get_features_v1_config_features_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/config/fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fields captured by the caller's FPO, by entity
+         * @description Return the enabled fields per entity with the caller's tenant overrides; disabled fields are absent.
+         */
+        get: operations["get_fields_v1_config_fields_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/consents": {
         parameters: {
             query?: never;
@@ -416,6 +456,46 @@ export interface paths {
         get: operations["list_crops_v1_crops_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undo an own entry
+         * @description A farmer undoes an event they entered, within 24 hours of its capture (device time); later → 409 `undo_window_closed` (ask the field officer for a correction). Adds a version with `change_kind=undo`; the event's status becomes `undone`. `version_no` must be the current max + 1.
+         */
+        post: operations["undo_event_v1_events__event_id__undo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Correct an event
+         * @description Adds a correction version (field officer or FPO admin only; farmers get 403 `forbidden`). The body is a sync `event_version` entry: `data.change_kind` must be `correct`, `data.version_no` the current max + 1 (else 409 `stale_version`), `data.reason_code` is required (422 `reason_required`). The earlier version stays stored (append-only, FR25). Resending the same `client_id` answers `duplicate`.
+         */
+        post: operations["correct_event_v1_events__event_id__versions_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -515,6 +595,28 @@ export interface paths {
         get: operations["consent_list_v1_farmers__farmer_id__consents_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/id-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start an ID document upload (flag id_document_capture)
+         * @description Record an ID document under the farmer's consent and get a presigned PUT into the id-docs bucket.
+         *
+         *     404 `feature_disabled` while the FPO's `id_document_capture` flag is off.
+         */
+        post: operations["create_id_document_v1_farmers__farmer_id__id_documents_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -625,6 +727,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/imports/farmers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import farmers from CSV
+         * @description Import farmers (FPO admin): pending approval, same rules as onboarding; one transaction per file.
+         */
+        post: operations["import_farmers_v1_imports_farmers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import inputs from CSV
+         * @description Import inputs into the FPO's list (FPO admin); key name + manufacturer; one transaction per file.
+         */
+        post: operations["import_inputs_v1_imports_inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/villages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import villages from CSV (super-admin)
+         * @description Import villages into the global directory (super-admin); key `lgd_code`; one transaction per file.
+         */
+        post: operations["import_villages_v1_imports_villages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/{kind}/template.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * CSV template for an import
+         * @description Download the import template: the tenant's enabled CSV columns from /v1/config/fields (D-017).
+         */
+        get: operations["import_template_v1_imports__kind__template_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/inputs": {
         parameters: {
             query?: never;
@@ -673,6 +855,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/lots/{lot_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a lot's events
+         * @description Every event of the lot with its latest version, ordered by `occurred_on`, then `instance_no` (FR63). Undone events stay listed with status `undone`. A lot has a few dozen events at most, so the whole list is one page (`has_more` false).
+         */
+        get: operations["list_lot_events_v1_lots__lot_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/lots/{lot_id}/readings": {
         parameters: {
             query?: never;
@@ -715,6 +917,26 @@ export interface paths {
          *         UnauthorizedError: not signed in.
          */
         get: operations["me_v1_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my notifications
+         * @description Messages sent to the caller (any role), newest first; secrets in payloads appear as `***`.
+         */
+        get: operations["list_my_notifications_v1_notifications_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -807,6 +1029,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/producer-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List producer groups (flag producer_groups)
+         * @description List the FPO's producer groups; 404 `feature_disabled` while the flag is off.
+         */
+        get: operations["list_producer_groups_v1_producer_groups_get"];
+        put?: never;
+        /**
+         * Create a producer group (flag producer_groups)
+         * @description Create a producer group (FPO admin); 404 `feature_disabled` while the flag is off.
+         */
+        post: operations["create_producer_group_v1_producer_groups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/quality-readings": {
         parameters: {
             query?: never;
@@ -881,6 +1127,46 @@ export interface paths {
         get: operations["get_standards_profile_version_v1_standards_profiles__profile_id__versions__version_no__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sync/photos/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm uploaded photos
+         * @description Call after each presigned PUT succeeded. For each photo the server checks storage: `received` means the object is there (its version id is stored and verification of SHA-256 and EXIF time/GPS is queued), `missing` means upload again (ask for fresh URLs by resending the entry) and confirm again. Unknown ids and photos of entries someone else pushed also answer `missing`. Bodies over 256 KB → 413 `payload_too_large`.
+         */
+        post: operations["sync_photos_confirm_v1_sync_photos_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sync/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Push offline entries
+         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`; `flag_resolution` is rejected with `not_implemented_pilot` in the pilot. Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
+         */
+        post: operations["sync_push_v1_sync_push_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1021,6 +1307,36 @@ export interface components {
             /** @description Where the session started, if a fix was taken. */
             started_gps?: components["schemas"]["GeoPoint"] | null;
         };
+        /** Body_import_farmers_v1_imports_farmers_post */
+        Body_import_farmers_v1_imports_farmers_post: {
+            /**
+             * File
+             * @description CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.
+             */
+            file: string;
+        };
+        /** Body_import_inputs_v1_imports_inputs_post */
+        Body_import_inputs_v1_imports_inputs_post: {
+            /**
+             * File
+             * @description CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.
+             */
+            file: string;
+        };
+        /** Body_import_villages_v1_imports_villages_post */
+        Body_import_villages_v1_imports_villages_post: {
+            /**
+             * File
+             * @description CSV, UTF-8, header row first (see the template); at most 2 MB, 5,000 rows.
+             */
+            file: string;
+        };
+        /**
+         * ChangeKind
+         * @description Why an event version exists (FR25 corrections with reason, FR59 system entries).
+         * @enum {string}
+         */
+        ChangeKind: "create" | "correct" | "undo" | "system";
         /**
          * ConsentIn
          * @description Record a farmer's consent; resending the same `client_id` returns the stored record (D-005).
@@ -1110,6 +1426,23 @@ export interface components {
          */
         ConsentType: "data_collection" | "public_name" | "partner_share";
         /**
+         * CorrectionIn
+         * @description A correction of an event: the same shape as a sync `event_version` entry (FR25).
+         */
+        CorrectionIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description Client id of the new version (idempotency key, D-005).
+             */
+            client_id: string;
+            /**
+             * Data
+             * @description The full corrected version; `change_kind` must be `correct`.
+             */
+            data: components["schemas"]["LandPreparationVersion"] | components["schemas"]["NurseryVersion"] | components["schemas"]["SowingVersion"] | components["schemas"]["InputApplicationVersion"] | components["schemas"]["HarvestVersion"] | components["schemas"]["DryingVersion"] | components["schemas"]["PackingVersion"] | components["schemas"]["ProblemVersion"] | components["schemas"]["IntakeVersion"] | components["schemas"]["GradingVersion"] | components["schemas"]["FinalPackingVersion"];
+        };
+        /**
          * CropOut
          * @description A crop farmers can grow, with its GI tag and event schema (FR22, FR55).
          */
@@ -1186,6 +1519,111 @@ export interface components {
             platform: string;
         };
         /**
+         * DryingPayload
+         * @description Stage 5 drying on the farm; several drying runs allowed.
+         *
+         *     `start` is recorded when drying begins, `end` when it ends; one entry may carry the whole span
+         *     (`occurred_on` = start, `occurred_end_on` = end). The end-of-drying moisture is a quality reading.
+         */
+        DryingPayload: {
+            /**
+             * Moisture Reading Id
+             * @description Client id of the end-of-drying moisture reading (kind `quality_reading`).
+             */
+            moisture_reading_id?: string | null;
+            /**
+             * Phase
+             * @description Which moment this entry records; omit when it carries the whole span.
+             */
+            phase?: ("start" | "end") | null;
+            /** @description Quantity spread for drying, unit `kg`. */
+            quantity?: components["schemas"]["Quantity-Input"] | null;
+        };
+        /**
+         * DryingVersion
+         * @description Version of a drying start, end or span (Stage 5).
+         */
+        DryingVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `drying` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "drying";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Drying fields. */
+            payload: components["schemas"]["DryingPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
+        /**
          * ErrorBody
          * @description Inner object of the error envelope.
          */
@@ -1214,6 +1652,117 @@ export interface components {
             /** @description The error. */
             error: components["schemas"]["ErrorBody"];
         };
+        /**
+         * EventOut
+         * @description One event with its latest version, lean for 2G timelines (FR63).
+         */
+        EventOut: {
+            /** @description How the latest version came about. */
+            change_kind: components["schemas"]["ChangeKind"];
+            /**
+             * Entered By User Id
+             * Format: uuid
+             * @description Who entered the latest version.
+             */
+            entered_by_user_id: string;
+            /** @description Event type. */
+            event_type: components["schemas"]["EventType"];
+            /**
+             * Id
+             * Format: uuid
+             * @description Event id.
+             */
+            id: string;
+            /**
+             * Instance No
+             * @description Instance of this type on the lot.
+             */
+            instance_no: number;
+            /**
+             * Is System Generated
+             * @description True for platform entries (FR59).
+             */
+            is_system_generated: boolean;
+            /**
+             * Occurred End On
+             * @description End date for spans.
+             */
+            occurred_end_on: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date of the latest version.
+             */
+            occurred_on: string;
+            /**
+             * On Behalf Of Farmer Id
+             * @description Farmer assisted, in assist mode.
+             */
+            on_behalf_of_farmer_id: string | null;
+            /**
+             * Payload
+             * @description Typed payload of the latest version (D-014).
+             */
+            payload: {
+                [key: string]: unknown;
+            };
+            /**
+             * Photos
+             * @description Photos of the latest version.
+             */
+            photos: components["schemas"]["EventPhotoOut"][];
+            /**
+             * Reason Code
+             * @description Reason of a correction or undo.
+             */
+            reason_code: string | null;
+            /** @description submitted, undone, ... (FR59). */
+            status: components["schemas"]["EventStatus"];
+            /**
+             * Version No
+             * @description Number of the latest version.
+             */
+            version_no: number;
+        };
+        /**
+         * EventPhotoOut
+         * @description An evidence photo on the timeline.
+         */
+        EventPhotoOut: {
+            /**
+             * Id
+             * Format: uuid
+             * @description Photo id.
+             */
+            id: string;
+            /** @description Upload and verification state. */
+            status: components["schemas"]["PhotoStatus"];
+            /**
+             * Variants
+             * @description {thumb_url, medium_url, jpeg_url, width, height} once variants exist.
+             */
+            variants?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /**
+         * EventStatus
+         * @description Lifecycle of an event (FR25, FR59).
+         * @enum {string}
+         */
+        EventStatus: "draft" | "submitted" | "undone" | "superseded" | "locked";
+        /**
+         * EventSubject
+         * @description What a farm or processing event is recorded against (PRD §5).
+         * @enum {string}
+         */
+        EventSubject: "lot" | "batch";
+        /**
+         * EventType
+         * @description Event types sharing the one event_versions table (D-014; Stages 1–9; FR3, FR55).
+         * @enum {string}
+         */
+        EventType: "land_preparation" | "nursery" | "sowing" | "input_application" | "harvest" | "drying" | "packing" | "problem" | "intake" | "grading" | "final_packing";
         /**
          * FarmerIn
          * @description A farmer onboarded by a field officer or admin (Stage 0, UserFlows §Onboarding a farmer).
@@ -1392,6 +1941,208 @@ export interface components {
          * @enum {string}
          */
         FarmingType: "irrigated" | "rainfed";
+        /**
+         * Features
+         * @description Feature flags and limits (`features.yaml`, tenant overrides applied). Readers named in the YAML.
+         */
+        Features: {
+            /**
+             * Boundary Walk
+             * @description Onboarding offers the boundary walk step.
+             */
+            boundary_walk: boolean;
+            /**
+             * Farmer Pin Login
+             * @description Farmers may sign in with a PIN (not wired on the server).
+             */
+            farmer_pin_login: boolean;
+            /**
+             * Id Document Capture
+             * @description ID document upload endpoint on (consent-gated).
+             */
+            id_document_capture: boolean;
+            /**
+             * Otp Daily Cap
+             * @description Most OTP codes per phone per 24 hours (informative).
+             */
+            otp_daily_cap: number;
+            /**
+             * Producer Groups
+             * @description Producer group (SHG) endpoints on.
+             */
+            producer_groups: boolean;
+            /**
+             * Second Signoff Threshold Kg
+             * @description Batches above this weight need 2 sign-offs.
+             */
+            second_signoff_threshold_kg: number;
+            /**
+             * Sync Push Max Bytes
+             * @description Largest sync push body, in bytes.
+             */
+            sync_push_max_bytes: number;
+            /**
+             * Sync Push Max Entries
+             * @description Most entries in one sync push.
+             */
+            sync_push_max_entries: number;
+            /**
+             * Wifi Only Photos Default
+             * @description Phones upload photos on Wi-Fi only by default.
+             */
+            wifi_only_photos_default: boolean;
+        };
+        /**
+         * FieldSpec
+         * @description One configurable field of an entity, after tenant overrides (D-017).
+         */
+        FieldSpec: {
+            /**
+             * Core
+             * @description True: the database needs it, so tenants may not disable it or make it optional.
+             * @default false
+             */
+            core: boolean;
+            /**
+             * Enabled
+             * @description False: hidden from clients and dropped from payloads; never required.
+             */
+            enabled: boolean;
+            /** @description Labels shown in the apps, English and Tamil. */
+            label: components["schemas"]["Labels"];
+            /**
+             * Name
+             * @description Payload key / CSV column, snake_case.
+             */
+            name: string;
+            /**
+             * Required
+             * @description True: a payload without a value is refused (`field_required`).
+             */
+            required: boolean;
+            /**
+             * Stage
+             * @description Capture stage the field belongs to.
+             * @enum {string}
+             */
+            stage: "onboarding" | "cultivation" | "harvest" | "drying" | "packing" | "intake" | "grading" | "master_data";
+            /**
+             * Type
+             * @description Value kind; clients pick the input widget from it.
+             * @enum {string}
+             */
+            type: "text" | "number" | "integer" | "boolean" | "date" | "datetime" | "phone" | "choice" | "id" | "address" | "photo" | "audio" | "point" | "polygon" | "quantity";
+            /**
+             * Visibility
+             * @description Who may see the value: public (consumer page), partner (partner API) or internal.
+             * @enum {string}
+             */
+            visibility: "public" | "partner" | "internal";
+        };
+        /**
+         * FinalPackingPayload
+         * @description Stage 9 final (retail) packing of a batch.
+         */
+        FinalPackingPayload: {
+            /**
+             * Avg Sale Price Per Kg
+             * @description Average sale price, INR per kg.
+             */
+            avg_sale_price_per_kg?: number | string | null;
+            /** @description Size of one retail pack, e.g. `{value: 250, unit: g}`. */
+            pack_size?: components["schemas"]["Quantity-Input"] | null;
+            /**
+             * Packs
+             * @description Number of packs filled.
+             */
+            packs?: number | null;
+            /** @description Packed quantity, unit `kg`. */
+            quantity?: components["schemas"]["Quantity-Input"] | null;
+        };
+        /**
+         * FinalPackingVersion
+         * @description Version of a batch final packing event (Stage 9).
+         */
+        FinalPackingVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `final_packing` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "final_packing";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Final packing fields. */
+            payload: components["schemas"]["FinalPackingPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
         /**
          * FpoIn
          * @description A new FPO (tenant); created by a super-admin.
@@ -1703,6 +2454,200 @@ export interface components {
             readings?: components["schemas"]["QualityReadingIn"][];
         };
         /**
+         * GradingPayload
+         * @description Stage 8 grading / sorting of a batch; readings and the computed grade live in quality.
+         */
+        GradingPayload: {
+            /**
+             * Declared Grade
+             * @description Grade declared by the QC officer.
+             */
+            declared_grade?: string | null;
+            /** @description Graded quantity, unit `kg` (ceiling for packing). */
+            quantity?: components["schemas"]["Quantity-Input"] | null;
+        };
+        /**
+         * GradingVersion
+         * @description Version of a batch grading event (Stage 8).
+         */
+        GradingVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `grading` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "grading";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Grading fields. */
+            payload: components["schemas"]["GradingPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
+        /**
+         * HarvestPayload
+         * @description Stage 4 harvest round; several rounds per lot (FR3, FR57).
+         */
+        HarvestPayload: {
+            /**
+             * Bags
+             * @description Number of bags filled.
+             */
+            bags?: number | null;
+            /** @description Harvested quantity, unit `kg` (FR57 yield check). */
+            quantity?: components["schemas"]["Quantity-Input"] | null;
+        };
+        /**
+         * HarvestVersion
+         * @description Version of a harvest round (Stage 4).
+         */
+        HarvestVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `harvest` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "harvest";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Harvest fields. */
+            payload: components["schemas"]["HarvestPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
+        /**
          * Health
          * @description Status of each dependency: `ok` or `error: <ExceptionClass>` (details go to the server log only).
          */
@@ -1722,6 +2667,214 @@ export interface components {
              * @description S3: `ok` after HEAD on the evidence bucket, else `error: <ExceptionClass>`.
              */
             s3: string;
+        };
+        /**
+         * IdDocumentIn
+         * @description Request to upload one identity document image (flag `id_document_capture`, consent-gated).
+         */
+        IdDocumentIn: {
+            /**
+             * Consent Record Id
+             * Format: uuid
+             * @description The farmer's unrevoked `data_collection` consent under which it is captured.
+             */
+            consent_record_id: string;
+            /**
+             * Content Type
+             * @description MIME type of the image to upload.
+             * @enum {string}
+             */
+            content_type: "image/jpeg" | "image/webp";
+            /**
+             * Doc Type
+             * @description Document type code, e.g. `aadhaar`.
+             */
+            doc_type: string;
+            /**
+             * Sha256
+             * @description Hex SHA-256 of the image (device).
+             */
+            sha256: string;
+        };
+        /**
+         * IdDocumentUpload
+         * @description Where to PUT the ID document image; the URL accepts only bytes matching `sha256`.
+         */
+        IdDocumentUpload: {
+            /**
+             * Expires At
+             * Format: date-time
+             * @description When the URL stops working.
+             */
+            expires_at: string;
+            /**
+             * Headers
+             * @description Headers to send: `Content-Type` and `x-amz-checksum-sha256` (base64 digest).
+             */
+            headers: {
+                [key: string]: string;
+            };
+            /**
+             * Id
+             * Format: uuid
+             * @description ID document id.
+             */
+            id: string;
+            /**
+             * Method
+             * @description Always PUT.
+             * @constant
+             */
+            method: "PUT";
+            /**
+             * Url
+             * @description Presigned URL into the private id-docs bucket (15 minutes).
+             */
+            url: string;
+        };
+        /**
+         * ImportReport
+         * @description Row-level outcome of a CSV import (dry run or commit).
+         */
+        ImportReport: {
+            /**
+             * Accepted
+             * @description Rows imported (or importable, on a dry run).
+             */
+            accepted: number;
+            /**
+             * Dry Run
+             * @description True: nothing was written; the counts are what a commit would do.
+             */
+            dry_run: boolean;
+            /**
+             * Rejected
+             * @description Rows not imported, in file order.
+             */
+            rejected: components["schemas"]["ImportRowError"][];
+        };
+        /**
+         * ImportRowError
+         * @description Why one CSV row was not imported.
+         */
+        ImportRowError: {
+            /**
+             * Code
+             * @description Registered error code (docs/api/error-codes.md), e.g. `field_required`.
+             */
+            code: string;
+            /**
+             * Field
+             * @description Column the problem is in, when known.
+             */
+            field?: string | null;
+            /**
+             * Row
+             * @description Line number in the file; the header is line 1, the first data row 2.
+             */
+            row: number;
+        };
+        /**
+         * InputApplicationPayload
+         * @description Stage 3 fertiliser or pesticide application, many instances per season (FR56).
+         */
+        InputApplicationPayload: {
+            /**
+             * Input Id
+             * @description Input from the master list (`GET /v1/inputs`); practice tags derive from it.
+             */
+            input_id?: string | null;
+            /**
+             * Input Name
+             * @description Name as written by the farmer when the input is not in the list.
+             */
+            input_name?: string | null;
+            /** @description Amount applied, e.g. `{value: 25, unit: kg}`. */
+            quantity?: components["schemas"]["Quantity-Input"] | null;
+        };
+        /**
+         * InputApplicationVersion
+         * @description Version of a fertiliser or pesticide application (Stage 3).
+         */
+        InputApplicationVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `input_application` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "input_application";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Input application fields. */
+            payload: components["schemas"]["InputApplicationPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
         };
         /**
          * InputCategory
@@ -1924,6 +3077,113 @@ export interface components {
             serial_no: string;
         };
         /**
+         * IntakePayload
+         * @description Stage 7 sale of a lot to the processor, as recorded on the lot's timeline.
+         */
+        IntakePayload: {
+            /**
+             * Moisture Reading Id
+             * @description Client id of the intake moisture reading taken at the gate.
+             */
+            moisture_reading_id?: string | null;
+            /**
+             * Price Per Kg
+             * @description Price paid in INR per kg (optional).
+             */
+            price_per_kg?: number | string | null;
+            /**
+             * Processor Id
+             * @description Processor that received the lot.
+             */
+            processor_id?: string | null;
+            /** @description Quantity received, unit `kg`. */
+            received?: components["schemas"]["Quantity-Input"] | null;
+        };
+        /**
+         * IntakeVersion
+         * @description Version of a sale-to-processor intake on the lot timeline (Stage 7).
+         */
+        IntakeVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `intake` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "intake";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Intake fields. */
+            payload: components["schemas"]["IntakePayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
+        /**
          * IrrigationSource
          * @description Water source of an irrigated plot (FR54).
          * @enum {string}
@@ -1945,6 +3205,119 @@ export interface components {
              * @default true
              */
             nabl_no_present: boolean;
+        };
+        /**
+         * Labels
+         * @description Field label in each app language (FR5).
+         */
+        Labels: {
+            /**
+             * En
+             * @description English label.
+             */
+            en: string;
+            /**
+             * Ta
+             * @description Tamil label.
+             */
+            ta: string;
+        };
+        /**
+         * LandPreparationPayload
+         * @description Stage 1 land preparation: cultivated area and the last ploughing date.
+         */
+        LandPreparationPayload: {
+            /** @description Area prepared, unit `acre` (flagged when above the plot's declared size). */
+            cultivated_area?: components["schemas"]["Quantity-Input"] | null;
+            /**
+             * Last Ploughed On
+             * @description Last date of ploughing, YYYY-MM-DD.
+             */
+            last_ploughed_on?: string | null;
+        };
+        /**
+         * LandPreparationVersion
+         * @description Version of a land preparation event (Stage 1).
+         */
+        LandPreparationVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `land_preparation` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "land_preparation";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Land preparation fields. */
+            payload: components["schemas"]["LandPreparationPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
         };
         /**
          * LocationStatus
@@ -2045,6 +3418,154 @@ export interface components {
             type: "MultiPolygon";
         };
         /**
+         * NotificationChannel
+         * @description Delivery channel of a notification (FR7).
+         * @enum {string}
+         */
+        NotificationChannel: "push" | "sms" | "whatsapp" | "console";
+        /**
+         * NotificationOut
+         * @description One message sent (or attempted) to the caller.
+         */
+        NotificationOut: {
+            /** @description push, sms, whatsapp or console. */
+            channel: components["schemas"]["NotificationChannel"];
+            /**
+             * Created At
+             * Format: date-time
+             * @description When the message was queued, ISO 8601 UTC.
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Notification id (UUIDv7, so newer ids sort later).
+             */
+            id: string;
+            /**
+             * Lang
+             * @description Language the message was rendered in: `ta` or `en`.
+             */
+            lang: string;
+            /**
+             * Payload
+             * @description Template variables; secrets (the OTP code) appear as `***`.
+             */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** @description queued, sent or failed. */
+            status: components["schemas"]["NotificationStatus"];
+            /**
+             * Template Key
+             * @description Template, e.g. `harvest_reminder`; the app may show its own text.
+             */
+            template_key: string;
+        };
+        /**
+         * NotificationStatus
+         * @description Delivery state of a notification (FR7).
+         * @enum {string}
+         */
+        NotificationStatus: "queued" | "sent" | "failed";
+        /**
+         * NurseryPayload
+         * @description Nursery preparation, split from main-field sowing (FR55); seeding date is `occurred_on`.
+         */
+        NurseryPayload: {
+            /** @description Nursery bed area, e.g. unit `cent`. */
+            nursery_area?: components["schemas"]["Quantity-Input"] | null;
+            /**
+             * Seed Variety
+             * @description Seed variety, e.g. `K2`.
+             */
+            seed_variety?: string | null;
+        };
+        /**
+         * NurseryVersion
+         * @description Version of a nursery preparation event (FR55).
+         */
+        NurseryVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `nursery` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "nursery";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Nursery fields. */
+            payload: components["schemas"]["NurseryPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
+        /**
          * OrgKind
          * @description Legal form of an FPO or processor (PRD §5 Processor / FPO entity).
          * @enum {string}
@@ -2094,6 +3615,103 @@ export interface components {
              */
             platform: "android" | "ios" | "web";
         };
+        /**
+         * PackingPayload
+         * @description Stage 6 on-farm packing.
+         */
+        PackingPayload: {
+            /**
+             * Bags
+             * @description Number of bags packed.
+             */
+            bags?: number | null;
+            /** @description Packed quantity, unit `kg` (FR58). */
+            quantity?: components["schemas"]["Quantity-Input"] | null;
+        };
+        /**
+         * PackingVersion
+         * @description Version of on-farm packing (Stage 6).
+         */
+        PackingVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `packing` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "packing";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Packing fields. */
+            payload: components["schemas"]["PackingPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
         /** Page[ConsentOut] */
         Page_ConsentOut_: {
             /**
@@ -2106,6 +3724,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["ConsentOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[EventOut] */
+        Page_EventOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["EventOut"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -2142,6 +3778,24 @@ export interface components {
              * @description Items on this page, in the endpoint's documented order.
              */
             items: components["schemas"]["InstrumentOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[NotificationOut] */
+        Page_NotificationOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["NotificationOut"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null on the last.
@@ -2440,6 +4094,126 @@ export interface components {
             value?: string | null;
         };
         /**
+         * PhotoConfirmOut
+         * @description Whether storage holds the photo.
+         */
+        PhotoConfirmOut: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description The photo's client id.
+             */
+            client_id: string;
+            /**
+             * Status
+             * @description received: stored and queued for verification; missing: upload again, then confirm.
+             * @enum {string}
+             */
+            status: "received" | "missing";
+        };
+        /**
+         * PhotoIn
+         * @description An evidence photo or voice note announced with its entry; bytes follow by presigned PUT (D-011).
+         */
+        PhotoIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description UUIDv7 generated on the phone; the photo's id (D-005).
+             */
+            client_id: string;
+            /**
+             * Content Type
+             * @description `image/jpeg` for photos (M04); voice notes `audio/ogg` (Android 10+) or `audio/mp4` (iOS, Android 8–9). Bound into the PUT; picks the object key extension.
+             * @default image/jpeg
+             * @enum {string}
+             */
+            content_type: "image/jpeg" | "audio/ogg" | "audio/mp4";
+            /** @description GPS position the phone wrote into EXIF, if any. */
+            exif_gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Exif Taken At
+             * @description Capture time the phone wrote into EXIF, with offset; re-read by the server.
+             */
+            exif_taken_at?: string | null;
+            /**
+             * Sha256
+             * @description Lower-case hex SHA-256 of the JPEG; bound into the PUT.
+             */
+            sha256: string;
+            /**
+             * Size Bytes
+             * @description File size in bytes.
+             */
+            size_bytes: number;
+        };
+        /**
+         * PhotoRef
+         * @description A photo the phone has uploaded.
+         */
+        PhotoRef: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description The photo's client id.
+             */
+            client_id: string;
+        };
+        /**
+         * PhotoStatus
+         * @description Upload and verification state of an evidence photo (FR61, D-011).
+         * @enum {string}
+         */
+        PhotoStatus: "pending_upload" | "uploaded" | "verified" | "checksum_mismatch" | "exif_mismatch";
+        /**
+         * PhotoUpload
+         * @description How to upload one photo: a single presigned PUT (D-011).
+         */
+        PhotoUpload: {
+            /**
+             * Expires At
+             * Format: date-time
+             * @description When the URL stops working (15 minutes).
+             */
+            expires_at: string;
+            /**
+             * Headers
+             * @description Headers to send exactly: `Content-Type` and `x-amz-checksum-sha256` (base64).
+             */
+            headers: {
+                [key: string]: string;
+            };
+            /**
+             * Method
+             * @description HTTP method to use.
+             * @default PUT
+             * @constant
+             */
+            method: "PUT";
+            /**
+             * Photo Client Id
+             * Format: uuid
+             * @description The photo's client id.
+             */
+            photo_client_id: string;
+            /**
+             * Url
+             * @description Presigned URL on the public storage endpoint.
+             */
+            url: string;
+        };
+        /**
+         * PhotosConfirmIn
+         * @description Photos the phone believes are uploaded.
+         */
+        PhotosConfirmIn: {
+            /**
+             * Photos
+             * @description Photos to confirm.
+             */
+            photos: components["schemas"]["PhotoRef"][];
+        };
+        /**
          * PinChangeIn
          * @description Set the office PIN (first time) or change it (the current PIN is then required).
          */
@@ -2652,6 +4426,11 @@ export interface components {
              */
             fpo_id: string;
             /**
+             * Gi Tag Id
+             * @description GI tag stored at onboarding or correction; null when none was sent (fallback).
+             */
+            gi_tag_id?: string | null;
+            /**
              * Id
              * Format: uuid
              * @description Plot id (client-generated, D-005).
@@ -2740,6 +4519,108 @@ export interface components {
             type: "Polygon";
         };
         /**
+         * ProblemPayload
+         * @description A problem seen in the field (pest, disease, weather), reported with a photo.
+         */
+        ProblemPayload: {
+            /** @description Area affected, unit `acre` or `cent`. */
+            affected_area?: components["schemas"]["Quantity-Input"] | null;
+            /**
+             * Description
+             * @description What was seen, in the farmer's words.
+             */
+            description?: string | null;
+            /**
+             * Problem Type
+             * @description Kind of problem.
+             */
+            problem_type?: ("pest" | "disease" | "weather" | "other") | null;
+        };
+        /**
+         * ProblemVersion
+         * @description Version of a field problem report.
+         */
+        ProblemVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `problem` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "problem";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Problem fields. */
+            payload: components["schemas"]["ProblemPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
+        /**
          * ProcessorIn
          * @description A processor an FPO sells to (Stage 7); registered by the FPO admin.
          */
@@ -2805,6 +4686,53 @@ export interface components {
             /**
              * Name
              * @description Registered name.
+             */
+            name: string;
+        };
+        /**
+         * ProducerGroupIn
+         * @description A new producer group (SHG) in the caller's FPO (flag `producer_groups`).
+         */
+        ProducerGroupIn: {
+            /**
+             * @description shg or other.
+             * @default shg
+             */
+            kind: components["schemas"]["ProducerGroupKind"];
+            /**
+             * Name
+             * @description Group name.
+             */
+            name: string;
+        };
+        /**
+         * ProducerGroupKind
+         * @description Kind of producer group (flag `producer_groups`, D-017).
+         * @enum {string}
+         */
+        ProducerGroupKind: "shg" | "other";
+        /**
+         * ProducerGroupOut
+         * @description A producer group.
+         */
+        ProducerGroupOut: {
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description Owning FPO.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Group id.
+             */
+            id: string;
+            /** @description shg or other. */
+            kind: components["schemas"]["ProducerGroupKind"];
+            /**
+             * Name
+             * @description Group name.
              */
             name: string;
         };
@@ -3258,6 +5186,108 @@ export interface components {
             value: string;
         };
         /**
+         * SowingPayload
+         * @description Stage 2 sowing or transplanting in the main field, one entry per instance (FR3, FR55).
+         */
+        SowingPayload: {
+            /**
+             * Method
+             * @description Direct seeding, or transplanting nursery seedlings.
+             */
+            method?: ("direct_seeding" | "transplanting") | null;
+            /**
+             * Seed Variety
+             * @description Seed variety sown or transplanted.
+             */
+            seed_variety?: string | null;
+            /** @description Area sown, unit `acre`. */
+            sown_area?: components["schemas"]["Quantity-Input"] | null;
+        };
+        /**
+         * SowingVersion
+         * @description Version of a sowing / transplanting event (Stage 2).
+         */
+        SowingVersion: {
+            /**
+             * Batch Id
+             * @description Batch of a processing event.
+             */
+            batch_id?: string | null;
+            /**
+             * Change Kind
+             * @description `create` for version 1; `correct` (officer/admin) or `undo` (farmer) after.
+             * @default create
+             * @enum {string}
+             */
+            change_kind: "create" | "correct" | "undo";
+            /** @description Device and GPS clocks at capture; the server adds its own. */
+            clocks: components["schemas"]["ThreeClocks"];
+            /**
+             * Event Id
+             * Format: uuid
+             * @description Client id of the event, stable across its versions (D-005).
+             */
+            event_id: string;
+            /**
+             * @description Always `sowing` for this variant (discriminator). (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            event_type: "sowing";
+            /** @description Device position at submission (FR26). */
+            gps?: components["schemas"]["GeoPoint"] | null;
+            /**
+             * Instance No
+             * @description 1-based instance of this type on the subject (FR3).
+             * @default 1
+             */
+            instance_no: number;
+            /**
+             * Lot Id
+             * @description Lot of a farm event; exactly one of lot/batch.
+             */
+            lot_id?: string | null;
+            /**
+             * Occurred End On
+             * @description End date of a span such as drying.
+             */
+            occurred_end_on?: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             * @description Date the activity happened (or started), YYYY-MM-DD.
+             */
+            occurred_on: string;
+            /** @description Sowing fields. */
+            payload: components["schemas"]["SowingPayload"];
+            /**
+             * Photos
+             * @description Evidence photos (FR3, FR61).
+             */
+            photos?: components["schemas"]["PhotoIn"][];
+            /**
+             * Plot Id
+             * @description Plot where a farm event happened (FR69 GPS check).
+             */
+            plot_id?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason; required for `correct` (422 `reason_required`).
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text reason or comment (FR59).
+             */
+            reason_text?: string | null;
+            /** @description `lot` for farm events, `batch` for processing events. */
+            subject_type: components["schemas"]["EventSubject"];
+            /**
+             * Version No
+             * @description 1 for a new event; each later version must be max + 1.
+             */
+            version_no: number;
+        };
+        /**
          * StandardRef
          * @description The published standard a profile version cites (FR47, FR51: shown on the public page with edition).
          */
@@ -3429,6 +5459,172 @@ export interface components {
          */
         StandardsScheme: "agmark" | "iso" | "fssai" | "custom";
         /**
+         * SyncEntry
+         * @description One offline entry; `data` is validated per entry, so one bad entry never rejects the batch.
+         */
+        SyncEntry: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description Id of the record created (event version, reading, plot, consent); idempotency key.
+             */
+            client_id: string;
+            /**
+             * Data
+             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: not in the pilot. The entry's `client_id` is used as the record's id.
+             */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Kind
+             * @description What `data` holds.
+             * @enum {string}
+             */
+            kind: "event_version" | "quality_reading" | "plot" | "consent" | "flag_resolution";
+        };
+        /**
+         * SyncMetricIn
+         * @description Per-entry sync telemetry measured on the phone (plan §13 F1).
+         */
+        SyncMetricIn: {
+            /**
+             * Acked At
+             * @description When the server acknowledged it, if known.
+             */
+            acked_at?: string | null;
+            /**
+             * Entry Client Id
+             * Format: uuid
+             * @description Client id of the entry measured.
+             */
+            entry_client_id: string;
+            /**
+             * Failures
+             * @description Failed send attempts before success.
+             * @default 0
+             */
+            failures: number;
+            /**
+             * Network Type
+             * @description Network at send time: 2g, 3g, lte, wifi.
+             */
+            network_type?: string | null;
+            /**
+             * Photo Upload Ms
+             * @description Total photo upload time in milliseconds.
+             */
+            photo_upload_ms?: number | null;
+            /**
+             * Saved At
+             * Format: date-time
+             * @description When the entry was saved on the phone.
+             */
+            saved_at: string;
+        };
+        /**
+         * SyncPushIn
+         * @description Sync push envelope: at most 50 entries and 256 KB (backend-design.md §3, plan §13 A4).
+         */
+        SyncPushIn: {
+            /**
+             * App Version
+             * @description App version, e.g. `1.0.3`.
+             */
+            app_version: string;
+            /**
+             * Device Id
+             * Format: uuid
+             * @description Device id of the app; the token's device is what is stored.
+             */
+            device_id: string;
+            /**
+             * Device Time
+             * Format: date-time
+             * @description Phone clock when the push was sent.
+             */
+            device_time: string;
+            /**
+             * Entries
+             * @description Entries in capture order; each one is its own transaction.
+             */
+            entries: components["schemas"]["SyncEntry"][];
+            /**
+             * Metrics
+             * @description Telemetry rows to store in `sync_metrics`.
+             */
+            metrics?: components["schemas"]["SyncMetricIn"][];
+        };
+        /**
+         * SyncPushOut
+         * @description Per-entry results, in the order sent.
+         */
+        SyncPushOut: {
+            /**
+             * Results
+             * @description One result per entry, same order.
+             */
+            results: components["schemas"]["SyncResult"][];
+            /**
+             * Server Time
+             * Format: date-time
+             * @description Server clock (UTC), for the phone's skew display.
+             */
+            server_time: string;
+        };
+        /**
+         * SyncResult
+         * @description Outcome of one entry (or of a REST correction / undo).
+         */
+        SyncResult: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description The entry's client id.
+             */
+            client_id: string;
+            /** @description Why the entry was rejected. */
+            error?: components["schemas"]["ErrorBody"] | null;
+            /**
+             * Photo Uploads
+             * @description Uploads still owed; on a duplicate only photos not yet uploaded.
+             */
+            photo_uploads?: components["schemas"]["PhotoUpload"][];
+            /**
+             * Server Id
+             * @description Id of the stored record (equals client_id).
+             */
+            server_id?: string | null;
+            /**
+             * Status
+             * @description accepted: stored now; duplicate: already stored by you; rejected: see `error`.
+             * @enum {string}
+             */
+            status: "accepted" | "duplicate" | "rejected";
+        };
+        /**
+         * ThreeClocks
+         * @description The three timestamps kept for every offline capture (device, GPS, server).
+         */
+        ThreeClocks: {
+            /**
+             * Device Time
+             * Format: date-time
+             * @description Phone clock at capture, ISO 8601 with offset.
+             */
+            device_time: string;
+            /**
+             * Gps Time
+             * @description GPS fix time at capture, if a fix was taken.
+             */
+            gps_time?: string | null;
+            /**
+             * Server Received At
+             * @description Set by the server when the entry arrives; clients leave it empty.
+             */
+            server_received_at?: string | null;
+        };
+        /**
          * TrailRule
          * @description How a parameter may change from one capture stage to the next (FR50: moisture must not rise).
          */
@@ -3495,6 +5691,35 @@ export interface components {
              * @default 0
              */
             tolerance: number;
+        };
+        /**
+         * UndoIn
+         * @description A farmer's undo of an own entry within 24 hours (FR6, FR25).
+         */
+        UndoIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             * @description Client id of the undo version (idempotency key, D-005).
+             */
+            client_id: string;
+            /** @description Phone clocks at the undo; omitted means server now. */
+            clocks?: components["schemas"]["ThreeClocks"] | null;
+            /**
+             * Reason Code
+             * @description Coded reason, e.g. `entered_by_mistake`.
+             */
+            reason_code?: string | null;
+            /**
+             * Reason Text
+             * @description Free-text comment.
+             */
+            reason_text?: string | null;
+            /**
+             * Version No
+             * @description Current max version + 1.
+             */
+            version_no: number;
         };
         /**
          * UserOut
@@ -4166,6 +6391,93 @@ export interface operations {
             };
         };
     };
+    get_features_v1_config_features_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Features"];
+                };
+            };
+            /** @description Unchanged since the ETag sent in `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_fields_v1_config_fields_get: {
+        parameters: {
+            query?: {
+                /** @description One entity, e.g. `farmer`, `plot`, `event_harvest`. */
+                entity?: string | null;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: components["schemas"]["FieldSpec"][];
+                    };
+                };
+            };
+            /** @description Unchanged since the ETag sent in `If-None-Match`. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     consent_create_v1_consents_post: {
         parameters: {
             query?: never;
@@ -4261,6 +6573,151 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CropOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    undo_event_v1_events__event_id__undo_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Event id (the client id it was created with). */
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncResult"];
+                };
+            };
+            /** @description `forbidden`: not a farmer, or not your entry. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: event not in your FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `undo_window_closed`, `stale_version`, `client_id_conflict`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    correct_event_v1_events__event_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Event id (the client id it was created with). */
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncResult"];
+                };
+            };
+            /** @description `forbidden`: not a field officer or FPO admin. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: event, lot, batch or plot not in your FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `stale_version`, `client_id_conflict`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error`, `reason_required`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */
@@ -4504,6 +6961,47 @@ export interface operations {
             };
         };
     };
+    create_id_document_v1_farmers__farmer_id__id_documents_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdDocumentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdDocumentUpload"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_fpos_v1_fpos_get: {
         parameters: {
             query?: never;
@@ -4721,6 +7219,166 @@ export interface operations {
             };
         };
     };
+    import_farmers_v1_imports_farmers_post: {
+        parameters: {
+            query?: {
+                /** @description True: validate and report only; nothing is written. */
+                dry_run?: boolean;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_farmers_v1_imports_farmers_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReport"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    import_inputs_v1_imports_inputs_post: {
+        parameters: {
+            query?: {
+                /** @description True: validate and report only; nothing is written. */
+                dry_run?: boolean;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_inputs_v1_imports_inputs_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReport"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    import_villages_v1_imports_villages_post: {
+        parameters: {
+            query?: {
+                /** @description True: validate and report only; nothing is written. */
+                dry_run?: boolean;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_villages_v1_imports_villages_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReport"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    import_template_v1_imports__kind__template_csv_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description farmers, villages or inputs. */
+                kind: "farmers" | "villages" | "inputs";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One header line from the field config. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_inputs_v1_inputs_get: {
         parameters: {
             query?: never;
@@ -4890,6 +7548,52 @@ export interface operations {
             };
         };
     };
+    list_lot_events_v1_lots__lot_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Lot id. */
+                lot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_EventOut_"];
+                };
+            };
+            /** @description `not_found`: lot not in your FPO (farmers: not your lot). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_lot_readings_v1_lots__lot_id__readings_get: {
         parameters: {
             query?: {
@@ -4962,6 +7666,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_my_notifications_v1_notifications_get: {
+        parameters: {
+            query?: {
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_NotificationOut_"];
+                };
+            };
+            /** @description `unauthorized`: no valid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */
@@ -5159,6 +7911,78 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProcessorOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_producer_groups_v1_producer_groups_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProducerGroupOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_producer_group_v1_producer_groups_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProducerGroupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProducerGroupOut"];
                 };
             };
             /** @description Error */
@@ -5394,6 +8218,100 @@ export interface operations {
             };
             /** @description `not_found`: no such version. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_photos_confirm_v1_sync_photos_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotosConfirmIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoConfirmOut"][];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_push_v1_sync_push_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncPushIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncPushOut"];
+                };
+            };
+            /** @description `payload_too_large`: body over 256 KB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `validation_error`: the envelope does not parse, or more than 50 entries. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

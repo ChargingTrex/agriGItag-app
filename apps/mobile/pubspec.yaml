@@ -13,6 +13,10 @@ dependencies:
   # Generated from packages/openapi/openapi.json by tool/gen_api.sh; never edited by hand (D-003).
   agritrace_api:
     path: packages/agritrace_api
+  camera: ^0.12.0+2
+  crypto: ^3.0.8
+  # Exact decimals in the grade/yield/moisture previews, matching the server engine's Decimal (D-006, M03).
+  decimal: ^3.2.6
   dio: ^5.11.1
   drift: ^2.31.0
   drift_flutter: ^0.2.8
@@ -21,8 +25,11 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.3.2
+  geolocator: ^14.1.2
   go_router: ^17.5.0
+  image: ^4.12.0
   intl: ^0.20.2
+  record: ^6.2.1
   # Plays the bundled Opus voice prompts (lib/core/voice/voice_player.dart, D-016).
   just_audio: ^0.10.6
   # Opens the dialer for "Call officer" (lib/core/widgets/call_officer_button.dart).
@@ -35,6 +42,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.31.0
   build_runner: ^2.15.1
+  fake_async: ^1.3.3
 
 flutter:
   uses-material-design: true

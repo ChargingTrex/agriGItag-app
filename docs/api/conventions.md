@@ -116,6 +116,73 @@ Every error response, whatever the status, has this body:
   (D-011) with its SHA-256 checked by object storage.
 - Other JSON bodies should stay well under 256 KB.
 
+## Sync (offline-first, backend-design.md §3)
+
+- `POST /v1/sync/push` takes `{device_id, app_version, device_time, metrics[], entries[]}`. Each entry is
+  `{client_id, kind, data}` with kind `event_version`, `quality_reading`, `plot`, `consent` or
+  `flag_resolution`; the entry's `client_id` becomes the record's id. Entries are processed in order, each
+  in its own transaction, and the response is 200 whenever the envelope parses, with one result per entry:
+  `accepted` (stored now), `duplicate` (already stored by you: same `server_id`, upload URLs only for photos
+  not yet uploaded) or `rejected` with an error body (`validation_error`, `client_id_conflict`,
+  `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`,
+  `not_implemented_pilot` for `flag_resolution` in the pilot, ...). A rejected entry never blocks the
+  others; fix it or drop it and send the rest again.
+- `event_version` data is `EventVersionIn` (`oneOf` discriminated by `event_type`; one payload schema per
+  type, every quantity a `Quantity`). `version_no` 1 is `change_kind=create`; later versions are
+  `correct` (field officer or FPO admin, `reason_code` required) or `undo` (the farmer who entered it,
+  within 24 hours of its device time). `version_no` must be the current max + 1, else `stale_version`:
+  pull, re-apply, resend. Who entered it, the assist session and `server_received_at` come from the
+  server, never the body. The REST routes `POST /v1/events/{id}/versions` and `POST /v1/events/{id}/undo`
+  use the same rules.
+- `plot_id` on a lot event must be the lot's own plot (or omitted); batch events carry none
+  (`validation_error` otherwise).
+- Photos and voice notes: announce them in `data.photos[]` (`client_id`, lower-case hex `sha256`,
+  `size_bytes`, `content_type` `image/jpeg`, or `audio/ogg` / `audio/mp4` for voice notes, optional EXIF
+  time and GPS, kept as declared in the audit trail). The result carries one presigned PUT per photo
+  (15 minutes); send exactly the returned `Content-Type` and `x-amz-checksum-sha256` headers, then
+  `POST /v1/sync/photos/confirm {photos: [{client_id}]}` → `[{client_id, status: received | missing}]`
+  (only the user who pushed the entry can confirm its media; anyone else gets `missing`).
+  The server then checks SHA-256 (voice notes: only that) and EXIF time (±30 min) and GPS (±250 m)
+  against the entry and builds the WebP variants; a mismatch is flagged, never rejected. An expired URL is re-issued by resending the entry.
+- `metrics[]` rows (`entry_client_id`, `saved_at`, `acked_at`, `photo_upload_ms`, `failures`,
+  `network_type`) are stored for the sync-health dashboard against the token's device.
+## Config: fields, features, imports (D-017)
+
+- **Where.** `apps/api/config/fields/<entity>.yaml` (farmer, plot, lot, quality_reading, village, input,
+  `event_<type>` for the 11 event types), `features.yaml`, `tenants/<FPO_CODE>.yaml`. Schema and loader:
+  `apps/api/agritrace/core/fieldconfig.py` (Pydantic, unknown keys are errors); routes:
+  `agritrace/modules/config/router.py`. The API refuses to start when any file fails the schema; the
+  message names the file and key. Edit the YAML in git and redeploy; tenant files are reviewed like code.
+- **Field keys.** `name`, `type`, `required`, `enabled`, `visibility` (`public` | `partner` | `internal`),
+  `label.en` / `label.ta`, `stage`, `core`. A disabled field is never required and is dropped from
+  payloads. `core: true` fields (database NOT NULL) cannot be disabled or made optional by a tenant.
+  `extra: forbid` (farmer, plot, village, input) refuses payload keys not listed (`field_unknown`);
+  `extra: allow` keeps them. Tenant overrides may change `enabled`, `required`, `visibility`, `label`.
+- **Reads.** `GET /v1/config/fields?entity=<name>` → `{entity: [field, ...]}` for the caller's FPO
+  (from the token), disabled fields absent; omit `entity` for all. `GET /v1/config/features` → the flags.
+  Both send a strong `ETag`; send it back in `If-None-Match` to get 304. The sync bundle part `fields`
+  (B07) is `fieldconfig.bundle_part(fpo_code)`: `{version, entities, features}`.
+- **Enforced today** on `POST /v1/farmers`, `POST /v1/plots` (also sync-pushed plots through the same
+  service) and the imports: missing required → 422 `field_required` with `details.field`. Event, lot and
+  reading payloads are served for the forms but enforced only once their modules call
+  `fieldconfig.validate_payload`. Public pages may show only `fieldconfig.public_fields(entity, fpo_code)`; a tenant
+  may narrow visibility (public > partner > internal) or disable a field, never widen it (refused at
+  start-up), and village fields take no tenant overrides.
+- **Feature-gated routes** answer 404 `feature_disabled` while the FPO's flag is off:
+  `POST /v1/farmers/{id}/id-documents` (`id_document_capture`; needs the farmer's unrevoked
+  `data_collection` consent; returns one presigned PUT into the private `id-docs` bucket with the same
+  SHA-256 headers as evidence photos) and `GET/POST /v1/producer-groups` (`producer_groups`).
+- **Imports.** `POST /v1/imports/{farmers,inputs}` (FPO admin) and `POST /v1/imports/villages`
+  (super-admin), multipart field `file`, UTF-8 CSV (BOM allowed), header first, at most 2 MB and 5,000
+  rows (413 `import_too_large`). `?dry_run=true` runs every check, including database ones, then rolls
+  back. The answer is always 200 `{dry_run, accepted, rejected: [{row, code, field}]}`; `row` is the file
+  line (header = 1); `code` is a registered code (`field_required`, `field_unknown`,
+  `import_row_invalid`, `import_row_exists`, `farmer_phone_taken`, `validation_error`). A commit writes
+  the valid rows in one transaction; a rejected row writes nothing. Keys: villages `lgd_code`, inputs
+  name + manufacturer (ignoring case), farmers phone. Farmers without a phone have no key, so after fixing
+  rejected rows **re-upload only those rows**. Farmers pick their village with `village_lgd_code`.
+  Templates: `GET /v1/imports/{kind}/template.csv` = the tenant's enabled CSV-capable fields.
+
 ## Compression and transport
 
 - Responses of 400 bytes or more are compressed with Brotli when the client sends

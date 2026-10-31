@@ -1,0 +1,24 @@
+$ CHROME_PATH="/Users/fi-it/Library/Caches/ms-playwright/chromium-1248/chrome-mac-x64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" npx lhci autorun --config=lighthouserc.4g.yml
+Sat Oct 31 11:44:52 IST 2026
+✅  .lighthouseci/ directory writable
+✅  Configuration file found
+✅  Chrome installation found
+Healthcheck passed!
+
+Started a web server on port 55850...
+Running Lighthouse 3 time(s) on http://localhost:55850/index.html
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Done running Lighthouse!
+
+Checking assertions against 1 URL(s), 3 total run(s)
+
+All results processed!
+
+Dumping 3 reports to disk at /Users/fi-it/Documents/projects/agriGitag/apps/public-page/out/lhci/4g...
+Done writing reports to disk.
+
+Done running autorun.
+exit=0
+Sat Oct 31 11:45:52 IST 2026

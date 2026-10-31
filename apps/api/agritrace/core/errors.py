@@ -14,6 +14,7 @@ from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DBAPIError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 log = logging.getLogger(__name__)
@@ -188,6 +189,57 @@ class FarmerPhoneTakenError(AppError):
     fix = "Open the existing farmer instead, or check the number with the farmer."
 
 
+# --- field configuration and imports (B13, D-017) ------------------------------------------------------
+
+
+class FieldRequiredError(AppError):
+    """A field the tenant's configuration marks required is missing or blank (D-017)."""
+
+    code, status, message_key = "field_required", 422, "error.field_required"
+    message = "A required field is missing."
+    fix = "Fill in the field named in `details.field` (see GET /v1/config/fields) and send again."
+
+
+class FieldUnknownError(AppError):
+    """A payload key is not in the entity's field configuration and the entity forbids extras (D-017)."""
+
+    code, status, message_key = "field_unknown", 422, "error.field_unknown"
+    message = "The request has a field this form does not know."
+    fix = "Remove the field named in `details.field`, or check its spelling against GET /v1/config/fields."
+
+
+class FeatureDisabledError(AppError):
+    """The endpoint belongs to a feature switched off for the caller's FPO; answered as 404 (D-017)."""
+
+    code, status, message_key = "feature_disabled", 404, "error.feature_disabled"
+    message = "This feature is not switched on for your FPO."
+    fix = "Ask the platform team to enable the flag in the FPO's tenant file (GET /v1/config/features)."
+
+
+class ImportTooLargeError(AppError):
+    """A CSV import is over 2 MB or 5,000 data rows."""
+
+    code, status, message_key = "import_too_large", 413, "error.import_too_large"
+    message = "The file is too large to import."
+    fix = "Split the file into parts of at most 5,000 rows and 2 MB, and import each part."
+
+
+class ImportRowInvalidError(AppError):
+    """A CSV row has a value of the wrong kind (bad number, unknown category, bad phone format)."""
+
+    code, status, message_key = "import_row_invalid", 422, "error.import_row_invalid"
+    message = "A value in this row is not valid."
+    fix = "Correct the column named in `field` for that row (see the template) and import the row again."
+
+
+class ImportRowExistsError(AppError):
+    """A CSV row describes a record that already exists (same LGD code, or same input name and maker)."""
+
+    code, status, message_key = "import_row_exists", 409, "error.import_row_exists"
+    message = "This record already exists."
+    fix = "No action needed if it was imported before; otherwise change the key column named in `field`."
+
+
 class RateLimitedError(AppError):
     """Too many requests from this caller."""
 
@@ -218,7 +270,6 @@ class NotImplementedPilotError(AppError):
     code, status, message_key = "not_implemented_pilot", 501, "error.not_implemented_pilot"
     message = "This feature is not available in the pilot."
     fix = "No client action; the feature is planned after the pilot."
-
 
 
 # Quality readings and grading (B05; PRD §6.8 FR47–FR50). Plausibility codes equal the grade engine's
@@ -295,6 +346,8 @@ class ProfileIncompleteNotAllowedError(AppError):
     code, status, message_key = "profile_incomplete_not_allowed", 422, "error.profile_incomplete_not_allowed"
     message = "Some grading parameters have no limits yet (load_from_standard)."
     fix = "Enter the limits from the standard, or publish with `allow_incomplete: true` (public note shown)."
+
+
 # Identity (B02, FR1, D-024). Wrong codes and PINs get their own codes, never a bare 401 (P00 contract).
 class OtpInvalidError(AppError):
     """The one-time code is wrong, or the phone cannot sign in (indistinguishable on purpose)."""
@@ -366,6 +419,43 @@ class ConsentConflictError(AppError):
     code, status, message_key = "consent_conflict", 409, "error.consent_conflict"
     message = "A different consent was already saved with this id."
     fix = "Generate a new client_id for a new consent; resend the same body only to retry."
+
+
+# Events and sync (B06; FR25, FR59, D-005). Reuses `client_id_conflict`, `payload_too_large`,
+# `append_only_violation` and `not_implemented_pilot` from above.
+
+
+class StaleVersionError(AppError):
+    """An event version's `version_no` is not the next one (max + 1), e.g. two devices corrected at once."""
+
+    code, status, message_key = "stale_version", 409, "error.stale_version"
+    message = "This event was changed since your copy; the version number is not the next one."
+    fix = "Pull the latest version of the event, re-apply your change on it and send it with version max + 1."
+
+
+class UndoWindowClosedError(AppError):
+    """A farmer tried to undo an own entry more than 24 hours after it was captured (FR6, FR25)."""
+
+    code, status, message_key = "undo_window_closed", 409, "error.undo_window_closed"
+    message = "Entries can be undone only within 24 hours."
+    fix = "Ask your field officer to correct the entry with a reason instead."
+
+
+SQLSTATE_RESTRICT_VIOLATION = "23001"
+
+
+def append_only_error(exc: BaseException) -> AppendOnlyViolationError | None:
+    """Translate the append-only trigger's database error into the registered AppError (TODO B06/B07).
+
+    Args:
+        exc: any exception, typically `sqlalchemy.exc.DBAPIError` from a flush or execute.
+
+    Returns:
+        `AppendOnlyViolationError` when the driver reports SQLSTATE 23001 (`restrict_violation`, raised by
+        `forbid_change()` in migration 0001), else None.
+    """
+    sqlstate = getattr(getattr(exc, "orig", None), "sqlstate", None)
+    return AppendOnlyViolationError() if sqlstate == SQLSTATE_RESTRICT_VIOLATION else None
 
 
 def _envelope(
@@ -441,6 +531,25 @@ async def _http_error(request: Request, exc: Exception) -> JSONResponse:
     return _envelope(exc.status_code, cls.code, cls.message, None, headers)
 
 
+async def _db_error(request: Request, exc: Exception) -> JSONResponse:
+    """Render the append-only trigger's SQLSTATE 23001 as `append_only_violation`; hide every other error.
+
+    Args:
+        request: the request (passed on to `_unhandled`).
+        exc: a `sqlalchemy.exc.DBAPIError`.
+
+    Returns:
+        409 `append_only_violation` envelope, or the `internal_error` envelope from `_unhandled`.
+
+    Side effects:
+        Logs non-23001 errors with their traceback (through `_unhandled`).
+    """
+    mapped = append_only_error(exc)
+    if mapped is None:
+        return await _unhandled(request, exc)
+    return _envelope(mapped.status, mapped.code, mapped.detail_message)
+
+
 async def _unhandled(_: Request, exc: Exception) -> JSONResponse:
     """Hide unexpected exceptions behind `internal_error`.
 
@@ -470,4 +579,5 @@ def install_handlers(app: FastAPI) -> None:
     app.add_exception_handler(AppError, _app_error)
     app.add_exception_handler(RequestValidationError, _validation_error)
     app.add_exception_handler(StarletteHTTPException, _http_error)
+    app.add_exception_handler(DBAPIError, _db_error)
     app.add_exception_handler(Exception, _unhandled)

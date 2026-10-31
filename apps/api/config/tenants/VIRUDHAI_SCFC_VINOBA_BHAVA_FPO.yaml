@@ -1,0 +1,10 @@
+# Overrides for the pilot FPO (demo tenant seeded by B12). Reviewed like code (D-017 compromise).
+# Serves: D-017 per-tenant configuration; B13 acceptance (soil type disabled and hidden for this FPO only).
+# Read by: agritrace/core/fieldconfig.py at start-up. Keys: features.<flag>, fields.<entity>.<field>.
+fpo_code: VIRUDHAI_SCFC_VINOBA_BHAVA_FPO
+features:
+  boundary_walk: true
+fields:
+  plot:
+    soil_type:
+      enabled: false

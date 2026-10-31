@@ -1,1 +1,1 @@
-Camera-only capture, photo compression (1600 px, <= 350 KB), EXIF rewrite, quality check, GPS fix, three clocks, voice notes (M04). Empty until M04.
+Camera-only capture (camera_capture.dart), photo compression to 1600 px / <= 350 KB with EXIF reduced to time + GPS + orientation (photo_compressor.dart, exif_rewriter.dart), brightness/blur check (photo_quality_check.dart), GPS fix with the 20 m / 60 s rule (gps_fix.dart), three clocks (clocks.dart), 30 s voice notes (voice_note_recorder.dart). All numbers in capture_constants.dart (M04).

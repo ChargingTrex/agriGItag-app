@@ -1,0 +1,12 @@
+# Payload fields of the `problem` event (Problem); keys equal B06's `events.payloads.ProblemPayload`.
+# Serves: D-017, FR22 (crop event schema), FR23 (configurable capture), UserFlows §Logging an event.
+# Read by: agritrace/core/fieldconfig.py; served to clients (M07, M10, M11). Not enforced by a server
+# hook yet: events (B06) calls fieldconfig.validate_payload("event_problem", ...) when it wires it.
+# Photos and voice notes travel in the entry envelope (`photos[]`), not in the payload, so they are not
+# listed. tests/unit/test_fieldconfig_events.py keeps this file and the payload model in step.
+entity: event_problem
+extra: allow
+fields:
+  - {name: problem_type, type: choice, required: true, enabled: true, visibility: internal, stage: cultivation, label: {en: Problem, ta: பிரச்சனை}}
+  - {name: description, type: text, required: false, enabled: true, visibility: internal, stage: cultivation, label: {en: Description, ta: விவரம்}}
+  - {name: affected_area, type: quantity, required: false, enabled: true, visibility: internal, stage: cultivation, label: {en: Area affected, ta: பாதிக்கப்பட்ட பரப்பு}}
