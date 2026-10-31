@@ -3,11 +3,15 @@
 Serves: B00 test harness (plan §7.1), D-008 (buckets as in production), D-009 (eager Celery in tests),
 D-021 (Valkey as the Redis-protocol broker).
 Callers: pytest. Unit tests use none of these fixtures, so `pytest tests/unit` needs no Docker; tests
-marked `integration` request `client` (or `stack`) and start the containers once per session.
+marked `integration` (tests/integration, tests/e2e) request `client`, `migrated` or `stack` and start the
+containers once per session.
 """
 
 import os
+import subprocess
+import sys
 from collections.abc import AsyncIterator, Iterator
+from pathlib import Path
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -19,6 +23,7 @@ from agritrace.core import db, storage
 from agritrace.core.config import get_settings
 
 REGION = "ap-south-1"
+API_DIR = Path(__file__).parents[1]
 
 
 @pytest.fixture(scope="session")
@@ -71,6 +76,26 @@ def stack() -> Iterator[None]:
         s3.put_bucket_versioning(Bucket="public-pages", VersioningConfiguration={"Status": "Enabled"})
         s3.create_bucket(Bucket="id-docs", **where)
         yield
+
+
+@pytest.fixture(scope="session")
+def migrated(stack: None) -> None:
+    """Migrate the test database to head (a no-op when another test module already did).
+
+    Args:
+        stack: the running containers (fixture).
+
+    Raises:
+        AssertionError: alembic failed (its output is in the message).
+
+    Side effects:
+        Creates every table and trigger up to the latest revision.
+    """
+    alembic = str(Path(sys.executable).parent / "alembic")
+    result = subprocess.run(  # noqa: S603
+        [alembic, "upgrade", "head"], cwd=API_DIR, capture_output=True, text=True, check=False
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 @pytest.fixture

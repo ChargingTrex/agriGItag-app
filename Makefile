@@ -28,13 +28,14 @@ lint: ## ruff + ruff format --check + mypy + import-linter (D-004) + interrogate
 openapi: ## Regenerate packages/openapi/openapi.json
 	$(API) uv run python -m agritrace.export_openapi
 
-clients: ## Placeholder until B12: prints the client generator commands
-	@echo "B12 wires these (D-003):"
-	@echo "  npx @openapitools/openapi-generator-cli generate -i packages/openapi/openapi.json -g dart-dio -o apps/mobile/packages/agritrace_api"
-	@echo "  npx openapi-typescript packages/openapi/openapi.json -o apps/portal/src/api/schema.d.ts"
+# Needs Java 11+ for openapi-generator (locally: JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+# make clients), Dart, and `npm ci` once in apps/portal. Run `make openapi` first when the API changed.
+clients: ## Regenerate the Dart (dart-dio) and TS (openapi-typescript) clients from packages/openapi/openapi.json (D-003)
+	apps/mobile/tool/gen_api.sh
+	cd apps/portal && npm run gen:api
 
-seed: ## Placeholder until B12: demo FPO and reference batch
-	@echo "make seed: not implemented yet (B12)"
+seed: ## Demo FPO and the PRD §12 reference batch FGP8T4033HM7 in the running stack (idempotent)
+	$(COMPOSE) exec api python -m agritrace.seed.demo
 
 progress: ## Refresh the completion line in CHECKLIST.md
 	python3 infra/scripts/checklist-progress.py
