@@ -1,0 +1,168 @@
+{
+  "_about": "Shared cases for the rules that run on the phone (preview) and on the server (authority), D-006. Copied from apps/mobile/test/rules/preview_rules_test.dart (same inputs, same outputs), plus cases marked server_added. Python: tests/unit/test_rules_shared_cases.py (event_order, practice_tags) and tests/integration/test_rules.py (gi_check through PostGIS registry.geo.locate_point). Dart: M03 must read this file too (TODO). Dates are ISO 8601; coordinates WGS84 degrees; the gi_check region is the NON-OFFICIAL test octagon of apps/mobile/test/fixtures/gi_region_fixture.geojson.",
+  "event_order": {
+    "event_schema": {
+      "mandatory": ["land_preparation", "nursery", "sowing", "harvest", "drying", "packing"],
+      "tracks": {
+        "nursery": ["nursery", "sowing"],
+        "main_field": ["land_preparation", "sowing", "harvest", "drying", "packing"]
+      }
+    },
+    "cases": [
+      {
+        "name": "harvest dated before sowing prompts for sowing (order_gap)",
+        "recorded": [
+          {"type": "land_preparation", "on": "2025-09-30"},
+          {"type": "nursery", "on": "2025-09-05"},
+          {"type": "sowing", "on": "2025-11-01"}
+        ],
+        "new_type": "harvest",
+        "on": "2025-10-15",
+        "gaps": ["sowing"]
+      },
+      {
+        "name": "nursery before land preparation does not prompt",
+        "recorded": [{"type": "land_preparation", "on": "2025-09-30"}],
+        "new_type": "nursery",
+        "on": "2025-09-05",
+        "gaps": []
+      },
+      {
+        "name": "sowing before any nursery prompts for the nursery",
+        "recorded": [{"type": "land_preparation", "on": "2025-09-30"}],
+        "new_type": "sowing",
+        "on": "2025-10-20",
+        "gaps": ["nursery"]
+      },
+      {
+        "name": "harvest in order does not prompt",
+        "recorded": [
+          {"type": "land_preparation", "on": "2025-09-30"},
+          {"type": "nursery", "on": "2025-09-05"},
+          {"type": "sowing", "on": "2025-10-20"}
+        ],
+        "new_type": "harvest",
+        "on": "2026-02-14",
+        "gaps": []
+      },
+      {
+        "name": "sowing dated before a nursery recorded later prompts for the nursery",
+        "server_added": true,
+        "recorded": [
+          {"type": "land_preparation", "on": "2025-09-30"},
+          {"type": "nursery", "on": "2025-10-25"}
+        ],
+        "new_type": "sowing",
+        "on": "2025-10-20",
+        "gaps": ["nursery"]
+      }
+    ]
+  },
+  "practice_tags": {
+    "cases": [
+      {
+        "name": "all-organic inputs derive Organic",
+        "declared": [],
+        "input_categories": ["organic_fertilizer", "organic_fertilizer", "bio_fertilizer", "bio_fertilizer", "bio_fertilizer"],
+        "has_pest_event": true,
+        "derived": ["organic"],
+        "flags": []
+      },
+      {
+        "name": "any chemical input derives Inorganic",
+        "declared": [],
+        "input_categories": ["organic_fertilizer", "organic_fertilizer", "bio_fertilizer", "bio_fertilizer", "bio_fertilizer", "chemical_fertilizer"],
+        "has_pest_event": true,
+        "derived": ["inorganic"],
+        "flags": []
+      },
+      {
+        "name": "declared Inorganic with only organic inputs is a contradiction",
+        "declared": ["inorganic"],
+        "input_categories": ["organic_fertilizer", "organic_fertilizer", "bio_fertilizer", "bio_fertilizer", "bio_fertilizer"],
+        "has_pest_event": true,
+        "derived": ["organic"],
+        "flags": ["practice_tag_contradiction"]
+      },
+      {
+        "name": "IPM declared without a problem/pest event is flagged",
+        "declared": ["organic", "ipm"],
+        "input_categories": ["organic_fertilizer", "organic_fertilizer", "bio_fertilizer", "bio_fertilizer", "bio_fertilizer"],
+        "has_pest_event": false,
+        "derived": ["organic"],
+        "flags": ["ipm_without_pest_event"]
+      },
+      {
+        "name": "PRD §12 lots (Inorganic + IPM, organic inputs, no pest event) raise both flags",
+        "declared": ["inorganic", "ipm"],
+        "input_categories": ["organic_fertilizer", "organic_fertilizer", "bio_fertilizer", "bio_fertilizer", "bio_fertilizer"],
+        "has_pest_event": false,
+        "derived": ["organic"],
+        "flags": ["practice_tag_contradiction", "ipm_without_pest_event"]
+      },
+      {
+        "name": "`other` inputs are ignored: only `other` derives nothing and contradicts nothing",
+        "declared": ["inorganic"],
+        "input_categories": ["other"],
+        "has_pest_event": true,
+        "derived": [],
+        "flags": []
+      },
+      {
+        "name": "organic inputs plus `other` still derive Organic",
+        "declared": [],
+        "input_categories": ["organic_fertilizer", "other"],
+        "has_pest_event": true,
+        "derived": ["organic"],
+        "flags": []
+      },
+      {
+        "name": "bio-pesticide plus `other`: declared Inorganic contradicts",
+        "declared": ["inorganic"],
+        "input_categories": ["bio_pesticide", "other"],
+        "has_pest_event": true,
+        "derived": ["organic"],
+        "flags": ["practice_tag_contradiction"]
+      },
+      {
+        "name": "no inputs recorded: nothing derived, no contradiction",
+        "declared": ["inorganic"],
+        "input_categories": [],
+        "has_pest_event": false,
+        "derived": [],
+        "flags": []
+      }
+    ]
+  },
+  "gi_check": {
+    "region": {
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [[[[78.10, 9.45], [78.25, 9.45], [78.30, 9.50], [78.30, 9.60], [78.25, 9.65], [78.10, 9.65], [78.05, 9.60], [78.05, 9.50], [78.10, 9.45]]]]
+      },
+      "tolerance_buffer_m": 150
+    },
+    "cases": [
+      {"name": "pin inside the region is inside", "buffer_m": 50, "lat": 9.55, "lon": 78.2, "status": "inside", "distance_m": 0, "tolerance_m": 0.001},
+      {"name": "10 m outside with a 50 m buffer is near_edge", "buffer_m": 50, "lat": 9.55, "lon": 78.30009119602583, "status": "near_edge", "distance_m": 10, "tolerance_m": 0.1},
+      {"name": "500 m outside is outside", "buffer_m": 50, "lat": 9.55, "lon": 78.30455980129176, "status": "outside", "distance_m": 500, "tolerance_m": 1},
+      {"name": "Madurai (9.9252, 78.1198) is outside, far", "buffer_m": 150, "lat": 9.9252, "lon": 78.1198, "status": "outside", "min_distance_m": 30000},
+      {"name": "the fixture's own 150 m buffer: about 100 m outside is near_edge", "buffer_m": 150, "lat": 9.55, "lon": 78.300911, "status": "near_edge"},
+      {"name": "a point on the outline counts as inside (ST_Covers)", "buffer_m": 50, "lat": 9.55, "lon": 78.30, "status": "inside", "distance_m": 0, "tolerance_m": 0.001},
+      {
+        "name": "a hole is outside",
+        "buffer_m": 50,
+        "lat": 9.55,
+        "lon": 78.175,
+        "status": "outside",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [[
+            [[78.10, 9.45], [78.25, 9.45], [78.30, 9.50], [78.30, 9.60], [78.25, 9.65], [78.10, 9.65], [78.05, 9.60], [78.05, 9.50], [78.10, 9.45]],
+            [[78.15, 9.52], [78.20, 9.52], [78.20, 9.58], [78.15, 9.58], [78.15, 9.52]]
+          ]]
+        }
+      }
+    ]
+  }
+}

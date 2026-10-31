@@ -86,6 +86,9 @@ Class | Method | HTTP request | Description
 [*EventsApi*](doc/EventsApi.md) | [**syncReferenceV1SyncReferenceGet**](doc/EventsApi.md#syncreferencev1syncreferenceget) | **GET** /v1/sync/reference | Changed reference-bundle parts
 [*EventsApi*](doc/EventsApi.md) | [**syncReferenceV1SyncReferenceGet_0**](doc/EventsApi.md#syncreferencev1syncreferenceget_0) | **GET** /v1/sync/reference | Changed reference-bundle parts
 [*EventsApi*](doc/EventsApi.md) | [**undoEventV1EventsEventIdUndoPost**](doc/EventsApi.md#undoeventv1eventseventidundopost) | **POST** /v1/events/{event_id}/undo | Undo an own entry
+[*FlagsApi*](doc/FlagsApi.md) | [**getFlagV1FlagsFlagIdGet**](doc/FlagsApi.md#getflagv1flagsflagidget) | **GET** /v1/flags/{flag_id} | Read a flag
+[*FlagsApi*](doc/FlagsApi.md) | [**listFlagsV1FlagsGet**](doc/FlagsApi.md#listflagsv1flagsget) | **GET** /v1/flags | List flags
+[*FlagsApi*](doc/FlagsApi.md) | [**resolveFlagV1FlagsFlagIdResolvePost**](doc/FlagsApi.md#resolveflagv1flagsflagidresolvepost) | **POST** /v1/flags/{flag_id}/resolve | Resolve a flag
 [*HealthApi*](doc/HealthApi.md) | [**healthzV1HealthzGet**](doc/HealthApi.md#healthzv1healthzget) | **GET** /v1/healthz | Healthz
 [*HealthApi*](doc/HealthApi.md) | [**reachableV1HealthzHead**](doc/HealthApi.md#reachablev1healthzhead) | **HEAD** /v1/healthz | Reachable
 [*IdentityApi*](doc/IdentityApi.md) | [**assistEndV1AssistEndPost**](doc/IdentityApi.md#assistendv1assistendpost) | **POST** /v1/assist/end | Assist End
@@ -180,6 +183,10 @@ Class | Method | HTTP request | Description
  - [FieldSpec](doc/FieldSpec.md)
  - [FinalPackingPayload](doc/FinalPackingPayload.md)
  - [FinalPackingVersion](doc/FinalPackingVersion.md)
+ - [FlagOut](doc/FlagOut.md)
+ - [FlagResolveIn](doc/FlagResolveIn.md)
+ - [FlagStatus](doc/FlagStatus.md)
+ - [FlagSubject](doc/FlagSubject.md)
  - [FpoIn](doc/FpoIn.md)
  - [FpoOut](doc/FpoOut.md)
  - [GeoPoint](doc/GeoPoint.md)
@@ -236,6 +243,7 @@ Class | Method | HTTP request | Description
  - [PageConsentOut](doc/PageConsentOut.md)
  - [PageEventOut](doc/PageEventOut.md)
  - [PageFarmerOut](doc/PageFarmerOut.md)
+ - [PageFlagOut](doc/PageFlagOut.md)
  - [PageInstrumentOut](doc/PageInstrumentOut.md)
  - [PageNotificationOut](doc/PageNotificationOut.md)
  - [PagePlotOut](doc/PagePlotOut.md)
@@ -288,6 +296,7 @@ Class | Method | HTTP request | Description
  - [ResponseOtpVerifyV1AuthOtpVerifyPost](doc/ResponseOtpVerifyV1AuthOtpVerifyPost.md)
  - [Role](doc/Role.md)
  - [SessionOut](doc/SessionOut.md)
+ - [Severity](doc/Severity.md)
  - [SignedQuantityInput](doc/SignedQuantityInput.md)
  - [SignedQuantityOutput](doc/SignedQuantityOutput.md)
  - [SowingPayload](doc/SowingPayload.md)

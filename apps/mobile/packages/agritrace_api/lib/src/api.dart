@@ -11,6 +11,7 @@ import 'package:agritrace_api/src/auth/bearer_auth.dart';
 import 'package:agritrace_api/src/auth/oauth.dart';
 import 'package:agritrace_api/src/api/config_api.dart';
 import 'package:agritrace_api/src/api/events_api.dart';
+import 'package:agritrace_api/src/api/flags_api.dart';
 import 'package:agritrace_api/src/api/health_api.dart';
 import 'package:agritrace_api/src/api/identity_api.dart';
 import 'package:agritrace_api/src/api/notifications_api.dart';
@@ -147,6 +148,12 @@ class AgritraceApi {
   /// by doing that all interceptors will not be executed
   EventsApi getEventsApi() {
     return EventsApi(dio, serializers);
+  }
+
+  /// Get FlagsApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  FlagsApi getFlagsApi() {
+    return FlagsApi(dio, serializers);
   }
 
   /// Get HealthApi instance, base route and serializer can be overridden by a given but be careful,

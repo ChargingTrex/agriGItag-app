@@ -14,7 +14,7 @@ part 'sync_entry.g.dart';
 ///
 /// Properties:
 /// * [clientId] - Id of the record created (event version, reading, plot, consent); idempotency key.
-/// * [data] - `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: not in the pilot. The entry's `client_id` is used as the record's id.
+/// * [data] - `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id). Otherwise the entry's `client_id` is used as the record's id.
 /// * [kind] - What `data` holds.
 @BuiltValue()
 abstract class SyncEntry implements Built<SyncEntry, SyncEntryBuilder> {
@@ -22,7 +22,7 @@ abstract class SyncEntry implements Built<SyncEntry, SyncEntryBuilder> {
   @BuiltValueField(wireName: r'client_id')
   String get clientId;
 
-  /// `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: not in the pilot. The entry's `client_id` is used as the record's id.
+  /// `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id). Otherwise the entry's `client_id` is used as the record's id.
   @BuiltValueField(wireName: r'data')
   BuiltMap<String, JsonObject?> get data;
 

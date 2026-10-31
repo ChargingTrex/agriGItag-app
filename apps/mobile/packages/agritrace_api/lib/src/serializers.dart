@@ -50,6 +50,10 @@ import 'package:agritrace_api/src/model/features.dart';
 import 'package:agritrace_api/src/model/field_spec.dart';
 import 'package:agritrace_api/src/model/final_packing_payload.dart';
 import 'package:agritrace_api/src/model/final_packing_version.dart';
+import 'package:agritrace_api/src/model/flag_out.dart';
+import 'package:agritrace_api/src/model/flag_resolve_in.dart';
+import 'package:agritrace_api/src/model/flag_status.dart';
+import 'package:agritrace_api/src/model/flag_subject.dart';
 import 'package:agritrace_api/src/model/fpo_in.dart';
 import 'package:agritrace_api/src/model/fpo_out.dart';
 import 'package:agritrace_api/src/model/geo_point.dart';
@@ -106,6 +110,7 @@ import 'package:agritrace_api/src/model/packing_version.dart';
 import 'package:agritrace_api/src/model/page_consent_out.dart';
 import 'package:agritrace_api/src/model/page_event_out.dart';
 import 'package:agritrace_api/src/model/page_farmer_out.dart';
+import 'package:agritrace_api/src/model/page_flag_out.dart';
 import 'package:agritrace_api/src/model/page_instrument_out.dart';
 import 'package:agritrace_api/src/model/page_notification_out.dart';
 import 'package:agritrace_api/src/model/page_plot_out.dart';
@@ -158,6 +163,7 @@ import 'package:agritrace_api/src/model/region_check_out.dart';
 import 'package:agritrace_api/src/model/response_otp_verify_v1_auth_otp_verify_post.dart';
 import 'package:agritrace_api/src/model/role.dart';
 import 'package:agritrace_api/src/model/session_out.dart';
+import 'package:agritrace_api/src/model/severity.dart';
 import 'package:agritrace_api/src/model/signed_quantity_input.dart';
 import 'package:agritrace_api/src/model/signed_quantity_output.dart';
 import 'package:agritrace_api/src/model/sowing_payload.dart';
@@ -225,6 +231,10 @@ part 'serializers.g.dart';
   FieldSpec,
   FinalPackingPayload,
   FinalPackingVersion,
+  FlagOut,
+  FlagResolveIn,
+  FlagStatus,
+  FlagSubject,
   FpoIn,
   FpoOut,
   GeoPoint,
@@ -281,6 +291,7 @@ part 'serializers.g.dart';
   PageConsentOut,
   PageEventOut,
   PageFarmerOut,
+  PageFlagOut,
   PageInstrumentOut,
   PageNotificationOut,
   PagePlotOut,
@@ -333,6 +344,7 @@ part 'serializers.g.dart';
   ResponseOtpVerifyV1AuthOtpVerifyPost,
   Role,
   SessionOut,
+  Severity,
   SignedQuantityInput,
   SignedQuantityOutput,
   SowingPayload,
@@ -371,32 +383,8 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<CropOut>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType(String)]),
-        () => MapBuilder<String, String>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ParameterInput)]),
-        () => ListBuilder<ParameterInput>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(SyncMetricIn)]),
-        () => ListBuilder<SyncMetricIn>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(QualityReadingIn)]),
-        () => ListBuilder<QualityReadingIn>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProducerGroupOut)]),
         () => ListBuilder<ProducerGroupOut>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(NotificationOut)]),
-        () => ListBuilder<NotificationOut>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PhotoIn)]),
-        () => ListBuilder<PhotoIn>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ReadingStage)]),
@@ -427,6 +415,90 @@ Serializers serializers = (_$serializers.toBuilder()
         () => MapBuilder<String, LotGateInput>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PullChange)]),
+        () => ListBuilder<PullChange>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PhotoConfirmOut)]),
+        () => ListBuilder<PhotoConfirmOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(ParameterResult)]),
+        () => MapBuilder<String, ParameterResult>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ConsentOut)]),
+        () => ListBuilder<ConsentOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(RangeOutput)]),
+        () => MapBuilder<String, RangeOutput>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(BuiltList, [
+            FullType(BuiltList, [FullType(num)])
+          ])
+        ]),
+        () => ListBuilder<BuiltList<BuiltList<num>>>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(LotGateOutput)]),
+        () => MapBuilder<String, LotGateOutput>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PlotOut)]),
+        () => ListBuilder<PlotOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(BuiltList)]),
+        () => MapBuilder<String, BuiltList>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FpoOut)]),
+        () => ListBuilder<FpoOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FarmerOut)]),
+        () => ListBuilder<FarmerOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(InputOut)]),
+        () => ListBuilder<InputOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(TrailRuleInput)]),
+        () => ListBuilder<TrailRuleInput>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(JsonObject)]),
+        () => MapBuilder<String, JsonObject>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType(String)]),
+        () => MapBuilder<String, String>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ParameterInput)]),
+        () => ListBuilder<ParameterInput>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(SyncMetricIn)]),
+        () => ListBuilder<SyncMetricIn>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(QualityReadingIn)]),
+        () => ListBuilder<QualityReadingIn>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(NotificationOut)]),
+        () => ListBuilder<NotificationOut>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PhotoIn)]),
+        () => ListBuilder<PhotoIn>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(QualityReadingOut)]),
         () => ListBuilder<QualityReadingOut>(),
       )
@@ -445,32 +517,12 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<BuiltList<num>>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PullChange)]),
-        () => ListBuilder<PullChange>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PhotoConfirmOut)]),
-        () => ListBuilder<PhotoConfirmOut>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType(ParameterResult)]),
-        () => MapBuilder<String, ParameterResult>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ConsentOut)]),
-        () => ListBuilder<ConsentOut>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(num)]),
         () => ListBuilder<num>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(StandardsProfileOut)]),
         () => ListBuilder<StandardsProfileOut>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType(RangeOutput)]),
-        () => MapBuilder<String, RangeOutput>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(EventOut)]),
@@ -481,14 +533,6 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<ImportRowError>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [
-          FullType(BuiltList, [
-            FullType(BuiltList, [FullType(num)])
-          ])
-        ]),
-        () => ListBuilder<BuiltList<BuiltList<num>>>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(TrailRuleOutput)]),
         () => ListBuilder<TrailRuleOutput>(),
       )
@@ -497,24 +541,8 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<SyncEntry>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType(LotGateOutput)]),
-        () => MapBuilder<String, LotGateOutput>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PlotOut)]),
-        () => ListBuilder<PlotOut>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType(BuiltList)]),
-        () => MapBuilder<String, BuiltList>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ParameterOutput)]),
         () => ListBuilder<ParameterOutput>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FpoOut)]),
-        () => ListBuilder<FpoOut>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProcessorOut)]),
@@ -535,16 +563,12 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<SyncResult>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FarmerOut)]),
-        () => ListBuilder<FarmerOut>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PhotoUpload)]),
         () => ListBuilder<PhotoUpload>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(InputOut)]),
-        () => ListBuilder<InputOut>(),
+        const FullType(BuiltList, [FullType(FlagOut)]),
+        () => ListBuilder<FlagOut>(),
       )
       ..addBuilderFactory(
         const FullType(
@@ -558,14 +582,6 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(String)]),
         () => ListBuilder<String>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(TrailRuleInput)]),
-        () => ListBuilder<TrailRuleInput>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType(JsonObject)]),
-        () => MapBuilder<String, JsonObject>(),
       )
       ..add(const OneOfSerializer())
       ..add(const AnyOfSerializer())

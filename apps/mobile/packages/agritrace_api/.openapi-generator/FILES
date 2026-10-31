@@ -39,6 +39,11 @@ doc/Features.md
 doc/FieldSpec.md
 doc/FinalPackingPayload.md
 doc/FinalPackingVersion.md
+doc/FlagOut.md
+doc/FlagResolveIn.md
+doc/FlagStatus.md
+doc/FlagSubject.md
+doc/FlagsApi.md
 doc/FpoIn.md
 doc/FpoOut.md
 doc/GeoPoint.md
@@ -98,6 +103,7 @@ doc/PackingVersion.md
 doc/PageConsentOut.md
 doc/PageEventOut.md
 doc/PageFarmerOut.md
+doc/PageFlagOut.md
 doc/PageInstrumentOut.md
 doc/PageNotificationOut.md
 doc/PagePlotOut.md
@@ -152,6 +158,7 @@ doc/RegistryApi.md
 doc/ResponseOtpVerifyV1AuthOtpVerifyPost.md
 doc/Role.md
 doc/SessionOut.md
+doc/Severity.md
 doc/SignedQuantityInput.md
 doc/SignedQuantityOutput.md
 doc/SowingPayload.md
@@ -183,6 +190,7 @@ lib/agritrace_api.dart
 lib/src/api.dart
 lib/src/api/config_api.dart
 lib/src/api/events_api.dart
+lib/src/api/flags_api.dart
 lib/src/api/health_api.dart
 lib/src/api/identity_api.dart
 lib/src/api/notifications_api.dart
@@ -232,6 +240,10 @@ lib/src/model/features.dart
 lib/src/model/field_spec.dart
 lib/src/model/final_packing_payload.dart
 lib/src/model/final_packing_version.dart
+lib/src/model/flag_out.dart
+lib/src/model/flag_resolve_in.dart
+lib/src/model/flag_status.dart
+lib/src/model/flag_subject.dart
 lib/src/model/fpo_in.dart
 lib/src/model/fpo_out.dart
 lib/src/model/geo_point.dart
@@ -288,6 +300,7 @@ lib/src/model/packing_version.dart
 lib/src/model/page_consent_out.dart
 lib/src/model/page_event_out.dart
 lib/src/model/page_farmer_out.dart
+lib/src/model/page_flag_out.dart
 lib/src/model/page_instrument_out.dart
 lib/src/model/page_notification_out.dart
 lib/src/model/page_plot_out.dart
@@ -340,6 +353,7 @@ lib/src/model/region_check_out.dart
 lib/src/model/response_otp_verify_v1_auth_otp_verify_post.dart
 lib/src/model/role.dart
 lib/src/model/session_out.dart
+lib/src/model/severity.dart
 lib/src/model/signed_quantity_input.dart
 lib/src/model/signed_quantity_output.dart
 lib/src/model/sowing_payload.dart
