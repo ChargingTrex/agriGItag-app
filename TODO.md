@@ -276,6 +276,12 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] W03 → QA: `qa/robot/public/page.robot` W03 placeholders ("OG Tags Pass The Privacy Lint", "Tamil Renders With The System Font") are still `not-ready`; pytest covers both (`test_no_personal_data_in_any_meta`, `test_tamil_strings_carry_lang_ta_and_use_system_fonts`) and `tools/check_output.sh` lints the `<meta>` tags with the page. A native Tamil speaker should also review the nine W03 keys in `i18n/ta.json` (`og_description`, `map_caption`, `boundary_credit`, `public_link`, `qr_alt`, `unavailable.*`).
 - [ ] W03 not done (outside apps/public-page): the privacy-lint coordinate slips (§4 "W03 (from W02 review P2-1)", infra/scripts is not a W03 path) and the W01 P3 schema regex items (rarer phone formats, "Polygonum") stay open; the page prints no `geo.position` meta. Free-text values in Tamil script (farmer name, village) inherit `lang="en"` until the record carries a language per value.
 
+- [ ] P08 → B13 (contract): the template is one header line; en labels in a comment row were skipped because `imports.parse_csv` would read that row as data. The portal shows the labels in a column legend instead; add a comment-row convention (e.g. skip lines starting with `#`) in B13 if FPOs want labels inside the file.
+- [ ] P08 → P06/B13: no villages or inputs list screen in the portal, so after those imports there is no link to the created rows (farmers link to Members). Add the links when a list screen exists.
+- [ ] P08 skipped: "only rejected rows" filter and rejected-first sorting in the preview; the status line lists the first 20 rejected row numbers (r2), so a long file still means paging to see the cells.
+- [ ] P08 → B13 (from P08 r1 P3-3): a CSV with bare-CR line endings (Excel for Mac "CSV (Macintosh)") makes `imports.parse_csv` raise `csv.Error`, so the server answers 500 `internal_error`. Catch it and raise `ValidationFailedError(details={"file": "save as CSV UTF-8 (comma delimited)"})`, or read with `io.StringIO(text, newline=None)`; the portal already shows the `details.file` hint.
+- [ ] P08: live API not checked (Docker down); multipart upload, `parseAs: 'text'` template and the dry-run rollback ran against MSW only. SubtleCrypto needs HTTPS or localhost, so the page fails to check files on a plain-HTTP staging host.
+
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).
 - [x] Run `/plugin install ponytail@ponytail` in this project (done 2026-10-30).
