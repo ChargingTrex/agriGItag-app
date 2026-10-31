@@ -7,7 +7,9 @@ FR27–FR32 (GI region, super-admin only), FR53 (structured address), FR56 (inpu
 (pin, declared size, walked boundary, automatic region check), FR70–FR72 (review, corrections with
 revisions, location label), Architect-Gate F7 (a `users` row for every farmer with a phone), D-005, D-017,
 D-019; B13: field-config hooks on farmer and plot creation, plots.gi_tag_id, flag-gated ID documents
-and producer groups (PLAN "Gap analysis").
+and producer groups (PLAN "Gap analysis"); B14 (portal gaps found by P01, PLAN gap analysis "Members",
+FR8, FR14, FR53, FR70): masked phone and audited reveal, reject, farmer plot list, farmer search and
+`?fields=`, FPO bounding box.
 Callers: registry router; other modules through `__all__` only (D-004): events sync push (B06, plots
 captured offline), rules_flags (B08, `event_within_plot`, `locate_point`), lots_batches (B09, GI
 re-check), publishing (B10, `format_address`), events bundle (B07, `simplify_region`).
@@ -31,10 +33,11 @@ from geoalchemy2 import WKBElement, WKTElement
 from geoalchemy2.shape import to_shape
 from pydantic import ValidationError
 from shapely.geometry import Point
-from sqlalchemy import func, inspect, or_, select, tuple_
+from sqlalchemy import ColumnElement, Row, func, insert, inspect, or_, select, text, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import fieldconfig, storage, task_names
+from agritrace.core.audit import AUDIT_LOG
 from agritrace.core.auth import CurrentUser
 from agritrace.core.config import get_settings
 from agritrace.core.enums import ConsentType, FarmerStatus, LocationStatus, PinMethod, Role
@@ -81,6 +84,8 @@ from agritrace.modules.registry.schemas import (
     FarmerIn,
     FarmerOut,
     FarmerPatch,
+    FarmerPhoneOut,
+    FarmerReject,
     FpoIn,
     FpoOut,
     GiRegionOut,
@@ -611,9 +616,15 @@ async def list_villages(
 
 
 async def list_farmers(
-    session: AsyncSession, user: CurrentUser, status: FarmerStatus | None, cursor: str | None, limit: int
+    session: AsyncSession,
+    user: CurrentUser,
+    status: FarmerStatus | None,
+    cursor: str | None,
+    limit: int,
+    village_id: uuid.UUID | None = None,
+    q: str | None = None,
 ) -> Page[FarmerOut]:
-    """List the farmers of the caller's FPO (a farmer caller sees only themself).
+    """List the farmers of the caller's FPO (a farmer caller sees only themself), with masked phones.
 
     Args:
         session: open database session.
@@ -621,6 +632,8 @@ async def list_farmers(
         status: only farmers in this status, optional.
         cursor: cursor from the previous page.
         limit: page size.
+        village_id: only farmers of this village, optional (B14).
+        q: search over name, local name, code and the masked phone suffix (`farmer_search`), optional.
 
     Returns:
         One page in onboarding order (UUIDv7 ids).
@@ -628,17 +641,22 @@ async def list_farmers(
     Raises:
         ValidationFailedError: invalid cursor.
     """
-    query = select(Farmer).where(Farmer.fpo_id == user.fpo_id)
+    query = select(Farmer, User.phone).outerjoin(User, User.id == Farmer.user_id)
+    query = query.where(Farmer.fpo_id == user.fpo_id)
     if user.role == Role.FARMER:
         query = query.where(Farmer.user_id == user.user_id)
     if status:
         query = query.where(Farmer.status == status)
+    if village_id:
+        query = query.where(Farmer.village_id == village_id)
+    if q:
+        query = query.where(farmer_search(q))
     if cursor:
         query = query.where(Farmer.id > uuid.UUID(decode_cursor(cursor, 1)[0]))
-    rows = list((await session.scalars(query.order_by(Farmer.id).limit(limit + 1))).all())
-    items, next_cursor, has_more = _page(rows, limit, lambda f: [str(f.id)])
+    rows = list((await session.execute(query.order_by(Farmer.id).limit(limit + 1))).all())
+    items, next_cursor, has_more = _page(rows, limit, lambda r: [str(r[0].id)])
     return Page[FarmerOut](
-        items=[FarmerOut.model_validate(f) for f in items], next_cursor=next_cursor, has_more=has_more
+        items=[farmer_out(f, phone) for f, phone in items], next_cursor=next_cursor, has_more=has_more
     )
 
 
@@ -656,7 +674,7 @@ async def get_farmer(session: AsyncSession, user: CurrentUser, farmer_id: uuid.U
     Raises:
         NotFoundError: missing, another FPO's, or (for a farmer caller) someone else.
     """
-    return FarmerOut.model_validate(await _farmer_in_scope(session, user, farmer_id))
+    return await _farmer_view(session, await _farmer_in_scope(session, user, farmer_id))
 
 
 async def _address_with_village(
@@ -752,7 +770,7 @@ async def create_farmer(session: AsyncSession, user: CurrentUser, body: FarmerIn
     session.add(farmer)
     await session.flush()
     await session.refresh(farmer)
-    return FarmerOut.model_validate(farmer)
+    return farmer_out(farmer, body.phone)
 
 
 async def update_farmer(
@@ -792,7 +810,7 @@ async def update_farmer(
         farmer.address = await _address_with_village(session, address, village_id)
     await session.flush()
     await session.refresh(farmer)
-    return FarmerOut.model_validate(farmer)
+    return await _farmer_view(session, farmer)
 
 
 async def approve_farmer(session: AsyncSession, user: CurrentUser, farmer_id: uuid.UUID) -> FarmerOut:
@@ -821,7 +839,7 @@ async def approve_farmer(session: AsyncSession, user: CurrentUser, farmer_id: uu
     farmer.approved_at = utcnow()
     await session.flush()
     await session.refresh(farmer)
-    return FarmerOut.model_validate(farmer)
+    return await _farmer_view(session, farmer)
 
 
 # --- plots --------------------------------------------------------------------------------------------
@@ -1355,3 +1373,310 @@ async def create_id_document(
         },
         expires_at=utcnow() + timedelta(seconds=ID_DOC_URL_TTL_S),
     )
+
+
+# --- B14: portal gaps (PLAN gap analysis "Members", FR8, FR14, FR53, FR70) -------------------------------
+
+MASKED_DIGITS = 4  # digits of the phone left visible in `phone_masked`
+# FPO frame: plots (walked outline where there is one, else the pin); ST_Extent of no rows is NULL.
+_BBOX_PLOTS_SQL = text(
+    """
+    SELECT ST_XMin(e) AS min_lon, ST_YMin(e) AS min_lat, ST_XMax(e) AS max_lon, ST_YMax(e) AS max_lat
+    FROM (SELECT ST_Extent(COALESCE(walked_boundary::geometry, pin::geometry)) AS e
+          FROM plots WHERE fpo_id = CAST(:fpo_id AS uuid)) s
+    """
+)
+# Fallback: the current (latest effective) outline of every GI tag; fpos has no GI tag link.
+_BBOX_REGIONS_SQL = text(
+    """
+    SELECT ST_XMin(e) AS min_lon, ST_YMin(e) AS min_lat, ST_XMax(e) AS max_lon, ST_YMax(e) AS max_lat
+    FROM (SELECT ST_Extent(geom::geometry) AS e
+          FROM (SELECT DISTINCT ON (gi_tag_id) geom FROM gi_region_versions
+                WHERE effective_from <= CURRENT_DATE ORDER BY gi_tag_id, version_no DESC) r) s
+    """
+)
+
+
+def mask_phone(phone: str | None) -> str | None:
+    """Hide all but the last 4 digits of a phone number (D-017: phone is `internal`).
+
+    Args:
+        phone: E.164 number, or None.
+
+    Returns:
+        `XXXXXX` + the last 4 characters, e.g. `XXXXXX3210`; None without a phone.
+    """
+    return None if not phone else "X" * 6 + phone[-MASKED_DIGITS:]
+
+
+def farmer_out(farmer: Farmer, phone: str | None) -> FarmerOut:
+    """Build the API view of a farmer with the masked phone of its sign-in account.
+
+    Args:
+        farmer: a loaded farmer.
+        phone: `users.phone` of `farmer.user_id`, or None.
+
+    Returns:
+        The response model; the full phone is never put in it.
+    """
+    return FarmerOut.model_validate(farmer).model_copy(update={"phone_masked": mask_phone(phone)})
+
+
+async def _account_phone(session: AsyncSession, farmer: Farmer) -> str | None:
+    """Read the phone of a farmer's sign-in account.
+
+    Args:
+        session: open database session.
+        farmer: a loaded farmer.
+
+    Returns:
+        `users.phone`, or None when the farmer has no account.
+
+    Side effects:
+        One primary-key read of `users` when the farmer has an account.
+    """
+    if farmer.user_id is None:
+        return None
+    phone: str | None = await session.scalar(select(User.phone).where(User.id == farmer.user_id))
+    return phone
+
+
+async def _farmer_view(session: AsyncSession, farmer: Farmer) -> FarmerOut:
+    """Build the API view of one farmer, reading its account's phone.
+
+    Args:
+        session: open database session.
+        farmer: a loaded farmer.
+
+    Returns:
+        `farmer_out` with the phone masked.
+    """
+    return farmer_out(farmer, await _account_phone(session, farmer))
+
+
+def farmer_search(q: str) -> ColumnElement[bool]:
+    """Build the `?q=` condition of the farmer list (B14); the query must outer-join `users`.
+
+    Args:
+        q: the search text.
+
+    Returns:
+        Name, local name or code containing `q` (case-insensitive); or, for 1–4 ASCII digits, a phone
+        ending in them.
+    """
+    terms = [
+        Farmer.name.icontains(q, autoescape=True),
+        Farmer.name_local.icontains(q, autoescape=True),
+        Farmer.code.icontains(q, autoescape=True),
+    ]
+    # Only the suffix the list already shows (`phone_masked`) is searchable, so `q` cannot probe the
+    # hidden digits of a number one guess at a time.
+    if q.isascii() and q.isdigit() and len(q) <= MASKED_DIGITS:
+        terms.append(User.phone.endswith(q, autoescape=True))
+    return or_(*terms)
+
+
+def farmer_fields(fpo_code: str | None) -> set[str]:
+    """Names `?fields=` may pick on the farmer list for a tenant (conventions.md, plan §13 C4).
+
+    Args:
+        fpo_code: the caller's FPO code, or None for the defaults.
+
+    Returns:
+        Every `FarmerOut` field and computed field, minus those `fields/farmer.yaml` disables for this
+        tenant (D-017: a disabled field is hidden from clients).
+    """
+    configured = {f.name for f in fieldconfig.load().entities["farmer"].fields}
+    enabled = {f.name for f in fieldconfig.fields_for("farmer", fpo_code)}
+    return (set(FarmerOut.model_fields) | set(FarmerOut.model_computed_fields)) - (configured - enabled)
+
+
+def parse_fields(raw: str, allowed: set[str]) -> set[str]:
+    """Read a `?fields=a,b,c` list against a whitelist.
+
+    Args:
+        raw: the comma-separated names as sent.
+        allowed: names the endpoint may return.
+
+    Returns:
+        The requested names.
+
+    Raises:
+        ValidationFailedError: no name, or a name not in `allowed` (`validation_error`).
+    """
+    names = {n.strip() for n in raw.split(",") if n.strip()}
+    unknown = sorted(names - allowed)
+    if unknown or not names:
+        raise ValidationFailedError(details={"fields": unknown or "empty", "allowed": sorted(allowed)})
+    return names
+
+
+async def _audit(
+    session: AsyncSession, user: CurrentUser, action: str, entity_id: uuid.UUID, diff: dict[str, Any]
+) -> None:
+    """Write one explicit `audit_log` row about a farmer (actions the flush listener cannot see).
+
+    Args:
+        session: open database session.
+        user: the caller (actor, assist session, device).
+        action: e.g. `farmer.phone_reveal`, `farmer.reject`.
+        entity_id: the farmer.
+        diff: what to record (reason codes; never the phone itself).
+
+    Side effects:
+        Inserts an `audit_log` row in the caller's transaction (FR25).
+    """
+    # shortcut: request_id is not copied (no public getter on the audit context), as in events (B06);
+    #   add a getter in core when the audit export (B10) needs it.
+    await session.execute(
+        insert(AUDIT_LOG).values(
+            id=uuid7(),
+            at=utcnow(),
+            actor_user_id=user.user_id,
+            on_behalf_of_farmer_id=user.on_behalf_of_farmer_id,
+            assist_session_id=user.assist_session_id,
+            device_id=user.device_id,
+            action=action,
+            entity_type="farmers",
+            entity_id=entity_id,
+            diff=diff,
+        )
+    )
+
+
+async def reveal_phone(session: AsyncSession, user: CurrentUser, farmer_id: uuid.UUID) -> FarmerPhoneOut:
+    """Show an FPO admin a farmer's full phone number and record that it was shown (D-017 `internal`).
+
+    Args:
+        session: open database session.
+        user: the caller (FPO admin; the router checks the role).
+        farmer_id: the farmer.
+
+    Returns:
+        The farmer id and phone (null when the farmer has no account).
+
+    Raises:
+        NotFoundError: missing or another FPO's (never 403, FR24).
+
+    Side effects:
+        Inserts an `audit_log` row `farmer.phone_reveal` (the number itself is not logged).
+    """
+    farmer = await _farmer_in_scope(session, user, farmer_id)
+    phone = await _account_phone(session, farmer)
+    await _audit(session, user, "farmer.phone_reveal", farmer.id, {})
+    return FarmerPhoneOut(farmer_id=farmer.id, phone=phone)
+
+
+async def reject_farmer(
+    session: AsyncSession, user: CurrentUser, farmer_id: uuid.UUID, body: FarmerReject
+) -> FarmerOut:
+    """Turn down a pending farmer (Stage 0 approval): status `suspended`, reason in the audit trail.
+
+    Args:
+        session: open database session.
+        user: the caller (FPO admin).
+        farmer_id: the farmer.
+        body: reason code and optional text.
+
+    Returns:
+        The farmer, status `suspended`.
+
+    Raises:
+        NotFoundError: missing or another FPO's.
+        FarmerNotPendingError: the farmer is not pending.
+
+    Side effects:
+        Updates `farmers.status` (audited by the listener) and inserts an `audit_log` row `farmer.reject`
+        with the reason.
+    """
+    # DECISION D-020: the `farmers.status` CHECK allows pending/active/suspended only; a rejection is
+    #   `suspended` with the reason in audit_log, so no migration and no new enum value inside /v1.
+    #   ADV: additive; old clients already know `suspended`.  COMPROMISE: rejected and later-suspended
+    #   farmers share a status; the audit action `farmer.reject` tells them apart.
+    farmer = await _farmer_in_scope(session, user, farmer_id)
+    if farmer.status != FarmerStatus.PENDING:
+        raise FarmerNotPendingError(details={"status": str(farmer.status)})
+    farmer.status = FarmerStatus.SUSPENDED
+    await session.flush()
+    await _audit(session, user, "farmer.reject", farmer.id, body.model_dump())
+    await session.refresh(farmer)
+    return await _farmer_view(session, farmer)
+
+
+async def list_farmer_plots(
+    session: AsyncSession, user: CurrentUser, farmer_id: uuid.UUID, cursor: str | None, limit: int
+) -> Page[PlotOut]:
+    """List one farmer's plots, for the portal member page and map (B14).
+
+    Args:
+        session: open database session.
+        user: the caller.
+        farmer_id: the farmer.
+        cursor: cursor from the previous page.
+        limit: page size.
+
+    Returns:
+        One page ordered by plot id; no region check is run on reads.
+
+    Raises:
+        NotFoundError: farmer missing, another FPO's, or (farmer caller) someone else.
+        ValidationFailedError: invalid cursor.
+    """
+    farmer = await _farmer_in_scope(session, user, farmer_id)
+    query = select(Plot).where(Plot.farmer_id == farmer.id)
+    if cursor:
+        query = query.where(Plot.id > uuid.UUID(decode_cursor(cursor, 1)[0]))
+    rows = list((await session.scalars(query.order_by(Plot.id).limit(limit + 1))).all())
+    items, next_cursor, has_more = _page(rows, limit, lambda p: [str(p.id)])
+    return Page[PlotOut](items=[_plot_out(p) for p in items], next_cursor=next_cursor, has_more=has_more)
+
+
+def _box(row: Row[Any] | None) -> list[float] | None:
+    """Turn an extent row into `[min_lon, min_lat, max_lon, max_lat]`.
+
+    Args:
+        row: `(min_lon, min_lat, max_lon, max_lat)`, all null when there was nothing to frame.
+
+    Returns:
+        The four floats, or None for an empty extent.
+    """
+    return None if row is None or row[0] is None else [float(v) for v in row]
+
+
+async def fpo_bbox(session: AsyncSession, fpo_id: uuid.UUID) -> list[float] | None:
+    """Frame an FPO on the map: its plots, else the current GI regions (B14, portal tile cache).
+
+    Args:
+        session: open database session.
+        fpo_id: the FPO.
+
+    Returns:
+        `[min_lon, min_lat, max_lon, max_lat]` in WGS84, or None when there are neither plots nor regions.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+    """
+    # shortcut: the fallback frames every GI tag's current region (fpos has no GI tag column); add an
+    #   FPO-to-GI link when a second GI crop is onboarded.
+    plots = _box((await session.execute(_BBOX_PLOTS_SQL, {"fpo_id": fpo_id})).one_or_none())
+    return plots or _box((await session.execute(_BBOX_REGIONS_SQL)).one_or_none())
+
+
+async def get_fpo(session: AsyncSession, user: CurrentUser, fpo_id: uuid.UUID) -> FpoOut:
+    """Read one FPO with its map frame (`bbox`).
+
+    Args:
+        session: open database session.
+        user: the caller; a super-admin may read any FPO, others only their own.
+        fpo_id: the FPO.
+
+    Returns:
+        The FPO with `bbox` filled.
+
+    Raises:
+        NotFoundError: missing or not the caller's (never 403, FR24).
+    """
+    fpo = await session.get(Fpo, fpo_id)
+    if fpo is None or (fpo.id != user.fpo_id and not await _is_super_admin(session, user)):
+        raise NotFoundError(details={"fpo_id": str(fpo_id)})
+    return FpoOut.model_validate(fpo).model_copy(update={"bbox": await fpo_bbox(session, fpo.id)})

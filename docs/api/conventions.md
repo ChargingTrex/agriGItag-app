@@ -83,6 +83,18 @@ Every error response, whatever the status, has this body:
   No offset pagination.
 - List endpoints accept `?fields=a,b,c` to return only those item fields (lean lists for 2G/3G
   screens, plan §13 C4). Unknown field names are a `validation_error`.
+  Allowed names are the item model's fields (computed ones included) minus fields the tenant's
+  `fields/<entity>.yaml` disables (D-017); a disabled field is also "unknown". With `?fields=` the items
+  carry only the named keys, although the OpenAPI schema shows the full item, so clients that trim must
+  type the items as partial. Wired today on `GET /v1/farmers` (B14); other lists add it when a screen needs it.
+- Filters and search run on the server as query parameters, never by fetching every page. Exact-match
+  filters use the field name (`?status=`, `?village_id=`); `?q=` is a case-insensitive "contains" search
+  over the fields the endpoint documents. `GET /v1/farmers?q=` searches name, local name and code, and
+  1–4 digits also match the end of the phone: only the suffix `phone_masked` already shows, so a search
+  cannot probe the hidden digits.
+- Internal fields (D-017 visibility `internal`, e.g. the farmer's phone) never appear in lists: lists
+  carry a masked form (`phone_masked`, last 4 digits) and the full value is a separate, role-limited,
+  audited read (`GET /v1/farmers/{id}/phone`, FPO admin, `audit_log` action `farmer.phone_reveal`).
 - Keep responses flat: return ids and codes of related objects rather than nesting them.
 
 ## Quantities carry units (FR58)
