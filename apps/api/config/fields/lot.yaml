@@ -1,7 +1,7 @@
 # Lot fields (season lot of one plot) and the sale fields captured at intake.
 # Serves: D-017, Stage 5–7, FR9 (sale to processor), FR56 (declared practice tags), PLAN "Gap analysis".
-# Read by: agritrace/core/fieldconfig.py; served to clients (M07, M11, P03). Not enforced by a server hook
-# yet: lots_batches (B09) calls fieldconfig.validate_payload("lot", ...) when it lands. Keys: see farmer.yaml.
+# Read by: agritrace/core/fieldconfig.py; served to clients (M07, M11, P03). Enforced on POST /v1/lots
+# (lots_batches.service.create_lot, B09); price_per_kg at intake is not enforced yet. Keys: see farmer.yaml.
 entity: lot
 extra: allow
 fields:

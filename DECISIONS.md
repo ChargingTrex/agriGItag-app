@@ -34,3 +34,4 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-027 | Tokens live in the platform keystore, not in SQLite | 2026-10-30 | Accepted | [D-027.md](docs/adr/D-027.md) |
 | D-028 | OTP auto-read via Android SMS User Consent prompt | 2026-10-31 | Accepted | [D-028.md](docs/adr/D-028.md) |
 | D-029 | Offline outbox is per user on a shared phone | 2026-10-31 | Accepted | [D-029.md](docs/adr/D-029.md) |
+| D-033 | Lifecycle gates answer one 409 listing every unmet reason; gate records are append-only | 2026-10-31 | Accepted | [D-033.md](docs/adr/D-033.md) |
