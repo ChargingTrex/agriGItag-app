@@ -72,12 +72,12 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B10 — Publishing — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 8 integration tests deferred)
 - [ ] B11 — Reporting + stubs — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 11 integration tests deferred)
 - [ ] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
-- [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
+- [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (done, 9c32057) — reviewer: WEB r1 in progress — verifier:
 - [ ] **Gate G4 signed** (docs/agents/gates/G4.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G5 Pilot candidate
 
-- [ ] B12 — Demo seed, e2e, client generation — wave 7 — worker: — reviewer: — verifier:
+- [ ] B12 — Demo seed, e2e, client generation — wave 7 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: — reviewer: — verifier:
 - [ ] P07 — Playwright e2e chain + axe — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer: — verifier:
