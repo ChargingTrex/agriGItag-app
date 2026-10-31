@@ -40,6 +40,7 @@ from agritrace.core.enums import (
     GradeStatus,
     LocationStatus,
     LotStatus,
+    ReadingStage,
     Role,
     Severity,
 )
@@ -53,7 +54,14 @@ from agritrace.core.schemas import GeoPoint, Page, PracticeTags, Quantity, Recon
 from agritrace.core.time import utcnow
 from agritrace.modules.events.models import Event, EventVersion
 from agritrace.modules.lots_batches import shares
-from agritrace.modules.lots_batches.models import Batch, BatchApproval, BatchShare, Lot, LotIntake
+from agritrace.modules.lots_batches.models import (
+    Batch,
+    BatchApproval,
+    BatchShare,
+    Lot,
+    LotIntake,
+    current_intake,
+)
 from agritrace.modules.lots_batches.schemas import (
     BatchIn,
     BatchOut,
@@ -231,6 +239,8 @@ def intake_out(intake: LotIntake, flags: Sequence[Flag] = ()) -> IntakeOut:
         reconciliation=Reconciliation.model_validate(intake.reconciliation)
         if intake.reconciliation
         else None,
+        supersedes_intake_id=intake.supersedes_intake_id,
+        correction_reason=intake.correction_reason,
         flags=flag_briefs(flags),
     )
 
@@ -249,8 +259,9 @@ async def _refuse(session: AsyncSession, reasons: list[dict[str, Any]]) -> None:
         GateNotMetError: `gate_not_met` (409) with `details.reasons` = every reason, when any.
 
     Side effects:
-        Commits before raising, so flags refreshed by `run_gate_checks` (B08) stay visible in
-        `/v1/flags` for the reasons listed; the gate's own changes have not been made yet.
+        Commits before raising, so what the gate has already refreshed stays visible: flags from
+        `run_gate_checks` (B08) in `/v1/flags`, and on publish the GI re-check (`gi_verified`,
+        `gi_block_reasons`). The change the gate guards (state, approval, build) has not been made yet.
     """
     # DECISION D-033: every lifecycle gate answers one code, 409 `gate_not_met`, listing ALL unmet reasons.
     #   ADV: the portal greys a button and shows every reason at once (P04); one registered code, the
@@ -286,13 +297,17 @@ async def _unused_code(
     return code
 
 
-async def _lot_in_scope(session: AsyncSession, user: CurrentUser, lot_id: uuid.UUID) -> Lot:
+async def _lot_in_scope(
+    session: AsyncSession, user: CurrentUser, lot_id: uuid.UUID, lock: bool = False
+) -> Lot:
     """Load a lot the caller may see: same FPO; a farmer only their own.
 
     Args:
         session: database session.
         user: the caller.
         lot_id: the lot.
+        lock: take a row lock (`SELECT … FOR UPDATE`) until the transaction ends, before a status check
+            that a concurrent request could race.
 
     Returns:
         The lot.
@@ -300,7 +315,7 @@ async def _lot_in_scope(session: AsyncSession, user: CurrentUser, lot_id: uuid.U
     Raises:
         NotFoundError: no such lot in the caller's FPO, or another farmer's lot (404).
     """
-    lot = await session.get(Lot, lot_id)
+    lot = await session.get(Lot, lot_id, with_for_update=lock)
     if lot is None or lot.fpo_id != user.fpo_id:
         raise NotFoundError(details={"lot_id": str(lot_id)})
     if user.role == Role.FARMER:
@@ -463,7 +478,8 @@ async def create_lot(session: AsyncSession, user: CurrentUser, data: LotIn) -> t
     Raises:
         ClientIdConflictError: the id belongs to another FPO's lot or to a lot on another plot (409).
         FieldRequiredError: a field the tenant requires is missing (`field_required`, 422).
-        NotFoundError: plot or crop not found in the caller's scope (404).
+        NotFoundError: plot or crop not found in the caller's scope, or a farmer resending another
+            farmer's lot id (404).
 
     Side effects:
         Adds the lot (status `open`, GI-eligible until a hold) and flushes; audit row on flush.
@@ -472,7 +488,7 @@ async def create_lot(session: AsyncSession, user: CurrentUser, data: LotIn) -> t
     if existing is not None:
         if existing.fpo_id != user.fpo_id or existing.plot_id != data.plot_id:
             raise ClientIdConflictError(details={"client_id": str(data.client_id)})
-        return existing, False
+        return await _lot_in_scope(session, user, existing.id), False
     # DECISION D-017: the tenant's `fields/lot.yaml` decides which lot fields are required or dropped.
     #   ADV: an FPO that does not track seasons or practice tags turns them off without a deployment.
     #   COMPROMISE: `season_label` is NOT NULL in the table, so a tenant without seasons stores "".
@@ -639,7 +655,11 @@ async def _farm_kg(session: AsyncSession, lot_id: uuid.UUID) -> dict[EventType, 
 async def create_intake(
     session: AsyncSession, user: CurrentUser, data: IntakeIn
 ) -> tuple[LotIntake, list[Flag], bool]:
-    """Record a processor receiving a ready lot and run the lot rules now (Stage 7, FR9, FR60, FR11).
+    """Record a processor receiving a ready lot, or correct its intake, and run the lot rules now.
+
+    Serves Stage 7, FR9, FR60, FR11. A correction (`supersedes_intake_id` + `correction_reason`) adds a new
+    row that replaces the lot's current intake (D-033: append-only, corrections add rows); it is refused
+    once the lot is in a batch.
 
     Args:
         session: database session.
@@ -650,29 +670,48 @@ async def create_intake(
         `(intake, active flags on the lot, created)`; a resend returns the stored intake, no flags, False.
 
     Raises:
-        ClientIdConflictError: the id belongs to another FPO's intake (409).
-        NotFoundError: lot, processor or moisture reading not found for this lot / FPO (404).
-        GateNotMetError: `gate_not_met` (409), reason `lot_not_ready` when the lot is not `ready_for_sale`.
+        ClientIdConflictError: the id belongs to another FPO's intake or to an intake of another lot (409).
+        NotFoundError: lot, processor, superseded intake or intake moisture reading (parameter `moisture`,
+            stage `intake`, on this lot) not found (404).
+        GateNotMetError: `gate_not_met` (409): `lot_not_ready` (first intake of a lot not `ready_for_sale`),
+            `lot_already_batched` (correction after batching), `intake_not_current` (the intake to correct
+            was already corrected, or the lot is not `received`).
 
     Side effects:
-        Fills `lots.harvested_kg` / `packed_kg` from the lot's events, sets the lot `received`, inserts the
-        intake with its reconciliation snapshot, flushes, then `run_gate_checks` (flags, practice tags,
-        GI hold; B08) on the lot.
+        Locks the lot row (`SELECT … FOR UPDATE`) so a double submit cannot record two intakes; fills
+        `lots.harvested_kg` / `packed_kg` from the lot's events, sets the lot `received`, inserts the intake
+        with its reconciliation snapshot, flushes, then `run_gate_checks` (B08).
     """
     existing = await session.get(LotIntake, data.client_id)
     if existing is not None:
-        if existing.fpo_id != user.fpo_id:
+        if existing.fpo_id != user.fpo_id or existing.lot_id != data.lot_id:
             raise ClientIdConflictError(details={"client_id": str(data.client_id)})
         return existing, [], False
-    lot = await _lot_in_scope(session, user, data.lot_id)
+    lot = await _lot_in_scope(session, user, data.lot_id, lock=True)
     processor = await session.get(Processor, data.processor_id)
     if processor is None or processor.fpo_id not in (None, user.fpo_id):
         raise NotFoundError(details={"processor_id": str(data.processor_id)})
     if data.intake_moisture_reading_id is not None:
         reading = await session.get(QualityReading, data.intake_moisture_reading_id)
-        if reading is None or reading.lot_id != lot.id:
+        if reading is None or (reading.lot_id, reading.parameter_code, reading.stage) != (
+            lot.id,
+            "moisture",
+            ReadingStage.INTAKE,
+        ):
             raise NotFoundError(details={"intake_moisture_reading_id": str(data.intake_moisture_reading_id)})
-    if lot.status != LotStatus.READY_FOR_SALE:
+    if data.supersedes_intake_id is not None:
+        prior = await session.get(LotIntake, data.supersedes_intake_id)
+        if prior is None or prior.fpo_id != user.fpo_id or prior.lot_id != lot.id:
+            raise NotFoundError(details={"supersedes_intake_id": str(data.supersedes_intake_id)})
+        if lot.status == LotStatus.BATCHED:
+            # Shares are append-only and already printed: the ops procedure in docs/adr/D-033.md applies.
+            msg = "The lot is already in a batch; void the batch and re-create it (D-033)."
+            await _refuse(session, [reason("lot_already_batched", msg)])
+        newer = await session.scalar(select(func.count()).where(LotIntake.supersedes_intake_id == prior.id))
+        if newer or lot.status != LotStatus.RECEIVED:
+            msg = "Only the lot's current intake can be corrected."
+            await _refuse(session, [reason("intake_not_current", msg, status=lot.status)])
+    elif lot.status != LotStatus.READY_FOR_SALE:
         # shortcut: one intake per lot; a lot sold to two processors needs partial-sale support (product).
         await _refuse(session, [reason("lot_not_ready", "The lot is not ready for sale.", status=lot.status)])
     farm = await _farm_kg(session, lot.id)
@@ -693,6 +732,8 @@ async def create_intake(
         intake_moisture_reading_id=data.intake_moisture_reading_id,
         accepted_by_user_id=user.user_id,
         reconciliation=reconcile(lot.harvested_kg, lot.packed_kg, received).model_dump(mode="json"),
+        supersedes_intake_id=data.supersedes_intake_id,
+        correction_reason=data.correction_reason,
     )
     session.add(intake)
     await session.flush()
@@ -779,28 +820,40 @@ async def _batch_lots(session: AsyncSession, batch: Batch) -> list[Lot]:
     return list((await session.scalars(query)).all())
 
 
-async def create_batch(session: AsyncSession, user: CurrentUser, data: BatchIn) -> tuple[Batch, list[Flag]]:
+async def create_batch(
+    session: AsyncSession, user: CurrentUser, data: BatchIn
+) -> tuple[Batch, list[Flag], bool]:
     """Merge received lots into a batch with shares, re-check GI and run the rules (Stage 7, FR9, FR29, FR60).
 
     Args:
         session: database session.
         user: the FPO admin (the first sign-off).
-        data: processor, GI request and the lots.
+        data: client id, processor, GI request and the lots.
 
     Returns:
-        `(batch, active flags on the batch and its lots)`.
+        `(batch, active flags on the batch and its lots, created)`; resending the same `client_id` returns
+        the stored batch, no flags, False (D-005).
 
     Raises:
+        ClientIdConflictError: the id belongs to another FPO's batch or one at another processor (409).
         NotFoundError: a lot or the processor not found in the caller's FPO (404).
         GateNotMetError: `gate_not_met` (409) listing `lot_not_received` (wrong state),
-            `lot_not_received_by_processor` (no intake at this processor) and `mixed_crops`.
+            `lot_not_received_by_processor` (no intake at this processor), `mixed_crops`, `lot_quantity_zero`.
 
     Side effects:
-        Inserts the batch (new batch and super-lot codes), its shares (sum exactly 100.000 %) and an `intake`
-        approval; sets the lots `batched`; flushes; `run_gate_checks` on the batch; sets the GI verdict.
+        Locks the lot rows (`SELECT … FOR UPDATE`, in id order) so two concurrent merges cannot both batch a
+        lot; inserts the batch (id = `client_id`, new batch and super-lot codes), its shares (sum exactly
+        100.000 %) from the lots' current intakes and an `intake` approval; sets the lots `batched`; flushes;
+        `run_gate_checks` on the batch; sets the GI verdict.
     """
+    existing = await session.get(Batch, data.client_id)
+    if existing is not None:
+        if existing.fpo_id != user.fpo_id or existing.processor_id != data.processor_id:
+            raise ClientIdConflictError(details={"client_id": str(data.client_id)})
+        return existing, [], False
     wanted = data.lot_ids
-    found = (await session.scalars(select(Lot).where(Lot.id.in_(wanted), Lot.fpo_id == user.fpo_id))).all()
+    query = select(Lot).where(Lot.id.in_(wanted), Lot.fpo_id == user.fpo_id).order_by(Lot.id)
+    found = (await session.scalars(query.with_for_update())).all()
     lots = {lot.id: lot for lot in found}
     if missing := [str(i) for i in wanted if i not in lots]:
         raise NotFoundError(details={"lot_ids": missing})
@@ -811,7 +864,7 @@ async def create_batch(session: AsyncSession, user: CurrentUser, data: BatchIn) 
         (
             await session.execute(
                 select(LotIntake.lot_id, func.sum(LotIntake.received_kg))
-                .where(LotIntake.lot_id.in_(wanted), LotIntake.processor_id == processor.id)
+                .where(LotIntake.lot_id.in_(wanted), LotIntake.processor_id == processor.id, current_intake())
                 .group_by(LotIntake.lot_id)
             )
         )
@@ -850,6 +903,7 @@ async def create_batch(session: AsyncSession, user: CurrentUser, data: BatchIn) 
         )
     pct = shares.split(kg)
     batch = Batch(
+        id=data.client_id,
         fpo_id=user.fpo_id,
         crop_id=lots[wanted[0]].crop_id,
         processor_id=processor.id,
@@ -878,7 +932,7 @@ async def create_batch(session: AsyncSession, user: CurrentUser, data: BatchIn) 
     session.add(_approval(batch, ApprovalStage.INTAKE, user, flags))
     await _gi_check(session, batch, list(lots.values()), flags)
     await session.flush()
-    return batch, flags
+    return batch, flags, True
 
 
 async def list_batches(

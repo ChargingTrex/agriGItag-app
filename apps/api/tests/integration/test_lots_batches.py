@@ -3,7 +3,8 @@
 Serves: B09 acceptance (ready at 11.5 → 409, at 10.9 → ready; intake 100 vs packed 69 → `quantity_mismatch`;
 lots {100,200,20} → 31.250/62.500/6.250; ineligible lot + GI requested → `gi_verified=false` with reasons;
 approve on `declared_above_computed` → 409; pack 25 on 20 graded → 409; publish before approval → 409
-listing reasons; after gates → 202 + `page_builds` row), Dataflow Stages 4–9 and §4, D-033, D-005.
+listing reasons; after gates → 202 + `page_builds` row; r2: intake correction before batching),
+Dataflow Stages 4–9 and §4, D-033, D-005.
 Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`). Auth is replaced by
 a dependency override; Celery's `send_task` is recorded (`task_always_eager` does not apply to tasks sent by
 name).
@@ -28,8 +29,18 @@ from sqlalchemy import select
 from agritrace.core import task_names
 from agritrace.core.auth import CurrentUser, get_current_user
 from agritrace.core.db import get_sessionmaker
-from agritrace.core.enums import InstrumentKind, OrgKind, PinMethod, Role
+from agritrace.core.enums import (
+    ChangeKind,
+    EventSubject,
+    EventType,
+    InstrumentKind,
+    LocationStatus,
+    OrgKind,
+    PinMethod,
+    Role,
+)
 from agritrace.core.ids import uuid7
+from agritrace.modules.events.models import Event, EventVersion
 from agritrace.modules.identity.models import User
 from agritrace.modules.lots_batches.models import Lot
 from agritrace.modules.publishing.models import PageBuild
@@ -143,6 +154,7 @@ async def _seed() -> dict[str, uuid.UUID]:
             pin_device_time=datetime(2026, 3, 4, tzinfo=UTC),
             pin_server_received_at=datetime(2026, 3, 4, tzinfo=UTC),
             declared_area_acres=Decimal("1.5"),
+            location_status=LocationStatus.CONFIRMED,
         )
         s.add(plot)
         await s.commit()
@@ -251,14 +263,15 @@ async def _ready_lot(w: World, client: AsyncClient) -> str:
     return lot
 
 
-async def _intake(w: World, client: AsyncClient, lot: str, kg: str) -> dict[str, Any]:
-    """Receive a lot at the world's processor.
+async def _intake(w: World, client: AsyncClient, lot: str, kg: str, **correction: str) -> dict[str, Any]:
+    """Receive a lot at the world's processor, or correct its intake.
 
     Args:
         w: the seeded world.
         client: the API client.
         lot: the lot id.
         kg: received kilograms.
+        **correction: `supersedes_intake_id` and `correction_reason` for a correction.
 
     Returns:
         The intake response body.
@@ -269,6 +282,7 @@ async def _intake(w: World, client: AsyncClient, lot: str, kg: str) -> dict[str,
         "processor_id": str(w.processor),
         "sale_date": "2026-07-01",
         "received": {"value": kg, "unit": "kg"},
+        **correction,
     }
     r = await client.post("/v1/intakes", json=body)
     assert r.status_code == 201, r.text
@@ -290,10 +304,71 @@ async def _batch(w: World, client: AsyncClient, *kgs: str, gi: bool = False) -> 
     lots = [await _ready_lot(w, client) for _ in kgs]
     for lot, kg in zip(lots, kgs, strict=True):
         await _intake(w, client, lot, kg)
-    body = {"processor_id": str(w.processor), "gi_label_requested": gi, "lot_ids": lots}
+    return await _merge(w, client, lots, gi=gi)
+
+
+async def _merge(w: World, client: AsyncClient, lots: list[str], gi: bool = False) -> dict[str, Any]:
+    """Merge received lots into a batch.
+
+    Args:
+        w: the seeded world.
+        client: the API client.
+        lots: lot ids.
+        gi: request the GI label.
+
+    Returns:
+        The batch response body.
+    """
+    body = {
+        "client_id": str(uuid7()),
+        "processor_id": str(w.processor),
+        "gi_label_requested": gi,
+        "lot_ids": lots,
+    }
     r = await client.post("/v1/batches", json=body)
     assert r.status_code == 201, r.text
     return dict(r.json())
+
+
+async def _harvest(w: World, lot: str, kg: int) -> None:
+    """Store a live harvest event with a kg quantity on a lot (as a sync push would).
+
+    Args:
+        w: the seeded world.
+        lot: the lot id.
+        kg: harvested kilograms.
+
+    Side effects:
+        Commits one event and its first version.
+    """
+    now = datetime(2026, 3, 4, tzinfo=UTC)
+    async with get_sessionmaker()() as s:
+        event = Event(
+            id=uuid7(),
+            fpo_id=w.fpo,
+            subject_type=EventSubject.LOT,
+            lot_id=uuid.UUID(lot),
+            plot_id=w.plot,
+            event_type=EventType.HARVEST,
+            occurred_on=now.date(),
+        )
+        s.add(event)
+        await s.flush()
+        version = EventVersion(
+            id=uuid7(),
+            event_id=event.id,
+            version_no=1,
+            payload={"quantity": {"value": kg, "unit": "kg"}},
+            occurred_on=now.date(),
+            device_time=now,
+            server_received_at=now,
+            entered_by_user_id=w.admin,
+            change_kind=ChangeKind.CREATE,
+        )
+        s.add(version)
+        await s.flush()
+        event.current_version_id = version.id
+        await s.commit()
 
 
 def _codes(r: Any) -> list[str]:
@@ -390,25 +465,51 @@ async def test_reference_batch_shares(world: tuple[World, AsyncClient]) -> None:
 
 
 async def test_ineligible_lot_blocks_gi(world: tuple[World, AsyncClient]) -> None:
-    """A lot on hold in a GI-requested batch → batch created, `gi_verified=false` with `lot_on_hold`.
+    """A real yield hold (2,000 kg on 1.5 acres, hold above 1,950 kg) in a GI-requested batch.
+
+    The batch is created with `gi_verified=false`, `lot_on_hold` for the lot and `hold_flag`
+    `yield_over_ceiling`; B08 sets the hold itself, the plot is confirmed so it is not the blocker.
 
     Args:
         world: seeded FPO and client (fixture).
     """
     w, client = world
     lot = await _ready_lot(w, client)
-    await _intake(w, client, lot, "50")
-    async with get_sessionmaker()() as s:
-        row = await s.get(Lot, uuid.UUID(lot))
-        assert row is not None
-        row.gi_eligible, row.gi_hold_reason = False, "flags: yield_over_ceiling"
-        await s.commit()
-    body = {"processor_id": str(w.processor), "gi_label_requested": True, "lot_ids": [lot]}
-    r = await client.post("/v1/batches", json=body)
-    assert r.status_code == 201, r.text
-    assert r.json()["gi_verified"] is False
-    reasons = {(x["lot_id"], x["reason"]) for x in r.json()["gi_block_reasons"]}
-    assert (lot, "lot_on_hold") in reasons
+    await _harvest(w, lot, 2000)
+    intake = await _intake(w, client, lot, "50")
+    assert ("yield_over_ceiling", "hold") in {(f["rule_code"], f["severity"]) for f in intake["flags"]}
+    batch = await _merge(w, client, [lot], gi=True)
+    assert batch["gi_verified"] is False
+    reasons = {(x["lot_id"], x["reason"], x["detail"]) for x in batch["gi_block_reasons"]}
+    assert any(r[:2] == (lot, "lot_on_hold") for r in reasons), reasons
+    assert (None, "hold_flag", "yield_over_ceiling") in reasons
+
+
+async def test_intake_correction_before_batching(world: tuple[World, AsyncClient]) -> None:
+    """Intake 100 kg corrected to 95 kg: the batch uses 95; correcting after batching → `lot_already_batched`.
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    lot = await _ready_lot(w, client)
+    first = await _intake(w, client, lot, "100")
+    fix = {"supersedes_intake_id": first["id"], "correction_reason": "scale misread"}
+    second = await _intake(w, client, lot, "95", **fix)
+    assert second["supersedes_intake_id"] == first["id"]
+    batch = await _merge(w, client, [lot])
+    assert Decimal(batch["total_received"]["value"]) == Decimal(95)
+    assert Decimal(batch["shares"][0]["contributed"]["value"]) == Decimal(95)
+    again = {**fix, "supersedes_intake_id": second["id"]}
+    body = {
+        "client_id": str(uuid7()),
+        "lot_id": lot,
+        "processor_id": str(w.processor),
+        "sale_date": "2026-07-01",
+        "received": {"value": "90", "unit": "kg"},
+        **again,
+    }
+    assert _codes(await client.post("/v1/intakes", json=body)) == ["lot_already_batched"]
 
 
 async def test_approve_refused_on_declared_above_computed(world: tuple[World, AsyncClient]) -> None:

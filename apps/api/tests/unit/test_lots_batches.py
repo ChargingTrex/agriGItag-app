@@ -1,7 +1,8 @@
 """Unit tests of the lots_batches pure logic: shares, reconciliation, gate reasons and request schemas.
 
 Serves: B09 acceptance "lots {100,200,20} → 31.250/62.500/6.250", "intake 100 vs packed 69" (chain out of
-order), FR58 (kg only), FR60, D-033 (reasons list).
+order), FR58 (kg only), FR60, D-033 (reasons list); r2: batch idempotency on `client_id` (D-005) and the
+refusal to correct an intake once the lot is batched.
 Callers: pytest (`uv run pytest tests/unit`); no Docker.
 """
 
@@ -10,14 +11,25 @@ from datetime import date
 from decimal import Decimal
 from types import SimpleNamespace
 from typing import Any, cast
+from unittest.mock import AsyncMock
 
 import pytest
 from pydantic import ValidationError
 
-from agritrace.core.enums import FlagSubject, Severity
+from agritrace.core.auth import CurrentUser
+from agritrace.core.enums import FlagSubject, LotStatus, Role, Severity
+from agritrace.core.errors import ClientIdConflictError, GateNotMetError
 from agritrace.modules.lots_batches import shares
+from agritrace.modules.lots_batches.models import Batch, Lot, LotIntake
 from agritrace.modules.lots_batches.schemas import BatchIn, FinalPackingIn, IntakeIn
-from agritrace.modules.lots_batches.service import hold_reasons, reason, reconcile
+from agritrace.modules.lots_batches.service import (
+    create_batch,
+    create_intake,
+    hold_reasons,
+    reason,
+    reconcile,
+)
+from agritrace.modules.registry.models import Processor
 
 
 def test_reference_batch_shares() -> None:
@@ -109,10 +121,100 @@ def test_batch_refuses_repeated_lot_and_bad_dates() -> None:
     """A lot listed twice and a best-before before the pack date are refused."""
     lot = str(uuid.uuid4())
     with pytest.raises(ValidationError, match="only once"):
-        BatchIn.model_validate({"processor_id": str(uuid.uuid4()), "lot_ids": [lot, lot]})
+        BatchIn.model_validate(
+            {"client_id": str(uuid.uuid4()), "processor_id": str(uuid.uuid4()), "lot_ids": [lot, lot]}
+        )
     with pytest.raises(ValidationError, match="best_before_date"):
         FinalPackingIn(
             packed={"value": 10, "unit": "kg"},  # type: ignore[arg-type]
             pack_date=date(2026, 8, 1),
             best_before_date=date(2026, 7, 1),
+        )
+
+
+def _session(rows: dict[type, Any]) -> Any:
+    """Build a stand-in async session whose `get` answers by model class.
+
+    Args:
+        rows: what `session.get(Model, id)` returns per model class (missing → None).
+
+    Returns:
+        An object with async `get`, `commit` and `scalar` methods.
+    """
+
+    async def get(model: type, _id: Any, **_: Any) -> Any:
+        """Return the row configured for `model`.
+
+        Args:
+            model: the ORM class.
+            _id: the primary key (ignored).
+            **_: options such as `with_for_update` (ignored).
+
+        Returns:
+            The configured row or None.
+        """
+        return rows.get(model)
+
+    return SimpleNamespace(get=get, commit=AsyncMock(), scalar=AsyncMock(return_value=0))
+
+
+async def test_batch_resend_is_idempotent_per_fpo() -> None:
+    """The same batch `client_id` returns the stored batch for its FPO and conflicts for another (D-005)."""
+    fpo, processor = uuid.uuid4(), uuid.uuid4()
+    stored = SimpleNamespace(fpo_id=fpo, processor_id=processor)
+    body = BatchIn(client_id=uuid.uuid4(), processor_id=processor, lot_ids=[uuid.uuid4()])
+    me = CurrentUser(user_id=uuid.uuid4(), fpo_id=fpo, role=Role.FPO_ADMIN)
+    assert await create_batch(_session({Batch: stored}), me, body) == (stored, [], False)
+    other = CurrentUser(user_id=uuid.uuid4(), fpo_id=uuid.uuid4(), role=Role.FPO_ADMIN)
+    with pytest.raises(ClientIdConflictError):
+        await create_batch(_session({Batch: stored}), other, body)
+
+
+async def test_intake_correction_refused_once_batched() -> None:
+    """Correcting the intake of a batched lot → 409 `lot_already_batched` (shares are append-only, D-033)."""
+    fpo, lot_id, processor = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    lot = SimpleNamespace(id=lot_id, fpo_id=fpo, status=LotStatus.BATCHED)
+    prior = SimpleNamespace(id=uuid.uuid4(), fpo_id=fpo, lot_id=lot_id)
+    session = _session({Lot: lot, Processor: SimpleNamespace(id=processor, fpo_id=None), LotIntake: None})
+    real_get = session.get
+
+    async def get(model: type, key: Any, **kw: Any) -> Any:
+        """Answer the superseded intake by its id, the resend lookup with None.
+
+        Args:
+            model: the ORM class.
+            key: the primary key.
+            **kw: passed through.
+
+        Returns:
+            The configured row.
+        """
+        return prior if model is LotIntake and key == prior.id else await real_get(model, key, **kw)
+
+    session.get = get
+    body = IntakeIn(
+        client_id=uuid.uuid4(),
+        lot_id=lot_id,
+        processor_id=processor,
+        sale_date=date(2026, 7, 1),
+        received={"value": 95, "unit": "kg"},  # type: ignore[arg-type]
+        supersedes_intake_id=prior.id,
+        correction_reason="scale misread",
+    )
+    me = CurrentUser(user_id=uuid.uuid4(), fpo_id=fpo, role=Role.FPO_ADMIN)
+    with pytest.raises(GateNotMetError) as err:
+        await create_intake(session, me, body)
+    assert [r["code"] for r in err.value.details["reasons"]] == ["lot_already_batched"]
+
+
+def test_correction_needs_a_reason() -> None:
+    """`supersedes_intake_id` without `correction_reason` is a validation error."""
+    with pytest.raises(ValidationError, match="go together"):
+        IntakeIn(
+            client_id=uuid.uuid4(),
+            lot_id=uuid.uuid4(),
+            processor_id=uuid.uuid4(),
+            sale_date=date(2026, 7, 1),
+            received={"value": 95, "unit": "kg"},  # type: ignore[arg-type]
+            supersedes_intake_id=uuid.uuid4(),
         )

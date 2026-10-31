@@ -87,7 +87,7 @@ class FlagBrief(BaseModel):
 
 
 class IntakeIn(BaseModel):
-    """A processor receives a ready lot (Stage 7 Sale to Processor, FR9)."""
+    """A processor receives a ready lot, or a wrong intake is corrected (Stage 7, FR9, D-033)."""
 
     client_id: uuid.UUID = Field(description="UUIDv7 made by the client; intake id and idempotency key.")
     lot_id: uuid.UUID = Field(description="Lot received; must be `ready_for_sale`.")
@@ -96,8 +96,29 @@ class IntakeIn(BaseModel):
     received: Kg = Field(description="Quantity received, unit `kg`.")
     price_per_kg: Decimal | None = Field(None, ge=0, description="Price in INR per kg (optional, D-017).")
     intake_moisture_reading_id: uuid.UUID | None = Field(
-        None, description="Moisture reading of this lot taken at the gate (`POST /v1/quality-readings`)."
+        None,
+        description="Moisture reading (`moisture`, stage `intake`) of this lot (`POST /v1/quality-readings`)",
     )
+    supersedes_intake_id: uuid.UUID | None = Field(
+        None, description="Correct this intake (the lot's current one, lot not yet batched); needs a reason."
+    )
+    correction_reason: str | None = Field(
+        None, min_length=3, max_length=500, description="Why the superseded intake was wrong."
+    )
+
+    @model_validator(mode="after")
+    def _reason_with_correction(self) -> Self:
+        """Require a reason exactly when an intake is corrected.
+
+        Returns:
+            The model.
+
+        Raises:
+            ValueError: a correction without a reason, or a reason without a correction (422).
+        """
+        if (self.supersedes_intake_id is None) != (self.correction_reason is None):
+            raise ValueError("supersedes_intake_id and correction_reason go together")
+        return self
 
 
 class IntakeOut(BaseModel):
@@ -112,8 +133,12 @@ class IntakeOut(BaseModel):
     intake_moisture_reading_id: uuid.UUID | None = Field(None, description="Intake moisture reading.")
     accepted_by_user_id: uuid.UUID = Field(description="Admin who accepted the lot.")
     reconciliation: Reconciliation | None = Field(
-        None, description="Harvested ≥ packed ≥ received at the time of intake (FR60)."
+        None,
+        description="Strict chain harvested ≥ packed ≥ received at intake (FR60); the tolerant verdict is "
+        "the `quantity_mismatch` flag.",
     )
+    supersedes_intake_id: uuid.UUID | None = Field(None, description="Intake this row corrects, if any.")
+    correction_reason: str | None = Field(None, description="Why the superseded intake was wrong.")
     flags: list[FlagBrief] = Field(
         default_factory=list, description="Active flags on the lot after the intake; empty on a resend."
     )
@@ -122,6 +147,7 @@ class IntakeOut(BaseModel):
 class BatchIn(BaseModel):
     """Merge received lots into a super-lot / batch (Stage 7, FR9, FR29)."""
 
+    client_id: uuid.UUID = Field(description="UUIDv7 made by the client; batch id and idempotency key.")
     processor_id: uuid.UUID = Field(description="Processor that received every lot.")
     gi_label_requested: bool = Field(False, description="Ask to label the batch as GI (re-checked, FR29).")
     lot_ids: list[uuid.UUID] = Field(

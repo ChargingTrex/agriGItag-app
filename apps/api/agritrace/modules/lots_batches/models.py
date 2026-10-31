@@ -4,7 +4,7 @@ Serves: PRD §5 (Component Lot, Super Lot / Batch), Dataflow Stages 4–9 and §
 FR29 (GI re-validation at merge), FR56 (practice tags), FR57, FR58, FR60 (reconciliation and shares),
 FR62 (pack and best-before dates), FR68 (yield check).
 Callers: lots_batches service and router (B09), rules_flags (B08), quality grading (B05), publishing and
-reporting (B10) through `models` (D-004), alembic/env.py, migration 0001.
+reporting (B10) through `models` (D-004), alembic/env.py, migrations 0001 and 0004 (intake corrections).
 """
 
 import uuid
@@ -12,7 +12,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import CheckConstraint, ForeignKey, Numeric, func
+from sqlalchemy import CheckConstraint, ColumnElement, ForeignKey, Numeric, func, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -70,6 +70,24 @@ class LotIntake(Audited, IdTimestamps, TenantScoped, Base):
     yield_check: Mapped[dict[str, Any] | None] = mapped_column(
         comment="Yield versus ceiling with margins (core.schemas.YieldCheck, FR68)."
     )
+    supersedes_intake_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("lot_intakes.id"),
+        unique=True,
+        comment="Intake this row corrects (append-only, D-033); each intake is corrected at most once.",
+    )
+    correction_reason: Mapped[str | None] = mapped_column(
+        comment="Why the superseded intake was wrong; required with `supersedes_intake_id`."
+    )
+
+
+def current_intake() -> ColumnElement[bool]:
+    """Filter `lot_intakes` to the rows no correction has superseded (a lot's current intake, D-033).
+
+    Returns:
+        A WHERE clause for `select(LotIntake...)`; callers summing received kg must use it.
+    """
+    superseded = select(LotIntake.supersedes_intake_id).where(LotIntake.supersedes_intake_id.is_not(None))
+    return LotIntake.id.not_in(superseded)
 
 
 class Batch(Audited, IdTimestamps, TenantScoped, Base):

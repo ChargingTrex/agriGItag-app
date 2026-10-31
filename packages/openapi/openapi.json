@@ -203,6 +203,12 @@
       "BatchIn": {
         "description": "Merge received lots into a super-lot / batch (Stage 7, FR9, FR29).",
         "properties": {
+          "client_id": {
+            "description": "UUIDv7 made by the client; batch id and idempotency key.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
           "gi_label_requested": {
             "default": false,
             "description": "Ask to label the batch as GI (re-checked, FR29).",
@@ -228,6 +234,7 @@
           }
         },
         "required": [
+          "client_id",
           "processor_id",
           "lot_ids"
         ],
@@ -4235,13 +4242,27 @@
         "type": "object"
       },
       "IntakeIn": {
-        "description": "A processor receives a ready lot (Stage 7 Sale to Processor, FR9).",
+        "description": "A processor receives a ready lot, or a wrong intake is corrected (Stage 7, FR9, D-033).",
         "properties": {
           "client_id": {
             "description": "UUIDv7 made by the client; intake id and idempotency key.",
             "format": "uuid",
             "title": "Client Id",
             "type": "string"
+          },
+          "correction_reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 3,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the superseded intake was wrong.",
+            "title": "Correction Reason"
           },
           "intake_moisture_reading_id": {
             "anyOf": [
@@ -4253,7 +4274,7 @@
                 "type": "null"
               }
             ],
-            "description": "Moisture reading of this lot taken at the gate (`POST /v1/quality-readings`).",
+            "description": "Moisture reading (`moisture`, stage `intake`) of this lot (`POST /v1/quality-readings`)",
             "title": "Intake Moisture Reading Id"
           },
           "lot_id": {
@@ -4293,6 +4314,19 @@
             "format": "date",
             "title": "Sale Date",
             "type": "string"
+          },
+          "supersedes_intake_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Correct this intake (the lot's current one, lot not yet batched); needs a reason.",
+            "title": "Supersedes Intake Id"
           }
         },
         "required": [
@@ -4313,6 +4347,18 @@
             "format": "uuid",
             "title": "Accepted By User Id",
             "type": "string"
+          },
+          "correction_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the superseded intake was wrong.",
+            "title": "Correction Reason"
           },
           "flags": {
             "description": "Active flags on the lot after the intake; empty on a resend.",
@@ -4378,13 +4424,26 @@
                 "type": "null"
               }
             ],
-            "description": "Harvested \u2265 packed \u2265 received at the time of intake (FR60)."
+            "description": "Strict chain harvested \u2265 packed \u2265 received at intake (FR60); the tolerant verdict is the `quantity_mismatch` flag."
           },
           "sale_date": {
             "description": "Date of sale.",
             "format": "date",
             "title": "Sale Date",
             "type": "string"
+          },
+          "supersedes_intake_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Intake this row corrects, if any.",
+            "title": "Supersedes Intake Id"
           }
         },
         "required": [
@@ -11098,6 +11157,16 @@
           "required": true
         },
         "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "The batch already existed with this client_id."
+          },
           "201": {
             "content": {
               "application/json": {
@@ -11126,7 +11195,7 @@
                 }
               }
             },
-            "description": "`gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_received`, `lot_not_received_by_processor`, `mixed_crops`, `lot_quantity_zero`."
+            "description": "`client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_received`, `lot_not_received_by_processor`, `mixed_crops`, `lot_quantity_zero`."
           },
           "422": {
             "content": {
@@ -11136,7 +11205,7 @@
                 }
               }
             },
-            "description": "`validation_error` (unit not kg, repeated lot)."
+            "description": "`validation_error` (repeated lot)."
           },
           "default": {
             "content": {
@@ -11154,7 +11223,7 @@
             "AccessToken": []
           }
         ],
-        "summary": "Merge received lots into a batch",
+        "summary": "Merge received lots into a batch (idempotent on client_id)",
         "tags": [
           "lots_batches"
         ]
@@ -15620,7 +15689,7 @@
     },
     "/v1/intakes": {
       "post": {
-        "description": "Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg).",
+        "description": "Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched, send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).",
         "operationId": "create_intake_v1_intakes_post",
         "parameters": [
           {
@@ -15701,7 +15770,7 @@
                 }
               }
             },
-            "description": "`not_found`: lot, processor or moisture reading."
+            "description": "`not_found`: lot, processor, superseded intake or moisture reading."
           },
           "409": {
             "content": {
@@ -15711,7 +15780,7 @@
                 }
               }
             },
-            "description": "`client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_ready`."
+            "description": "`client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_ready`, `lot_already_batched`, `intake_not_current`."
           },
           "default": {
             "content": {

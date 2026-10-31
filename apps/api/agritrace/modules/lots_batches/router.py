@@ -193,13 +193,17 @@ async def mark_ready(lot_id: LotId, session: Session, user: LotKeeper) -> LotOut
     summary="Receive a lot at the processor (idempotent on client_id)",
     description=(
         "Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active "
-        "flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg)."
+        "flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a "
+        "wrong intake before the lot is batched, send a new intake with `supersedes_intake_id` and "
+        "`correction_reason`; the new row becomes the lot's current intake (D-033)."
     ),
     responses={
         200: {"model": IntakeOut, "description": "The intake already existed with this client_id."},
         **_errors(
-            e404="`not_found`: lot, processor or moisture reading.",
-            e409="`client_id_conflict`, or " + GATE + "`lot_not_ready`.",
+            e404="`not_found`: lot, processor, superseded intake or moisture reading.",
+            e409="`client_id_conflict`, or "
+            + GATE
+            + "`lot_not_ready`, `lot_already_batched`, `intake_not_current`.",
         ),
     },
 )
@@ -235,25 +239,30 @@ async def create_intake(body: IntakeIn, response: Response, session: Session, us
     "/batches",
     response_model=BatchOut,
     status_code=status.HTTP_201_CREATED,
-    summary="Merge received lots into a batch",
+    summary="Merge received lots into a batch (idempotent on client_id)",
     description=(
         "Creates the batch and super-lot codes and the lot shares (half-even to 3 dp, residual to the "
         "largest; sum 100.000). With `gi_label_requested` every lot is re-checked against the GI region "
         "(FR29): `gi_verified=false` with `gi_block_reasons` when any fails; the batch is still created."
     ),
-    responses=_errors(
-        e404="`not_found`: lot or processor.",
-        e409=GATE
-        + "`lot_not_received`, `lot_not_received_by_processor`, `mixed_crops`, `lot_quantity_zero`.",
-        e422="`validation_error` (unit not kg, repeated lot).",
-    ),
+    responses={
+        200: {"model": BatchOut, "description": "The batch already existed with this client_id."},
+        **_errors(
+            e404="`not_found`: lot or processor.",
+            e409="`client_id_conflict`, or "
+            + GATE
+            + "`lot_not_received`, `lot_not_received_by_processor`, `mixed_crops`, `lot_quantity_zero`.",
+            e422="`validation_error` (repeated lot).",
+        ),
+    },
 )
-async def create_batch(body: BatchIn, session: Session, user: Admin) -> BatchOut:
-    """Create a batch.
+async def create_batch(body: BatchIn, response: Response, session: Session, user: Admin) -> BatchOut:
+    """Create a batch; a resend answers 200 with the stored batch.
 
     \f
     Args:
-        body: processor, GI request and lot ids.
+        body: client id, processor, GI request and lot ids.
+        response: used to answer 200 for a resend.
         session: database session.
         user: the FPO admin.
 
@@ -262,13 +271,16 @@ async def create_batch(body: BatchIn, session: Session, user: Admin) -> BatchOut
 
     Raises:
         NotFoundError: lot or processor out of scope (404).
+        ClientIdConflictError: id used by another FPO's batch or another processor's (409).
         GateNotMetError: a lot is not ready to merge (409).
 
     Side effects:
         Commits the batch, shares, approval, lot states and refreshed flags.
     """
-    batch, flags = await service.create_batch(session, user, body)
+    batch, flags, created = await service.create_batch(session, user, body)
     await session.commit()
+    if not created:
+        response.status_code = status.HTTP_200_OK
     return await service.batch_out(session, batch, flags)
 
 

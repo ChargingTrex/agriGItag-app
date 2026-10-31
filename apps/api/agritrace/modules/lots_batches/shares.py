@@ -2,7 +2,7 @@
 
 Serves: FR60 (each farmer's share of every batch), PRD §12 reference batch ({100, 200, 20} kg →
 31.250 / 62.500 / 6.250 %), backend-design.md §2 (`batch_shares.share_pct` numeric(6,3), Σ = 100 ± 0.01).
-Callers: `lots_batches.service.create_batch`; tests/unit/test_lots_shares.py.
+Callers: `lots_batches.service.create_batch`; tests/unit/test_lots_batches.py.
 """
 
 from collections.abc import Hashable, Mapping
