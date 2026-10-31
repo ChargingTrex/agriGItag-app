@@ -37,3 +37,4 @@ Code that embodies a decision carries a `DECISION D-xxx` comment (grep for it). 
 | D-030 | Batch attribution (Σ shares vs received, 5 %) and grading loss (`grading_loss_high`, features.yaml limit) are separate warns | 2026-10-31 | Accepted | [D-030.md](docs/adr/D-030.md) |
 | D-031 | Offline-registered farmers sync as a `farmer` push kind; `FarmerIn.client_id` makes REST and sync idempotent | 2026-10-31 | Accepted | [D-031.md](docs/adr/D-031.md) |
 | D-032 | Assist context travels per sync entry (`assist_session` push kind + `SyncEntry.assist_session_id`), not only via the request header | 2026-10-31 | Accepted | [D-032.md](docs/adr/D-032.md) |
+| D-033 | Lifecycle gates answer one 409 listing every unmet reason; gate records are append-only | 2026-10-31 | Accepted | [D-033.md](docs/adr/D-033.md) |

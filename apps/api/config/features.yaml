@@ -12,7 +12,7 @@ farmer_pin_login: false
 producer_groups: false
 # Not wired yet on the server: the onboarding wizard (M09) shows the boundary-walk step when true.
 boundary_walk: true
-# Not wired yet: batch creation (B09/P03) asks for a second sign-off above this many kilograms.
+# Read by lots_batches (B09): batches above this many kilograms need a second admin sign-off to publish.
 second_signoff_threshold_kg: 1000
 # Not wired yet: phones (M02) start with "photos on Wi-Fi only" set to this.
 wifi_only_photos_default: false

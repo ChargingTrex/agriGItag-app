@@ -39,7 +39,7 @@ from agritrace.core.errors import (
 from agritrace.core.schemas import GeoPoint, Page
 from agritrace.core.time import utcnow
 from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto
-from agritrace.modules.lots_batches.models import Batch, BatchShare, Lot, LotIntake
+from agritrace.modules.lots_batches.models import Batch, BatchShare, Lot, LotIntake, current_intake
 from agritrace.modules.quality import service as quality_service
 from agritrace.modules.quality.models import GradeComputation, QualityReading
 from agritrace.modules.registry import service as registry_service
@@ -391,7 +391,7 @@ async def _lot_context(session: AsyncSession, lot: Lot) -> LotContext:
         if input_ids
         else []
     )
-    received = select(func.sum(LotIntake.received_kg)).where(LotIntake.lot_id == lot.id)
+    received = select(func.sum(LotIntake.received_kg)).where(LotIntake.lot_id == lot.id, current_intake())
     used = select(func.sum(BatchShare.kg_contributed)).where(BatchShare.lot_id == lot.id)
     rule = await quality_service.yield_params_for_crop(session, lot.crop_id)
     harvested = _kg(rows, EventType.HARVEST) or lot.harvested_kg

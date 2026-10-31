@@ -200,6 +200,265 @@
         "title": "AssistStartIn",
         "type": "object"
       },
+      "BatchIn": {
+        "description": "Merge received lots into a super-lot / batch (Stage 7, FR9, FR29).",
+        "properties": {
+          "client_id": {
+            "description": "UUIDv7 made by the client; batch id and idempotency key.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "gi_label_requested": {
+            "default": false,
+            "description": "Ask to label the batch as GI (re-checked, FR29).",
+            "title": "Gi Label Requested",
+            "type": "boolean"
+          },
+          "lot_ids": {
+            "description": "`received` lots of the caller's FPO, no repeats; each brings all it delivered here.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Lot Ids",
+            "type": "array"
+          },
+          "processor_id": {
+            "description": "Processor that received every lot.",
+            "format": "uuid",
+            "title": "Processor Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "processor_id",
+          "lot_ids"
+        ],
+        "title": "BatchIn",
+        "type": "object"
+      },
+      "BatchOut": {
+        "description": "A batch with its shares, gate state and GI verdict.",
+        "properties": {
+          "best_before_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Best-before date for the label (FR62).",
+            "title": "Best Before Date"
+          },
+          "code": {
+            "description": "12-char batch code, e.g. `FGP8T4033HM7` (QR, public URL).",
+            "title": "Code",
+            "type": "string"
+          },
+          "computed_grade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Grade approved at the grading gate (FR48).",
+            "title": "Computed Grade"
+          },
+          "created_by": {
+            "description": "Admin who created the batch.",
+            "format": "uuid",
+            "title": "Created By",
+            "type": "string"
+          },
+          "crop_id": {
+            "description": "Crop of every component lot.",
+            "format": "uuid",
+            "title": "Crop Id",
+            "type": "string"
+          },
+          "current_build_no": {
+            "description": "Latest public page build number; 0 before publishing.",
+            "title": "Current Build No",
+            "type": "integer"
+          },
+          "flags": {
+            "description": "Active flags found by this request's gate checks (POST routes); empty on GET.",
+            "items": {
+              "$ref": "#/components/schemas/FlagBrief"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "gi_block_reasons": {
+            "description": "Why GI is blocked; empty when verified.",
+            "items": {
+              "$ref": "#/components/schemas/GiBlockReason"
+            },
+            "title": "Gi Block Reasons",
+            "type": "array"
+          },
+          "gi_label_requested": {
+            "description": "The admin asked for the GI label.",
+            "title": "Gi Label Requested",
+            "type": "boolean"
+          },
+          "gi_verified": {
+            "description": "GI label requested and every component lot passed the re-check.",
+            "title": "Gi Verified",
+            "type": "boolean"
+          },
+          "graded": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Graded quantity in kg (ceiling for packing)."
+          },
+          "id": {
+            "description": "Batch id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "pack_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pack date for the label (FR62).",
+            "title": "Pack Date"
+          },
+          "packed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantity in final packs in kg."
+          },
+          "processor_id": {
+            "description": "Processor.",
+            "format": "uuid",
+            "title": "Processor Id",
+            "type": "string"
+          },
+          "second_signoff_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Second admin who signed it off.",
+            "title": "Second Signoff By"
+          },
+          "second_signoff_required": {
+            "description": "Total above the FPO's `second_signoff_threshold_kg` (Dataflow \u00a74 gate 2).",
+            "title": "Second Signoff Required",
+            "type": "boolean"
+          },
+          "shares": {
+            "description": "Component lots and their shares.",
+            "items": {
+              "$ref": "#/components/schemas/ShareOut"
+            },
+            "title": "Shares",
+            "type": "array"
+          },
+          "standards_profile_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Profile version graded on.",
+            "title": "Standards Profile Version Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchStatus",
+            "description": "created \u2192 graded \u2192 packed \u2192 published."
+          },
+          "superlot_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Super-lot code, e.g. `COMBO_LOT_6C1DCCFE`.",
+            "title": "Superlot Code"
+          },
+          "total_received": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sum of the lots' intake kg (FR10)."
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "crop_id",
+          "processor_id",
+          "status",
+          "gi_label_requested",
+          "gi_verified",
+          "gi_block_reasons",
+          "current_build_no",
+          "created_by",
+          "second_signoff_required",
+          "shares"
+        ],
+        "title": "BatchOut",
+        "type": "object"
+      },
+      "BatchStatus": {
+        "description": "Batch lifecycle (Stages 7\u201310).",
+        "enum": [
+          "created",
+          "graded",
+          "packed",
+          "published"
+        ],
+        "title": "BatchStatus",
+        "type": "string"
+      },
       "Body_import_farmers_v1_imports_farmers_post": {
         "properties": {
           "file": {
@@ -1700,6 +1959,34 @@
         "title": "FieldSpec",
         "type": "object"
       },
+      "FinalPackingIn": {
+        "description": "FPO admin signs off final (retail) packing (Stage 9, FR62).",
+        "properties": {
+          "best_before_date": {
+            "description": "Best-before date printed on the label.",
+            "format": "date",
+            "title": "Best Before Date",
+            "type": "string"
+          },
+          "pack_date": {
+            "description": "Pack date printed on the label.",
+            "format": "date",
+            "title": "Pack Date",
+            "type": "string"
+          },
+          "packed": {
+            "$ref": "#/components/schemas/Quantity-Input",
+            "description": "Quantity in final packs in kg; at most the graded quantity."
+          }
+        },
+        "required": [
+          "packed",
+          "pack_date",
+          "best_before_date"
+        ],
+        "title": "FinalPackingIn",
+        "type": "object"
+      },
       "FinalPackingPayload": {
         "additionalProperties": false,
         "description": "Stage 9 final (retail) packing of a batch.",
@@ -1926,6 +2213,50 @@
           "payload"
         ],
         "title": "FinalPackingVersion",
+        "type": "object"
+      },
+      "FlagBrief": {
+        "description": "An active rule flag found by the gate checks of this request (B08 `run_gate_checks`).",
+        "properties": {
+          "id": {
+            "description": "Flag id; details at `GET /v1/flags/{id}`.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "rule_code": {
+            "description": "Rule, e.g. `quantity_mismatch`.",
+            "title": "Rule Code",
+            "type": "string"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity",
+            "description": "info, warn, or hold (a hold blocks approval and GI labelling)."
+          },
+          "status": {
+            "$ref": "#/components/schemas/FlagStatus",
+            "description": "open or escalated."
+          },
+          "subject_id": {
+            "description": "Id of the flagged row.",
+            "format": "uuid",
+            "title": "Subject Id",
+            "type": "string"
+          },
+          "subject_type": {
+            "$ref": "#/components/schemas/FlagSubject",
+            "description": "Kind of row flagged."
+          }
+        },
+        "required": [
+          "id",
+          "subject_type",
+          "subject_id",
+          "rule_code",
+          "severity",
+          "status"
+        ],
+        "title": "FlagBrief",
         "type": "object"
       },
       "FlagOut": {
@@ -2348,6 +2679,46 @@
         "title": "GeoPoint",
         "type": "object"
       },
+      "GiBlockReason": {
+        "description": "Why a batch may not carry the GI label (FR29); it can still be traced as a normal batch.",
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Hold reason, rule code or distance, when known.",
+            "title": "Detail"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lot concerned; null for a batch-wide reason.",
+            "title": "Lot Id"
+          },
+          "reason": {
+            "description": "`crop_has_no_gi_tag`, `gi_region_missing`, `lot_on_hold`, `plot_location_<status>`, `plot_outside_gi_region` or `hold_flag`.",
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "GiBlockReason",
+        "type": "object"
+      },
       "GiRegionOut": {
         "description": "The current region of a GI tag: version metadata plus a simplified outline (\u2264 50 KB).",
         "properties": {
@@ -2636,6 +3007,20 @@
         ],
         "title": "GradeStatus",
         "type": "string"
+      },
+      "GradingApproveIn": {
+        "description": "FPO admin approves the latest grade computation (Stage 8, FR49).",
+        "properties": {
+          "graded": {
+            "$ref": "#/components/schemas/Quantity-Input",
+            "description": "Graded quantity in kg; becomes the ceiling for final packing."
+          }
+        },
+        "required": [
+          "graded"
+        ],
+        "title": "GradingApproveIn",
+        "type": "object"
       },
       "GradingIn": {
         "description": "Grade a batch: the declared grade plus the readings to use (Dataflow Stage 8, FR48, FR49).",
@@ -3856,6 +4241,222 @@
         "title": "InstrumentOut",
         "type": "object"
       },
+      "IntakeIn": {
+        "description": "A processor receives a ready lot, or a wrong intake is corrected (Stage 7, FR9, D-033).",
+        "properties": {
+          "client_id": {
+            "description": "UUIDv7 made by the client; intake id and idempotency key.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "correction_reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 3,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the superseded intake was wrong.",
+            "title": "Correction Reason"
+          },
+          "intake_moisture_reading_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Moisture reading (`moisture`, stage `intake`) of this lot (`POST /v1/quality-readings`)",
+            "title": "Intake Moisture Reading Id"
+          },
+          "lot_id": {
+            "description": "Lot received; must be `ready_for_sale`.",
+            "format": "uuid",
+            "title": "Lot Id",
+            "type": "string"
+          },
+          "price_per_kg": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Price in INR per kg (optional, D-017).",
+            "title": "Price Per Kg"
+          },
+          "processor_id": {
+            "description": "Receiving processor.",
+            "format": "uuid",
+            "title": "Processor Id",
+            "type": "string"
+          },
+          "received": {
+            "$ref": "#/components/schemas/Quantity-Input",
+            "description": "Quantity received, unit `kg`."
+          },
+          "sale_date": {
+            "description": "Date of sale, YYYY-MM-DD.",
+            "format": "date",
+            "title": "Sale Date",
+            "type": "string"
+          },
+          "supersedes_intake_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Correct this intake (the lot's current one, lot not yet batched); needs a reason.",
+            "title": "Supersedes Intake Id"
+          }
+        },
+        "required": [
+          "client_id",
+          "lot_id",
+          "processor_id",
+          "sale_date",
+          "received"
+        ],
+        "title": "IntakeIn",
+        "type": "object"
+      },
+      "IntakeOut": {
+        "description": "A stored intake with its quantity chain and the flags the lot rules raised.",
+        "properties": {
+          "accepted_by_user_id": {
+            "description": "Admin who accepted the lot.",
+            "format": "uuid",
+            "title": "Accepted By User Id",
+            "type": "string"
+          },
+          "correction_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the superseded intake was wrong.",
+            "title": "Correction Reason"
+          },
+          "flags": {
+            "description": "Active flags on the lot after the intake; empty on a resend.",
+            "items": {
+              "$ref": "#/components/schemas/FlagBrief"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "id": {
+            "description": "Intake id (the client id).",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "intake_moisture_reading_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Intake moisture reading.",
+            "title": "Intake Moisture Reading Id"
+          },
+          "lot_id": {
+            "description": "Lot received.",
+            "format": "uuid",
+            "title": "Lot Id",
+            "type": "string"
+          },
+          "price_per_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Price in INR per kg.",
+            "title": "Price Per Kg"
+          },
+          "processor_id": {
+            "description": "Receiving processor.",
+            "format": "uuid",
+            "title": "Processor Id",
+            "type": "string"
+          },
+          "received": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Quantity received in kg."
+          },
+          "reconciliation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reconciliation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Strict chain harvested \u2265 packed \u2265 received at intake (FR60); the tolerant verdict is the `quantity_mismatch` flag."
+          },
+          "sale_date": {
+            "description": "Date of sale.",
+            "format": "date",
+            "title": "Sale Date",
+            "type": "string"
+          },
+          "supersedes_intake_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Intake this row corrects, if any.",
+            "title": "Supersedes Intake Id"
+          }
+        },
+        "required": [
+          "id",
+          "lot_id",
+          "processor_id",
+          "sale_date",
+          "received",
+          "accepted_by_user_id"
+        ],
+        "title": "IntakeOut",
+        "type": "object"
+      },
       "IntakePayload": {
         "additionalProperties": false,
         "description": "Stage 7 sale of a lot to the processor, as recorded on the lot's timeline.",
@@ -4448,6 +5049,188 @@
         ],
         "title": "LotGate",
         "type": "object"
+      },
+      "LotIn": {
+        "description": "Open a season lot on a plot (Stage 4); fields follow `config/fields/lot.yaml` (D-017).",
+        "properties": {
+          "client_id": {
+            "description": "UUIDv7 made on the device; the lot id and idempotency key.",
+            "format": "uuid",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "crop_id": {
+            "description": "Crop grown.",
+            "format": "uuid",
+            "title": "Crop Id",
+            "type": "string"
+          },
+          "plot_id": {
+            "description": "Plot the crop grows on; a farmer may only use their own.",
+            "format": "uuid",
+            "title": "Plot Id",
+            "type": "string"
+          },
+          "practice_tags_declared": {
+            "description": "Farming practice the farmer declares (FR56), e.g. `[ipm]`.",
+            "items": {
+              "$ref": "#/components/schemas/PracticeTag"
+            },
+            "title": "Practice Tags Declared",
+            "type": "array"
+          },
+          "season_label": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Season, e.g. `2025-26 Rabi`.",
+            "title": "Season Label"
+          }
+        },
+        "required": [
+          "client_id",
+          "plot_id",
+          "crop_id"
+        ],
+        "title": "LotIn",
+        "type": "object"
+      },
+      "LotOut": {
+        "description": "A component lot with its lifecycle state and GI eligibility.",
+        "properties": {
+          "code": {
+            "description": "Lot code `LOT` + 8 hex, e.g. `LOT0EF81415`.",
+            "title": "Code",
+            "type": "string"
+          },
+          "crop_id": {
+            "description": "Crop.",
+            "format": "uuid",
+            "title": "Crop Id",
+            "type": "string"
+          },
+          "farmer_id": {
+            "description": "Grower.",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "gi_eligible": {
+            "description": "False while a hold keeps the lot out of GI batches (FR68, FR70).",
+            "title": "Gi Eligible",
+            "type": "boolean"
+          },
+          "gi_hold_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the lot is held out of GI batches.",
+            "title": "Gi Hold Reason"
+          },
+          "harvested": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Harvested quantity in kg, filled at intake."
+          },
+          "id": {
+            "description": "Lot id.",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "packed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "On-farm packed quantity in kg, filled at intake."
+          },
+          "plot_id": {
+            "description": "Plot harvested.",
+            "format": "uuid",
+            "title": "Plot Id",
+            "type": "string"
+          },
+          "practice_tags": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PracticeTags"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Declared and derived tags (FR56)."
+          },
+          "ready_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the lot passed the ready-for-sale gate.",
+            "title": "Ready At"
+          },
+          "season_label": {
+            "description": "Season label; empty when the tenant does not capture it.",
+            "title": "Season Label",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LotStatus",
+            "description": "open \u2192 drying \u2192 ready_for_sale \u2192 received \u2192 batched \u2192 closed."
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "farmer_id",
+          "plot_id",
+          "crop_id",
+          "season_label",
+          "status",
+          "gi_eligible"
+        ],
+        "title": "LotOut",
+        "type": "object"
+      },
+      "LotStatus": {
+        "description": "Component lot lifecycle (Stages 4\u20137).",
+        "enum": [
+          "open",
+          "drying",
+          "ready_for_sale",
+          "received",
+          "batched",
+          "closed"
+        ],
+        "title": "LotStatus",
+        "type": "string"
       },
       "MeOut": {
         "description": "Who is signed in, where, and on which device.",
@@ -5095,6 +5878,41 @@
         "title": "PackingVersion",
         "type": "object"
       },
+      "Page_BatchOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/BatchOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[BatchOut]",
+        "type": "object"
+      },
       "Page_ConsentOut_": {
         "properties": {
           "has_more": {
@@ -5268,6 +6086,41 @@
           "has_more"
         ],
         "title": "Page[InstrumentOut]",
+        "type": "object"
+      },
+      "Page_LotOut_": {
+        "properties": {
+          "has_more": {
+            "description": "True when another page exists.",
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "Items on this page, in the endpoint's documented order.",
+            "items": {
+              "$ref": "#/components/schemas/LotOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null on the last.",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "Page[LotOut]",
         "type": "object"
       },
       "Page_NotificationOut_": {
@@ -6773,6 +7626,45 @@
         "title": "PolygonGeoJSON",
         "type": "object"
       },
+      "PracticeTag": {
+        "description": "Farming practice label declared by the farmer or derived from inputs (FR56, PRD \u00a75).",
+        "enum": [
+          "organic",
+          "inorganic",
+          "ipm"
+        ],
+        "title": "PracticeTag",
+        "type": "string"
+      },
+      "PracticeTags": {
+        "description": "Farming practice tags of a lot: what the farmer declared versus what the inputs used imply (FR56).",
+        "properties": {
+          "contradiction": {
+            "default": false,
+            "description": "True when a declared tag conflicts with the derived ones (raises a flag).",
+            "title": "Contradiction",
+            "type": "boolean"
+          },
+          "declared": {
+            "description": "Tags the farmer declared.",
+            "items": {
+              "$ref": "#/components/schemas/PracticeTag"
+            },
+            "title": "Declared",
+            "type": "array"
+          },
+          "derived": {
+            "description": "Tags derived from the categories of inputs actually applied.",
+            "items": {
+              "$ref": "#/components/schemas/PracticeTag"
+            },
+            "title": "Derived",
+            "type": "array"
+          }
+        },
+        "title": "PracticeTags",
+        "type": "object"
+      },
       "ProblemPayload": {
         "additionalProperties": false,
         "description": "A problem seen in the field (pest, disease, weather), reported with a photo.",
@@ -7306,6 +8198,47 @@
         ],
         "title": "ProfileVersionStatus",
         "type": "string"
+      },
+      "PublishOut": {
+        "description": "A queued public page build (D-007); the worker writes the page.",
+        "properties": {
+          "batch_id": {
+            "description": "Batch published.",
+            "format": "uuid",
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "build_no": {
+            "description": "Build number of this publish.",
+            "title": "Build No",
+            "type": "integer"
+          },
+          "code": {
+            "description": "Batch code (QR and public page).",
+            "title": "Code",
+            "type": "string"
+          },
+          "page_build_id": {
+            "description": "`page_builds` row; `GET /v1/batches/{id}/builds` (B10).",
+            "format": "uuid",
+            "title": "Page Build Id",
+            "type": "string"
+          },
+          "status": {
+            "description": "`queued` until the build task writes the page.",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "batch_id",
+          "code",
+          "build_no",
+          "page_build_id",
+          "status"
+        ],
+        "title": "PublishOut",
+        "type": "object"
       },
       "PullChange": {
         "description": "One server-side change for the phone's local copy.",
@@ -7939,6 +8872,65 @@
         "title": "ReadingStage",
         "type": "string"
       },
+      "Reconciliation": {
+        "description": "Per-lot quantity chain: harvested \u2265 packed \u2265 received by the processor \u2265 used in batches (FR60).",
+        "properties": {
+          "harvested": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sum of harvest event quantities; null if none."
+          },
+          "in_order": {
+            "description": "True when every recorded step is \u2264 the one before it.",
+            "title": "In Order",
+            "type": "boolean"
+          },
+          "packed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "On-farm packed quantity; null if not recorded."
+          },
+          "received": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantity the processor received at intake."
+          },
+          "used": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantity-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantity of this lot used in batches."
+          }
+        },
+        "required": [
+          "in_order"
+        ],
+        "title": "Reconciliation",
+        "type": "object"
+      },
       "ReferenceOut": {
         "description": "Parts whose version differs from the ones the phone holds (plan \u00a713 C2).",
         "properties": {
@@ -8125,6 +9117,40 @@
         ],
         "title": "Severity",
         "type": "string"
+      },
+      "ShareOut": {
+        "description": "A lot's share of a batch (FR60).",
+        "properties": {
+          "contributed": {
+            "$ref": "#/components/schemas/Quantity-Output",
+            "description": "Kilograms of the lot in the batch (its intake kg)."
+          },
+          "farmer_id": {
+            "description": "Grower of the lot.",
+            "format": "uuid",
+            "title": "Farmer Id",
+            "type": "string"
+          },
+          "lot_id": {
+            "description": "Component lot.",
+            "format": "uuid",
+            "title": "Lot Id",
+            "type": "string"
+          },
+          "share_pct": {
+            "description": "Percent of the batch, 3 decimals; the shares sum to 100.000.",
+            "title": "Share Pct",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lot_id",
+          "farmer_id",
+          "contributed",
+          "share_pct"
+        ],
+        "title": "ShareOut",
+        "type": "object"
       },
       "SignedQuantity-Input": {
         "description": "A quantity that may be negative, used only for adjustments and differences.",
@@ -9950,6 +10976,487 @@
         ]
       }
     },
+    "/v1/batches": {
+      "get": {
+        "description": "List the FPO's batches.",
+        "operationId": "list_batches_v1_batches_get",
+        "parameters": [
+          {
+            "description": "Only batches in this state.",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BatchStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only batches in this state.",
+              "title": "Status"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_BatchOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List batches",
+        "tags": [
+          "lots_batches"
+        ]
+      },
+      "post": {
+        "description": "Creates the batch and super-lot codes and the lot shares (half-even to 3 dp, residual to the largest; sum 100.000). With `gi_label_requested` every lot is re-checked against the GI region (FR29): `gi_verified=false` with `gi_block_reasons` when any fails; the batch is still created.",
+        "operationId": "create_batch_v1_batches_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "The batch already existed with this client_id."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: lot or processor."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_received`, `lot_not_received_by_processor`, `mixed_crops`, `lot_quantity_zero`."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error` (repeated lot)."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Merge received lots into a batch (idempotent on client_id)",
+        "tags": [
+          "lots_batches"
+        ]
+      }
+    },
+    "/v1/batches/{batch_id}": {
+      "get": {
+        "description": "Read one batch.",
+        "operationId": "get_batch_v1_batches__batch_id__get",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Read a batch",
+        "tags": [
+          "lots_batches"
+        ]
+      }
+    },
+    "/v1/batches/{batch_id}/final-packing": {
+      "post": {
+        "description": "Sign off final packing.",
+        "operationId": "final_packing_v1_batches__batch_id__final_packing_post",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalPackingIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `grading_not_approved`, `packed_above_graded`, `open_hold_flag`."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error` (unit not kg, best before earlier than pack date)."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Sign off final packing",
+        "tags": [
+          "lots_batches"
+        ]
+      }
+    },
     "/v1/batches/{batch_id}/grade": {
       "get": {
         "description": "The batch's most recent grade computation with its per-parameter breakdown (FR48\u2013FR51).",
@@ -10188,6 +11695,244 @@
         ]
       }
     },
+    "/v1/batches/{batch_id}/grading/approve": {
+      "post": {
+        "description": "Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing.",
+        "operationId": "approve_grading_v1_batches__batch_id__grading_approve_post",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GradingApproveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `batch_status`, `not_graded`, `grade_incomplete`, `declared_above_computed`, `open_hold_flag`."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`validation_error` (unit not kg)."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Approve the batch grading",
+        "tags": [
+          "lots_batches"
+        ]
+      }
+    },
+    "/v1/batches/{batch_id}/publish": {
+      "post": {
+        "description": "Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, `publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge.",
+        "operationId": "publish_v1_batches__batch_id__publish_post",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `already_published`, `grading_not_approved`, `final_packing_missing`, `second_signoff_missing`, `open_hold_flag`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Publish the public page (final sign-off)",
+        "tags": [
+          "lots_batches"
+        ]
+      }
+    },
     "/v1/batches/{batch_id}/readings": {
       "get": {
         "description": "Grading and storage readings recorded on a batch (Dataflow Stage 8).",
@@ -10327,6 +12072,115 @@
         "summary": "List a batch's quality readings",
         "tags": [
           "quality"
+        ]
+      }
+    },
+    "/v1/batches/{batch_id}/second-signoff": {
+      "post": {
+        "description": "Needed before publishing when `second_signoff_required` (`second_signoff_threshold_kg`).",
+        "operationId": "second_signoff_v1_batches__batch_id__second_signoff_post",
+        "parameters": [
+          {
+            "description": "Batch id.",
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "description": "Batch id.",
+              "format": "uuid",
+              "title": "Batch Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `same_approver`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Second admin sign-off of a large batch",
+        "tags": [
+          "lots_batches"
         ]
       }
     },
@@ -13833,6 +15687,494 @@
         ]
       }
     },
+    "/v1/intakes": {
+      "post": {
+        "description": "Stage 7 intake of a `ready_for_sale` lot. Runs the lot rules synchronously and returns the active flags (e.g. `quantity_mismatch` when 100 kg are received from a lot packed at 69 kg). To correct a wrong intake before the lot is batched, send a new intake with `supersedes_intake_id` and `correction_reason`; the new row becomes the lot's current intake (D-033).",
+        "operationId": "create_intake_v1_intakes_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntakeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntakeOut"
+                }
+              }
+            },
+            "description": "The intake already existed with this client_id."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntakeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: lot, processor, superseded intake or moisture reading."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`client_id_conflict`, or `gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_not_ready`, `lot_already_batched`, `intake_not_current`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Receive a lot at the processor (idempotent on client_id)",
+        "tags": [
+          "lots_batches"
+        ]
+      }
+    },
+    "/v1/lots": {
+      "get": {
+        "description": "List lots: a farmer's own, or the FPO's for other roles (e.g. `?status=received` for P03).",
+        "operationId": "list_lots_v1_lots_get",
+        "parameters": [
+          {
+            "description": "Only lots in this state.",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/LotStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only lots in this state.",
+              "title": "Status"
+            }
+          },
+          {
+            "description": "Only this farmer's lots.",
+            "in": "query",
+            "name": "farmer_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this farmer's lots.",
+              "title": "Farmer Id"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page; omit for the first page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page; omit for the first page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size, 1\u2013200.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size, 1\u2013200.",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_LotOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "List lots",
+        "tags": [
+          "lots_batches"
+        ]
+      },
+      "post": {
+        "description": "Opens a season lot on a plot; fields per the tenant's `lot` field configuration (D-017).",
+        "operationId": "create_lot_v1_lots_post",
+        "parameters": [
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LotIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotOut"
+                }
+              }
+            },
+            "description": "The lot already existed with this client_id."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`: plot or crop."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`client_id_conflict`."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`field_required` or `validation_error`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Open a lot (idempotent on client_id)",
+        "tags": [
+          "lots_batches"
+        ]
+      }
+    },
+    "/v1/lots/{lot_id}": {
+      "get": {
+        "description": "Read one lot in the caller's scope.",
+        "operationId": "get_lot_v1_lots__lot_id__get",
+        "parameters": [
+          {
+            "description": "Lot id.",
+            "in": "path",
+            "name": "lot_id",
+            "required": true,
+            "schema": {
+              "description": "Lot id.",
+              "format": "uuid",
+              "title": "Lot Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Read a lot",
+        "tags": [
+          "lots_batches"
+        ]
+      }
+    },
     "/v1/lots/{lot_id}/events": {
       "get": {
         "description": "Every event of the lot with its latest version, ordered by `occurred_on`, then `instance_no` (FR63). Undone events stay listed with status `undone`. A lot has a few dozen events at most, so the whole list is one page (`has_more` false).",
@@ -14061,6 +16403,115 @@
         "summary": "List a lot's quality readings",
         "tags": [
           "quality"
+        ]
+      }
+    },
+    "/v1/lots/{lot_id}/ready": {
+      "post": {
+        "description": "Passes when the latest drying-end moisture reading meets `lot_gates.ready_for_sale`.",
+        "operationId": "mark_ready_v1_lots__lot_id__ready_post",
+        "parameters": [
+          {
+            "description": "Lot id.",
+            "in": "path",
+            "name": "lot_id",
+            "required": true,
+            "schema": {
+              "description": "Lot id.",
+              "format": "uuid",
+              "title": "Lot Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`not_found`."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "`gate_not_met`: `details.reasons[]` lists every unmet condition as `{code, message, ...}`: `lot_status`, `moisture_gate_failed`."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Mark a lot ready for sale (moisture gate)",
+        "tags": [
+          "lots_batches"
         ]
       }
     },
