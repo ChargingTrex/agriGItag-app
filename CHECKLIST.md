@@ -50,7 +50,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B08 — Rules & flags — wave 4 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / r2 confirmed by Orchestrator — verifier: PENDING (merged conditionally 2026-10-31; 14 integration tests deferred)
 - [x] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: suite PASS (605) on the merged branch; device checks (< 20 s log, camera, GPS) → Q01
 - [ ] P02 — Flags & plot review — wave 4 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirm — verifier: PENDING (merged 2026-10-31; 57 Vitest green; live API deferred)
-- [ ] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: Opus (round 2 in progress) — reviewer: WEB FAIL r1 (P2: stuck build locks Rebuild; timing test) — verifier:
+- [ ] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PENDING (merged 2026-10-31; Vitest green on main; live API and D-041 server side deferred)
 - [ ] **Gate G2 signed** (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G3 Mobile core
@@ -62,7 +62,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
 - [x] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (2 rounds) — reviewer: MOB/SEC FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (724 on main); device checks → Q01
 - [x] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / r2 one P2, patch confirmed by Orchestrator — verifier: Orchestrator-run suite PASS (779 on main); device checks → Q01; live lot_intake push → Verifier with B16
-- [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: — reviewer: — verifier:
+- [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (micro-patch in progress) — reviewer: WEB PASS r1 (P2: village paging, duplicate fields mock) — verifier:
 - [ ] P08 — Master data uploads: CSV import for farmers, villages, inputs with template download, dry- — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS-PENDING-STACK r1 — verifier: PENDING (merged 2026-10-31; 87 Vitest green on main; live API deferred)
 - [ ] **Gate G3 signed** (docs/agents/gates/G3.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
