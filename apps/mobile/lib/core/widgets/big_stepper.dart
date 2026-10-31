@@ -98,7 +98,8 @@ class _BigStepperState extends State<BigStepper> {
     _repeat = null;
   }
 
-  /// Builds one 64 dp button for [direction] with [icon] and spoken [label]. Returns the widget.
+  /// Builds one button for [direction] (−1 or +1) with [icon] and spoken [label], [size] dp square.
+  /// Returns the widget; throws nothing.
   Widget _button(int direction, IconData icon, String label, double size) {
     final enabled = direction < 0 ? widget.value > widget.min : widget.value < widget.max;
     return MergeSemantics(
@@ -138,9 +139,17 @@ class _BigStepperState extends State<BigStepper> {
             child: Semantics(
               liveRegion: true,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Indian grouping in both languages (1,20,000), as the farmer reads it on bills.
-                  Text(NumberFormat.decimalPattern('en_IN').format(widget.value), style: theme.textTheme.displaySmall),
+                  // Shrinks instead of breaking the number across lines at 1.5x text on a 360 dp phone.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      NumberFormat.decimalPattern('en_IN').format(widget.value),
+                      style: theme.textTheme.displaySmall,
+                    ),
+                  ),
                   Text(widget.unit, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
                 ],
               ),

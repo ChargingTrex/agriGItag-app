@@ -14,7 +14,7 @@ import 'farmer_button.dart';
 /// Phone number of the signed-in farmer's field officer, or null when not known yet.
 ///
 /// shortcut: always null until M06/M07 override it with the officer's number from the Drift session data;
-/// while null the button shows disabled.
+/// while null or empty the button shows disabled.
 final fieldOfficerPhoneProvider = Provider<String?>((ref) => null);
 
 /// Full-width [FarmerButton] that opens the phone dialer on the field officer's number (`tel:`).
@@ -34,7 +34,7 @@ class CallFieldOfficerButton extends ConsumerWidget {
       icon: Icons.call,
       label: AppLocalizations.of(context).callOfficer,
       // launchUrl returns false when the device has no dialer (a tablet); nothing else to offer then.
-      onPressed: phone == null ? null : () => launchUrl(Uri(scheme: 'tel', path: phone)),
+      onPressed: phone == null || phone.isEmpty ? null : () => launchUrl(Uri(scheme: 'tel', path: phone)),
       onSpeak: () => playPrompt(ref, context, promptId),
     );
   }

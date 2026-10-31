@@ -5,6 +5,7 @@
 //   >= 56 dp; Semantics on icon controls).
 // Callers: test/widget/kit_test.dart, kit_golden_test.dart, voice_test.dart.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:agritrace/core/l10n/gen/app_localizations.dart';
@@ -50,11 +51,17 @@ class _FileAssetBundle extends CachingAssetBundle {
 
 /// A [VoicePlayer] over the real asset files (real prompts.json) that records clip paths instead of playing.
 class RecordingVoicePlayer extends VoicePlayer {
-  /// Creates the player; every started clip path is appended to [played].
-  RecordingVoicePlayer._(this.played) : super(bundle: _FileAssetBundle(), playClip: (path) async => played.add(path));
+  /// Creates the player; every started clip path is appended to [played], or, when [failPlayback], every
+  /// clip throws like an undecodable file (iOS and `.ogg`).
+  RecordingVoicePlayer._(this.played, {required bool failPlayback})
+    : super(
+        bundle: _FileAssetBundle(),
+        playClip: (path) async => failPlayback ? throw Exception('cannot decode $path') : played.add(path),
+      );
 
-  /// Creates a player with an empty [played] list. Returns it; throws nothing.
-  factory RecordingVoicePlayer() => RecordingVoicePlayer._([]);
+  /// Creates a player with an empty [played] list; [failPlayback] makes every clip fail. Returns it; throws
+  /// nothing.
+  factory RecordingVoicePlayer({bool failPlayback = false}) => RecordingVoicePlayer._([], failPlayback: failPlayback);
 
   /// Asset paths of the clips started, in order.
   final List<String> played;
@@ -65,8 +72,10 @@ class RecordingVoicePlayer extends VoicePlayer {
 /// [tester] is the running test; [locale] the UI language; [size] the logical screen size (rendered at
 /// device pixel ratio 1 so goldens stay small); [textScale] the text scale; [pending] the pending-send
 /// stream (default: one value, 3); [scaffold] wraps [child] in a padded [Scaffold] body (false for widgets
-/// that are screens themselves); [autoplay] the voice autoplay setting. Side effect: changes the test view,
-/// reset when the test ends. Returns after the first frame and the autoplay callbacks.
+/// that are screens themselves); [autoplay] the voice autoplay setting; [phone] the officer number (null
+/// allowed); [failPlayback] makes every clip fail to play; [pushed] shows [child] as a pushed route, so
+/// route chrome such as an app bar's implied back arrow is rendered and measured. Side effect: changes the
+/// test view, reset when the test ends. Returns after the first frame (and the push) and the autoplay callbacks.
 Future<RecordingVoicePlayer> pumpKit(
   WidgetTester tester,
   Widget child, {
@@ -76,19 +85,30 @@ Future<RecordingVoicePlayer> pumpKit(
   Stream<int>? pending,
   bool scaffold = true,
   bool autoplay = true,
+  String? phone = officerPhone,
+  bool failPlayback = false,
+  bool pushed = false,
 }) async {
   tester.view
     ..physicalSize = size
     ..devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
-  final player = RecordingVoicePlayer();
+  final player = RecordingVoicePlayer(failPlayback: failPlayback);
+  final navigator = GlobalKey<NavigatorState>();
+  final screen = scaffold
+      ? Scaffold(
+          body: SafeArea(
+            child: Padding(padding: const EdgeInsets.all(16), child: child),
+          ),
+        )
+      : child;
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         voicePlayerProvider.overrideWithValue(player),
         voiceAutoplayProvider.overrideWithValue(autoplay),
         pendingSendCountProvider.overrideWith((ref) => pending ?? Stream.value(3)),
-        fieldOfficerPhoneProvider.overrideWithValue(officerPhone),
+        fieldOfficerPhoneProvider.overrideWithValue(phone),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -100,16 +120,15 @@ Future<RecordingVoicePlayer> pumpKit(
           data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
           child: app!,
         ),
-        home: scaffold
-            ? Scaffold(
-                body: SafeArea(
-                  child: Padding(padding: const EdgeInsets.all(16), child: child),
-                ),
-              )
-            : child,
+        navigatorKey: navigator,
+        home: pushed ? const Scaffold() : screen,
       ),
     ),
   );
+  if (pushed) {
+    unawaited(navigator.currentState!.push(MaterialPageRoute<void>(builder: (_) => screen)));
+    await tester.pumpAndSettle();
+  }
   await tester.pump();
   return player;
 }
@@ -260,7 +279,7 @@ final List<KitSample> kitSamples = [
 
 /// Pumps [sample] with the given matrix values and runs its [KitSample.settle]. Returns the voice player.
 ///
-/// [tester], [locale], [size] and [textScale] as in [pumpKit]. Throws whatever the widget throws while
+/// [tester], [locale], [size], [textScale] and [pushed] as in [pumpKit]. Throws whatever the widget throws while
 /// laying out (an overflow fails the test).
 Future<RecordingVoicePlayer> pumpSample(
   WidgetTester tester,
@@ -268,6 +287,7 @@ Future<RecordingVoicePlayer> pumpSample(
   required Locale locale,
   required Size size,
   required double textScale,
+  bool pushed = false,
 }) async {
   final player = await pumpKit(
     tester,
@@ -276,6 +296,7 @@ Future<RecordingVoicePlayer> pumpSample(
     size: size,
     textScale: textScale,
     scaffold: sample.scaffold,
+    pushed: pushed,
   );
   await sample.settle?.call(tester);
   await tester.pump();

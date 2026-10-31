@@ -98,7 +98,8 @@ class _GpsRingState extends ConsumerState<GpsRing> {
                   CircularProgressIndicator(
                     value: progress,
                     strokeWidth: 14,
-                    color: good ? tokens.done.color : theme.colorScheme.primary,
+                    // Orange "to do" while weak, so the change to green is visible.
+                    color: good ? tokens.done.color : tokens.todo.color,
                     backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   ),
                   Icon(

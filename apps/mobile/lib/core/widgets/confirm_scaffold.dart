@@ -49,7 +49,7 @@ class ConfirmScaffold extends ConsumerWidget {
   /// Voice prompt id of [summary].
   final String promptId;
 
-  /// Saves the entry; null disables the tick.
+  /// Saves the entry; null disables the tick. Called on every tap, so the caller must be idempotent (D-005).
   final VoidCallback? onConfirm;
 
   /// Discards the photo and reopens the camera.
@@ -67,6 +67,8 @@ class ConfirmScaffold extends ConsumerWidget {
     final gap = SizedBox(height: tokens.gap);
     return Scaffold(
       appBar: AppBar(
+        // No back arrow: it would be a 48 dp control without a speaker; Retake and the system back go back.
+        automaticallyImplyLeading: false,
         title: Text(title),
         actions: [
           if (showCloud)

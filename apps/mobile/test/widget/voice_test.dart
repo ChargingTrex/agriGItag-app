@@ -78,6 +78,16 @@ void main() {
     });
   }
 
+  testWidgets('VoicePromptBar falls back to text when a bundled clip fails to play', (tester) async {
+    final l10n = lookupAppLocalizations(tamil);
+    final player = await pumpKit(tester, VoicePromptBar(promptId: 'gpsHold', text: l10n.gpsHold), failPlayback: true);
+    await tester.pump();
+    expect(await player.play('gpsHold', tamil), isFalse);
+    expect(player.missingClips, 2); // autoplay + the direct call
+    expect(find.byIcon(Icons.volume_off), findsOneWidget);
+    expect(find.text(l10n.gpsHold), findsOneWidget);
+  });
+
   testWidgets('VoicePromptBar stays silent when autoplay is off', (tester) async {
     final l10n = lookupAppLocalizations(tamil);
     final player = await pumpKit(tester, VoicePromptBar(promptId: 'gpsHold', text: l10n.gpsHold), autoplay: false);

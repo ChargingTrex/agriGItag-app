@@ -73,8 +73,16 @@ void main() {
             tester,
           ) async {
             final semantics = tester.ensureSemantics();
-            // Smallest screen: an overflow at 1.5x text throws and fails the test here.
-            await pumpSample(tester, sample, locale: locale, size: screenSizes.first, textScale: textScale);
+            // Smallest screen, pushed as a route so app-bar chrome (an implied back arrow) is measured too; an
+            // overflow at 1.5x text throws and fails the test here.
+            await pumpSample(
+              tester,
+              sample,
+              locale: locale,
+              size: screenSizes.first,
+              textScale: textScale,
+              pushed: true,
+            );
             await expectLater(tester, meetsGuideline(_farmerTapTarget));
             await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
             await expectLater(tester, meetsGuideline(textContrastGuideline));
@@ -242,7 +250,7 @@ void main() {
       await pumpKit(tester, GpsRing(accuracyMetres: 35, onSaveAnyway: () {}));
       final ring = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
       expect(ring.value, closeTo(65 / 80, 1e-9));
-      expect(ring.color, isNot(StatusGlyph.done.color));
+      expect(ring.color, StatusGlyph.todo.color); // orange "to do" until good
       expect(find.text(l10n.gpsHold), findsOneWidget);
     });
 
@@ -320,6 +328,18 @@ void main() {
     );
     expect(tester.getSemantics(find.text('C0')), containsSemantics(isSelected: false));
   });
+
+  for (final phone in [null, '']) {
+    testWidgets('CallFieldOfficerButton is disabled with officer number ${phone == null ? 'null' : 'empty'}', (
+      tester,
+    ) async {
+      await pumpKit(tester, const CallFieldOfficerButton(), phone: phone);
+      final button = tester.widget<FilledButton>(
+        find.ancestor(of: find.text(_l10n(tamil).callOfficer), matching: find.bySubtype<FilledButton>()),
+      );
+      expect(button.onPressed, isNull);
+    });
+  }
 
   testWidgets('CallFieldOfficerButton dials tel: with the officer number', (tester) async {
     final calls = <MethodCall>[];

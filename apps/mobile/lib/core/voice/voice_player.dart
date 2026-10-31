@@ -69,7 +69,12 @@ final voicePlayerProvider = Provider<VoicePlayer>((ref) {
   return VoicePlayer(
     bundle: rootBundle,
     playClip: (path) async {
-      await audio.setAsset(path);
+      try {
+        await audio.setAsset(path);
+      } on PlayerInterruptedException {
+        // A newer prompt replaced this one while it loaded: interrupted, not missing.
+        return;
+      }
       // play() completes when the clip ends; the screen must not wait for that.
       unawaited(audio.play());
     },
