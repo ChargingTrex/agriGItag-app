@@ -48,7 +48,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
 - [ ] B07 — Reference bundle + sync pull — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK r1 + r2 confirm — verifier: PENDING (merged conditionally 2026-10-31; 7 integration tests deferred)
 - [ ] B08 — Rules & flags — wave 4 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / r2 confirmed by Orchestrator — verifier: PENDING (merged conditionally 2026-10-31; 14 integration tests deferred)
-- [ ] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: Opus (done, a793063) — reviewer: MOB r1 in progress — verifier:
+- [ ] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: Opus (round 2 in progress) — reviewer: MOB FAIL r1 (P1: LIBRARIES ledger cell breaks CI) — verifier:
 - [ ] P02 — Flags & plot review — wave 4 — worker: Opus (done, 1de5fa0) — reviewer: WEB r1 in progress — verifier:
 - [ ] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: — reviewer: — verifier:
 - [ ] **Gate G2 signed** (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
