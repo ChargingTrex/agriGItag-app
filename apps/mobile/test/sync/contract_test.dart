@@ -28,14 +28,8 @@ void main() {
     expect(fromWire(SyncKind.values, 'quality_reading'), SyncKind.qualityReading);
     expect(fromWire(SyncKind.values, 'harvest'), isNull);
     final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
-    // D-031/D-032 kinds `farmer` and `assist_session` are served since B15 merged (2026-10-31).
-    // RE-RUN WHEN B16 LANDS: D-040 `lot_intake` is not in the spec until B16; it is checked against
-    //   backend-design.md §3 below. Drop the exclusion once openapi.json lists it.
-    final pending = {SyncKind.lotIntake};
-    expect(
-      SyncKind.values.where((k) => !pending.contains(k)).map(wireName),
-      unorderedEquals((kind['enum'] as List).cast<String>().where((k) => k != 'lot_intake')),
-    );
+    // D-031/D-032 kinds `farmer` and `assist_session` (B15) and D-040 `lot_intake` (B16) are all in the spec.
+    expect(SyncKind.values.map(wireName), unorderedEquals((kind['enum'] as List).cast<String>()));
     expect(eventTypes, unorderedEquals(((schemas['EventType'] as Map)['enum'] as List).cast<String>()));
     final changeKinds = ((schemas['ChangeKind'] as Map)['enum'] as List).cast<String>();
     expect(changeKinds, containsAll(ChangeKind.values.map(wireName)));
@@ -114,11 +108,11 @@ void main() {
   });
 
   // D-031/D-032 are served since B15 merged (2026-10-31): the two kinds and the per-entry key are in openapi.json.
-  test('D-040 (pending B16, RE-RUN WHEN B16 LANDS): backend-design.md §3 names push kind lot_intake', () {
-    final spec = File('../../docs/agents/specs/backend-design.md').readAsStringSync();
+  test('D-040 (B16): SyncEntry has kind lot_intake and IntakeIn needs no processor_id', () {
     expect(wireName(SyncKind.lotIntake), 'lot_intake');
-    expect(spec, contains('Kind `${wireName(SyncKind.lotIntake)}`'));
-    expect(spec, contains('`data` = `IntakeIn` without `client_id`'));
+    final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
+    expect(kind['enum'] as List, contains(wireName(SyncKind.lotIntake)));
+    expect(required('IntakeIn'), isNot(contains('processor_id')));
   });
 
   test('D-031/D-032: SyncEntry has kinds farmer and assist_session and a top-level assist_session_id', () {

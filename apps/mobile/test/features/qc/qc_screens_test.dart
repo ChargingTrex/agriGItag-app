@@ -104,6 +104,18 @@ void main() {
       expect(find.text('Moisture is within the 11 % limit.'), findsOneWidget);
     });
 
+    testWidgets('an unverified lot (QR only) gets no weight check against the QR packed weight', (tester) async {
+      const qrOnly = QcLot(lotId: 'other', farmerId: 'f-9', packedKg: 200, unverified: true);
+      await pumpQc(tester, const IntakeScreen(lot: qrOnly));
+      expect(find.textContaining('Not on this phone yet'), findsOneWidget);
+      for (final weight in ['200', '0']) {
+        // 200 would be a tick and 2000 an orange line if the forgeable QR weight were trusted (D-035).
+        await typeDigits(tester, weight);
+        expect(find.text('Weight matches the packed quantity.'), findsNothing);
+        expect(find.textContaining('more than 5 % apart'), findsNothing);
+      }
+    });
+
     testWidgets('field config: price hidden, moisture reading required', (tester) async {
       await pumpQc(
         tester,

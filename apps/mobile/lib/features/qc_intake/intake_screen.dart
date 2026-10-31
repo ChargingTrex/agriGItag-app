@@ -186,10 +186,12 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
 
   /// The weight check: orange when [received] differs from the packed weight by more than 5 % (UserFlows §Selling
   /// step 4; the server's `quantity_mismatch` flag decides), green within it; null before a weight is typed or when
-  /// the packed weight is unknown. [tokens] give the glyphs, [l10n] the sentence. Throws nothing.
+  /// the packed weight is unknown or comes from an unverified QR. [tokens] give the glyphs, [l10n] the sentence.
+  /// Throws nothing.
   QcCheck? _weightCheck(Decimal? received, FarmerTokens tokens, AppLocalizations l10n) {
     final packedKg = widget.lot.packedKg;
-    if (received == null || packedKg <= 0) return null;
+    // An unverified card shows the QR's own packed weight, which anyone can forge (D-035): no check against it.
+    if (received == null || packedKg <= 0 || widget.lot.unverified) return null;
     final packed = toDecimal(packedKg);
     // Exact: |r − p| × 100 > p × 5, so 210 vs 200 (exactly 5 %) stays green.
     final off = (received - packed).abs() * Decimal.fromInt(100) > packed * Decimal.fromInt(5);

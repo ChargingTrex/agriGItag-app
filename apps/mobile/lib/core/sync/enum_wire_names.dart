@@ -2,8 +2,7 @@
 // Requirement: backend-design.md §3 (push `kind` values), D-023 (server enums are snake_case strings), M01 review
 //   P3-6 ("camelCase enum names on disk, M02 maps them"); PLAN §13 A2–A4 (the push envelope).
 // Callers: outbox_processor.dart (entry kind, change kind, event types), test/sync/contract_test.dart (checks every
-//   value against packages/openapi/openapi.json, and the D-040 kind `lot_intake` against backend-design.md §3 until
-//   B16 merges).
+//   value against packages/openapi/openapi.json, D-040 `lot_intake` included since B16).
 
 /// Event types the server accepts in an `event_version` (`EventType`); an entry of one of these types (or `undo`)
 /// is pushed as an event version.

@@ -39,8 +39,12 @@ void expectSchema(Map<String, Object?> payload, String name, {Set<String> sentEl
 
 /// Asserts that [value] is one of the values of server enum [name], so a renamed server enum fails here. Throws a
 /// test failure otherwise.
-void expectEnum(Object? value, String name) =>
-    expect((_schemas[name] as Map)['enum'] as List, contains(value), reason: '$value is not a $name');
+/// [property] names an enum-typed property of schema [name] instead of [name] being the enum itself.
+void expectEnum(Object? value, String name, {String? property}) {
+  final schema = _schemas[name] as Map;
+  final values = (property == null ? schema : (schema['properties'] as Map)[property] as Map)['enum'] as List;
+  expect(values, contains(value), reason: '$value is not a $name${property == null ? '' : '.$property'}');
+}
 
 /// Asserts that [q] is a server `Quantity` with [unit] and decimal-text value [value]. Throws a test failure otherwise.
 void expectQuantity(Object? q, String value, String unit) {
@@ -110,8 +114,7 @@ void main() {
     expect(r['instrument_id'], meterId);
     expect(r['method_ref'], 'AGMARK Sch. IV moisture method');
     expect(DateTime.parse(r['measured_at']! as String).isUtc, isTrue);
-    // RE-RUN WHEN B16 LANDS: `processor_id` becomes optional in IntakeIn (D-040 §3); until then it is excused here.
-    expectSchema(i, 'IntakeIn', sentElsewhere: {'client_id', 'processor_id'});
+    expectSchema(i, 'IntakeIn', sentElsewhere: {'client_id'});
     expect(i.containsKey('processor_id'), isFalse, reason: 'D-040: omitted, the server uses the FPO processor');
     expect(i['lot_id'], lotId);
     expect(i['sale_date'], DateTime.now().toIso8601String().substring(0, 10));
@@ -128,18 +131,17 @@ void main() {
     // Both queued, the reading first (the intake names it).
     final outbox = await f.db.select(f.db.outbox).get();
     expect([for (final o in outbox) o.refId], [reading.entryId, intake.entryId]);
-    // The push built from them carries kinds [quality_reading, lot_intake] with the IntakeIn fields in `data`
-    // (kind wording: backend-design.md §3 until B16 adds it to openapi.json).
+    // The push built from them carries kinds [quality_reading, lot_intake], both in the spec's SyncEntry kinds, with
+    // the IntakeIn fields in `data`.
     final wires = [
       for (final e in [reading, intake]) (await entryToWire(f.db, e))!,
     ];
     expect([for (final w in wires) w['kind']], ['quality_reading', 'lot_intake']);
+    for (final w in wires) {
+      expectEnum(w['kind'], 'SyncEntry', property: 'kind');
+    }
     expect(wires.last['client_id'], intake.entryId);
     expect(wires.last['data'], i);
-    expect(
-      File('../../docs/agents/specs/backend-design.md').readAsStringSync(),
-      contains('Kind `lot_intake` (rulings 2026-10-31b, D-040; B16):\n`data` = `IntakeIn` without `client_id`'),
-    );
   });
 
   testWidgets('batch: 4 readings → grade + standard edition, declared above computed, pack above graded refused', (
