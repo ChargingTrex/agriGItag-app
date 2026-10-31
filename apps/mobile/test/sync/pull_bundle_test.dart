@@ -95,6 +95,48 @@ void main() {
     expect(w.server.seen('GET', '/v1/sync/pull').map((r) => r.query['cursor']), [null, null, 'c1']);
   });
 
+  test(
+    'pull of the lot as `open` after a local ready packing keeps it ready; pull as `received` replaces it',
+    () async {
+      Map<String, Object?> lotAs(String status) => {
+        'id': 'lot-1',
+        'farmer_id': 'farmer-1',
+        'plot_id': 'plot-1',
+        'crop_id': 'crop-1',
+        'season_label': '2026-rabi',
+        'status': status,
+        'harvested_kg': '195.000',
+        'packed_kg': '300.000',
+      };
+      w.server.pullPages.add((
+        [
+          {'entity': 'lot', 'op': 'upsert', 'data': lotAs('open')},
+        ],
+        'c1',
+        false,
+      ));
+      await pullChanges(w.contextFor());
+      // M07 packing made the lot ready on the phone (the server keeps `open` until intake).
+      await w.db.update(w.db.lots).write(const LotsCompanion(status: Value('ready_for_sale')));
+      for (final (server, expected) in [
+        ('open', 'ready_for_sale'),
+        ('drying', 'ready_for_sale'),
+        ('received', 'received'),
+      ]) {
+        w.server.pullPages.add((
+          [
+            {'entity': 'lot', 'op': 'upsert', 'data': lotAs(server)},
+          ],
+          'c-$server',
+          false,
+        ));
+        await pullChanges(w.contextFor());
+        final lot = await w.db.select(w.db.lots).getSingle();
+        expect((lot.status, lot.kgPacked), (expected, 300.0), reason: 'server says $server');
+      }
+    },
+  );
+
   test('a refused cursor (422) is dropped so the next pull starts over', () async {
     await w.db.syncStateDao.set(pullCursorKey, 'bogus');
     w.server.intercept = (r) => r.path == '/v1/sync/pull'

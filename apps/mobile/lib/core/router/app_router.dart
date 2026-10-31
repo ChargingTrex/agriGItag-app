@@ -127,10 +127,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: ':eventType',
             redirect: (context, state) => FarmEvent.fromWire(state.pathParameters['eventType']) == null ? '/log' : null,
-            // Keyed by event: going from /log/packing to /log/harvest must start a new flow, not reuse the state.
+            // Keyed by event and lot: going from /log/packing to /log/harvest must start a new flow, not reuse the
+            // state. `?lot=` is the home task card's lot (D-043: no field picker on the card path).
             builder: (context, state) {
               final event = FarmEvent.fromWire(state.pathParameters['eventType'])!;
-              return EventFlowScreen(key: ValueKey(event), event: event);
+              final lot = state.uri.queryParameters['lot'];
+              return EventFlowScreen(key: ValueKey((event, lot)), event: event, lotId: lot);
             },
             routes: [
               GoRoute(

@@ -158,7 +158,12 @@ class _TaskCard extends ConsumerWidget {
             FarmerButton(
               icon: Icons.arrow_forward,
               label: event?.label(l10n) ?? l10n.homeLogEvent,
-              onPressed: () => context.push(event == null ? '/log' : '/log/${event.wireName}'),
+              // The task's lot rides along (D-043), so a farmer with two fields skips the field picker.
+              onPressed: () => context.push(switch ((event, task?.lotId)) {
+                (null, _) => '/log',
+                (final e?, null) => '/log/${e.wireName}',
+                (final e?, final lot?) => '/log/${e.wireName}?lot=$lot',
+              }),
               onSpeak: () => playPrompt(ref, context, event?.promptId ?? 'homeLogEvent'),
               prominent: true,
             ),
