@@ -8,7 +8,7 @@ public QR pages.
 
 ```bash
 make up            # Postgres+PostGIS, Redis, MinIO, Mosquitto, api, worker
-make seed          # demo FPO with three farmers and the reference batch
+make seed          # migrate the DB, then the demo FPO with three farmers and the reference batch
 open http://localhost:8000/docs   # Swagger UI (every field documented)
 make test          # backend tests
 ```

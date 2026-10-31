@@ -34,8 +34,8 @@ clients: ## Regenerate the Dart (dart-dio) and TS (openapi-typescript) clients f
 	apps/mobile/tool/gen_api.sh
 	cd apps/portal && npm run gen:api
 
-seed: ## Demo FPO and the PRD §12 reference batch FGP8T4033HM7 in the running stack (idempotent)
-	$(COMPOSE) exec api python -m agritrace.seed.demo
+seed: ## Migrate the stack DB, then seed the demo FPO and the PRD §12 reference batch FGP8T4033HM7 (idempotent)
+	$(COMPOSE) exec api sh -c "alembic upgrade head && python -m agritrace.seed.demo"
 
 progress: ## Refresh the completion line in CHECKLIST.md
 	python3 infra/scripts/checklist-progress.py

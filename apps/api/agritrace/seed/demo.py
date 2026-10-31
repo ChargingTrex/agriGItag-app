@@ -329,19 +329,22 @@ async def seed(session: AsyncSession) -> bool:
         session: database session (committed here).
 
     Returns:
-        True when the data was written, False when the FPO already existed.
+        True when the data was written, False when the reference batch (`BATCH_ID`) already existed.
 
     Raises:
         AppError: from `create_batch` (e.g. `gate_not_met`) if the reference data no longer fits the gates.
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Inserts every row listed in the module header (audit rows with the system actor), runs the lot and
-        batch rules (flags, practice tags) and commits once at the end; the GI/crop/profile rows are
-        committed first by `_gi_crop`, which is itself get-or-create, so an interrupted run can be re-run.
+        Inserts every row listed in the module header (audit rows, system actor, for audited models:
+        events yes, event_versions no), runs the lot and batch rules (flags, practice tags) and commits at
+        the end. `_gi_crop` commits the GI/crop/profile rows first (get-or-create). An FPO with this code
+        that exists without the batch (e.g. made by an admin or a test) is reused and given the reference
+        values. If `create_batch` refuses a gate it commits the history first (`_refuse`); recover by
+        deleting the FPO's rows before re-running.
     """
-    # The FPO and everything under it are committed together, so its presence means fully seeded.
-    if await session.scalar(select(Fpo.id).where(Fpo.code == FPO_CODE)) is not None:
+    # The batch is the last row written, so its presence means fully seeded (an FPO alone does not).
+    if await session.get(Batch, BATCH_ID) is not None:
         return False
     crop = await _gi_crop(session)
     # DECISION D-048: history is written by direct model inserts; only the batch goes through `create_batch`.
@@ -350,15 +353,10 @@ async def seed(session: AsyncSession) -> bool:
     #   COMPROMISE: the inserts skip the API's validation, so tests/unit/test_seed_demo.py re-checks the
     #     data against the rules and the e2e test runs the gates on it; reference codes are set afterwards.
     office = {"village": "P Thottiyangulam", **ADDRESS}
-    fpo = Fpo(
-        code=FPO_CODE,
-        name=FPO_CODE,
-        kind=OrgKind.FPO,
-        address=office,
-        fssai_no="DEMO-FSSAI-12426999000001",
-        gi_authorised_user_no="DEMO-GI-AU-883-0001",
-        public_show_farmer_names=True,
-    )
+    fpo = await session.scalar(select(Fpo).where(Fpo.code == FPO_CODE)) or Fpo(code=FPO_CODE)
+    fpo.name, fpo.kind, fpo.address = FPO_CODE, OrgKind.FPO, office
+    fpo.fssai_no, fpo.gi_authorised_user_no = "DEMO-FSSAI-12426999000001", "DEMO-GI-AU-883-0001"
+    fpo.public_show_farmer_names = True
     staff = [User(phone=phone, name=name, lang="en") for name, phone, _ in STAFF]
     session.add_all([fpo, *staff])
     await session.flush()
@@ -398,7 +396,7 @@ async def seed(session: AsyncSession) -> bool:
             lot_ids=[lot.id for lot in lots],
         ),
     )
-    await _legacy_grading(session, batch, qc)
+    await _legacy_grading(session, fpo, batch, qc)
     await rules_service.run_gate_checks(session, batch_id=batch.id)
     await session.commit()
     return True
@@ -428,7 +426,7 @@ async def _lot(
         inputs: input master rows by English name.
         ref: the reference lot.
         user: the farmer's user account.
-        n: farmer number (code `F-00n`).
+        n: farmer number (code `F00000n`).
 
     Returns:
         The lot, status `received`.
@@ -442,7 +440,7 @@ async def _lot(
     farmer = Farmer(
         fpo_id=fpo.id,
         user_id=user.id,
-        code=f"F-{n:03d}",
+        code=f"F{n:06X}",  # API format: F + 6 upper-case hex
         name=ref.farmer,
         address={"village": "PM Pudhupatti", **ADDRESS},
         gi_authorised_user_no=f"DEMO-GI-AU-883-01{n:02d}",
@@ -587,11 +585,12 @@ async def _event(
     event.current_version_id = version.id
 
 
-async def _legacy_grading(session: AsyncSession, batch: Batch, qc: User) -> None:
+async def _legacy_grading(session: AsyncSession, fpo: Fpo, batch: Batch, qc: User) -> None:
     """Record the reference page's grading: grade "A", 20 kg on 2026-07-30, no readings (PRD §12.1).
 
     Args:
         session: database session (flushed, not committed).
+        fpo: the demo FPO.
         batch: the reference batch, just created.
         qc: the QC officer who entered it.
 
@@ -602,8 +601,6 @@ async def _legacy_grading(session: AsyncSession, batch: Batch, qc: User) -> None
         Sets the reference batch and super-lot codes and `graded_kg` (status stays `created`: no grade
         computation exists, so the grading gate is still closed); adds the grading event; flushes.
     """
-    fpo = await session.get(Fpo, batch.fpo_id)
-    assert fpo is not None  # foreign key
     batch.code, batch.superlot_code, batch.graded_kg = BATCH_CODE, SUPERLOT_CODE, GRADED_KG
     await _event(
         session,

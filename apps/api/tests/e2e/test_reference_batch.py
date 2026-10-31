@@ -118,13 +118,12 @@ async def api(migrated: None, monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[
     async with get_sessionmaker()() as s:
         fpo = await s.scalar(select(Fpo.id).where(Fpo.code == demo.FPO_CODE))
         assert fpo is not None
-        rows = await s.execute(
-            select(Membership.role, User.id)
-            .join(User, User.id == Membership.user_id)
-            .where(Membership.fpo_id == fpo)
-        )
-        staff = {role: user for role, user in rows.tuples() if role != Role.FARMER}
+        # By the seeded phones: other tests may add admins to this FPO (test_config_imports reuses it).
+        roles = {phone: role for _, phone, role in demo.STAFF}
+        rows = await s.execute(select(User.phone, User.id).where(User.phone.in_(roles)))
+        staff = {roles[phone]: user for phone, user in rows.tuples()}
         lots = dict((await s.execute(select(Lot.code, Lot.id).where(Lot.fpo_id == fpo))).tuples().all())
+    assert set(lots) == {lot.code for lot in demo.LOTS}, "the seed did not write the reference lots"
     d = Demo(fpo=fpo, staff=staff, lots=lots)
     d.act_as(Role.FPO_ADMIN)
     monkeypatch.setattr(
@@ -259,6 +258,7 @@ async def _apply_fixes(d: Demo, client: AsyncClient, batch: str) -> None:
         "entries": entries,
     }
     r = await client.post("/v1/sync/push", json=envelope)
+    assert r.status_code == 200, r.text
     assert [x["status"] for x in r.json()["results"]] == ["accepted"] * len(entries), r.text
 
     d.act_as(Role.QC_OFFICER)
