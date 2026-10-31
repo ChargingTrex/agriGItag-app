@@ -67,6 +67,8 @@ def stack() -> Iterator[None]:
         # Same bucket semantics as infra/scripts/s3-init.sh (D-008); retention is not needed in tests.
         s3.create_bucket(Bucket="evidence", ObjectLockEnabledForBucket=True, **where)
         s3.create_bucket(Bucket="public-pages", **where)
+        # A rebuilt page keeps the previous build's objects as older versions (B10 acceptance).
+        s3.put_bucket_versioning(Bucket="public-pages", VersioningConfiguration={"Status": "Enabled"})
         s3.create_bucket(Bucket="id-docs", **where)
         yield
 

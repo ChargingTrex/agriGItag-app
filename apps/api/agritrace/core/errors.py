@@ -478,6 +478,20 @@ class ResolutionForbiddenError(AppError):
     fix = "Escalate it, or ask an FPO admin to review and resolve it."
 
 
+# Publishing (B10; FR15-FR17, CLAUDE.md §6). Rebuild and label gates reuse `gate_not_met`.
+
+
+class PublicRecordInvalidError(AppError):
+    """The public page record failed the renderer's allow-list or privacy check (W01 `PublicBatchRecord`)."""
+
+    code, status, message_key = "public_record_invalid", 409, "error.public_record_invalid"
+    message = "The public page could not be built from this batch's data."
+    fix = (
+        "Read `details` (field path and reason, never the value), correct that record (e.g. farming type, "
+        "village, FSSAI number) and call POST /v1/batches/{id}/rebuild."
+    )
+
+
 SQLSTATE_RESTRICT_VIOLATION = "23001"
 
 

@@ -27,6 +27,7 @@ from agritrace.core.config import get_settings
 from agritrace.core.db import get_engine
 from agritrace.core.errors import install_handlers
 from agritrace.core.schemas import ErrorEnvelope
+from agritrace.modules.publishing.builder import PAGE_REQUIRED_FIELDS
 
 log = logging.getLogger(__name__)
 
@@ -159,11 +160,11 @@ async def _validate_config_at_boot(_: FastAPI) -> AsyncIterator[None]:
 
     Raises:
         pydantic.ValidationError: missing `JWT_SECRET` or an invalid setting; uvicorn then exits.
-        ConfigInvalid: a file under apps/api/config fails its schema (D-017); the message names the
-            file and key, and uvicorn exits.
+        ConfigInvalid: a file under apps/api/config fails its schema (D-017), or hides a field the public
+            page requires (D-034); the message names the file and key, and uvicorn exits.
     """
     get_settings()
-    fieldconfig.load()
+    fieldconfig.check_page_required(fieldconfig.load(), PAGE_REQUIRED_FIELDS)
     yield
 
 

@@ -30,6 +30,8 @@ dependencies = [
     "pillow>=11.0",
     "pyyaml>=6.0.3",
     "python-multipart>=0.0.32",
+    "qrcode>=8.0",
+    "agritrace-page",
 ]
 
 [dependency-groups]
@@ -43,6 +45,7 @@ dev = [
     "interrogate>=1.7",
     "types-shapely>=2.1.0.20260728",
     "types-pyyaml>=6.0.12.20260906",
+    "zxing-cpp>=2.2",
 ]
 
 [build-system]
@@ -82,7 +85,8 @@ plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 # shortcut: these ship no type stubs; add boto3-stubs/celery-types if typing gaps bite (later WP).
-module = ["boto3.*", "botocore.*", "celery.*", "brotli_asgi.*"]
+# agritrace_page (W01) has no py.typed marker yet; qrcode ships no stubs (B10).
+module = ["boto3.*", "botocore.*", "celery.*", "brotli_asgi.*", "qrcode.*", "agritrace_page.*"]
 ignore_missing_imports = true
 
 [tool.interrogate]
@@ -130,3 +134,6 @@ name = "D-004 core never imports modules"
 type = "forbidden"
 source_modules = ["agritrace.core"]
 forbidden_modules = ["agritrace.modules"]
+
+[tool.uv.sources]
+agritrace-page = { path = "../public-page", editable = true }

@@ -3,7 +3,8 @@
 Serves: D-008 (local S3 stand-in; `evidence` write-once, `public-pages` anonymous read),
 D-011 (single presigned PUT per photo with SHA-256), D-007 (static public pages in object storage).
 Callers: events service (presign, head, read photos; B06), events evidence (`presign_get` for variant URLs in
-the lot timeline and `/sync/pull`; B07), publishing service (put_public; B10),
+the lot timeline and `/sync/pull`; B07), publishing service (put_public; photo copies and the page proxy
+via `client`; B10),
 `agritrace.main` health check (`client`), registry ID documents (presign into id-docs; B13),
 tests/integration/test_storage.py.
 """
@@ -157,7 +158,7 @@ def put_public(key: str, body: bytes, content_type: str, cache_control: str) -> 
     """Write one public page asset to the anonymous-read bucket.
 
     Args:
-        key: object key inside the public-pages bucket, e.g. `b/FGP8T4033HM7/index.html`.
+        key: object key inside the public-pages bucket, e.g. `batches/FGP8T4033HM7/index.html`.
         body: file content.
         content_type: MIME type served to browsers.
         cache_control: `Cache-Control` header the CDN and browsers honour.
