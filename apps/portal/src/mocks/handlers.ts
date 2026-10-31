@@ -1,12 +1,13 @@
 /**
  * MSW request handlers: a mock of the API for tests, `npm run dev:mock` and the Playwright mock-mode specs.
- * Serves: plan §7.3 P00 (MSW from spec; login passes with MSW) and P01 (identity + registry handlers for the
- * Members screens, Stage 0 approval). Called by: src/mocks/browser.ts, src/test/setup.ts (Node server),
- * tests (MOCK_* constants, `mockState`, `resetMockData`).
+ * Serves: plan §7.3 P00 (MSW from spec; login passes with MSW), P01 (identity + registry handlers for the
+ * Members screens, Stage 0 approval) and P02 (flags list/detail/resolve, lot events with evidence photos,
+ * farmer plots, plot correction; FR70, Dataflow "Review & flags"). Called by: src/mocks/browser.ts,
+ * src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`, `resetMockData`).
  *
  * Every body is typed with the generated `components` schemas, so a contract change breaks
- * `npm run typecheck` here. State (farmer statuses, processors, the refresh "cookie") is module-level and
- * reset by `resetMockData` after each test.
+ * `npm run typecheck` here. State (farmers, processors, plots, flags, the session's roles, the refresh
+ * "cookie") is module-level and reset by `resetMockData` after each test.
  */
 import { http, HttpResponse } from 'msw';
 import type { components } from '../api/generated/schema';
@@ -21,6 +22,9 @@ type ProcessorOut = Schemas['ProcessorOut'];
 type ProcessorIn = Schemas['ProcessorIn'];
 type SessionOut = Schemas['SessionOut'];
 type PinRequiredOut = Schemas['PinRequiredOut'];
+type FlagOut = Schemas['FlagOut'];
+type EventOut = Schemas['EventOut'];
+type Role = Schemas['Role'];
 
 /** The SMS code the mock accepts. */
 export const MOCK_OTP = '123456';
@@ -35,6 +39,23 @@ export const MOCK_ACCESS_TOKEN = 'mock-access-token';
 export const MOCK_FPO_ID = '0b9d6a52-3f7e-4c1a-9a51-6d3c1f0e2a10';
 export const MOCK_GI_TAG_ID = '5a1f3c2e-8d4b-4e6a-b7c9-1e2d3f4a5b6c';
 export const MOCK_PLOT_ID = '7c3e9b1a-2d4f-4a6b-8c0d-9e1f2a3b4c5d';
+/** A map-pin plot of the same farmer that waits for review (FR70). */
+export const MOCK_REVIEW_PLOT_ID = '7c3e9b1a-2d4f-4a6b-8c0d-9e1f2a3b4c5e';
+/** The farmer's lot that carries a hold flag (yield over the ceiling). */
+export const MOCK_LOT_ID = '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
+/** Hold on the lot (yield over the ceiling, assigned to the FPO admin). */
+export const MOCK_HOLD_FLAG_ID = 'f0000000-0000-7000-8000-000000000001';
+/** Warn on the lot (quantity chain). */
+export const MOCK_QTY_FLAG_ID = 'f0000000-0000-7000-8000-000000000002';
+/** Warn on the map-pin plot. */
+export const MOCK_PIN_FLAG_ID = 'f0000000-0000-7000-8000-000000000003';
+/** Info on an event, already cleared. */
+export const MOCK_CLEARED_FLAG_ID = 'f0000000-0000-7000-8000-000000000004';
+/** Escalated practice-tag warn on the lot. */
+export const MOCK_PRACTICE_FLAG_ID = 'f0000000-0000-7000-8000-000000000005';
+/** Off-plot warn on an event. */
+export const MOCK_EVENT_FLAG_ID = 'f0000000-0000-7000-8000-000000000006';
+const MOCK_EVENT_ID = 'e0000000-0000-7000-8000-000000000001';
 /** Id of the first pending farmer. */
 export const MOCK_PENDING_FARMER_ID = farmerId(1);
 /** Id of an active farmer who owns MOCK_PLOT_ID. */
@@ -45,15 +66,22 @@ export const MOCK_FARMER_COUNT = 57;
 /** Mutable mock state. `signedIn` stands in for the httpOnly refresh cookie. */
 export const mockState = {
   signedIn: false,
+  /** Roles of the signed-in office user; tests set `['field_officer']` before rendering. */
+  roles: ['fpo_admin'] as Role[],
   farmers: seedFarmers(),
   processors: [] as ProcessorOut[],
+  plots: seedPlots(),
+  flags: seedFlags(),
 };
 
 /** Restores the seed state (called after every test). */
 export function resetMockData(): void {
   mockState.signedIn = false;
+  mockState.roles = ['fpo_admin'];
   mockState.farmers = seedFarmers();
   mockState.processors = [];
+  mockState.plots = seedPlots();
+  mockState.flags = seedFlags();
 }
 
 /**
@@ -95,41 +123,199 @@ function seedFarmers(): FarmerOut[] {
   });
 }
 
-const plot: PlotOut = {
-  id: MOCK_PLOT_ID,
-  fpo_id: MOCK_FPO_ID,
-  farmer_id: MOCK_ACTIVE_FARMER_ID,
-  code: 'VSV-0010-P1',
-  pin: { lat: 9.5121, lon: 77.9606, accuracy_m: 6 },
-  pin_method: 'live_gps',
-  pin_device_time: '2026-10-02T08:00:00Z',
-  pin_gps_time: '2026-10-02T08:00:01Z',
-  pin_server_received_at: '2026-10-02T08:05:00Z',
-  declared_area: { value: '2.50', unit: 'acre' },
-  land_record_ref: null,
-  walked_area: { value: '3.20', unit: 'acre' },
-  area_gap_pct: '28.0',
-  area_gap_exceeds: true,
-  farming_type: 'rainfed',
-  irrigation_source: null,
-  soil_type: 'black',
-  location_status: 'near_edge',
-  location_method_label: 'Live GPS pin',
-  region_check: null,
-  revision_no: 1,
-  reviewed_at: null,
-  review_method: null,
-  review_outcome: null,
-};
+/**
+ * Builds the seed plots: one checked live-GPS plot and one map-pin plot waiting for review.
+ * @returns Two plots of MOCK_ACTIVE_FARMER_ID.
+ */
+function seedPlots(): PlotOut[] {
+  const plot: PlotOut = {
+    id: MOCK_PLOT_ID,
+    fpo_id: MOCK_FPO_ID,
+    farmer_id: MOCK_ACTIVE_FARMER_ID,
+    code: 'VSV-0010-P1',
+    pin: { lat: 9.5121, lon: 77.9606, accuracy_m: 6 },
+    pin_method: 'live_gps',
+    pin_device_time: '2026-10-02T08:00:00Z',
+    pin_gps_time: '2026-10-02T08:00:01Z',
+    pin_server_received_at: '2026-10-02T08:05:00Z',
+    declared_area: { value: '2.50', unit: 'acre' },
+    land_record_ref: null,
+    walked_area: { value: '3.20', unit: 'acre' },
+    area_gap_pct: '28.0',
+    area_gap_exceeds: true,
+    farming_type: 'rainfed',
+    irrigation_source: null,
+    soil_type: 'black',
+    location_status: 'near_edge',
+    location_method_label: 'Live GPS pin',
+    region_check: null,
+    revision_no: 1,
+    reviewed_at: null,
+    review_method: null,
+    review_outcome: null,
+  };
+  return [
+    plot,
+    {
+      ...plot,
+      id: MOCK_REVIEW_PLOT_ID,
+      code: 'VSV-0010-P2',
+      pin: { lat: 9.6012, lon: 78.0101, accuracy_m: null },
+      pin_method: 'map_pin',
+      pin_gps_time: null,
+      walked_area: null,
+      area_gap_pct: null,
+      area_gap_exceeds: false,
+      location_status: 'needs_review',
+      location_method_label: 'Map pin',
+    },
+  ];
+}
 
-const session: SessionOut = {
+/**
+ * Builds the seed flags, newest first, one or more per rule family the detail page renders.
+ * @returns Six flags of MOCK_FPO_ID.
+ */
+function seedFlags(): FlagOut[] {
+  const base = {
+    fpo_id: MOCK_FPO_ID,
+    status: 'open',
+    assigned_role: 'field_officer',
+    resolved_by: null,
+    resolution_reason_code: null,
+    resolution_note: null,
+    resolved_at: null,
+  } as const;
+  return [
+    {
+      ...base,
+      id: MOCK_EVENT_FLAG_ID,
+      subject_type: 'event',
+      subject_id: MOCK_EVENT_ID,
+      rule_code: 'event_off_plot',
+      severity: 'warn',
+      details: { pin_radius_m: 200, buffer_m: 50 },
+      raised_at: '2026-02-16T06:00:00Z',
+    },
+    {
+      ...base,
+      id: MOCK_PRACTICE_FLAG_ID,
+      subject_type: 'lot',
+      subject_id: MOCK_LOT_ID,
+      rule_code: 'practice_tag_contradiction',
+      severity: 'warn',
+      status: 'escalated',
+      assigned_role: 'fpo_admin',
+      details: {
+        declared: ['organic'],
+        derived: ['inorganic'],
+        input_categories: ['chemical_fertilizer'],
+      },
+      raised_at: '2026-02-15T06:00:00Z',
+    },
+    {
+      ...base,
+      id: MOCK_CLEARED_FLAG_ID,
+      subject_type: 'event',
+      subject_id: MOCK_EVENT_ID,
+      rule_code: 'gps_poor_accuracy',
+      severity: 'info',
+      status: 'cleared',
+      details: { accuracy_m: 42, limit_m: 30 },
+      raised_at: '2026-02-14T06:00:00Z',
+      resolved_by: MOCK_FPO_ID,
+      resolution_reason_code: 'field_visit',
+      resolved_at: '2026-02-15T09:00:00Z',
+    },
+    {
+      ...base,
+      id: MOCK_PIN_FLAG_ID,
+      subject_type: 'plot',
+      subject_id: MOCK_REVIEW_PLOT_ID,
+      rule_code: 'plot_map_pin',
+      severity: 'warn',
+      details: {},
+      raised_at: '2026-02-14T05:00:00Z',
+    },
+    {
+      ...base,
+      id: MOCK_QTY_FLAG_ID,
+      subject_type: 'lot',
+      subject_id: MOCK_LOT_ID,
+      rule_code: 'quantity_mismatch',
+      severity: 'warn',
+      details: {
+        harvested: '300',
+        packed: '272.6',
+        received: '400',
+        unit: 'kg',
+        problems: [{ from: 'packed', to: 'received', variance_pct: '46.7' }],
+      },
+      raised_at: '2026-02-14T04:00:00Z',
+    },
+    {
+      ...base,
+      id: MOCK_HOLD_FLAG_ID,
+      subject_type: 'lot',
+      subject_id: MOCK_LOT_ID,
+      rule_code: 'yield_over_ceiling',
+      severity: 'hold',
+      assigned_role: 'fpo_admin',
+      details: {
+        harvested_kg: '1350',
+        declared_acres: '1.00',
+        ceiling_kg_per_acre: '1000',
+        warn_margin_pct: '20',
+        hold_margin_pct: '30',
+      },
+      raised_at: '2026-02-14T03:00:00Z',
+    },
+  ];
+}
+
+// Presigned variant links stand in as data URLs, so `dev:mock` shows a thumbnail without storage.
+const THUMB =
+  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="96" height="96"%3E%3Crect width="96" height="96" fill="%232e7d32"/%3E%3C/svg%3E';
+
+/** The lot's timeline: one harvest with a verified photo. */
+const lotEvents: EventOut[] = [
+  {
+    id: MOCK_EVENT_ID,
+    event_type: 'harvest',
+    instance_no: 1,
+    status: 'submitted',
+    occurred_on: '2026-02-12',
+    occurred_end_on: null,
+    version_no: 1,
+    change_kind: 'create',
+    payload: { quantity: { value: '1350', unit: 'kg' } },
+    entered_by_user_id: MOCK_FPO_ID,
+    on_behalf_of_farmer_id: null,
+    is_system_generated: false,
+    reason_code: null,
+    photos: [
+      {
+        id: 'b0000000-0000-7000-8000-000000000001',
+        status: 'verified',
+        variants: { thumb_url: THUMB, medium_url: THUMB, width: 96, height: 96 },
+      },
+    ],
+  },
+];
+
+/**
+ * The mock session with the roles currently set in `mockState`.
+ * @param token Access token to hand out.
+ * @returns A `SessionOut`.
+ */
+const session = (token = MOCK_ACCESS_TOKEN): SessionOut => ({
   kind: 'session',
-  access_token: MOCK_ACCESS_TOKEN,
+  access_token: token,
   refresh_token: null,
   expires_in: 900,
-  roles: ['fpo_admin'],
+  roles: mockState.roles,
   fpo_id: MOCK_FPO_ID,
-};
+});
 
 /**
  * An error envelope response.
@@ -187,7 +373,7 @@ export const handlers = [
     const { pin } = await body(request);
     if (auth === 'Bearer mock-pin-token-new' && typeof pin === 'string') {
       mockState.signedIn = true;
-      return HttpResponse.json(session);
+      return HttpResponse.json(session());
     }
     if (auth !== 'Bearer mock-pin-token') return fail(401, 'unauthorized');
     if (pin === MOCK_LOCKED_PIN) {
@@ -195,11 +381,11 @@ export const handlers = [
     }
     if (pin !== MOCK_PIN) return fail(422, 'pin_invalid', { attempts_left: 3 });
     mockState.signedIn = true;
-    return HttpResponse.json(session);
+    return HttpResponse.json(session());
   }),
   http.post('/v1/auth/refresh', () =>
     mockState.signedIn
-      ? HttpResponse.json({ ...session, access_token: `${MOCK_ACCESS_TOKEN}-${String(++issued)}` })
+      ? HttpResponse.json(session(`${MOCK_ACCESS_TOKEN}-${String(++issued)}`))
       : fail(401, 'unauthorized'),
   ),
   http.post('/v1/auth/logout', () => {
@@ -241,7 +427,92 @@ export const handlers = [
   }),
   http.get('/v1/plots/:plotId', ({ request, params }) => {
     if (!authed(request)) return fail(401, 'unauthorized');
-    return params['plotId'] === MOCK_PLOT_ID ? HttpResponse.json(plot) : fail(404, 'not_found');
+    const plot = mockState.plots.find((item) => item.id === params['plotId']);
+    return plot ? HttpResponse.json(plot) : fail(404, 'not_found');
+  }),
+  http.get('/v1/farmers/:farmerId/plots', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const items = mockState.plots.filter((item) => item.farmer_id === params['farmerId']);
+    return HttpResponse.json({ items, next_cursor: null, has_more: false });
+  }),
+  // Plot correction (B03/B14): FPO admin only, reason required. An accepted review closes the plot's open
+  // flags the way the server's `rules.check_plot` re-run does (`fixed` / `rule_passed`).
+  http.post('/v1/plots/:plotId/correct', async ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const plot = mockState.plots.find((item) => item.id === params['plotId']);
+    if (!plot) return fail(404, 'not_found');
+    const input = (await body(request)) as Schemas['PlotCorrection'];
+    if (!input.reason_code) return fail(422, 'reason_required');
+    if (input.pin) plot.pin = input.pin;
+    if (input.review_outcome) {
+      plot.review_outcome = input.review_outcome;
+      plot.review_method = input.review_method ?? null;
+      plot.reviewed_at = new Date().toISOString();
+      plot.location_status = input.review_outcome === 'accepted' ? 'confirmed' : 'needs_review';
+    }
+    plot.revision_no += 1;
+    const confirmed = plot.location_status === 'confirmed';
+    for (const flag of mockState.flags) {
+      if (confirmed && flag.subject_id === plot.id && flag.status === 'open') {
+        Object.assign(flag, { status: 'fixed', resolution_reason_code: 'rule_passed' });
+      }
+    }
+    return HttpResponse.json(plot);
+  }),
+
+  // Rules & flags (B08 contract).
+  http.get('/v1/flags', ({ request }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const query = new URL(request.url).searchParams;
+    const start = Number(query.get('cursor') ?? '0');
+    const limit = Number(query.get('limit') ?? '50');
+    const { status, severity, assignee } = Object.fromEntries(query);
+    const all = mockState.flags.filter(
+      (flag) =>
+        (!status || flag.status === status) &&
+        (!severity || flag.severity === severity) &&
+        (!assignee || flag.assigned_role === assignee),
+    );
+    const end = start + limit;
+    return HttpResponse.json({
+      items: all.slice(start, end),
+      next_cursor: end < all.length ? String(end) : null,
+      has_more: end < all.length,
+    });
+  }),
+  http.get('/v1/flags/:flagId', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const flag = mockState.flags.find((item) => item.id === params['flagId']);
+    return flag ? HttpResponse.json(flag) : fail(404, 'not_found');
+  }),
+  http.post('/v1/flags/:flagId/resolve', async ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const flag = mockState.flags.find((item) => item.id === params['flagId']);
+    if (!flag) return fail(404, 'not_found');
+    const input = (await body(request)) as Schemas['FlagResolveIn'];
+    if (!input.reason_code) return fail(422, 'reason_required');
+    if (flag.status !== 'open' && flag.status !== 'escalated') return fail(409, 'flag_not_open');
+    const admin = mockState.roles.includes('fpo_admin');
+    if (!admin && (flag.severity === 'hold' || flag.status === 'escalated')) {
+      return fail(403, 'resolution_forbidden');
+    }
+    const escalated = input.resolution === 'escalated';
+    const status = { looks_fine: 'cleared', fixed: 'fixed', escalated: 'escalated' } as const;
+    Object.assign(flag, {
+      status: status[input.resolution],
+      assigned_role: escalated ? 'fpo_admin' : flag.assigned_role,
+      resolution_reason_code: input.reason_code,
+      resolution_note: input.note ?? null,
+      resolved_by: escalated ? null : MOCK_FPO_ID,
+      resolved_at: escalated ? null : new Date().toISOString(),
+    });
+    return HttpResponse.json(flag);
+  }),
+  http.get('/v1/lots/:lotId/events', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (params['lotId'] !== MOCK_LOT_ID) return fail(404, 'not_found');
+    return HttpResponse.json({ items: lotEvents, next_cursor: null, has_more: false });
   }),
   http.get('/v1/crops', () =>
     HttpResponse.json<Schemas['CropOut'][]>([

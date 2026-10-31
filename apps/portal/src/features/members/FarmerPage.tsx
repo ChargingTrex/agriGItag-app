@@ -1,11 +1,13 @@
 /**
- * Farmer detail: profile, onboarding status (approve when pending), GI authorised-user status, and a note on
- * plots (added from the mobile app; listed here once the API can list a farmer's plots).
- * Serves: FR8 (approval), FR62 (GI authorised-user number), Dataflow Stage 0, plan §7.3 P01 (farmer detail),
- * gap analysis "Multiple farm lands per farmer". Called by: src/AppRoutes.tsx (`/members/:farmerId`).
+ * Farmer detail: profile, onboarding status (approve when pending), GI authorised-user status, the farmer's
+ * plots with their GI location status, and a link to the open flags on those plots.
+ * Serves: FR8 (approval), FR62 (GI authorised-user number), FR70 (flags of the farmer's plots), Dataflow
+ * Stage 0, plan §7.3 P01 (farmer detail) and P02 (link to open flags), gap analysis "Multiple farm lands per
+ * farmer" (B14 `GET /v1/farmers/{id}/plots`). Called by: src/AppRoutes.tsx (`/members/:farmerId`).
  */
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
@@ -16,6 +18,7 @@ import { unwrap } from '../../api/client';
 import { errorMessage } from '../../api/errors';
 import { useAuth } from '../../auth/AuthProvider';
 import { FarmerStatusChip, useApproveFarmer } from './MembersPage';
+import { LOCATION_CHIP } from './PlotPage';
 
 /**
  * Formats an ISO timestamp as a short date, e.g. "14 Feb 2026".
@@ -38,6 +41,17 @@ export function FarmerPage() {
     queryFn: ({ signal }) =>
       unwrap(
         api.GET('/v1/farmers/{farmer_id}', { params: { path: { farmer_id: farmerId } }, signal }),
+      ),
+  });
+  // A farmer has a handful of plots (FR2), so the first page of 50 is the whole list.
+  const plots = useQuery({
+    queryKey: ['plots', 'farmer', farmerId],
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET('/v1/farmers/{farmer_id}/plots', {
+          params: { path: { farmer_id: farmerId } },
+          signal,
+        }),
       ),
   });
 
@@ -95,11 +109,30 @@ export function FarmerPage() {
         <Typography id="plots-heading" component="h2" variant="h6" gutterBottom>
           Plots
         </Typography>
-        {/* TODO(B14 output 3): list the farmer's plots from GET /v1/farmers/{id}/plots. */}
-        <Alert severity="info">
-          Plots open from their flags or links for now; the per-farmer plot list arrives with the
-          registry update. "Add another plot" is done in the mobile app by the farmer or field
-          officer, because the pin is taken on the field.
+        {plots.isError && <Alert severity="error">{errorMessage(plots.error)}</Alert>}
+        {plots.isSuccess && (
+          <Stack spacing={1} sx={{ alignItems: 'start' }}>
+            {plots.data.items.map((plot) => (
+              <Stack key={plot.id} direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+                <Button component={Link} to={`/members/plots/${plot.id}`}>
+                  Plot {plot.code}
+                </Button>
+                <Chip size="small" {...LOCATION_CHIP[plot.location_status]} />
+              </Stack>
+            ))}
+            {plots.data.items.length > 0 && (
+              <Button
+                component={Link}
+                to={`/flags?subject=${plots.data.items.map((plot) => plot.id).join(',')}`}
+              >
+                Open flags on these plots
+              </Button>
+            )}
+          </Stack>
+        )}
+        <Alert severity="info" sx={{ mt: 1 }}>
+          "Add another plot" is done in the mobile app by the farmer or field officer, because the
+          pin is taken on the field.
         </Alert>
       </section>
     </Stack>
