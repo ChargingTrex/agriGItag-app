@@ -43,6 +43,8 @@ dependencies:
   uuid: ^4.6.0
   # Draws the onboarding handoff QR (lib/features/onboarding_farmer/handoff_step.dart, M09).
   qr_flutter: ^4.1.0
+  # Reads the lot QR at the QC intake (lib/features/qc_intake/scan_screen.dart, M11).
+  mobile_scanner: ^7.4.3
 
 dev_dependencies:
   flutter_test:

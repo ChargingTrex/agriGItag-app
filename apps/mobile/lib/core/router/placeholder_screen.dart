@@ -2,7 +2,7 @@
 // Requirement: plan §7.2 M00 (placeholder screens showing the role name; locale switch re-renders the
 //   sample screen in Tamil), UserFlows §Design rules "Language first" (switched with one button); M06 sign-out
 //   (UserFlows §Who uses what: shared family phones; §When things go wrong: unsent entries stay, the cloud reminds).
-// Callers: app_router.dart routes /home, /officer, /qc, /assist/:farmerId and /settings. Replaced by the real
+// Callers: app_router.dart routes /home, /officer, /assist/:farmerId and /settings (M11 replaced /qc). Replaced by the real
 //   feature screens in M07 (farmer home), M08 (settings), M10 (officer, assist), M11 (QC).
 
 import 'package:flutter/material.dart';

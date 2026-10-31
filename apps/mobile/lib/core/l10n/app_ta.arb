@@ -523,5 +523,379 @@
         "example": "3"
       }
     }
+  },
+  "qcHomePrompt": "பெறுவதற்கு லாட்டை ஸ்கேன் செய்யுங்கள், அல்லது தொகுப்பைத் தரம் பிரியுங்கள்.",
+  "@qcHomePrompt": {
+    "description": "Spoken prompt of the QC home screen (M11)."
+  },
+  "qcReceiveLot": "லாட் பெறு",
+  "@qcReceiveLot": {
+    "description": "QC home button that opens the lot scanner (intake)."
+  },
+  "qcGradeBatch": "தரம் பிரி",
+  "@qcGradeBatch": {
+    "description": "QC home button that opens the batch list (grading and packing)."
+  },
+  "qcScanPrompt": "லாட்டின் QR குறியீட்டை நோக்கி கேமராவைக் காட்டுங்கள்.",
+  "@qcScanPrompt": {
+    "description": "Spoken prompt of the lot scanner."
+  },
+  "qcPickLot": "லாட் தேர்வு",
+  "@qcPickLot": {
+    "description": "Scanner fallback button: pick the lot from the list of ready lots instead of scanning."
+  },
+  "qcPickLotPrompt": "பெற வேண்டிய லாட்டைத் தொடுங்கள்.",
+  "@qcPickLotPrompt": {
+    "description": "Spoken prompt above the list of ready lots."
+  },
+  "qcNoReadyLots": "இந்தப் போனில் விற்கத் தயாரான லாட் இல்லை. ஒத்திசைத்து மீண்டும் முயலுங்கள்.",
+  "@qcNoReadyLots": {
+    "description": "Shown when the ready-lot list is empty."
+  },
+  "qcLotNotFound": "இந்த லாட் இந்தப் போனில் இல்லை. ஒத்திசைத்து மீண்டும் ஸ்கேன் செய்யுங்கள்.",
+  "@qcLotNotFound": {
+    "description": "Shown when a scanned code matches no lot on the phone."
+  },
+  "qcLot": "லாட்",
+  "@qcLot": {
+    "description": "Label of the lot id on the lot card."
+  },
+  "qcFarmer": "விவசாயி",
+  "@qcFarmer": {
+    "description": "Label of the farmer on the lot card."
+  },
+  "qcPacked": "கட்டியது",
+  "@qcPacked": {
+    "description": "Label of the farmer's packed quantity on the lot card."
+  },
+  "qcIntakePrompt": "மூட்டைகளை எடை போடுங்கள், பிறகு ஈரப்பதம் அளவிடுங்கள்.",
+  "@qcIntakePrompt": {
+    "description": "Spoken prompt of the intake check screen."
+  },
+  "qcReceived": "பெற்ற எடை",
+  "@qcReceived": {
+    "description": "Intake field: weight received at the gate (kg)."
+  },
+  "qcPricePerKg": "கிலோ விலை",
+  "@qcPricePerKg": {
+    "description": "Intake field: price paid per kg (optional, field config)."
+  },
+  "qcMoisture": "ஈரப்பதம்",
+  "@qcMoisture": {
+    "description": "Intake field: moisture reading (%)."
+  },
+  "qcWeightMismatch": "{received} கிலோ பெறப்பட்டது, ஆனால் {packed} கிலோ கட்டப்பட்டது: 5 %-க்கு மேல் வேறுபாடு.",
+  "@qcWeightMismatch": {
+    "description": "Orange check when received and packed weights differ by more than 5 %.",
+    "placeholders": {
+      "received": {
+        "type": "String",
+        "example": "230"
+      },
+      "packed": {
+        "type": "String",
+        "example": "200"
+      }
+    }
+  },
+  "qcWeightOk": "எடை கட்டிய அளவுடன் பொருந்துகிறது.",
+  "@qcWeightOk": {
+    "description": "Green check when received and packed weights are within 5 %."
+  },
+  "qcMoistureHigh": "ஈரப்பதம் {value} %, வரம்பு {limit} %-ஐ விட அதிகம்.",
+  "@qcMoistureHigh": {
+    "description": "Orange check when the intake moisture is above the profile gate.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "11.5"
+      },
+      "limit": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "qcMoistureOk": "ஈரப்பதம் {limit} % வரம்புக்குள் உள்ளது.",
+  "@qcMoistureOk": {
+    "description": "Green check when the intake moisture is within the profile gate.",
+    "placeholders": {
+      "limit": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "qcMeter": "அளந்த கருவி",
+  "@qcMeter": {
+    "description": "Heading of the instrument choice."
+  },
+  "qcCalibrationExpired": "அளவுத்திருத்தம் {date} அன்று காலாவதியானது. வேறு கருவியைப் பயன்படுத்துங்கள்.",
+  "@qcCalibrationExpired": {
+    "description": "Reason an instrument cannot be picked (FR50); date like 14 Feb.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "qcCalibrationDue": "{date} வரை அளவுத்திருத்தம்",
+  "@qcCalibrationDue": {
+    "description": "Calibration due date under an instrument; date like 14 Feb.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "qcBluetoothMeter": "கருவி (புளூடூத்)",
+  "@qcBluetoothMeter": {
+    "description": "Disabled instrument option for Bluetooth meters (not in the pilot)."
+  },
+  "qcComingSoon": "விரைவில் வரும்",
+  "@qcComingSoon": {
+    "description": "Why the Bluetooth option is disabled."
+  },
+  "qcNoMeter": "இந்தப் போனில் கருவி இல்லை. FPO நிர்வாகியிடம் பதிவு செய்யச் சொல்லுங்கள்.",
+  "@qcNoMeter": {
+    "description": "Shown when no instrument is stored on the phone."
+  },
+  "qcVisual": "கண்ணால்",
+  "@qcVisual": {
+    "description": "Instrument choice for a visual reading (colour card, FR44)."
+  },
+  "qcPickMeter": "அளவீட்டைச் சேமிக்க கருவியைத் தேர்ந்தெடுங்கள்.",
+  "@qcPickMeter": {
+    "description": "Why Save is disabled: a reading has no instrument."
+  },
+  "qcFillRequired": "சேமிக்க {field} உள்ளிடுங்கள்.",
+  "@qcFillRequired": {
+    "description": "Why Save is disabled: a required field (field config) is empty.",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "Received weight"
+      }
+    }
+  },
+  "qcSave": "சேமி",
+  "@qcSave": {
+    "description": "Save button of the QC screens."
+  },
+  "qcSaved": "சேமிக்கப்பட்டது. சிக்னல் வந்ததும் அனுப்பப்படும்.",
+  "@qcSaved": {
+    "description": "Spoken confirmation after a QC save."
+  },
+  "qcDone": "முடிந்தது",
+  "@qcDone": {
+    "description": "Button back to the QC home after a save."
+  },
+  "qcBatchesPrompt": "தரம் பிரிக்க அல்லது பொதி செய்ய தொகுப்பைத் தொடுங்கள்.",
+  "@qcBatchesPrompt": {
+    "description": "Spoken prompt of the batch list."
+  },
+  "qcBatchesOffline": "சிக்னல் இல்லை. தொகுப்புகளுக்கு இணையம் தேவை.",
+  "@qcBatchesOffline": {
+    "description": "Shown when the batch list cannot be loaded."
+  },
+  "qcRetry": "மீண்டும் முயல்",
+  "@qcRetry": {
+    "description": "Button that reloads the batch list."
+  },
+  "qcNoBatches": "தரம் பிரிக்கவோ பொதி செய்யவோ தொகுப்பு இல்லை.",
+  "@qcNoBatches": {
+    "description": "Shown when the batch list is empty."
+  },
+  "qcBatchLine": "தொகுப்பு {code}: {kg} கிலோ",
+  "@qcBatchLine": {
+    "description": "One batch in the list: code and received weight.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "FGP8T4033HM7"
+      },
+      "kg": {
+        "type": "String",
+        "example": "320"
+      }
+    }
+  },
+  "qcToGrade": "தரம் பிரிக்க",
+  "@qcToGrade": {
+    "description": "Batch status in the list: waiting for grading."
+  },
+  "qcToPack": "பொதி செய்ய",
+  "@qcToPack": {
+    "description": "Batch status in the list: graded, waiting for packing."
+  },
+  "qcGradingPrompt": "ஒவ்வொரு அளவீட்டையும் உள்ளிடுங்கள். தரம் கீழே தெரியும்.",
+  "@qcGradingPrompt": {
+    "description": "Spoken prompt of the grading form."
+  },
+  "qcGradedWeight": "தரம் பிரித்த எடை",
+  "@qcGradedWeight": {
+    "description": "Grading field: graded quantity in kg."
+  },
+  "qcGrade": "தரம்: {grade}",
+  "@qcGrade": {
+    "description": "Grade preview computed on the phone from the standard.",
+    "placeholders": {
+      "grade": {
+        "type": "String",
+        "example": "Standard"
+      }
+    }
+  },
+  "qcStandardEdition": "{name}, பதிப்பு {edition}",
+  "@qcStandardEdition": {
+    "description": "Standard and edition the grade preview used.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "AGMARK Dry Chillies"
+      },
+      "edition": {
+        "type": "String",
+        "example": "2019"
+      }
+    }
+  },
+  "qcGradeMissing": "இன்னும் தரம் இல்லை. இல்லாதவை: {list}",
+  "@qcGradeMissing": {
+    "description": "Grey grade preview listing the required readings still missing.",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "example": "Moisture"
+      }
+    }
+  },
+  "qcDeclaredGrade": "அறிவித்த தரம்",
+  "@qcDeclaredGrade": {
+    "description": "Heading of the declared-grade choice."
+  },
+  "qcDeclaredAbove": "அறிவித்த {declared}, கணக்கிட்ட {computed}-ஐ விட உயர்ந்தது. நிர்வாகி இதை ஒப்புதல் அளிக்க முடியாது.",
+  "@qcDeclaredAbove": {
+    "description": "Warning when the declared grade is better than the computed one (FR49).",
+    "placeholders": {
+      "declared": {
+        "type": "String",
+        "example": "Special"
+      },
+      "computed": {
+        "type": "String",
+        "example": "Standard"
+      }
+    }
+  },
+  "qcRange": "வரம்பு {min} முதல் {max} {unit}",
+  "@qcRange": {
+    "description": "Plausible range under a grading input.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "0"
+      },
+      "max": {
+        "type": "String",
+        "example": "100"
+      },
+      "unit": {
+        "type": "String",
+        "example": "%"
+      }
+    }
+  },
+  "qcOutOfRange": "{min} முதல் {max} {unit}-க்கு வெளியே: அளவீட்டைச் சரிபாருங்கள்.",
+  "@qcOutOfRange": {
+    "description": "A reading outside the plausible range (FR50); blocks Save.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "0"
+      },
+      "max": {
+        "type": "String",
+        "example": "100"
+      },
+      "unit": {
+        "type": "String",
+        "example": "%"
+      }
+    }
+  },
+  "qcSourceNotAllowed": "இந்த முறையில் ஏற்கப்படாது. கருவி அல்லது ஆய்வகம் பயன்படுத்துங்கள்.",
+  "@qcSourceNotAllowed": {
+    "description": "A reading whose source the standard does not accept (FR44); blocks Save."
+  },
+  "qcNoStandards": "தரநிலை இந்தப் போனில் இல்லை. முதலில் ஒத்திசையுங்கள்.",
+  "@qcNoStandards": {
+    "description": "Shown when the standards bundle part has no profile for the crop."
+  },
+  "qcPack": "பொதி செய்",
+  "@qcPack": {
+    "description": "Button from a saved grading to final packing."
+  },
+  "qcPackingPrompt": "பொதி செய்த எடையை உள்ளிடுங்கள்.",
+  "@qcPackingPrompt": {
+    "description": "Spoken prompt of the final packing screen."
+  },
+  "qcPackedWeight": "பொதி எடை",
+  "@qcPackedWeight": {
+    "description": "Final packing field: packed quantity in kg."
+  },
+  "qcPackSize": "பொதி அளவு",
+  "@qcPackSize": {
+    "description": "Final packing field: size of one pack in grams."
+  },
+  "qcPacks": "பொதிகள்",
+  "@qcPacks": {
+    "description": "Final packing field: number of packs."
+  },
+  "qcAvgPrice": "சராசரி கிலோ விலை",
+  "@qcAvgPrice": {
+    "description": "Final packing field: average sale price per kg."
+  },
+  "qcGradedCeiling": "தரம் பிரித்தது: {kg} கிலோ",
+  "@qcGradedCeiling": {
+    "description": "Graded quantity, the ceiling for packing.",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "180"
+      }
+    }
+  },
+  "qcPackAboveGraded": "{packed} கிலோ, தரம் பிரித்த {graded} கிலோவை விட அதிகம். எடையைச் சரிபாருங்கள்.",
+  "@qcPackAboveGraded": {
+    "description": "Blocks Save when the packed weight is above the graded weight.",
+    "placeholders": {
+      "packed": {
+        "type": "String",
+        "example": "200"
+      },
+      "graded": {
+        "type": "String",
+        "example": "180"
+      }
+    }
+  },
+  "qcGradedUnknown": "தரம் பிரித்த எடை தெரியவில்லை. முதலில் தரம் பிரியுங்கள்.",
+  "@qcGradedUnknown": {
+    "description": "Blocks Save when no graded weight is known for the batch."
+  },
+  "unitKg": "கிலோ",
+  "@unitKg": {
+    "description": "Unit: kilograms."
+  },
+  "unitRupeePerKg": "₹/கிலோ",
+  "@unitRupeePerKg": {
+    "description": "Unit: rupees per kilogram."
+  },
+  "unitGram": "கி",
+  "@unitGram": {
+    "description": "Unit: grams."
   }
 }

@@ -19,7 +19,22 @@
       "onboardCropPrompt",
       "onboardHandoffPrompt",
       "onboardBoundaryCrosses",
-      "onboardLocationOff"
+      "onboardLocationOff",
+      "qcHomePrompt",
+      "qcReceiveLot",
+      "qcGradeBatch",
+      "qcScanPrompt",
+      "qcPickLot",
+      "qcPickLotPrompt",
+      "qcIntakePrompt",
+      "qcSave",
+      "qcSaved",
+      "qcDone",
+      "qcBatchesPrompt",
+      "qcRetry",
+      "qcGradingPrompt",
+      "qcPack",
+      "qcPackingPrompt"
     ],
     "en": [
       "callOfficer",
@@ -38,7 +53,22 @@
       "onboardCropPrompt",
       "onboardHandoffPrompt",
       "onboardBoundaryCrosses",
-      "onboardLocationOff"
+      "onboardLocationOff",
+      "qcHomePrompt",
+      "qcReceiveLot",
+      "qcGradeBatch",
+      "qcScanPrompt",
+      "qcPickLot",
+      "qcPickLotPrompt",
+      "qcIntakePrompt",
+      "qcSave",
+      "qcSaved",
+      "qcDone",
+      "qcBatchesPrompt",
+      "qcRetry",
+      "qcGradingPrompt",
+      "qcPack",
+      "qcPackingPrompt"
     ]
   },
   "clips": {
@@ -59,7 +89,22 @@
       "onboardCropPrompt",
       "onboardHandoffPrompt",
       "onboardBoundaryCrosses",
-      "onboardLocationOff"
+      "onboardLocationOff",
+      "qcHomePrompt",
+      "qcReceiveLot",
+      "qcGradeBatch",
+      "qcScanPrompt",
+      "qcPickLot",
+      "qcPickLotPrompt",
+      "qcIntakePrompt",
+      "qcSave",
+      "qcSaved",
+      "qcDone",
+      "qcBatchesPrompt",
+      "qcRetry",
+      "qcGradingPrompt",
+      "qcPack",
+      "qcPackingPrompt"
     ],
     "en": [
       "callOfficer",
@@ -78,7 +123,22 @@
       "onboardCropPrompt",
       "onboardHandoffPrompt",
       "onboardBoundaryCrosses",
-      "onboardLocationOff"
+      "onboardLocationOff",
+      "qcHomePrompt",
+      "qcReceiveLot",
+      "qcGradeBatch",
+      "qcScanPrompt",
+      "qcPickLot",
+      "qcPickLotPrompt",
+      "qcIntakePrompt",
+      "qcSave",
+      "qcSaved",
+      "qcDone",
+      "qcBatchesPrompt",
+      "qcRetry",
+      "qcGradingPrompt",
+      "qcPack",
+      "qcPackingPrompt"
     ]
   }
 }

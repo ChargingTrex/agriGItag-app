@@ -28,11 +28,9 @@ void main() {
     expect(fromWire(SyncKind.values, 'quality_reading'), SyncKind.qualityReading);
     expect(fromWire(SyncKind.values, 'harvest'), isNull);
     final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
-    final pending = {SyncKind.farmer, SyncKind.assistSession}; // D-031/D-032, served by B15 (not on main yet)
-    expect(
-      SyncKind.values.where((k) => !pending.contains(k)).map(wireName),
-      unorderedEquals((kind['enum'] as List).cast<String>()),
-    );
+    // D-031/D-032: B15 is merged, so the spec now lists `farmer` and `assist_session` too (M11 dropped the stale
+    //   "pending B15" exclusion, which failed once the spec was regenerated).
+    expect(SyncKind.values.map(wireName), unorderedEquals((kind['enum'] as List).cast<String>()));
     expect(eventTypes, unorderedEquals(((schemas['EventType'] as Map)['enum'] as List).cast<String>()));
     final changeKinds = ((schemas['ChangeKind'] as Map)['enum'] as List).cast<String>();
     expect(changeKinds, containsAll(ChangeKind.values.map(wireName)));

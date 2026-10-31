@@ -2,7 +2,7 @@
 // Requirement: plan §7.2 M00 and M06 ("farmer never reaches officer routes"), D-013, UserFlows §"Who uses
 //   what" (a farmer only ever sees the farmer screens; the field officer can act for a farmer).
 //   M06 wires the real sign-in screens (UserFlows §Log in once) and the /settings placeholder with sign-out;
-//   M09 adds /officer/onboard (UserFlows §Onboarding a farmer).
+//   M09 adds /officer/onboard (UserFlows §Onboarding a farmer); M11 puts the QC home on /qc (UserFlows §Grade a batch).
 // Callers: AgriTraceApp (lib/app.dart) via routerProvider; test/unit/redirect_test.dart,
 //   test/widget/router_test.dart.
 
@@ -16,6 +16,7 @@ import '../../features/auth/otp_screen.dart';
 import '../../features/auth/phone_screen.dart';
 import '../../features/auth/pin_screen.dart';
 import '../../features/onboarding_farmer/onboarding_wizard.dart';
+import '../../features/qc_home/qc_home_screen.dart';
 import '../l10n/gen/app_localizations.dart';
 import 'placeholder_screen.dart';
 import 'session.dart';
@@ -84,10 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // M09: the officer's onboarding wizard (UserFlows §Onboarding a farmer); M10's home links "Add farmer" here.
         routes: [GoRoute(path: 'onboard', builder: (context, _) => const OnboardingWizard())],
       ),
-      GoRoute(
-        path: '/qc',
-        builder: (context, _) => PlaceholderScreen(title: AppLocalizations.of(context).roleQc),
-      ),
+      GoRoute(path: '/qc', builder: (context, _) => const QcHomeScreen()),
       // Assist scope: M10 nests the farmer screens under this path so every entry made here is recorded
       // with assistMode = true (CLAUDE.md §6).
       GoRoute(
