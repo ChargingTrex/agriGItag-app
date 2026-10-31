@@ -103,6 +103,10 @@ Map<String, Object?> apiError(String code, [Map<String, Object?> details = const
   'error': {'code': code, 'message': code, 'details': details},
 };
 
+/// Asset paths of every clip the silent test player was asked to play, in order (M08: the language switch changes the
+/// next prompt's language). Tests clear it before they assert.
+final playedClips = <String>[];
+
 /// A container wired like the app, but on [api], a fresh in-memory database ([db] to share one) and secure
 /// storage pre-filled with [stored], plus [overrides]. Returns it; the caller disposes it (ProviderContainer.test does at test end).
 ProviderContainer authContainer(
@@ -118,7 +122,15 @@ ProviderContainer authContainer(
       appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://api.test')),
       appDatabaseProvider.overrideWithValue(database),
       // Silent voice: no platform audio player in tests, and no autoplay on screen entry.
-      voicePlayerProvider.overrideWithValue(VoicePlayer(bundle: rootBundle, playClip: (_, onEnd) async => onEnd())),
+      voicePlayerProvider.overrideWithValue(
+        VoicePlayer(
+          bundle: rootBundle,
+          playClip: (path, onEnd) async {
+            playedClips.add(path);
+            onEnd();
+          },
+        ),
+      ),
       voiceAutoplayProvider.overrideWithValue(false),
       apiClientProvider.overrideWith((ref) {
         final session = ref.read(sessionProvider.notifier);

@@ -237,7 +237,8 @@ void main() {
     });
     final container = (await tester.runAsync(() => signedIn('farmer', api: api)))!;
     final db = container.read(appDatabaseProvider);
-    await tester.runAsync(() => db.entriesDao.save(entryAt(), []));
+    // Queued now: an entry 7+ days old would show the M08 red-triangle warning instead of this sentence.
+    await tester.runAsync(() => db.entriesDao.save(entryAt(at: DateTime.now()), []));
     final path = await _pump(tester, container, location: '/settings');
     await tester.runAsync(pumpEventQueue);
     await tester.pumpAndSettle();

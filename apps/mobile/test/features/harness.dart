@@ -3,7 +3,7 @@
 // (farmer, plot, lot, reference bundles) and a tap counter.
 // Requirement: plan §7.2 M07 acceptance (each event ≤ 3 taps (+1 optional) with photo/GPS/clocks; 6 bags × 50 → 300 kg;
 //   packing at 12 % not ready; "Did you already sow?" once; scripted log < 20 s), UserFlows §When things go wrong.
-// Callers: test/features/*_test.dart, integration_test/farmer_flows_test.dart.
+// Callers: test/features/*_test.dart (M07 and M08), integration_test/farmer_flows_test.dart.
 
 import 'dart:convert';
 import 'dart:io';
@@ -160,7 +160,7 @@ class FlowHarness {
     final gps = fixes ?? [fixOf(8)];
     db = memoryDb();
     container = authContainer(
-      FakeApi(),
+      api,
       db: db,
       overrides: [
         mediaDirProvider.overrideWith((ref) async => media),
@@ -178,7 +178,8 @@ class FlowHarness {
         voiceRecorderFactoryProvider.overrideWithValue(
           () => VoiceNoteRecorder(recorder: FakeAudioRecorder(), now: () => flowNow),
         ),
-        clockProvider.overrideWithValue(() => flowNow),
+        // A test moves [now] to cross a deadline (M08 undo window, 7-day unsent warning).
+        clockProvider.overrideWithValue(() => now),
         // No sync engine in widget tests: the save's send kick is counted instead.
         afterSaveProvider.overrideWithValue(() => kicks++),
         pendingSendCountProvider.overrideWith((ref) => Stream.value(pending)),
@@ -187,6 +188,9 @@ class FlowHarness {
       ],
     );
   }
+
+  /// The fake HTTP adapter (no signal unless a test adds routes); its `requests` show what the app called.
+  final FakeApi api = FakeApi();
 
   /// Temp root (deleted by [dispose]).
   late final Directory dir;
@@ -209,17 +213,21 @@ class FlowHarness {
   /// Entries waiting to send, for the cloud icon.
   final int pending;
 
+  /// The phone clock the app reads; [flowNow] unless a test moves it.
+  DateTime now = flowNow;
+
   /// Taps on forward actions counted by [tap].
   int taps = 0;
 
   /// Send kicks requested after saves and undos ([afterSaveProvider]).
   int kicks = 0;
 
-  /// Signs in as a farmer in [locale], seeds the farm (see [seedFarm]) and pumps the app on [tester] at [location].
-  /// Returns when settled. Throws what the app throws while building.
+  /// Signs in as [role] (`farmer`, or `field_officer` for M10) in [locale], seeds the farm (see [seedFarm]) and pumps
+  /// the app on [tester] at [location]. Returns when settled. Throws what the app throws while building.
   Future<void> start(
     WidgetTester tester, {
     String location = '/home',
+    String role = 'farmer',
     Locale locale = english,
     double? lastMoisture,
     bool withHistory = true,
@@ -230,7 +238,7 @@ class FlowHarness {
       ..physicalSize = const Size(412, 915)
       ..devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
-    await container.read(sessionProvider.notifier).openSession(sessionOut());
+    await container.read(sessionProvider.notifier).openSession(sessionOut(role: role));
     container.read(sessionProvider.notifier).setLocale(locale);
     await seedFarm(lastMoisture: lastMoisture, withHistory: withHistory, lots: lots);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const AgriTraceApp()));
@@ -250,6 +258,8 @@ class FlowHarness {
   Future<void> tap(WidgetTester tester, Finder finder) async {
     taps++;
     await tester.ensureVisible(finder);
+    // The jump lands at the next layout; without this pump a target scrolled in from off-screen is tapped where it was.
+    await tester.pump();
     await tester.tap(finder);
     await tester.pumpAndSettle();
   }
@@ -349,6 +359,19 @@ class FlowHarness {
   Future<void> setFieldConfig(String entity, List<Map<String, Object?>> fields) => db
       .into(db.fieldConfig)
       .insertOnConflictUpdate(FieldConfigCompanion.insert(entity: entity, json: jsonEncode(fields)));
+
+  /// Sets lot [lotId] to [status] with [kgPacked] kilograms from the server (M08 Sell, Money). Returns when written.
+  Future<void> setLot(String lotId, String status, {double kgPacked = 0}) => (db.update(
+    db.lots,
+  )..where((l) => l.lotId.equals(lotId))).write(LotsCompanion(status: Value(status), kgPacked: Value(kgPacked)));
+
+  /// Saves a [type] entry on lot-1 at [at] with [payload] and a 24 h undo window (M08 History, Settings). Returns its
+  /// id; throws what EntriesDao.save throws.
+  Future<String> saveEntry(String type, DateTime at, {String payload = '{}'}) async {
+    final e = entryAt(at: at, payload: payload).copyWith(entryType: Value(type));
+    await db.entriesDao.save(e, const []);
+    return e.entryId.value;
+  }
 
   /// Entries of [type] saved in this flow (not the seeded history), oldest first. Throws nothing.
   Future<List<Entry>> saved(String type) =>

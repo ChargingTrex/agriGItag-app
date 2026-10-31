@@ -1,6 +1,6 @@
 // Router redirect through the real app and the real session (M06: OTP/PIN results stored by SessionNotifier):
 // signed out -> /auth, each role lands on its home, a farmer cannot open officer routes, a field officer can open
-// the assist scope, sign-out returns to /auth.
+// the assist scope only with a running assist session (M10), sign-out returns to /auth.
 // Requirement: plan §7.2 M00 (role redirect) and M06 ("farmer never reaches officer routes"); D-013, D-024.
 // Callers: flutter test (CI mobile job).
 
@@ -46,18 +46,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(path(), '/officer');
     expect(find.text('கள அலுவலர்'), findsOneWidget);
+    // No assist session for F-7: the assist scope sends the officer home (M10 route guard).
     router.go('/assist/F-7');
     await tester.pumpAndSettle();
-    expect(path(), '/assist/F-7');
-    expect(find.text('உதவி: F-7'), findsOneWidget);
+    expect(path(), '/officer');
     router.go('/home');
     await tester.pumpAndSettle();
     expect(path(), '/officer');
 
-    await tester.runAsync(() async {
-      await session.signOut();
-      await session.openSession(sessionOut(role: 'qc_officer'));
-    });
+    // Two steps with a pump between: the officer home's Drift streams (M02 stranded count reads the Session table)
+    // re-query in the fake-async zone after sign-out, and a second write in the same runAsync would wait on them.
+    await tester.runAsync(session.signOut);
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => session.openSession(sessionOut(role: 'qc_officer')));
     await tester.pumpAndSettle();
     expect(path(), '/qc');
     expect(find.text('தர ஆய்வாளர்'), findsOneWidget);

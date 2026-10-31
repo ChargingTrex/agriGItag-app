@@ -8,9 +8,13 @@ part of 'serializers.dart';
 
 Serializers _$serializers = (Serializers().toBuilder()
       ..add(Address.serializer)
+      ..add(AreaByBlock.serializer)
+      ..add(AreaByVillage.serializer)
+      ..add(AreaStats.serializer)
       ..add(AssistEndIn.serializer)
       ..add(AssistSessionOut.serializer)
       ..add(AssistStartIn.serializer)
+      ..add(AuditRow.serializer)
       ..add(AvgSalePricePerKg.serializer)
       ..add(BatchIn.serializer)
       ..add(BatchOut.serializer)
@@ -20,11 +24,13 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(BundlePart.serializer)
       ..add(CeilingKgPerAcre.serializer)
       ..add(ChangeKind.serializer)
+      ..add(Completeness.serializer)
       ..add(ConsentIn.serializer)
       ..add(ConsentOut.serializer)
       ..add(ConsentType.serializer)
       ..add(CorrectionIn.serializer)
       ..add(CropOut.serializer)
+      ..add(Dashboard.serializer)
       ..add(Data.serializer)
       ..add(DeviceOut.serializer)
       ..add(DryingPayload.serializer)
@@ -45,6 +51,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FarmerPatch.serializer)
       ..add(FarmerPhoneOut.serializer)
       ..add(FarmerReject.serializer)
+      ..add(FarmerRow.serializer)
       ..add(FarmerStatus.serializer)
       ..add(FarmingType.serializer)
       ..add(Features.serializer)
@@ -57,7 +64,10 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FinalPackingVersion.serializer)
       ..add(FinalPackingVersionChangeKindEnum.serializer)
       ..add(FinalPackingVersionEventTypeEnum.serializer)
+      ..add(FinishedBatch.serializer)
+      ..add(FinishedGoods.serializer)
       ..add(FlagBrief.serializer)
+      ..add(FlagCounts.serializer)
       ..add(FlagOut.serializer)
       ..add(FlagResolveIn.serializer)
       ..add(FlagResolveInResolutionEnum.serializer)
@@ -110,6 +120,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(IrrigationSource.serializer)
       ..add(LabCertifiedRequires.serializer)
       ..add(Labels.serializer)
+      ..add(LandArea.serializer)
       ..add(LandPreparationPayload.serializer)
       ..add(LandPreparationVersion.serializer)
       ..add(LandPreparationVersionChangeKindEnum.serializer)
@@ -142,11 +153,13 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PackingVersion.serializer)
       ..add(PackingVersionChangeKindEnum.serializer)
       ..add(PackingVersionEventTypeEnum.serializer)
+      ..add(PageAuditRow.serializer)
       ..add(PageBatchOut.serializer)
       ..add(PageBuildOut.serializer)
       ..add(PageConsentOut.serializer)
       ..add(PageEventOut.serializer)
       ..add(PageFarmerOut.serializer)
+      ..add(PageFarmerRow.serializer)
       ..add(PageFlagOut.serializer)
       ..add(PageInstrumentOut.serializer)
       ..add(PageLotOut.serializer)
@@ -223,6 +236,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RegionCheckOutStatusEnum.serializer)
       ..add(ResponseOtpVerifyV1AuthOtpVerifyPost.serializer)
       ..add(Role.serializer)
+      ..add(Scans.serializer)
       ..add(SessionOut.serializer)
       ..add(SessionOutKindEnum.serializer)
       ..add(Severity.serializer)
@@ -234,6 +248,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(SowingVersion.serializer)
       ..add(SowingVersionChangeKindEnum.serializer)
       ..add(SowingVersionEventTypeEnum.serializer)
+      ..add(StageTile.serializer)
       ..add(StandardRef.serializer)
       ..add(StandardsProfileOut.serializer)
       ..add(StandardsProfileRulesInput.serializer)
@@ -243,6 +258,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(StandardsScheme.serializer)
       ..add(SyncEntry.serializer)
       ..add(SyncEntryKindEnum.serializer)
+      ..add(SyncHealthRow.serializer)
       ..add(SyncMetricIn.serializer)
       ..add(SyncPushIn.serializer)
       ..add(SyncPushOut.serializer)
@@ -263,6 +279,15 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(WarnMarginPct.serializer)
       ..add(YieldRuleInput.serializer)
       ..add(YieldRuleOutput.serializer)
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(AreaByBlock)]),
+          () => ListBuilder<AreaByBlock>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(AreaByVillage)]),
+          () => ListBuilder<AreaByVillage>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(AuditRow)]),
+          () => ListBuilder<AuditRow>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(BatchOut)]),
           () => ListBuilder<BatchOut>())
@@ -294,6 +319,12 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(FarmerOut)]),
           () => ListBuilder<FarmerOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(FarmerRow)]),
+          () => ListBuilder<FarmerRow>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(FinishedBatch)]),
+          () => ListBuilder<FinishedBatch>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(FlagBrief)]),
           () => ListBuilder<FlagBrief>())
@@ -510,6 +541,22 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltMap, const [const FullType(String), const FullType(String)]),
           () => MapBuilder<String, String>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltMap, const [const FullType(String), const FullType(int)]),
+          () => MapBuilder<String, int>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(StageTile)]),
+          () => ListBuilder<StageTile>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(SyncHealthRow)]),
+          () => ListBuilder<SyncHealthRow>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
       ..addBuilderFactory(
           const FullType(BuiltMap, const [
             const FullType(String),

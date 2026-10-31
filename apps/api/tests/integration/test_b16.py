@@ -1,15 +1,16 @@
 """Integration tests of B16 on PostGIS: QC intake by push (D-040), non-GI holds (D-041), assist per kind.
 
-One test per B16 acceptance line (lines 1–7, 9, 10; lines 8 and 11, `hold_reasons` and the OpenAPI check, are
-in tests/unit/test_b16_logic.py). The seeded `world` (tests/integration/conftest.py) is one FPO with an
-admin, a second user, a farmer with a confirmed plot, a GI crop with its profile, one own processor and a
-calibrated meter; `act_as` switches the caller's role.
+One test per B16 acceptance line (lines 1–7, 9, 10) plus the r1 P2-1 race; lines 8 and 11 (`hold_reasons`,
+the OpenAPI check) are in tests/unit/test_b16_logic.py. The seeded `world` (tests/integration/conftest.py)
+is one FPO with an admin, a second user, a farmer with a confirmed plot, a GI crop with its profile, one own
+processor and a calibrated meter; `act_as` switches the caller's role.
 Serves: B16 acceptance, D-040, D-041, D-042, Stage 7, FR9, FR29, FR43, FR68, FR70, CLAUDE.md §6.
 Callers: pytest (`make test`); needs Docker (tests/conftest.py `stack`).
 """
 
 from __future__ import annotations
 
+import asyncio
 import secrets
 import uuid
 from datetime import UTC, date, datetime
@@ -217,7 +218,23 @@ async def test_processor_default_and_scope(world: tuple[World, AsyncClient]) -> 
             row.fpo_id = other
         await s.commit()
     [zero] = await _push(client, _intake_entry(lots[4]))
-    assert zero["status"] == "rejected" and zero["error"]["details"]["field"] == "processor_id"
+    assert zero["status"] == "rejected" and zero["error"]["code"] == "field_required"
+    assert zero["error"]["details"]["field"] == "processor_id"
+
+
+async def test_concurrent_identical_lot_intakes(world: tuple[World, AsyncClient]) -> None:
+    """Review P2-1: two identical `lot_intake` pushes at once → one `accepted`, one `duplicate`, one row.
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    lot = await _ready_lot(w, client)
+    w.act_as(w.admin2, Role.QC_OFFICER)
+    entry = _intake_entry(lot)
+    pushes = await asyncio.gather(_push(client, entry), _push(client, entry))
+    assert sorted(r[0]["status"] for r in pushes) == ["accepted", "duplicate"]
+    assert len(await _intakes(lot)) == 1
 
 
 async def test_open_lot_passes_the_ready_gate_at_intake(world: tuple[World, AsyncClient]) -> None:

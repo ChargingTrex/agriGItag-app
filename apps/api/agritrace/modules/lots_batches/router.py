@@ -2,7 +2,7 @@
 
 Serves: Dataflow Stages 4–9 and §4 (approval gates), FR9–FR11, FR29, FR49, FR60, FR62, D-005 (client ids),
 D-020 (/v1, additive), D-033 (gates answer 409 `gate_not_met` listing every reason), D-040 (intake by a QC
-officer or FPO admin), backend-design.md §1 lots_batches row.
+officer or FPO admin), D-041 (GI-only holds in non-GI batches), backend-design.md §1 lots_batches row.
 Callers: `agritrace.main.create_app` mounts `router` (module discovery, D-004); the mobile app (M07, M11)
 and the portal (P03, P04) through the generated clients (D-003). The lot QR uses `publishing.service.qr_png`
 (B10).
@@ -414,7 +414,11 @@ async def second_signoff(batch_id: BatchId, session: Session, user: Admin) -> Ba
     "/batches/{batch_id}/grading/approve",
     response_model=BatchOut,
     summary="Approve the batch grading",
-    description="Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing.",
+    description=(
+        "Approves the latest grade of `POST /batches/{id}/grading`; graded kg caps final packing. In a batch "
+        "without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block; "
+        "they stay open and are recorded on the approval (D-041)."
+    ),
     responses=_errors(
         e404="`not_found`.",
         e409=GATE + "`batch_status`, `not_graded`, `grade_incomplete`, `declared_above_computed`, "
@@ -453,6 +457,11 @@ async def approve_grading(
     "/batches/{batch_id}/final-packing",
     response_model=BatchOut,
     summary="Sign off final packing",
+    description=(
+        "Packed kg may not exceed graded kg. In a batch without the GI label, GI-only holds "
+        "(`plot_outside_gi_region`, `yield_over_ceiling`) do not block; they stay open and are recorded on "
+        "the approval (D-041)."
+    ),
     responses=_errors(
         e404="`not_found`.",
         e409=GATE + "`grading_not_approved`, `packed_above_graded`, `open_hold_flag`.",
@@ -493,7 +502,9 @@ async def final_packing(batch_id: BatchId, body: FinalPackingIn, session: Sessio
     summary="Publish the public page (final sign-off)",
     description=(
         "Lists every unmet gate at once; when all are met, queues a page build (`page_builds`, "
-        "`publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge."
+        "`publishing.build_page`) and answers 202. A GI-blocked batch is published without the GI badge. "
+        "In a batch without the GI label, GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) "
+        "do not block; they stay open and are recorded on the approval (D-041)."
     ),
     responses=_errors(
         e404="`not_found`.",

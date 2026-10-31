@@ -27,11 +27,6 @@ class AppLocalizationsTa extends AppLocalizations {
   String get roleQc => 'தர ஆய்வாளர்';
 
   @override
-  String assistFor(String farmerId) {
-    return 'உதவி: $farmerId';
-  }
-
-  @override
   String get switchLanguage => 'English';
 
   @override
@@ -604,4 +599,192 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get notFound => 'இந்தப் பக்கம் இல்லை.';
+
+  @override
+  String get homeHistory => 'வரலாறு';
+
+  @override
+  String get sellPrompt => 'சேகரிப்பு மையத்தில் இந்தக் குறியீட்டைக் காட்டுங்கள்.';
+
+  @override
+  String get sellPick => 'எந்த வயலின் பயிரை விற்கிறீர்கள்?';
+
+  @override
+  String get sellNoLot => 'விற்க இன்னும் எதுவும் தயாராக இல்லை. முதலில் பேக்கிங்கைப் பதிவு செய்யுங்கள்.';
+
+  @override
+  String sellQrLabel(String field) {
+    return '$field விற்பனைக் குறியீடு';
+  }
+
+  @override
+  String kgAmount(String kg) {
+    return '$kg கிலோ';
+  }
+
+  @override
+  String get moneyPrompt => 'உங்கள் பயிரும் அதன் விற்பனையும்.';
+
+  @override
+  String moneyPacked(String kg) {
+    return 'பேக் செய்தது: $kg கிலோ';
+  }
+
+  @override
+  String get lotStatusOpen => 'வளர்கிறது';
+
+  @override
+  String get lotStatusDrying => 'உலர்த்துகிறது';
+
+  @override
+  String get lotStatusReady => 'விற்கத் தயார்';
+
+  @override
+  String get lotStatusReceived => 'FPO பெற்றது';
+
+  @override
+  String get lotStatusBatched => 'தொகுப்பில் உள்ளது';
+
+  @override
+  String get lotStatusClosed => 'முடிந்தது';
+
+  @override
+  String get historyPrompt => 'நீங்கள் பதிவு செய்தவை. பார்க்க ஒன்றைத் தொடுங்கள்.';
+
+  @override
+  String get historyEmpty => 'இன்னும் எதுவும் பதிவு செய்யவில்லை.';
+
+  @override
+  String historyDetail(String event, String date) {
+    return '$date அன்று $event.';
+  }
+
+  @override
+  String get entrySent => 'அனுப்பியது';
+
+  @override
+  String get entryWaiting => 'அனுப்பவில்லை';
+
+  @override
+  String get undoClosed => 'இப்போது கள அலுவலர் மட்டுமே இதைத் திருத்த முடியும்.';
+
+  @override
+  String get wifiOnlyPhotos => 'வைஃபையில் மட்டும் படங்கள்';
+
+  @override
+  String get unsentOld =>
+      'சில பதிவுகள் 7 நாட்களுக்கு மேல் காத்திருக்கின்றன. அனுப்ப சிக்னல் உள்ள இடத்துக்குச் செல்லுங்கள், அல்லது அலுவலரை அழையுங்கள்.';
+
+  @override
+  String get officerAddFarmer => 'விவசாயி சேர்';
+
+  @override
+  String officerFlags(int count) {
+    return 'சரிசெய்ய வேண்டியவை: $count';
+  }
+
+  @override
+  String get officerVisitsToday => 'இன்றைய வருகைகள்';
+
+  @override
+  String get officerNoVisits => 'இன்று வருகை எதுவும் இல்லை.';
+
+  @override
+  String get officerAllFarmers => 'எல்லா விவசாயிகளும்';
+
+  @override
+  String get officerNoPhone => 'தொலைபேசி இல்லை';
+
+  @override
+  String officerStranded(int count) {
+    return 'வேறு பயனரின் $count பதிவுகள் இந்தத் தொலைபேசியில் காத்திருக்கின்றன.';
+  }
+
+  @override
+  String get assistEnd => 'உதவி முடி';
+
+  @override
+  String get flagsTitle => 'சரிசெய்ய வேண்டியவை';
+
+  @override
+  String get flagsNone => 'சரிசெய்ய எதுவும் இல்லை.';
+
+  @override
+  String flagSeverity(String severity) {
+    String _temp0 = intl.Intl.selectLogic(severity, {'hold': 'நிறுத்தம்', 'warn': 'சரிபார்', 'other': 'குறிப்பு'});
+    return '$_temp0';
+  }
+
+  @override
+  String flagRule(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'event_off_plot': 'வயலுக்கு வெளியே பதிவு',
+      'yield_over_ceiling': 'மகசூல் வரம்பை மீறியது',
+      'event_out_of_order': 'நிகழ்வு வரிசை தவறு',
+      'gps_poor_accuracy': 'பலவீனமான GPS',
+      'quantity_mismatch': 'அளவுகள் பொருந்தவில்லை',
+      'photo_checksum_mismatch': 'புகைப்படம் பொருந்தவில்லை',
+      'exif_mismatch': 'புகைப்பட தேதி அல்லது இடம் பொருந்தவில்லை',
+      'plot_outside_gi_region': 'வயல் GI பகுதிக்கு வெளியே',
+      'other': 'இந்தப் பதிவைச் சரிபார்க்கவும்',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get flagFixIt => 'சரிசெய்';
+
+  @override
+  String get flagLooksFine => 'சரியாக உள்ளது';
+
+  @override
+  String get flagEscalate => 'மேலே அனுப்பு';
+
+  @override
+  String get flagNotOnPhone => 'இந்தப் பதிவு இந்தத் தொலைபேசியில் இல்லை; இங்கே சரிசெய்ய முடியாது.';
+
+  @override
+  String get flagAdminOnly => 'இதை FPO நிர்வாகி மட்டுமே சரிசெய்ய முடியும்.';
+
+  @override
+  String get flagReasonPrompt => 'ஏன்? ஒரு காரணத்தைத் தேர்ந்தெடுக்கவும்.';
+
+  @override
+  String flagReason(String reason) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'field_visit': 'வயல் பார்வை',
+      'farmer_confirmed': 'விவசாயி கூறினார்',
+      'photo_checked': 'புகைப்படம் பார்த்தேன்',
+      'other': 'பதிவுப் பிழை',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get moistureTitle => 'ஈரப்பதம்';
+
+  @override
+  String get moistureMeterPrompt => 'எந்த மீட்டர்?';
+
+  @override
+  String moistureMeterCard(String label, String date) {
+    return '$label, $date வரை அளவுத்திருத்தம்';
+  }
+
+  @override
+  String moistureCalibrationExpired(String date) {
+    return 'இந்த மீட்டரின் அளவுத்திருத்தம் $date அன்று முடிந்தது. சரியான அளவுத்திருத்தம் உள்ள மீட்டரைப் பயன்படுத்தவும்.';
+  }
+
+  @override
+  String get moistureNoMeter => 'இந்தத் தொலைபேசியில் ஈரப்பத மீட்டர் இல்லை. இணையத்துடன் இணைத்து மீண்டும் திறக்கவும்.';
+
+  @override
+  String get moistureNoLot => 'இந்த விவசாயிக்கு அளக்க பயிர் இல்லை.';
+
+  @override
+  String get moistureValuePrompt => 'மீட்டரில் உள்ள அளவு';
+
+  @override
+  String get flagFixSent => 'திருத்தம் அனுப்பப்பட்டது; மறு சரிபார்ப்புக்குக் காத்திருக்கிறது.';
 }

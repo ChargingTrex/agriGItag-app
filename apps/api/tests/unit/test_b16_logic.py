@@ -144,6 +144,7 @@ class _Session:
         """
         self.rows, self.own = rows, own or []
         self.added: list[Any] = []
+        self.locked = False  # set by `_RacingSession` once the lot row is locked
 
     async def get(self, model: type, _id: Any, **_: Any) -> Any:
         """Return the preset row for a class.
@@ -312,11 +313,35 @@ async def test_intake_from_sync_validates() -> None:
     assert err.value.details
 
 
-async def test_intake_resend_is_a_duplicate_for_a_qc_officer() -> None:
-    """The same intake id resent by a QC officer returns the stored row, not created (D-005)."""
+class _RacingSession(_Session):
+    """A session where a concurrent twin commits the intake while this request waits for the lot lock."""
+
+    async def get(self, model: type, _id: Any, **kw: Any) -> Any:
+        """Lock the lot (the twin's intake becomes visible), or return the intake only once the lot is locked.
+
+        Args:
+            model: the ORM class.
+            _id: primary key (ignored).
+            **kw: `with_for_update=True` marks the lock.
+
+        Returns:
+            The lot; the intake after the lock, None before it.
+        """
+        if model is Lot:
+            self.locked = self.locked or bool(kw.get("with_for_update"))
+            return self.rows[Lot]
+        if model is LotIntake:
+            return self.rows[LotIntake] if self.locked else None
+        return await super().get(model, _id, **kw)
+
+
+async def test_concurrent_twin_intake_is_a_duplicate() -> None:
+    """Review P2-1: the resend check runs under the lot lock, so the waiting twin is a duplicate, not 409."""
     body = _intake()
+    lot = SimpleNamespace(id=body.lot_id, fpo_id=FPO, status=LotStatus.RECEIVED)
     stored = SimpleNamespace(id=body.client_id, fpo_id=FPO, lot_id=body.lot_id)
-    out = await lb.create_intake(cast(Any, _Session({LotIntake: stored})), _user(Role.QC_OFFICER), body)
+    session = _RacingSession({Lot: lot, LotIntake: stored})
+    out = await lb.create_intake(cast(Any, session), _user(Role.QC_OFFICER), body)
     assert cast(Any, out) == (stored, [], False)
 
 

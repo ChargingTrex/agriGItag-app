@@ -709,18 +709,18 @@ async def create_intake(
         FieldRequiredError: `field_required` (422, `details.field` = `processor_id`): no `processor_id` and
             the FPO has zero or several own processors.
         ClientIdConflictError: the id belongs to another FPO's intake or to an intake of another lot (409).
-        NotFoundError: lot, processor, superseded intake or intake moisture reading (parameter `moisture`,
-            stage `intake`, on this lot) not found (404).
+        NotFoundError: lot (also on a resend: the lot is locked first), processor, superseded intake or intake
+            moisture reading (parameter `moisture`, stage `intake`, on this lot) not found (404).
         GateNotMetError: `gate_not_met` (409): `moisture_gate_failed` (first intake of an open/drying lot
             whose latest drying-end moisture is missing or above the limit), `lot_not_ready` (first intake of
             a lot in any other state but `ready_for_sale`), `lot_already_batched` (correction after batching),
             `intake_not_current` (the intake to correct was already corrected, or the lot is not `received`).
 
     Side effects:
-        Locks the lot row (`SELECT … FOR UPDATE`) so a double submit cannot record two intakes; may set the
-        lot `ready_for_sale` with `ready_at` (ready gate); fills `lots.harvested_kg` / `packed_kg` from the
-        lot's events, sets the lot `received`, inserts the intake with its reconciliation snapshot, flushes,
-        then `run_gate_checks` (B08).
+        Locks the lot row (`SELECT … FOR UPDATE`) before the resend check, so a double submit cannot record
+        two intakes and its twin answers as a resend; may set the lot `ready_for_sale` with `ready_at` (ready
+        gate); fills `lots.harvested_kg` / `packed_kg` from the lot's events, sets the lot `received`, inserts
+        the intake with its reconciliation snapshot, flushes, then `run_gate_checks` (B08).
     """
     if user.role not in INTAKE_ROLES:
         raise ForbiddenError(details={"required_roles": [str(r) for r in INTAKE_ROLES]})
@@ -728,12 +728,14 @@ async def create_intake(
         raise ForbiddenError(
             "Only an FPO admin can correct an intake.", {"required_roles": [str(Role.FPO_ADMIN)]}
         )
+    lot = await _lot_in_scope(session, user, data.lot_id, lock=True)
+    # The resend check runs under the lot lock: a concurrent twin of this intake waits here and then finds
+    # the committed row (duplicate) instead of a received lot (`lot_not_ready`), B16 review P2-1.
     existing = await session.get(LotIntake, data.client_id)
     if existing is not None:
         if existing.fpo_id != user.fpo_id or existing.lot_id != data.lot_id:
             raise ClientIdConflictError(details={"client_id": str(data.client_id)})
         return existing, [], False
-    lot = await _lot_in_scope(session, user, data.lot_id, lock=True)
     if data.processor_id is None:
         # DECISION D-040: an intake without `processor_id` goes to the FPO's only own processor.
         #   ADV: the QC phone sends no processor and needs no picker while an FPO has one processor.

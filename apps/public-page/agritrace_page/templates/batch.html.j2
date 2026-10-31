@@ -1,7 +1,9 @@
 {#- Public batch page (W01). Purpose: the static page a buyer sees after scanning the pack QR.
     Requirements: FR15-FR19, FR30 (GI indicator), FR51 (grade), FR58 (units), FR62 (compliance ids),
-    FR63 (date order, counts), FR72 (location method); User Flows §Design rules, §Who uses what.
-    Caller: agritrace_page.render.render, with r (PublicBatchRecord); globals t (label), pair.
+    FR63 (date order, counts), FR72 (location method); User Flows §Design rules, §Who uses what;
+    W03 (OG tags, print QR and link, map thumbnail D-045, ODbL boundary credit D-019).
+    Caller: agritrace_page.render.render, with r (PublicBatchRecord); globals t (label), pair,
+    plain (label as attribute text), map and map_dots (thumbnail).
     Every quantity goes through qty() so it always carries its unit. -#}
 {% macro qty(q) %}<data class="q" value="{{ q.value }}">{{ q.value|num }} {{ q.unit }}</data>{% endmacro %}
 {% macro timeline(events) %}
@@ -27,13 +29,26 @@
 {% endfor %}
 </ol>
 {% endmacro %}
+{#- W03 (D-045): the page default is English because untagged text is English-language data (codes, places,
+    notes); every Tamil string carries lang="ta" through t()/pair(). OG and description text come only
+    from crop, GI tag, batch code and fixed labels, never from a lot (no farmer name, village or number). -#}
+{% set title = r.product_name_local ~ " / " ~ r.product_name_en ~ " · GI " ~ r.gi_tag_number ~ " · " ~ r.batch_code %}
 <!doctype html>
-<html lang="ta">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{{ r.product_name_en }} · {{ r.batch_code }}</title>
-{# W03 adds the print stylesheet and OG tags (no personal data) here. #}
+<title>{{ title }}</title>
+<meta name="description" content="{{ plain('og_description') }}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ plain('og_description') }}">
+{% if r.public_url %}<meta property="og:url" content="{{ r.public_url }}">
+{% endif %}
+{% if r.qr_url %}<meta property="og:image" content="{{ r.qr_url }}">
+<meta property="og:image:alt" content="{{ plain('qr_alt') }}">
+{% endif %}
+<link rel="icon" href="data:,">
 <style>{% include "page.css" %}</style>
 </head>
 <body>
@@ -62,11 +77,15 @@
 <dt>{{ t("lots") }}</dt><dd id="n-lots">{{ r.lot_count }}</dd>
 <dt>{{ t("gi_tag") }}</dt><dd>{{ r.gi_tag_name }} · GI {{ r.gi_tag_number }}
 {% if r.gi_verification_note %}<br><span class="meta">{{ r.gi_verification_note }}</span>{% endif %}
-{% if r.boundary_map_url %}<br><a href="{{ r.boundary_map_url }}">{{ t("boundary_map") }}</a>{% endif %}</dd>
+{% if r.boundary_map_url %}<br><a href="{{ r.boundary_map_url }}">{{ t("boundary_map") }}</a> <span class="meta">{{ t("boundary_credit") }}</span>{% endif %}</dd>
 <dt>{{ t("events") }}</dt><dd>{{ t("farming_events") }}: <span id="n-farm">{{ r.farming_event_count }}</span> · {{ t("processing_events") }}: <span id="n-proc">{{ r.processing_event_count }}</span></dd>
 <dt>{{ t("pack_date") }}</dt><dd><time datetime="{{ r.pack_date }}">{{ r.pack_date|day }}</time></dd>
 <dt>{{ t("best_before") }}</dt><dd><time datetime="{{ r.best_before_date }}">{{ r.best_before_date|day }}</time></dd>
 </dl>
+<figure class="map">
+<svg viewBox="0 0 {{ map.w }} {{ map.h }}" width="240" height="{{ map.h * 2 }}" role="img" aria-labelledby="map-cap"><path d="{{ map.d }}"/>{% for x, y in map_dots(r.lots) %}<circle cx="{{ x }}" cy="{{ y }}" r="2.5"/>{% endfor %}</svg>
+<figcaption class="meta" id="map-cap">{{ t("map_caption") }}</figcaption>
+</figure>
 </section>
 <section aria-labelledby="h-grade">
 <h2 id="h-grade">{{ t("grade") }}: {{ r.grade.grade }}</h2>
@@ -123,6 +142,11 @@
 <footer>
 <p>{{ t("last_updated") }}: <time datetime="{{ r.footer.last_updated.isoformat() }}">{{ r.footer.last_updated|utc }}</time></p>
 <p>{{ t("generation") }}: <span id="gen">{{ r.footer.generation }}</span> · {{ t("page_version") }}: {{ r.footer.page_version }}</p>
+{#- D-045: the QR is a print-only background image; unlike a hidden <img>, it is not fetched on screen. -#}
+{% if r.qr_url %}<p class="qr" role="img" aria-label="{{ plain('qr_alt') }}" style="background-image:url('{{ r.qr_url }}')"></p>
+{% endif %}
+{% if r.public_url %}<p>{{ t("public_link") }}: <a href="{{ r.public_url }}">{{ r.public_url }}</a></p>
+{% endif %}
 </footer>
 <script>{% include "page.js" %}</script>
 </body>
