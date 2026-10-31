@@ -2,14 +2,16 @@
  * Route table: public `/login`, everything else behind the auth guard inside the shell layout.
  * Serves: plan §7.3 P00 (placeholder routes for the planned screens, auth guard) and P01 (Members, farmer and
  * plot detail, Processors), P02 (Flags list and detail, lot review), P03 (Ready lots, the created batch with its
- * second sign-off), FR9, FR13, FR14, FR60, FR70.
+ * second sign-off), P06 (Dashboard, Audit log, Settings), FR9, FR13, FR14, FR20, FR25, FR60, FR62, FR70.
  * Called by: src/main.tsx (inside BrowserRouter), src/test/render.tsx (inside MemoryRouter).
  */
 import { Navigate, Route, Routes } from 'react-router';
 import { LoginPage } from './auth/LoginPage';
 import { RequireAuth } from './auth/RequireAuth';
+import { AuditLogPage } from './features/audit/AuditLogPage';
 import { BatchPage } from './features/batches/BatchPage';
 import { ReadyLotsPage } from './features/batches/ReadyLotsPage';
+import { DashboardPage } from './features/dashboard/DashboardPage';
 import { FlagPage } from './features/flags/FlagPage';
 import { FlagsPage } from './features/flags/FlagsPage';
 import { LotPage } from './features/flags/LotPage';
@@ -17,9 +19,9 @@ import { FarmerPage } from './features/members/FarmerPage';
 import { MembersPage } from './features/members/MembersPage';
 import { PlotPage } from './features/members/PlotPage';
 import { ProcessorsPage } from './features/members/ProcessorsPage';
+import { SettingsPage } from './features/settings/SettingsPage';
 import { AppLayout } from './layout/AppLayout';
 import { NAV_ITEMS } from './navigation';
-import { DashboardPage } from './pages/DashboardPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 /**
@@ -42,15 +44,17 @@ export function AppRoutes() {
           <Route path="/lots/:lotId" element={<LotPage />} />
           <Route path="/ready-lots" element={<ReadyLotsPage />} />
           <Route path="/batches/:batchId" element={<BatchPage />} />
-          {NAV_ITEMS.filter(
-            (item) => !['P01', 'P02', 'P03'].includes(item.wp) && item.path !== '/',
-          ).map((item) => (
-            <Route
-              key={item.path}
-              path={item.path}
-              element={<PlaceholderPage title={item.label} wp={item.wp} />}
-            />
-          ))}
+          <Route path="/audit" element={<AuditLogPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          {NAV_ITEMS.filter((item) => !['P01', 'P02', 'P03', 'P06'].includes(item.wp)).map(
+            (item) => (
+              <Route
+                key={item.path}
+                path={item.path}
+                element={<PlaceholderPage title={item.label} wp={item.wp} />}
+              />
+            ),
+          )}
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

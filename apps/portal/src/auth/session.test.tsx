@@ -65,18 +65,19 @@ afterEach(() => {
 
 describe('401 from a data call', () => {
   it('refreshes through the cookie once and stays signed in', async () => {
-    let healthCalls = 0;
+    let dashboardCalls = 0;
+    // The first dashboard call gets a 401; later ones fall through to the shared mock.
     server.use(
-      http.get('/v1/healthz', () =>
-        ++healthCalls === 1
-          ? unauthorized()
-          : HttpResponse.json({ db: 'ok', redis: 'ok', s3: 'ok' }),
+      http.get('/v1/dashboard/fpo/:fpoId', () =>
+        ++dashboardCalls === 1 ? unauthorized() : undefined,
       ),
     );
     const refreshes = countRequests('/v1/auth/refresh');
     renderApp('/', true);
 
-    expect(await screen.findByText(/API reachable/)).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Stage progress (lots)' }),
+    ).toBeInTheDocument();
     expect(refreshes.n).toBe(2);
     expect(screen.queryByRole('heading', { name: 'Sign in to AgriTrace' })).not.toBeInTheDocument();
   });
