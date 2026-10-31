@@ -63,8 +63,9 @@ describe('Flags list', () => {
   it('lists open flags with glyph, en/ta label, "14 Feb" date and assignee, and passes axe', async () => {
     const { container } = renderApp('/flags', true);
     await screen.findByRole('table', { name: 'Flags' });
-    // Five seed flags are open or escalated; the default status filter is "open" (4 of them).
-    expect(bodyRows('Flags')).toHaveLength(4);
+    // Six seed flags are open or escalated; the default status filter is "open" (5 of them, P03 added the
+    // plot hold on the out-of-GI plot).
+    expect(bodyRows('Flags')).toHaveLength(5);
     const hold = bodyRows('Flags').find((row) => within(row).queryByText('Hold'));
     expect(hold).toBeDefined();
     const cells = within(hold as HTMLElement);
@@ -96,7 +97,7 @@ describe('Flags list', () => {
     });
     await user.click(screen.getByRole('button', { name: 'Show all' }));
     await waitFor(() => {
-      expect(bodyRows('Flags')).toHaveLength(6);
+      expect(bodyRows('Flags')).toHaveLength(7);
     });
     expect(
       within(screen.getByRole('table', { name: 'Flags' })).getByText('Cleared'),
@@ -104,7 +105,8 @@ describe('Flags list', () => {
 
     await user.selectOptions(screen.getByLabelText('Severity'), 'hold');
     await waitFor(() => {
-      expect(bodyRows('Flags')).toHaveLength(1);
+      // The lot's yield hold and the out-of-GI plot hold.
+      expect(bodyRows('Flags')).toHaveLength(2);
     });
     await user.selectOptions(screen.getByLabelText('Severity'), '');
     await user.selectOptions(screen.getByLabelText('Rule'), 'quantity_mismatch');
