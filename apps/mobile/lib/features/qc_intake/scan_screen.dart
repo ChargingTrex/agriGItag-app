@@ -19,7 +19,7 @@ import '../../core/widgets/farmer_button.dart';
 import '../../core/widgets/voice_prompt_bar.dart';
 import '../qc_home/qc_common.dart';
 import 'intake_screen.dart';
-import 'sell_qr.dart';
+import '../sell/sell_qr.dart';
 
 /// Builds the camera view that reports every decoded code to the callback; tests replace it with a fake.
 typedef QrScannerBuilder = Widget Function(ValueChanged<String> onCode);
@@ -48,13 +48,13 @@ final readyLotsProvider = FutureProvider.autoDispose<List<QcLot>>((ref) async {
 
 /// Resolves a scanned code [raw] to a lot, using the local Lots table of [db] first.
 ///
-/// [raw] is M08's Sell QR (`decodeSellQr`: JSON with a checksum) or a bare lot id. A lot on the phone gives its own
+/// [raw] is M08's Sell QR (`SellQr.decode`: JSON with a checksum, D-035) or a bare lot id. A lot on the phone gives its own
 /// farmer, packed kg and crop. A lot not pulled yet is shown from the QR's fields but marked unverified: the
 /// checksum only catches typos, so the farmer and packed weight are not trusted until sync. Returns null for a JSON
 /// payload whose checksum fails (forged or mistyped), and for a code that names no lot this phone knows (e.g. a lot
 /// code `LOT0EF81415`, which the local Lots table does not hold). Throws what Drift throws.
 Future<QcLot?> resolveLot(AppDatabase db, String raw) async {
-  final qr = decodeSellQr(raw);
+  final qr = SellQr.decode(raw);
   final looksJson = raw.trimLeft().startsWith('{');
   if (looksJson && qr == null) return null;
   final lotId = qr?.lotId ?? raw.trim();

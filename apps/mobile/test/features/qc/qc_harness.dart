@@ -19,7 +19,7 @@ import 'package:agritrace/features/qc_home/qc_common.dart';
 import 'package:agritrace/features/qc_home/qc_home_screen.dart';
 import 'package:agritrace/features/qc_intake/intake_screen.dart';
 import 'package:agritrace/features/qc_intake/scan_screen.dart';
-import 'package:agritrace/features/qc_intake/sell_qr.dart';
+import 'package:agritrace/features/sell/sell_qr.dart';
 import 'package:agritrace/features/qc_packing/packing_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' show OrderingTerm, Value, driftRuntimeOptions;
@@ -50,7 +50,7 @@ final lotQr = jsonEncode({
   'lotId': lotId,
   'farmerId': farmerId,
   'packedKg': 200,
-  'sig': sellQrSig(lotId, farmerId, 200),
+  'sig': SellQr(lotId: lotId, farmerId: farmerId, packedKg: 200).sig,
 });
 
 /// A batch waiting for grading (320 kg received).

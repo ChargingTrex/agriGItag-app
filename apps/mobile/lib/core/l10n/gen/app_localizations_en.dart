@@ -27,11 +27,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roleQc => 'QC officer';
 
   @override
-  String assistFor(String farmerId) {
-    return 'Helping $farmerId';
-  }
-
-  @override
   String get switchLanguage => 'தமிழ்';
 
   @override
@@ -609,6 +604,198 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notFound => 'This page is not here.';
+
+  @override
+  String get homeHistory => 'History';
+
+  @override
+  String get sellPrompt => 'Show this code at the collection centre.';
+
+  @override
+  String get sellPick => 'Which field\'s crop are you selling?';
+
+  @override
+  String get sellNoLot => 'Nothing is ready to sell yet. Log packing first.';
+
+  @override
+  String sellQrLabel(String field) {
+    return 'Sell code for $field';
+  }
+
+  @override
+  String kgAmount(String kg) {
+    return '$kg kg';
+  }
+
+  @override
+  String get moneyPrompt => 'Your crop and its sale.';
+
+  @override
+  String moneyPacked(String kg) {
+    return 'Packed: $kg kg';
+  }
+
+  @override
+  String get lotStatusOpen => 'Growing';
+
+  @override
+  String get lotStatusDrying => 'Drying now';
+
+  @override
+  String get lotStatusReady => 'Ready to sell';
+
+  @override
+  String get lotStatusReceived => 'Received by FPO';
+
+  @override
+  String get lotStatusBatched => 'In a batch';
+
+  @override
+  String get lotStatusClosed => 'Closed';
+
+  @override
+  String get historyPrompt => 'What you logged. Tap one to see it.';
+
+  @override
+  String get historyEmpty => 'Nothing logged yet.';
+
+  @override
+  String historyDetail(String event, String date) {
+    return '$event, $date.';
+  }
+
+  @override
+  String get entrySent => 'Sent';
+
+  @override
+  String get entryWaiting => 'Not sent';
+
+  @override
+  String get undoClosed => 'Only the field officer can correct this now.';
+
+  @override
+  String get wifiOnlyPhotos => 'Photos on Wi-Fi only';
+
+  @override
+  String get unsentOld => 'Some entries have waited more than 7 days. Get signal to send them, or call your officer.';
+
+  @override
+  String get officerAddFarmer => 'Add farmer';
+
+  @override
+  String officerFlags(int count) {
+    return 'Flags to clear: $count';
+  }
+
+  @override
+  String get officerVisitsToday => 'Today\'s visits';
+
+  @override
+  String get officerNoVisits => 'No visits due today.';
+
+  @override
+  String get officerAllFarmers => 'All farmers';
+
+  @override
+  String get officerNoPhone => 'No phone';
+
+  @override
+  String officerStranded(int count) {
+    return '$count entries of another user wait on this phone.';
+  }
+
+  @override
+  String get assistEnd => 'End assist';
+
+  @override
+  String get flagsTitle => 'Flags to clear';
+
+  @override
+  String get flagsNone => 'No flags to clear.';
+
+  @override
+  String flagSeverity(String severity) {
+    String _temp0 = intl.Intl.selectLogic(severity, {'hold': 'Hold', 'warn': 'Check', 'other': 'Note'});
+    return '$_temp0';
+  }
+
+  @override
+  String flagRule(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'event_off_plot': 'Logged away from the field',
+      'yield_over_ceiling': 'Harvest above the yield limit',
+      'event_out_of_order': 'Event out of order',
+      'gps_poor_accuracy': 'Weak GPS',
+      'quantity_mismatch': 'Quantities do not match',
+      'photo_checksum_mismatch': 'Photo does not match',
+      'exif_mismatch': 'Photo date or place does not match',
+      'plot_outside_gi_region': 'Field outside the GI region',
+      'other': 'Check this record',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get flagFixIt => 'Fix it';
+
+  @override
+  String get flagLooksFine => 'Looks fine';
+
+  @override
+  String get flagEscalate => 'Escalate';
+
+  @override
+  String get flagNotOnPhone => 'This entry is not on this phone, so it cannot be fixed here.';
+
+  @override
+  String get flagAdminOnly => 'Only the FPO admin can clear this flag.';
+
+  @override
+  String get flagReasonPrompt => 'Why? Pick a reason.';
+
+  @override
+  String flagReason(String reason) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'field_visit': 'Field visit',
+      'farmer_confirmed': 'Farmer said',
+      'photo_checked': 'Photo checked',
+      'other': 'Entry mistake',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get moistureTitle => 'Moisture';
+
+  @override
+  String get moistureMeterPrompt => 'Which meter?';
+
+  @override
+  String moistureMeterCard(String label, String date) {
+    return '$label, calibrated to $date';
+  }
+
+  @override
+  String moistureCalibrationExpired(String date) {
+    return 'This meter\'s calibration ended on $date. Use a meter calibrated on time.';
+  }
+
+  @override
+  String get moistureNoMeter => 'No moisture meter on this phone. Connect to the internet and open this again.';
+
+  @override
+  String get moistureNoLot => 'This farmer has no crop to measure.';
+
+  @override
+  String get moistureValuePrompt => 'Reading on the meter';
+
+  @override
+  String get flagFixSent => 'Fix sent, awaiting the re-check.';
+
+  @override
+  String assistFor(String farmerId) {
+    return 'Helping $farmerId';
+  }
 
   @override
   String get qcHomePrompt => 'Scan a lot to receive it, or grade a batch.';

@@ -1,18 +1,16 @@
-// Placeholder screens: each role home shows its title, a spoken "coming soon" and the language switch; /settings shows
-// the language switch and the sign-out button; unknown routes show a farmer-friendly "not here" page.
+// Placeholder screens: each role home shows its title, a spoken "coming soon" and the language switch; unknown routes
+// show a farmer-friendly "not here" page.
 // Requirement: plan §7.2 M00 (placeholder screens showing the role name; locale switch re-renders the
-//   sample screen in Tamil), UserFlows §Design rules "Language first" (switched with one button); M06 sign-out
-//   (UserFlows §Who uses what: shared family phones; §When things go wrong: unsent entries stay, the cloud reminds).
+//   sample screen in Tamil), UserFlows §Design rules "Language first" (switched with one button);
 //   UserFlows §When things go wrong (never an error code: one picture, one sentence read aloud, one button).
-// Callers: app_router.dart routes /officer, /assist/:farmerId, /home/{sell,money,farm}, /settings and its
-//   errorBuilder (NotFoundScreen). Replaced by the real feature screens in M08 (sell, money, settings), M09 (my farm),
-//   M10 (officer, assist); M11 replaced /qc with the QC home.
+// Callers: app_router.dart routes /officer, /assist/:farmerId, /home/farm and its errorBuilder (NotFoundScreen,
+//   also M08 history detail for an unknown entry). M08 replaced the Sell, Money and settings placeholders
+//   (features/sell, money, settings); M09 (my farm), M10 (officer, assist) replace the rest; M11 put the QC home on /qc.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../db/providers.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../theme/farmer_tokens.dart';
 import '../voice/voice_player.dart';
@@ -69,80 +67,6 @@ class PlaceholderScreen extends ConsumerWidget {
               label: l10n.switchLanguage,
               onPressed: () => ref.read(sessionProvider.notifier).setLocale(session.locale == tamil ? english : tamil),
               onSpeak: () => playPrompt(ref, context, 'switchLanguage'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Minimal settings screen: the unsent-entries reminder and the sign-out button (M08 builds the real one).
-class SettingsPlaceholder extends ConsumerStatefulWidget {
-  /// Creates the screen.
-  const SettingsPlaceholder({super.key});
-
-  /// Creates the state that tracks a running sign-out. Returns it; throws nothing.
-  @override
-  ConsumerState<SettingsPlaceholder> createState() => _SettingsPlaceholderState();
-}
-
-class _SettingsPlaceholderState extends ConsumerState<SettingsPlaceholder> {
-  bool _busy = false;
-  late final Stream<int> _pending = ref.read(appDatabaseProvider).outboxDao.pendingCount();
-
-  /// Builds the reminder and the button. [context] supplies theme and strings. Returns the widget; throws nothing.
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final tokens = Theme.of(context).extension<FarmerTokens>()!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settingsTitle),
-        // 56 dp back button (Material's implied one is 48 dp, below the farmer minimum).
-        leading: BackButton(style: IconButton.styleFrom(minimumSize: Size.square(tokens.minTarget))),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(tokens.gap),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Unsent entries stay on the phone after sign-out (never deleted); say so before the user leaves.
-            // Hook for M02/M05: swap this sentence for the cloud indicator once both are merged.
-            StreamBuilder<int>(
-              stream: _pending,
-              builder: (context, snapshot) => (snapshot.data ?? 0) == 0
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: EdgeInsets.only(bottom: tokens.gap),
-                      child: Text(l10n.unsentReminder(snapshot.data!), style: Theme.of(context).textTheme.titleMedium),
-                    ),
-            ),
-            FarmerButton(
-              icon: Icons.translate,
-              label: l10n.switchLanguage,
-              onPressed: () {
-                final notifier = ref.read(sessionProvider.notifier);
-                notifier.setLocale(ref.read(sessionProvider).locale == tamil ? english : tamil);
-              },
-              onSpeak: () => playPrompt(ref, context, 'switchLanguage'),
-            ),
-            SizedBox(height: tokens.gap),
-            FarmerButton(
-              icon: Icons.logout,
-              label: l10n.signOut,
-              onPressed: _busy
-                  ? null
-                  : () async {
-                      setState(() => _busy = true);
-                      try {
-                        await ref.read(sessionProvider.notifier).signOut();
-                      } finally {
-                        // On success the router has already left this screen; on a failure the button works again.
-                        if (mounted) setState(() => _busy = false);
-                      }
-                    },
-              onSpeak: () => playPrompt(ref, context, 'signOut'),
             ),
           ],
         ),

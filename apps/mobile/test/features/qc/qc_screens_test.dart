@@ -14,7 +14,7 @@ import 'package:agritrace/features/qc_grading/grading_screen.dart';
 import 'package:agritrace/features/qc_home/qc_common.dart';
 import 'package:agritrace/features/qc_intake/intake_screen.dart';
 import 'package:agritrace/features/qc_intake/scan_screen.dart';
-import 'package:agritrace/features/qc_intake/sell_qr.dart';
+import 'package:agritrace/features/sell/sell_qr.dart';
 import 'package:agritrace/features/qc_packing/packing_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' show Value;
@@ -71,7 +71,12 @@ void main() {
       final stored = (await tester.runAsync(() => resolveLot(f.db, lotQr)))!;
       expect([stored.farmerName, stored.packedKg, stored.cropId, stored.unverified], ['Murugan', 200, cropId, false]);
       expect((await tester.runAsync(() => resolveLot(f.db, lotId)))!.lotId, lotId);
-      final other = {'lotId': 'other', 'farmerId': 'f-9', 'packedKg': 75.5, 'sig': sellQrSig('other', 'f-9', 75.5)};
+      final other = {
+        'lotId': 'other',
+        'farmerId': 'f-9',
+        'packedKg': 75.5,
+        'sig': SellQr(lotId: 'other', farmerId: 'f-9', packedKg: 75.5).sig,
+      };
       final fromQr = (await tester.runAsync(() => resolveLot(f.db, jsonEncode(other))))!;
       expect(
         [fromQr.lotId, fromQr.farmerId, fromQr.farmerName, fromQr.packedKg, fromQr.cropId, fromQr.unverified],
@@ -80,7 +85,7 @@ void main() {
       // Forged: the packed weight raised after the QR was made, so the M08 checksum no longer matches.
       final forged = jsonEncode({...other, 'packedKg': 95.5});
       expect(await tester.runAsync(() => resolveLot(f.db, forged)), isNull);
-      expect(decodeSellQr(forged), isNull);
+      expect(SellQr.decode(forged), isNull);
       // A stored lot with a wrong checksum is refused too, rather than trusted by id.
       expect(await tester.runAsync(() => resolveLot(f.db, jsonEncode({...other, 'lotId': lotId}))), isNull);
       expect(await tester.runAsync(() => resolveLot(f.db, 'LOT0EF81415')), isNull);

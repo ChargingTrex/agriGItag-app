@@ -112,7 +112,7 @@ abstract class AppLocalizations {
   /// **'விவசாயி'**
   String get roleFarmer;
 
-  /// Role name of an FPO field officer, shown on the officer home placeholder.
+  /// Role name of an FPO field officer, the title of the officer home.
   ///
   /// In ta, this message translates to:
   /// **'கள அலுவலர்'**
@@ -123,12 +123,6 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'தர ஆய்வாளர்'**
   String get roleQc;
-
-  /// Title of the assist-mode placeholder: the field officer is entering data for this farmer.
-  ///
-  /// In ta, this message translates to:
-  /// **'உதவி: {farmerId}'**
-  String assistFor(String farmerId);
 
   /// Label of the one-button language switch. It names the language the app switches TO, written in that language.
   ///
@@ -1191,6 +1185,306 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'இந்தப் பக்கம் இல்லை.'**
   String get notFound;
+
+  /// Farmer home button: opens the list of logged entries (History, Undo). At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'வரலாறு'**
+  String get homeHistory;
+
+  /// Spoken sentence above the Sell QR. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'சேகரிப்பு மையத்தில் இந்தக் குறியீட்டைக் காட்டுங்கள்.'**
+  String get sellPrompt;
+
+  /// Sell screen when several lots are ready: the farmer taps a field. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'எந்த வயலின் பயிரை விற்கிறீர்கள்?'**
+  String get sellPick;
+
+  /// Sell screen when no lot is ready for sale. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'விற்க இன்னும் எதுவும் தயாராக இல்லை. முதலில் பேக்கிங்கைப் பதிவு செய்யுங்கள்.'**
+  String get sellNoLot;
+
+  /// Screen-reader label of the Sell QR image.
+  ///
+  /// In ta, this message translates to:
+  /// **'{field} விற்பனைக் குறியீடு'**
+  String sellQrLabel(String field);
+
+  /// Packed quantity in large type under the Sell QR; kg is already formatted with Indian grouping.
+  ///
+  /// In ta, this message translates to:
+  /// **'{kg} கிலோ'**
+  String kgAmount(String kg);
+
+  /// Spoken sentence at the top of the Money screen. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'உங்கள் பயிரும் அதன் விற்பனையும்.'**
+  String get moneyPrompt;
+
+  /// Money card line: packed kilograms of the lot (Indian grouping).
+  ///
+  /// In ta, this message translates to:
+  /// **'பேக் செய்தது: {kg} கிலோ'**
+  String moneyPacked(String kg);
+
+  /// Lot status word on the Money card: server status open (crop in the field).
+  ///
+  /// In ta, this message translates to:
+  /// **'வளர்கிறது'**
+  String get lotStatusOpen;
+
+  /// Lot status word on the Money card: server status drying.
+  ///
+  /// In ta, this message translates to:
+  /// **'உலர்த்துகிறது'**
+  String get lotStatusDrying;
+
+  /// Lot status word on the Money card: server status ready_for_sale.
+  ///
+  /// In ta, this message translates to:
+  /// **'விற்கத் தயார்'**
+  String get lotStatusReady;
+
+  /// Lot status word on the Money card: server status received (intake done).
+  ///
+  /// In ta, this message translates to:
+  /// **'FPO பெற்றது'**
+  String get lotStatusReceived;
+
+  /// Lot status word on the Money card: server status batched.
+  ///
+  /// In ta, this message translates to:
+  /// **'தொகுப்பில் உள்ளது'**
+  String get lotStatusBatched;
+
+  /// Lot status word on the Money card: server status closed.
+  ///
+  /// In ta, this message translates to:
+  /// **'முடிந்தது'**
+  String get lotStatusClosed;
+
+  /// Spoken sentence at the top of History. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நீங்கள் பதிவு செய்தவை. பார்க்க ஒன்றைத் தொடுங்கள்.'**
+  String get historyPrompt;
+
+  /// History when there are no entries. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்னும் எதுவும் பதிவு செய்யவில்லை.'**
+  String get historyEmpty;
+
+  /// Spoken sentence of one History entry: event name and the day it was logged ("14 Feb").
+  ///
+  /// In ta, this message translates to:
+  /// **'{date} அன்று {event}.'**
+  String historyDetail(String event, String date);
+
+  /// Status word of an entry the server confirmed (green tick).
+  ///
+  /// In ta, this message translates to:
+  /// **'அனுப்பியது'**
+  String get entrySent;
+
+  /// Status word of an entry still waiting on the phone (orange circle).
+  ///
+  /// In ta, this message translates to:
+  /// **'அனுப்பவில்லை'**
+  String get entryWaiting;
+
+  /// Entry detail after the 24-hour undo window (or for a refused entry). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'இப்போது கள அலுவலர் மட்டுமே இதைத் திருத்த முடியும்.'**
+  String get undoClosed;
+
+  /// Settings switch: photos wait for Wi-Fi before sending (default off). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'வைஃபையில் மட்டும் படங்கள்'**
+  String get wifiOnlyPhotos;
+
+  /// Settings warning with a red triangle when the oldest unsent entry is 7 days old. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'சில பதிவுகள் 7 நாட்களுக்கு மேல் காத்திருக்கின்றன. அனுப்ப சிக்னல் உள்ள இடத்துக்குச் செல்லுங்கள், அல்லது அலுவலரை அழையுங்கள்.'**
+  String get unsentOld;
+
+  /// Officer home button that opens the onboarding wizard.
+  ///
+  /// In ta, this message translates to:
+  /// **'விவசாயி சேர்'**
+  String get officerAddFarmer;
+
+  /// Officer home button that opens the flag list, with the number of open flags.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிசெய்ய வேண்டியவை: {count}'**
+  String officerFlags(int count);
+
+  /// Officer home heading: farmers with an event due today, grouped by village.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்றைய வருகைகள்'**
+  String get officerVisitsToday;
+
+  /// Officer home line under the visits heading when no farmer has an event due.
+  ///
+  /// In ta, this message translates to:
+  /// **'இன்று வருகை எதுவும் இல்லை.'**
+  String get officerNoVisits;
+
+  /// Officer home heading: every farmer of the FPO, grouped by village; a tap starts assist mode.
+  ///
+  /// In ta, this message translates to:
+  /// **'எல்லா விவசாயிகளும்'**
+  String get officerAllFarmers;
+
+  /// Officer home marker of a farmer without a smartphone (the officer logs their events).
+  ///
+  /// In ta, this message translates to:
+  /// **'தொலைபேசி இல்லை'**
+  String get officerNoPhone;
+
+  /// Officer home line: unsent entries of another user on a shared phone (they send when that user signs in).
+  ///
+  /// In ta, this message translates to:
+  /// **'வேறு பயனரின் {count} பதிவுகள் இந்தத் தொலைபேசியில் காத்திருக்கின்றன.'**
+  String officerStranded(int count);
+
+  /// Officer button on the assisted farmer's home: ends assist mode and returns to the officer home.
+  ///
+  /// In ta, this message translates to:
+  /// **'உதவி முடி'**
+  String get assistEnd;
+
+  /// App bar title of the officer flag screens.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிசெய்ய வேண்டியவை'**
+  String get flagsTitle;
+
+  /// Flag list line when no flag is open.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிசெய்ய எதுவும் இல்லை.'**
+  String get flagsNone;
+
+  /// Word next to a flag's glyph: hold (red triangle), warn (orange circle), info (grey).
+  ///
+  /// In ta, this message translates to:
+  /// **'{severity, select, hold{நிறுத்தம்} warn{சரிபார்} other{குறிப்பு}}'**
+  String flagSeverity(String severity);
+
+  /// What triggered a flag, by its server rule code; other codes read "Check this record".
+  ///
+  /// In ta, this message translates to:
+  /// **'{code, select, event_off_plot{வயலுக்கு வெளியே பதிவு} yield_over_ceiling{மகசூல் வரம்பை மீறியது} event_out_of_order{நிகழ்வு வரிசை தவறு} gps_poor_accuracy{பலவீனமான GPS} quantity_mismatch{அளவுகள் பொருந்தவில்லை} photo_checksum_mismatch{புகைப்படம் பொருந்தவில்லை} exif_mismatch{புகைப்பட தேதி அல்லது இடம் பொருந்தவில்லை} plot_outside_gi_region{வயல் GI பகுதிக்கு வெளியே} other{இந்தப் பதிவைச் சரிபார்க்கவும்}}'**
+  String flagRule(String code);
+
+  /// Flag button: correct the flagged entry (a new version with a reason).
+  ///
+  /// In ta, this message translates to:
+  /// **'சரிசெய்'**
+  String get flagFixIt;
+
+  /// Flag button: close the flag, nothing is wrong.
+  ///
+  /// In ta, this message translates to:
+  /// **'சரியாக உள்ளது'**
+  String get flagLooksFine;
+
+  /// Flag button: send the flag to the FPO admin.
+  ///
+  /// In ta, this message translates to:
+  /// **'மேலே அனுப்பு'**
+  String get flagEscalate;
+
+  /// Flag detail line when the flagged entry is not stored on the officer's phone.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தப் பதிவு இந்தத் தொலைபேசியில் இல்லை; இங்கே சரிசெய்ய முடியாது.'**
+  String get flagNotOnPhone;
+
+  /// Flag detail line for holds and escalated flags, which the officer may not clear.
+  ///
+  /// In ta, this message translates to:
+  /// **'இதை FPO நிர்வாகி மட்டுமே சரிசெய்ய முடியும்.'**
+  String get flagAdminOnly;
+
+  /// Prompt above the reason picture cards of a flag outcome.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஏன்? ஒரு காரணத்தைத் தேர்ந்தெடுக்கவும்.'**
+  String get flagReasonPrompt;
+
+  /// Label of a reason card (reason codes field_visit, farmer_confirmed, photo_checked, entry_mistake).
+  ///
+  /// In ta, this message translates to:
+  /// **'{reason, select, field_visit{வயல் பார்வை} farmer_confirmed{விவசாயி கூறினார்} photo_checked{புகைப்படம் பார்த்தேன்} other{பதிவுப் பிழை}}'**
+  String flagReason(String reason);
+
+  /// Title of the moisture reading screen and the officer button that opens it.
+  ///
+  /// In ta, this message translates to:
+  /// **'ஈரப்பதம்'**
+  String get moistureTitle;
+
+  /// Prompt above the moisture meter cards.
+  ///
+  /// In ta, this message translates to:
+  /// **'எந்த மீட்டர்?'**
+  String get moistureMeterPrompt;
+
+  /// Moisture meter card: make, model and serial, and the last day of its calibration ("14 Feb").
+  ///
+  /// In ta, this message translates to:
+  /// **'{label}, {date} வரை அளவுத்திருத்தம்'**
+  String moistureMeterCard(String label, String date);
+
+  /// Sentence that blocks a reading with a meter whose calibration date has passed.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த மீட்டரின் அளவுத்திருத்தம் {date} அன்று முடிந்தது. சரியான அளவுத்திருத்தம் உள்ள மீட்டரைப் பயன்படுத்தவும்.'**
+  String moistureCalibrationExpired(String date);
+
+  /// Moisture screen line when no meter was ever downloaded.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்தத் தொலைபேசியில் ஈரப்பத மீட்டர் இல்லை. இணையத்துடன் இணைத்து மீண்டும் திறக்கவும்.'**
+  String get moistureNoMeter;
+
+  /// Moisture screen line when the assisted farmer has no active lot.
+  ///
+  /// In ta, this message translates to:
+  /// **'இந்த விவசாயிக்கு அளக்க பயிர் இல்லை.'**
+  String get moistureNoLot;
+
+  /// Prompt above the number pad for the moisture value in percent.
+  ///
+  /// In ta, this message translates to:
+  /// **'மீட்டரில் உள்ள அளவு'**
+  String get moistureValuePrompt;
+
+  /// Flag detail line when this phone has a correction of the flagged entry that the server has not answered yet.
+  ///
+  /// In ta, this message translates to:
+  /// **'திருத்தம் அனுப்பப்பட்டது; மறு சரிபார்ப்புக்குக் காத்திருக்கிறது.'**
+  String get flagFixSent;
+
+  /// Title of the assist-mode placeholder: the field officer is entering data for this farmer.
+  ///
+  /// In ta, this message translates to:
+  /// **'உதவி: {farmerId}'**
+  String assistFor(String farmerId);
 
   /// Spoken prompt of the QC home screen (M11).
   ///

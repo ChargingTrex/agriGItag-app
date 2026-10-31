@@ -5,7 +5,8 @@
 //   "Colour plus shape"); FR42 (reading record), FR50; D-017 (FieldConfig: disabled fields hidden, required block
 //   Save); D-005 (client UUIDv7), D-014 (append-only Entries); CLAUDE.md §5.6 (quantities carry units).
 // Callers: qc_intake (scan_screen, intake_screen), qc_grading (batch_list_screen, grading_screen), qc_packing
-//   (packing_screen), qc_meter (instrument_picker); test/features/qc/*.
+//   (packing_screen), qc_meter (instrument_picker), officer_moisture (moisture_screen: `qcInstrumentsProvider`, the
+//   one instrument mirror); test/features/qc/*.
 
 import 'dart:convert';
 

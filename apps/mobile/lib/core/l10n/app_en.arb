@@ -14,21 +14,11 @@
   },
   "roleFieldOfficer": "Field officer",
   "@roleFieldOfficer": {
-    "description": "Role name of an FPO field officer, shown on the officer home placeholder."
+    "description": "Role name of an FPO field officer, the title of the officer home."
   },
   "roleQc": "QC officer",
   "@roleQc": {
     "description": "Role name of a quality-check (grading) officer, shown on the QC home placeholder."
-  },
-  "assistFor": "Helping {farmerId}",
-  "@assistFor": {
-    "description": "Title of the assist-mode placeholder: the field officer is entering data for this farmer.",
-    "placeholders": {
-      "farmerId": {
-        "type": "String",
-        "example": "F-0042"
-      }
-    }
   },
   "switchLanguage": "தமிழ்",
   "@switchLanguage": {
@@ -879,6 +869,286 @@
   "notFound": "This page is not here.",
   "@notFound": {
     "description": "Page for a link that does not exist; a Home button follows. Also its voice prompt id."
+  },
+  "homeHistory": "History",
+  "@homeHistory": {
+    "description": "Farmer home button: opens the list of logged entries (History, Undo). At most two words. Also its voice prompt id."
+  },
+  "sellPrompt": "Show this code at the collection centre.",
+  "@sellPrompt": {
+    "description": "Spoken sentence above the Sell QR. Also its voice prompt id."
+  },
+  "sellPick": "Which field's crop are you selling?",
+  "@sellPick": {
+    "description": "Sell screen when several lots are ready: the farmer taps a field. Also its voice prompt id."
+  },
+  "sellNoLot": "Nothing is ready to sell yet. Log packing first.",
+  "@sellNoLot": {
+    "description": "Sell screen when no lot is ready for sale. Also its voice prompt id."
+  },
+  "sellQrLabel": "Sell code for {field}",
+  "@sellQrLabel": {
+    "description": "Screen-reader label of the Sell QR image.",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "Field 1"
+      }
+    }
+  },
+  "kgAmount": "{kg} kg",
+  "@kgAmount": {
+    "description": "Packed quantity in large type under the Sell QR; kg is already formatted with Indian grouping.",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "1,200"
+      }
+    }
+  },
+  "moneyPrompt": "Your crop and its sale.",
+  "@moneyPrompt": {
+    "description": "Spoken sentence at the top of the Money screen. Also its voice prompt id."
+  },
+  "moneyPacked": "Packed: {kg} kg",
+  "@moneyPacked": {
+    "description": "Money card line: packed kilograms of the lot (Indian grouping).",
+    "placeholders": {
+      "kg": {
+        "type": "String",
+        "example": "300"
+      }
+    }
+  },
+  "lotStatusOpen": "Growing",
+  "@lotStatusOpen": {
+    "description": "Lot status word on the Money card: server status open (crop in the field)."
+  },
+  "lotStatusDrying": "Drying now",
+  "@lotStatusDrying": {
+    "description": "Lot status word on the Money card: server status drying."
+  },
+  "lotStatusReady": "Ready to sell",
+  "@lotStatusReady": {
+    "description": "Lot status word on the Money card: server status ready_for_sale."
+  },
+  "lotStatusReceived": "Received by FPO",
+  "@lotStatusReceived": {
+    "description": "Lot status word on the Money card: server status received (intake done)."
+  },
+  "lotStatusBatched": "In a batch",
+  "@lotStatusBatched": {
+    "description": "Lot status word on the Money card: server status batched."
+  },
+  "lotStatusClosed": "Closed",
+  "@lotStatusClosed": {
+    "description": "Lot status word on the Money card: server status closed."
+  },
+  "historyPrompt": "What you logged. Tap one to see it.",
+  "@historyPrompt": {
+    "description": "Spoken sentence at the top of History. Also its voice prompt id."
+  },
+  "historyEmpty": "Nothing logged yet.",
+  "@historyEmpty": {
+    "description": "History when there are no entries. Also its voice prompt id."
+  },
+  "historyDetail": "{event}, {date}.",
+  "@historyDetail": {
+    "description": "Spoken sentence of one History entry: event name and the day it was logged (\"14 Feb\").",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Harvest"
+      },
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "entrySent": "Sent",
+  "@entrySent": {
+    "description": "Status word of an entry the server confirmed (green tick)."
+  },
+  "entryWaiting": "Not sent",
+  "@entryWaiting": {
+    "description": "Status word of an entry still waiting on the phone (orange circle)."
+  },
+  "undoClosed": "Only the field officer can correct this now.",
+  "@undoClosed": {
+    "description": "Entry detail after the 24-hour undo window (or for a refused entry). Also its voice prompt id."
+  },
+  "wifiOnlyPhotos": "Photos on Wi-Fi only",
+  "@wifiOnlyPhotos": {
+    "description": "Settings switch: photos wait for Wi-Fi before sending (default off). Also its voice prompt id."
+  },
+  "unsentOld": "Some entries have waited more than 7 days. Get signal to send them, or call your officer.",
+  "@unsentOld": {
+    "description": "Settings warning with a red triangle when the oldest unsent entry is 7 days old. Also its voice prompt id."
+  },
+  "officerAddFarmer": "Add farmer",
+  "@officerAddFarmer": {
+    "description": "Officer home button that opens the onboarding wizard."
+  },
+  "officerFlags": "Flags to clear: {count}",
+  "@officerFlags": {
+    "description": "Officer home button that opens the flag list, with the number of open flags.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "officerVisitsToday": "Today's visits",
+  "@officerVisitsToday": {
+    "description": "Officer home heading: farmers with an event due today, grouped by village."
+  },
+  "officerNoVisits": "No visits due today.",
+  "@officerNoVisits": {
+    "description": "Officer home line under the visits heading when no farmer has an event due."
+  },
+  "officerAllFarmers": "All farmers",
+  "@officerAllFarmers": {
+    "description": "Officer home heading: every farmer of the FPO, grouped by village; a tap starts assist mode."
+  },
+  "officerNoPhone": "No phone",
+  "@officerNoPhone": {
+    "description": "Officer home marker of a farmer without a smartphone (the officer logs their events)."
+  },
+  "officerStranded": "{count} entries of another user wait on this phone.",
+  "@officerStranded": {
+    "description": "Officer home line: unsent entries of another user on a shared phone (they send when that user signs in).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "assistEnd": "End assist",
+  "@assistEnd": {
+    "description": "Officer button on the assisted farmer's home: ends assist mode and returns to the officer home."
+  },
+  "flagsTitle": "Flags to clear",
+  "@flagsTitle": {
+    "description": "App bar title of the officer flag screens."
+  },
+  "flagsNone": "No flags to clear.",
+  "@flagsNone": {
+    "description": "Flag list line when no flag is open."
+  },
+  "flagSeverity": "{severity, select, hold{Hold} warn{Check} other{Note}}",
+  "@flagSeverity": {
+    "description": "Word next to a flag's glyph: hold (red triangle), warn (orange circle), info (grey).",
+    "placeholders": {
+      "severity": {
+        "type": "String",
+        "example": "warn"
+      }
+    }
+  },
+  "flagRule": "{code, select, event_off_plot{Logged away from the field} yield_over_ceiling{Harvest above the yield limit} event_out_of_order{Event out of order} gps_poor_accuracy{Weak GPS} quantity_mismatch{Quantities do not match} photo_checksum_mismatch{Photo does not match} exif_mismatch{Photo date or place does not match} plot_outside_gi_region{Field outside the GI region} other{Check this record}}",
+  "@flagRule": {
+    "description": "What triggered a flag, by its server rule code; other codes read \"Check this record\".",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "event_off_plot"
+      }
+    }
+  },
+  "flagFixIt": "Fix it",
+  "@flagFixIt": {
+    "description": "Flag button: correct the flagged entry (a new version with a reason)."
+  },
+  "flagLooksFine": "Looks fine",
+  "@flagLooksFine": {
+    "description": "Flag button: close the flag, nothing is wrong."
+  },
+  "flagEscalate": "Escalate",
+  "@flagEscalate": {
+    "description": "Flag button: send the flag to the FPO admin."
+  },
+  "flagNotOnPhone": "This entry is not on this phone, so it cannot be fixed here.",
+  "@flagNotOnPhone": {
+    "description": "Flag detail line when the flagged entry is not stored on the officer's phone."
+  },
+  "flagAdminOnly": "Only the FPO admin can clear this flag.",
+  "@flagAdminOnly": {
+    "description": "Flag detail line for holds and escalated flags, which the officer may not clear."
+  },
+  "flagReasonPrompt": "Why? Pick a reason.",
+  "@flagReasonPrompt": {
+    "description": "Prompt above the reason picture cards of a flag outcome."
+  },
+  "flagReason": "{reason, select, field_visit{Field visit} farmer_confirmed{Farmer said} photo_checked{Photo checked} other{Entry mistake}}",
+  "@flagReason": {
+    "description": "Label of a reason card (reason codes field_visit, farmer_confirmed, photo_checked, entry_mistake).",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "example": "field_visit"
+      }
+    }
+  },
+  "moistureTitle": "Moisture",
+  "@moistureTitle": {
+    "description": "Title of the moisture reading screen and the officer button that opens it."
+  },
+  "moistureMeterPrompt": "Which meter?",
+  "@moistureMeterPrompt": {
+    "description": "Prompt above the moisture meter cards."
+  },
+  "moistureMeterCard": "{label}, calibrated to {date}",
+  "@moistureMeterCard": {
+    "description": "Moisture meter card: make, model and serial, and the last day of its calibration (\"14 Feb\").",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Wile 55 #A12"
+      },
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "moistureCalibrationExpired": "This meter's calibration ended on {date}. Use a meter calibrated on time.",
+  "@moistureCalibrationExpired": {
+    "description": "Sentence that blocks a reading with a meter whose calibration date has passed.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "moistureNoMeter": "No moisture meter on this phone. Connect to the internet and open this again.",
+  "@moistureNoMeter": {
+    "description": "Moisture screen line when no meter was ever downloaded."
+  },
+  "moistureNoLot": "This farmer has no crop to measure.",
+  "@moistureNoLot": {
+    "description": "Moisture screen line when the assisted farmer has no active lot."
+  },
+  "moistureValuePrompt": "Reading on the meter",
+  "@moistureValuePrompt": {
+    "description": "Prompt above the number pad for the moisture value in percent."
+  },
+  "flagFixSent": "Fix sent, awaiting the re-check.",
+  "@flagFixSent": {
+    "description": "Flag detail line when this phone has a correction of the flagged entry that the server has not answered yet."
+  },
+  "assistFor": "Helping {farmerId}",
+  "@assistFor": {
+    "description": "Title of the assist-mode placeholder: the field officer is entering data for this farmer.",
+    "placeholders": {
+      "farmerId": {
+        "type": "String",
+        "example": "F-0042"
+      }
+    }
   },
   "qcHomePrompt": "Scan a lot to receive it, or grade a batch.",
   "@qcHomePrompt": {
