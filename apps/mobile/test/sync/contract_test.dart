@@ -28,7 +28,7 @@ void main() {
     expect(fromWire(SyncKind.values, 'quality_reading'), SyncKind.qualityReading);
     expect(fromWire(SyncKind.values, 'harvest'), isNull);
     final kind = ((schemas['SyncEntry'] as Map)['properties'] as Map)['kind'] as Map;
-    // D-031/D-032 kinds farmer and assist_session are in the spec since B15 merged (regenerated client on main).
+    // D-031/D-032 kinds `farmer` and `assist_session` are served since B15 merged (2026-10-31).
     expect(SyncKind.values.map(wireName), unorderedEquals((kind['enum'] as List).cast<String>()));
     expect(eventTypes, unorderedEquals(((schemas['EventType'] as Map)['enum'] as List).cast<String>()));
     final changeKinds = ((schemas['ChangeKind'] as Map)['enum'] as List).cast<String>();
@@ -107,21 +107,13 @@ void main() {
     await w.dispose();
   });
 
-  // RE-RUN WHEN B15 LANDS: until then the two kinds and the per-entry key are checked against the spec wording in
-  // docs/agents/specs/backend-design.md §3 (D-031, D-032); afterwards assert them against SyncEntry in openapi.json.
-  test(
-    'D-031/D-032 (pending B15): spec §3 names kinds farmer and assist_session and a top-level assist_session_id',
-    () {
-      final spec = File('../../docs/agents/specs/backend-design.md').readAsStringSync();
-      expect(spec, contains('"kind": "${wireName(SyncKind.farmer)}"'));
-      expect(spec, contains('"kind": "${wireName(SyncKind.assistSession)}"'));
-      expect(
-        spec,
-        contains('"kind": "consent", "assist_session_id"'),
-        reason: 'on the entry, beside kind, not in data',
-      );
-    },
-  );
+  // D-031/D-032 are served since B15 merged (2026-10-31): the two kinds and the per-entry key are in openapi.json.
+  test('D-031/D-032: SyncEntry has kinds farmer and assist_session and a top-level assist_session_id', () {
+    final entry = (schemas['SyncEntry'] as Map)['properties'] as Map;
+    final kinds = ((entry['kind'] as Map)['enum'] as List).cast<String>();
+    expect(kinds, containsAll([wireName(SyncKind.farmer), wireName(SyncKind.assistSession)]));
+    expect(entry.keys, contains('assist_session_id'), reason: 'on the entry, beside kind, not in data');
+  });
 
   test(
     'onboarding push from [farmer, assist_session, consent, plot] Entries: kinds, order and lifted session id',
