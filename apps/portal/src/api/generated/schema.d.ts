@@ -685,6 +685,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List flags
+         * @description Rule findings of one FPO (default: the caller's; any FPO for a super-admin), newest first. Filter by `assignee` (role expected to review), `status`, `severity`; `hold` flags keep a lot out of GI-labelled batches until an FPO admin resolves them.
+         */
+        get: operations["list_flags_v1_flags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/flags/{flag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a flag
+         * @description One rule finding with the inputs and limits behind it (`details`) and its review state.
+         */
+        get: operations["get_flag_v1_flags__flag_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/flags/{flag_id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve a flag
+         * @description Records the review outcome (FR70): `looks_fine` → cleared, `fixed` → fixed, `escalated` → handed to the FPO admin. A coded `reason_code` is required. Field officers resolve info and warn flags; only an FPO admin resolves a `hold` or an escalated flag. Clearing the last hold of a lot makes it eligible for GI batches again. A later rule run reopens the flag when the problem comes back worse (higher severity); at the same severity a `looks_fine` decision stands. Open and escalated flags whose rule no longer fires are closed by the system as `fixed` / `rule_passed`.
+         */
+        post: operations["resolve_flag_v1_flags__flag_id__resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/fpos": {
         parameters: {
             query?: never;
@@ -1306,7 +1366,7 @@ export interface paths {
         put?: never;
         /**
          * Push offline entries
-         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`; `flag_resolution` is rejected with `not_implemented_pilot` in the pilot. Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
+         * @description Sends up to 50 entries (and at most 256 KB) captured offline, in capture order. Kinds: `event_version` (body `EventVersionIn`, the same as `CorrectionIn.data`), `quality_reading`, `plot`, `consent`, `flag_resolution` (same rules as `POST /v1/flags/{id}/resolve`). Each entry is its own transaction and gets its own result: `accepted`, `duplicate` (same `client_id` already stored by you; returns the original `server_id` and fresh upload URLs for photos not yet uploaded) or `rejected` with an error (`validation_error`, `client_id_conflict`, `stale_version`, `forbidden`, `not_found`, `reason_required`, `undo_window_closed`, ...). The response is 200 whenever the envelope parses. Photos are never in the push: each photo gets one presigned PUT (15 minutes, `Content-Type` and `x-amz-checksum-sha256` must be sent as given), then `POST /v1/sync/photos/confirm`. `metrics[]` rows are stored for the sync-health dashboard.
          */
         post: operations["sync_push_v1_sync_push_post"];
         delete?: never;
@@ -2362,6 +2422,110 @@ export interface components {
              */
             version_no: number;
         };
+        /**
+         * FlagOut
+         * @description One rule finding and its review state.
+         */
+        FlagOut: {
+            /** @description Role expected to review it: field_officer, or fpo_admin. */
+            assigned_role: components["schemas"]["Role"] | null;
+            /**
+             * Details
+             * @description Rule inputs and limits behind the finding; quantities carry `unit`.
+             */
+            details: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Fpo Id
+             * Format: uuid
+             * @description FPO that owns the flagged record.
+             */
+            fpo_id: string;
+            /**
+             * Id
+             * Format: uuid
+             * @description Flag id (UUIDv7, so newer flags sort later).
+             */
+            id: string;
+            /**
+             * Raised At
+             * Format: date-time
+             * @description When a rule first raised it, ISO 8601 UTC.
+             */
+            raised_at: string;
+            /**
+             * Resolution Note
+             * @description Reviewer's note: method, evidence, what was fixed.
+             */
+            resolution_note: string | null;
+            /**
+             * Resolution Reason Code
+             * @description Coded reason of the resolution; `rule_passed` when a later rule run no longer raised it.
+             */
+            resolution_reason_code: string | null;
+            /**
+             * Resolved At
+             * @description When it was resolved, ISO 8601 UTC.
+             */
+            resolved_at: string | null;
+            /**
+             * Resolved By
+             * @description User who resolved it; null when open or closed by a rule.
+             */
+            resolved_by: string | null;
+            /**
+             * Rule Code
+             * @description Rule that raised it, e.g. `quantity_mismatch`, `event_off_plot`.
+             */
+            rule_code: string;
+            /** @description info, warn, or hold (keeps the lot out of GI-labelled batches). */
+            severity: components["schemas"]["Severity"];
+            /** @description open, cleared (looked fine), fixed, or escalated to the FPO admin. */
+            status: components["schemas"]["FlagStatus"];
+            /**
+             * Subject Id
+             * Format: uuid
+             * @description Id of the flagged record.
+             */
+            subject_id: string;
+            /** @description Kind of record flagged: plot, event, lot, batch or reading. */
+            subject_type: components["schemas"]["FlagSubject"];
+        };
+        /**
+         * FlagResolveIn
+         * @description A reviewer's outcome for one flag (FR70).
+         */
+        FlagResolveIn: {
+            /**
+             * Note
+             * @description Free text: method, evidence, what changed.
+             */
+            note?: string | null;
+            /**
+             * Reason Code
+             * @description Coded reason, e.g. `land_record_checked`, `field_visit`; required (else 422).
+             */
+            reason_code?: string | null;
+            /**
+             * Resolution
+             * @description looks_fine → cleared; fixed → fixed; escalated → escalated and reassigned to fpo_admin.
+             * @enum {string}
+             */
+            resolution: "looks_fine" | "fixed" | "escalated";
+        };
+        /**
+         * FlagStatus
+         * @description Flag resolution state (FR70).
+         * @enum {string}
+         */
+        FlagStatus: "open" | "cleared" | "fixed" | "escalated";
+        /**
+         * FlagSubject
+         * @description What a rule flag is raised on (FR11, FR28, FR69).
+         * @enum {string}
+         */
+        FlagSubject: "plot" | "event" | "lot" | "batch" | "reading";
         /**
          * FpoIn
          * @description A new FPO (tenant); created by a super-admin.
@@ -3990,6 +4154,24 @@ export interface components {
              */
             next_cursor?: string | null;
         };
+        /** Page[FlagOut] */
+        Page_FlagOut_: {
+            /**
+             * Has More
+             * @description True when another page exists.
+             */
+            has_more: boolean;
+            /**
+             * Items
+             * @description Items on this page, in the endpoint's documented order.
+             */
+            items: components["schemas"]["FlagOut"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null on the last.
+             */
+            next_cursor?: string | null;
+        };
         /** Page[InstrumentOut] */
         Page_InstrumentOut_: {
             /**
@@ -5494,6 +5676,12 @@ export interface components {
             roles: string[];
         };
         /**
+         * Severity
+         * @description Flag severity; `hold` blocks GI labelling until resolved (FR68, FR70).
+         * @enum {string}
+         */
+        Severity: "info" | "warn" | "hold";
+        /**
          * SignedQuantity
          * @description A quantity that may be negative, used only for adjustments and differences.
          */
@@ -5811,7 +5999,7 @@ export interface components {
             client_id: string;
             /**
              * Data
-             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: not in the pilot. The entry's `client_id` is used as the record's id.
+             * @description `event_version`: an `EventVersionIn` (see `CorrectionIn.data`); `quality_reading`: `QualityReadingIn`; `plot`: `PlotIn`; `consent`: `ConsentIn`; `flag_resolution`: `FlagResolutionEntry` `{flag_id, resolution, reason_code, note}` (its `server_id` is the flag id). Otherwise the entry's `client_id` is used as the record's id.
              */
             data: {
                 [key: string]: unknown;
@@ -7455,6 +7643,210 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FarmerOut"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_flags_v1_flags_get: {
+        parameters: {
+            query?: {
+                /** @description FPO to list; default the caller's. */
+                fpo_id?: string | null;
+                /** @description Only flags assigned to this role. */
+                assignee?: components["schemas"]["Role"] | null;
+                /** @description Only flags in this status. */
+                status?: components["schemas"]["FlagStatus"] | null;
+                /** @description Only flags of this severity. */
+                severity?: components["schemas"]["Severity"] | null;
+                /** @description `next_cursor` of the previous page; omit for the first page. */
+                cursor?: string | null;
+                /** @description Page size, 1–200. */
+                limit?: number;
+            };
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_FlagOut_"];
+                };
+            };
+            /** @description `unauthorized`: no valid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `forbidden`: farmers use sync pull. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_flag_v1_flags__flag_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                flag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagOut"];
+                };
+            };
+            /** @description `unauthorized`: no valid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: no such flag, or it belongs to another FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    resolve_flag_v1_flags__flag_id__resolve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                flag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FlagResolveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagOut"];
+                };
+            };
+            /** @description `unauthorized`: no valid access token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `forbidden`: role is not field_officer or fpo_admin; `resolution_forbidden`: a field officer on a hold or escalated flag. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `not_found`: no such flag, or it belongs to another FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `flag_not_open`: already cleared or fixed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description `reason_required`: no `reason_code`; `validation_error`. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Error */

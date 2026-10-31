@@ -52,6 +52,11 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FinalPackingVersion.serializer)
       ..add(FinalPackingVersionChangeKindEnum.serializer)
       ..add(FinalPackingVersionEventTypeEnum.serializer)
+      ..add(FlagOut.serializer)
+      ..add(FlagResolveIn.serializer)
+      ..add(FlagResolveInResolutionEnum.serializer)
+      ..add(FlagStatus.serializer)
+      ..add(FlagSubject.serializer)
       ..add(FpoIn.serializer)
       ..add(FpoOut.serializer)
       ..add(GeoPoint.serializer)
@@ -127,6 +132,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PageConsentOut.serializer)
       ..add(PageEventOut.serializer)
       ..add(PageFarmerOut.serializer)
+      ..add(PageFlagOut.serializer)
       ..add(PageInstrumentOut.serializer)
       ..add(PageNotificationOut.serializer)
       ..add(PagePlotOut.serializer)
@@ -199,6 +205,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Role.serializer)
       ..add(SessionOut.serializer)
       ..add(SessionOutKindEnum.serializer)
+      ..add(Severity.serializer)
       ..add(SignedQuantityInput.serializer)
       ..add(SignedQuantityOutput.serializer)
       ..add(SowingPayload.serializer)
@@ -260,6 +267,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(FarmerOut)]),
           () => ListBuilder<FarmerOut>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(FlagOut)]),
+          () => ListBuilder<FlagOut>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(ImportRowError)]),
           () => ListBuilder<ImportRowError>())
@@ -446,6 +456,12 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltMap, const [const FullType(String), const FullType(String)]),
           () => MapBuilder<String, String>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>())
       ..addBuilderFactory(
           const FullType(BuiltMap, const [
             const FullType(String),
