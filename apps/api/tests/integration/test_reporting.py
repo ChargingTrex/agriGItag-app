@@ -5,20 +5,17 @@ per version with `entered_by`, `assist_session_id`; partner → 501) and one tes
 (stage tiles, flags + batches, land area, finished goods + scans, sync health, farmer table, audit log),
 FR13, FR20, FR21, FR58, D-037, D-038, D-039.
 Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`). Auth is replaced by
-a dependency override; rows are seeded with the ORM.
+a dependency override; rows are seeded with the ORM; `migrated` comes from tests/integration/conftest.py.
 """
 
 import csv
 import io
 import secrets
-import subprocess
-import sys
 import uuid
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
-from pathlib import Path
 
 import pytest
 from geoalchemy2 import WKTElement
@@ -52,28 +49,7 @@ from agritrace.modules.rules_flags.models import Flag
 
 pytestmark = pytest.mark.integration
 
-API_DIR = Path(__file__).parents[2]
 NOW = datetime.now(UTC)
-
-
-@pytest.fixture(scope="session")
-def migrated(stack: None) -> None:
-    """Migrate the test database to head (a no-op when another test module already did).
-
-    Args:
-        stack: the running containers (fixture).
-
-    Raises:
-        AssertionError: alembic failed (its output is in the message).
-
-    Side effects:
-        Creates every table and trigger up to the latest revision.
-    """
-    alembic = str(Path(sys.executable).parent / "alembic")
-    result = subprocess.run(  # noqa: S603
-        [alembic, "upgrade", "head"], cwd=API_DIR, capture_output=True, text=True, check=False
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
 
 
 @dataclass
