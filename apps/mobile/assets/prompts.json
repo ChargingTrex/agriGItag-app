@@ -19,7 +19,15 @@
       "onboardCropPrompt",
       "onboardHandoffPrompt",
       "onboardBoundaryCrosses",
-      "onboardLocationOff"
+      "onboardLocationOff",
+      "chooseEventPrompt",
+      "orderAskSowing",
+      "confirmPlain",
+      "confirmBags",
+      "savedOnline",
+      "savedOffline",
+      "keepDrying",
+      "homeNoTask"
     ],
     "en": [
       "callOfficer",
@@ -38,7 +46,15 @@
       "onboardCropPrompt",
       "onboardHandoffPrompt",
       "onboardBoundaryCrosses",
-      "onboardLocationOff"
+      "onboardLocationOff",
+      "chooseEventPrompt",
+      "orderAskSowing",
+      "confirmPlain",
+      "confirmBags",
+      "savedOnline",
+      "savedOffline",
+      "keepDrying",
+      "homeNoTask"
     ]
   },
   "clips": {
@@ -59,7 +75,15 @@
       "onboardCropPrompt",
       "onboardHandoffPrompt",
       "onboardBoundaryCrosses",
-      "onboardLocationOff"
+      "onboardLocationOff",
+      "chooseEventPrompt",
+      "orderAskSowing",
+      "confirmPlain",
+      "confirmBags",
+      "savedOnline",
+      "savedOffline",
+      "keepDrying",
+      "homeNoTask"
     ],
     "en": [
       "callOfficer",
@@ -78,7 +102,15 @@
       "onboardCropPrompt",
       "onboardHandoffPrompt",
       "onboardBoundaryCrosses",
-      "onboardLocationOff"
+      "onboardLocationOff",
+      "chooseEventPrompt",
+      "orderAskSowing",
+      "confirmPlain",
+      "confirmBags",
+      "savedOnline",
+      "savedOffline",
+      "keepDrying",
+      "homeNoTask"
     ]
   }
 }

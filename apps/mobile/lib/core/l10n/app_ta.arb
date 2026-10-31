@@ -523,5 +523,361 @@
         "example": "3"
       }
     }
+  },
+  "eventLandPreparation": "நிலம் தயாரிப்பு",
+  "@eventLandPreparation": {
+    "description": "Event card: Stage 1 land preparation (ploughing). At most two words. Also its voice prompt id."
+  },
+  "eventNursery": "நாற்றங்கால்",
+  "@eventNursery": {
+    "description": "Event card: nursery bed with the seed variety. At most two words. Also its voice prompt id."
+  },
+  "eventSowing": "நடவு",
+  "@eventSowing": {
+    "description": "Event card: sowing or transplanting in the main field. At most two words. Also its voice prompt id."
+  },
+  "eventInputApplication": "உரம், மருந்து",
+  "@eventInputApplication": {
+    "description": "Event card: fertiliser or pesticide application. At most two words. Also its voice prompt id."
+  },
+  "eventHarvest": "அறுவடை",
+  "@eventHarvest": {
+    "description": "Event card: a harvest round. At most two words. Also its voice prompt id."
+  },
+  "eventDrying": "உலர்த்தல்",
+  "@eventDrying": {
+    "description": "Event card: drying the crop on the farm. At most two words. Also its voice prompt id."
+  },
+  "eventPacking": "மூட்டை கட்டுதல்",
+  "@eventPacking": {
+    "description": "Event card: packing the dried crop into bags. At most two words. Also its voice prompt id."
+  },
+  "eventProblem": "பிரச்சனை",
+  "@eventProblem": {
+    "description": "Event card: report a pest, disease or rain damage. At most two words. Also its voice prompt id."
+  },
+  "orderAskLandPreparation": "நிலத்தை ஏற்கனவே தயார் செய்தீர்களா?",
+  "@orderAskLandPreparation": {
+    "description": "Out-of-order question (F09) when land preparation is missing before this event. Also its voice prompt id."
+  },
+  "orderAskNursery": "நாற்றங்கால் ஏற்கனவே அமைத்தீர்களா?",
+  "@orderAskNursery": {
+    "description": "Out-of-order question (F09) when the nursery is missing before this event. Also its voice prompt id."
+  },
+  "orderAskSowing": "ஏற்கனவே நடவு செய்தீர்களா?",
+  "@orderAskSowing": {
+    "description": "Out-of-order question (F09) when sowing is missing, e.g. harvest before sowing. Also its voice prompt id."
+  },
+  "orderAskInputApplication": "ஏற்கனவே உரம் அல்லது மருந்து போட்டீர்களா?",
+  "@orderAskInputApplication": {
+    "description": "Out-of-order question (F09) when a fertiliser step is missing. Also its voice prompt id."
+  },
+  "orderAskHarvest": "ஏற்கனவே அறுவடை செய்தீர்களா?",
+  "@orderAskHarvest": {
+    "description": "Out-of-order question (F09) when the harvest is missing, e.g. drying before harvest. Also its voice prompt id."
+  },
+  "orderAskDrying": "ஏற்கனவே காய வைத்தீர்களா?",
+  "@orderAskDrying": {
+    "description": "Out-of-order question (F09) when drying is missing before packing. Also its voice prompt id."
+  },
+  "orderAskPacking": "ஏற்கனவே மூட்டை கட்டினீர்களா?",
+  "@orderAskPacking": {
+    "description": "Out-of-order question (F09) when packing is missing. Also its voice prompt id."
+  },
+  "orderAskProblem": "பிரச்சனையை ஏற்கனவே தெரிவித்தீர்களா?",
+  "@orderAskProblem": {
+    "description": "Out-of-order question (F09); problems are in no order track, kept for completeness. Also its voice prompt id."
+  },
+  "chooseEventTitle": "பதிவு செய்",
+  "@chooseEventTitle": {
+    "description": "App bar title of the event grid (F04)."
+  },
+  "chooseEventPrompt": "இன்று வயலில் என்ன செய்தீர்கள்?",
+  "@chooseEventPrompt": {
+    "description": "Spoken sentence above the eight event cards (F04). Also its voice prompt id."
+  },
+  "choosePlotPrompt": "எந்த வயல்?",
+  "@choosePlotPrompt": {
+    "description": "Spoken sentence above the field cards when the farmer has more than one active lot. Also its voice prompt id."
+  },
+  "plotNumber": "வயல் {number}",
+  "@plotNumber": {
+    "description": "Card label of the farmer's n-th field (lot) in the field picker. At most two words.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "nurseryPrompt": "எந்த விதை? அல்லது விதைப் பாக்கெட்டைப் படம் எடுங்கள்.",
+  "@nurseryPrompt": {
+    "description": "Spoken sentence above the seed variety cards (nursery). Also its voice prompt id."
+  },
+  "seedPacket": "விதைப் பாக்கெட்",
+  "@seedPacket": {
+    "description": "Card: no variety chosen; the photo will show the seed packet instead. At most two words. Also its voice prompt id."
+  },
+  "inputPrompt": "எத்தனை மூட்டை? பிறகு பொருளைத் தொடுங்கள்.",
+  "@inputPrompt": {
+    "description": "Spoken sentence above the bags stepper and the product cards (fertiliser or spray). Also its voice prompt id."
+  },
+  "bagsPrompt": "எத்தனை மூட்டை?",
+  "@bagsPrompt": {
+    "description": "Spoken sentence above the bags stepper (harvest, packing). Also its voice prompt id."
+  },
+  "bagsUnit": "மூட்டைகள்",
+  "@bagsUnit": {
+    "description": "Unit word under the bags stepper value (used when the field configuration has no label)."
+  },
+  "next": "அடுத்து",
+  "@next": {
+    "description": "Button under the bags stepper that opens the camera. At most two words. Also its voice prompt id."
+  },
+  "yieldWarn": "இந்த வயலுக்கு வழக்கத்தை விட அதிகம்.",
+  "@yieldWarn": {
+    "description": "Orange note under the harvest stepper when the yield is 20-30 % above the field's ceiling (preview only; nothing is blocked)."
+  },
+  "yieldHold": "வழக்கத்தை விட மிக அதிகம். அலுவலர் சரிபார்ப்பார்.",
+  "@yieldHold": {
+    "description": "Orange note under the harvest stepper when the yield is more than 30 % above the ceiling: saved, reviewed by the officer."
+  },
+  "dryingPrompt": "காய வைக்கத் தொடங்குகிறீர்களா, அல்லது முடிந்ததா?",
+  "@dryingPrompt": {
+    "description": "Spoken sentence above the Start drying / Drying done buttons. Also its voice prompt id."
+  },
+  "dryingStart": "உலர்த்தல் தொடக்கம்",
+  "@dryingStart": {
+    "description": "Button: drying starts today (a reminder to log the end is set). At most two words. Also its voice prompt id."
+  },
+  "dryingDone": "உலர்த்தல் முடிவு",
+  "@dryingDone": {
+    "description": "Button: drying finished today. At most two words. Also its voice prompt id."
+  },
+  "problemPrompt": "என்ன பிரச்சனை?",
+  "@problemPrompt": {
+    "description": "Spoken sentence above the problem kind cards. Also its voice prompt id."
+  },
+  "problemPest": "பூச்சி",
+  "@problemPest": {
+    "description": "Problem kind card: insects or other pests. At most two words. Also its voice prompt id."
+  },
+  "problemDisease": "நோய்",
+  "@problemDisease": {
+    "description": "Problem kind card: plant disease. At most two words. Also its voice prompt id."
+  },
+  "problemWeather": "மழை சேதம்",
+  "@problemWeather": {
+    "description": "Problem kind card: rain, wind or other weather damage. At most two words. Also its voice prompt id."
+  },
+  "problemOther": "மற்றவை",
+  "@problemOther": {
+    "description": "Problem kind card: anything else. At most two words. Also its voice prompt id."
+  },
+  "cameraPrompt": "செய்த வேலையைப் படம் எடுங்கள்.",
+  "@cameraPrompt": {
+    "description": "Spoken sentence above the camera preview (F06). Also its voice prompt id."
+  },
+  "takePhoto": "படம் எடு",
+  "@takePhoto": {
+    "description": "Shutter button under the camera preview. At most two words. Also its voice prompt id."
+  },
+  "photoSaving": "படம் சேமிக்கப்படுகிறது",
+  "@photoSaving": {
+    "description": "Screen-reader label of the progress ring while the photo is compressed."
+  },
+  "cameraOff": "கேமரா இயங்கவில்லை. கேமராவை அனுமதித்து மீண்டும் முயலுங்கள்.",
+  "@cameraOff": {
+    "description": "Shown when camera access is refused or the camera fails (never an error code). Also its voice prompt id."
+  },
+  "tryAgain": "மீண்டும் முயல்",
+  "@tryAgain": {
+    "description": "Button that opens the camera again. At most two words. Also its voice prompt id."
+  },
+  "phoneFull": "கைபேசி நிரம்பியுள்ளது. பதிவுகளை இப்போது அனுப்பவா?",
+  "@phoneFull": {
+    "description": "Sheet when the photo or entry cannot be stored (UserFlows: low storage). Also its voice prompt id."
+  },
+  "sendNow": "இப்போது அனுப்பு",
+  "@sendNow": {
+    "description": "Button on the phone-full sheet that starts sending saved entries. At most two words. Also its voice prompt id."
+  },
+  "noLot": "உங்களுக்கு இன்னும் பயிர் பதிவு செய்யப்படவில்லை. கள அலுவலரை அழையுங்கள்.",
+  "@noLot": {
+    "description": "Shown when the farmer has no active lot to log an event on. Also its voice prompt id."
+  },
+  "goHome": "முகப்பு",
+  "@goHome": {
+    "description": "Button that returns to the farmer home screen. At most two words. Also its voice prompt id."
+  },
+  "yes": "ஆம்",
+  "@yes": {
+    "description": "Yes button (out-of-order question). At most two words. Also its voice prompt id."
+  },
+  "no": "இல்லை",
+  "@no": {
+    "description": "No button (out-of-order question). At most two words. Also its voice prompt id."
+  },
+  "confirmPlain": "{event}, இன்று. சரியா?",
+  "@confirmPlain": {
+    "description": "Confirm screen sentence read aloud for events without a quantity. Also its voice prompt id.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Sowing"
+      }
+    }
+  },
+  "confirmBags": "{event}, {bags} மூட்டை, இன்று. சரியா?",
+  "@confirmBags": {
+    "description": "Confirm screen sentence with the number of bags (harvest, packing). Also its voice prompt id.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Harvest"
+      },
+      "bags": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "confirmProduct": "{event}, {product}, {bags} மூட்டை, இன்று. சரியா?",
+  "@confirmProduct": {
+    "description": "Confirm screen sentence for fertiliser or spray: product name (FPO master data) and bags. Also its voice prompt id.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Fertiliser"
+      },
+      "product": {
+        "type": "String",
+        "example": "Panjakavya"
+      },
+      "bags": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "confirmChoice": "{event}, {choice}, இன்று. சரியா?",
+  "@confirmChoice": {
+    "description": "Confirm screen sentence with the chosen seed variety or problem kind. Also its voice prompt id.",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Nursery"
+      },
+      "choice": {
+        "type": "String",
+        "example": "K2"
+      }
+    }
+  },
+  "voiceNote": "குரல் பதிவு",
+  "@voiceNote": {
+    "description": "Button that records up to 30 seconds of voice for a problem report. At most two words. Also its voice prompt id."
+  },
+  "voiceStop": "நிறுத்து",
+  "@voiceStop": {
+    "description": "Button that stops the voice note recording. At most two words. Also its voice prompt id."
+  },
+  "voiceAdded": "குரல் சேர்ந்தது",
+  "@voiceAdded": {
+    "description": "Button state after a voice note was recorded; a tap records it again. At most two words. Also its voice prompt id."
+  },
+  "micOff": "மைக் இயங்கவில்லை. அனுமதித்து மீண்டும் முயலுங்கள்.",
+  "@micOff": {
+    "description": "Sheet when microphone access is refused. Also its voice prompt id."
+  },
+  "okay": "சரி",
+  "@okay": {
+    "description": "Button that closes an information sheet. At most two words. Also its voice prompt id."
+  },
+  "recordFailed": "பதிவு ஆகவில்லை. மீண்டும் பதிவு செய்யவா?",
+  "@recordFailed": {
+    "description": "Sheet when the voice note recording failed. Also its voice prompt id."
+  },
+  "recordAgain": "மீண்டும் பதிவு",
+  "@recordAgain": {
+    "description": "Button that records the voice note again. At most two words. Also its voice prompt id."
+  },
+  "savedTitle": "சேமிக்கப்பட்டது",
+  "@savedTitle": {
+    "description": "App bar title of the saved screen (F08)."
+  },
+  "savedOnline": "சேமிக்கப்பட்டது.",
+  "@savedOnline": {
+    "description": "Saved screen sentence when nothing waits to send. Also its voice prompt id."
+  },
+  "savedOffline": "சேமிக்கப்பட்டது. சிக்னல் வந்ததும் அனுப்பப்படும்.",
+  "@savedOffline": {
+    "description": "Saved screen sentence next to the grey cloud while entries wait to send (UserFlows: no signal). Also its voice prompt id."
+  },
+  "lotReady": "விற்கத் தயார்.",
+  "@lotReady": {
+    "description": "Saved screen sentence after packing when the lot became ready to sell. Also its voice prompt id."
+  },
+  "undo": "திரும்பப் பெறு",
+  "@undo": {
+    "description": "Button that undoes the entry just saved (allowed for 24 hours). At most two words. Also its voice prompt id."
+  },
+  "logAgain": "மீண்டும்",
+  "@logAgain": {
+    "description": "Button on the saved screen after sowing: log a second sowing round. At most two words. Also its voice prompt id."
+  },
+  "keepDrying": "இன்னும் போதுமான அளவு காயவில்லை. தொடர்ந்து காய வையுங்கள்; அலுவலர் ஈரப்பதத்தைச் சரிபார்ப்பார்.",
+  "@keepDrying": {
+    "description": "Sheet after packing when the last moisture reading is above the limit (or missing): the lot is not ready to sell. Also its voice prompt id."
+  },
+  "homeLog": "பதிவு",
+  "@homeLog": {
+    "description": "Home button: log a farm event. At most two words. Also its voice prompt id."
+  },
+  "homeSell": "விற்பனை",
+  "@homeSell": {
+    "description": "Home button: show the QR code to sell a lot. At most two words. Also its voice prompt id."
+  },
+  "homeMoney": "பணம்",
+  "@homeMoney": {
+    "description": "Home button: payments and benefits. At most two words. Also its voice prompt id."
+  },
+  "homeMyFarm": "என் பண்ணை",
+  "@homeMyFarm": {
+    "description": "Home button: the farmer's fields and crops. At most two words. Also its voice prompt id."
+  },
+  "homeNoTask": "இப்போது செய்ய வேண்டியது இல்லை. இன்று செய்ததைப் பதிவு செய்யுங்கள்.",
+  "@homeNoTask": {
+    "description": "Home card sentence when no task is due. Also its voice prompt id."
+  },
+  "homeNextTask": "அடுத்து: {event}, {date}க்குள்",
+  "@homeNextTask": {
+    "description": "Home card sentence for the next task; date reads like \"14 Feb\".",
+    "placeholders": {
+      "event": {
+        "type": "String",
+        "example": "Harvest"
+      },
+      "date": {
+        "type": "String",
+        "example": "14 Feb"
+      }
+    }
+  },
+  "homeLogEvent": "பதிவு செய்",
+  "@homeLogEvent": {
+    "description": "Button of the home card when no task is due: opens the event grid. At most two words. Also its voice prompt id."
+  },
+  "taskDryingDone": "உலர்த்தல் முடிவைப் பதிவு செய்யும் நேரம்",
+  "@taskDryingDone": {
+    "description": "Voice prompt id of the local reminder task created by \"Start drying\"."
+  },
+  "comingSoon": "விரைவில் வரும்.",
+  "@comingSoon": {
+    "description": "Spoken sentence on screens that a later update fills in. Also its voice prompt id."
+  },
+  "notFound": "இந்தப் பக்கம் இல்லை.",
+  "@notFound": {
+    "description": "Page for a link that does not exist; a Home button follows. Also its voice prompt id."
   }
 }

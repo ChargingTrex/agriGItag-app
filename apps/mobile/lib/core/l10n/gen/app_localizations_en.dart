@@ -372,4 +372,241 @@ class AppLocalizationsEn extends AppLocalizations {
   String unsentReminder(int count) {
     return 'Entries not sent yet: $count. They stay on this phone; get signal to send them.';
   }
+
+  @override
+  String get eventLandPreparation => 'Land prep';
+
+  @override
+  String get eventNursery => 'Nursery';
+
+  @override
+  String get eventSowing => 'Sowing';
+
+  @override
+  String get eventInputApplication => 'Fertiliser, spray';
+
+  @override
+  String get eventHarvest => 'Harvest';
+
+  @override
+  String get eventDrying => 'Drying';
+
+  @override
+  String get eventPacking => 'Packing';
+
+  @override
+  String get eventProblem => 'Problem';
+
+  @override
+  String get orderAskLandPreparation => 'Did you already prepare the land?';
+
+  @override
+  String get orderAskNursery => 'Did you already make the nursery?';
+
+  @override
+  String get orderAskSowing => 'Did you already sow?';
+
+  @override
+  String get orderAskInputApplication => 'Did you already put fertiliser or spray?';
+
+  @override
+  String get orderAskHarvest => 'Did you already harvest?';
+
+  @override
+  String get orderAskDrying => 'Did you already dry the crop?';
+
+  @override
+  String get orderAskPacking => 'Did you already pack the bags?';
+
+  @override
+  String get orderAskProblem => 'Did you already report the problem?';
+
+  @override
+  String get chooseEventTitle => 'Log event';
+
+  @override
+  String get chooseEventPrompt => 'What did you do on the farm today?';
+
+  @override
+  String get choosePlotPrompt => 'Which field?';
+
+  @override
+  String plotNumber(int number) {
+    return 'Field $number';
+  }
+
+  @override
+  String get nurseryPrompt => 'Which seed? Or take a photo of the seed packet.';
+
+  @override
+  String get seedPacket => 'Seed packet';
+
+  @override
+  String get inputPrompt => 'How many bags? Then tap the product.';
+
+  @override
+  String get bagsPrompt => 'How many bags?';
+
+  @override
+  String get bagsUnit => 'bags';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get yieldWarn => 'More than usual for this field.';
+
+  @override
+  String get yieldHold => 'Much more than usual. The officer will review it.';
+
+  @override
+  String get dryingPrompt => 'Starting to dry, or drying done?';
+
+  @override
+  String get dryingStart => 'Start drying';
+
+  @override
+  String get dryingDone => 'Drying done';
+
+  @override
+  String get problemPrompt => 'What is the problem?';
+
+  @override
+  String get problemPest => 'Pest';
+
+  @override
+  String get problemDisease => 'Disease';
+
+  @override
+  String get problemWeather => 'Rain damage';
+
+  @override
+  String get problemOther => 'Other';
+
+  @override
+  String get cameraPrompt => 'Take a photo of the work.';
+
+  @override
+  String get takePhoto => 'Take photo';
+
+  @override
+  String get photoSaving => 'Saving the photo';
+
+  @override
+  String get cameraOff => 'The camera is off. Allow the camera, then try again.';
+
+  @override
+  String get tryAgain => 'Try again';
+
+  @override
+  String get phoneFull => 'Phone is full. Send your entries now?';
+
+  @override
+  String get sendNow => 'Send now';
+
+  @override
+  String get noLot => 'No crop is registered for you yet. Call your field officer.';
+
+  @override
+  String get goHome => 'Home';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String confirmPlain(String event) {
+    return '$event, today. Correct?';
+  }
+
+  @override
+  String confirmBags(String event, int bags) {
+    return '$event, $bags bags, today. Correct?';
+  }
+
+  @override
+  String confirmProduct(String event, String product, int bags) {
+    return '$event, $product, $bags bags, today. Correct?';
+  }
+
+  @override
+  String confirmChoice(String event, String choice) {
+    return '$event, $choice, today. Correct?';
+  }
+
+  @override
+  String get voiceNote => 'Voice note';
+
+  @override
+  String get voiceStop => 'Stop';
+
+  @override
+  String get voiceAdded => 'Voice added';
+
+  @override
+  String get micOff => 'The microphone is off. Allow it, then try again.';
+
+  @override
+  String get okay => 'OK';
+
+  @override
+  String get recordFailed => 'The recording did not work. Record again?';
+
+  @override
+  String get recordAgain => 'Record again';
+
+  @override
+  String get savedTitle => 'Saved';
+
+  @override
+  String get savedOnline => 'Saved.';
+
+  @override
+  String get savedOffline => 'Saved. Will send when signal comes.';
+
+  @override
+  String get lotReady => 'Ready to sell.';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get logAgain => 'Again';
+
+  @override
+  String get keepDrying => 'Not dry enough yet. Keep drying; the officer will check the moisture.';
+
+  @override
+  String get homeLog => 'Log';
+
+  @override
+  String get homeSell => 'Sell';
+
+  @override
+  String get homeMoney => 'Money';
+
+  @override
+  String get homeMyFarm => 'My farm';
+
+  @override
+  String get homeNoTask => 'Nothing due now. Log what you did today.';
+
+  @override
+  String homeNextTask(String event, String date) {
+    return 'Next: $event, by $date';
+  }
+
+  @override
+  String get homeLogEvent => 'Log event';
+
+  @override
+  String get taskDryingDone => 'Time to log: drying done';
+
+  @override
+  String get comingSoon => 'Coming soon.';
+
+  @override
+  String get notFound => 'This page is not here.';
 }
