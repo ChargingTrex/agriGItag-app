@@ -3,7 +3,8 @@
  * greyed lots with the reason, a non-GI toggle, the processor, and "Create batch".
  * Serves: FR9 (sale to processor merges lots into a batch with a batch ID), FR29 (out-of-GI or held lots stay
  * out of a GI batch), FR60 (share % per farmer), User Flows §"Create a batch", Dataflow Stage 7, plan §7.3 P03.
- * Called by: src/AppRoutes.tsx (`/ready-lots`); `useFarmerNames` and `GateReasons` also by BatchPage.tsx.
+ * Called by: src/AppRoutes.tsx (`/ready-lots`); `useFarmerNames`, `GateReasons` and `GatedButton` also by
+ * BatchPage.tsx and PublishSection.tsx.
  */
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -33,7 +34,15 @@ import type { components } from '../../api/generated/schema';
 import { useAuth } from '../../auth/AuthProvider';
 import { useHoldFlags, useLotHold } from '../flags/LotPage';
 import { ruleText } from '../flags/flagModel';
-import { formatKg, lotBlock, splitShares, toGrams, type LotOut } from './batchModel';
+import {
+  formatKg,
+  gateReasonText,
+  lotBlock,
+  splitShares,
+  toGrams,
+  type GateReason,
+  type LotOut,
+} from './batchModel';
 
 /** The API's largest page: a season's received lots of one FPO fit in one or two pages. */
 const PAGE = 200;
@@ -75,14 +84,6 @@ export function useFarmerNames(ids: readonly string[]): (id: string) => string {
   return (id) => names.get(id) ?? `Farmer ${id.slice(0, 8)}`;
 }
 
-/** One unmet condition from a 409 `gate_not_met` (D-033 `details.reasons[]`). */
-interface GateReason {
-  /** snake_case reason code. */
-  code: string;
-  /** English explanation from the server. */
-  message?: string;
-}
-
 /**
  * The reasons of a refused gate as a list, or the plain error message for any other failure.
  * @param props Component props.
@@ -93,7 +94,8 @@ export function GateReasons({ error }: { error: unknown }) {
   // DECISION D-033: a refused gate answers one 409 listing every unmet reason, so the admin fixes them all
   //   before retrying.
   //   ADV: one round trip shows the whole list; the codes are stable for tests.
-  //   COMPROMISE: reason texts are the server's English `message`; Tamil reason texts wait for a shared table.
+  //   COMPROMISE: known codes get the portal's labels (`gateReasonText`), others the server's English
+  //   `message`; Tamil reason texts wait for a shared table.
   // A resend under the same `client_id` with another processor: the first create went through.
   if (error instanceof ApiError && error.code === 'client_id_conflict') {
     return (
@@ -110,11 +112,53 @@ export function GateReasons({ error }: { error: unknown }) {
       {reasons.length > 0 && (
         <ul aria-label="Unmet conditions">
           {reasons.map((r, i) => (
-            <li key={`${r.code}-${String(i)}`}>{r.message ?? r.code.replaceAll('_', ' ')}</li>
+            <li key={`${r.code}-${String(i)}`}>{gateReasonText(r)}</li>
           ))}
         </ul>
       )}
     </Alert>
+  );
+}
+
+/**
+ * A button that, while greyed, says why: the reasons sit next to it and are part of its accessible name, so
+ * they reach keyboard and screen-reader users, not only on hover (plan §7.3 P04 "grey-button reasons").
+ * @param props Component props.
+ * @param props.label Visible button text.
+ * @param props.reasons Why it is unavailable; empty when it may be pressed.
+ * @param props.busy True while its request runs (greyed without a reason).
+ * @param props.onClick Called on press.
+ * @returns The button with its reasons.
+ */
+export function GatedButton(props: {
+  label: string;
+  reasons: readonly string[];
+  busy?: boolean;
+  onClick: () => void;
+}) {
+  const { label, reasons, busy = false, onClick } = props;
+  const blocked = reasons.length > 0;
+  return (
+    <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+      <Button
+        variant="contained"
+        disabled={blocked || busy}
+        aria-label={blocked ? `${label}: ${reasons.join('; ')}` : undefined}
+        onClick={onClick}
+      >
+        {label}
+      </Button>
+      {blocked && (
+        <Stack component="ul" sx={{ m: 0, pl: 2 }}>
+          {reasons.map((r, i) => (
+            // Two lots can carry the same hold, so the text alone is not a unique key.
+            <Typography key={`${String(i)}-${r}`} component="li" color="text.secondary">
+              {r}
+            </Typography>
+          ))}
+        </Stack>
+      )}
+    </Stack>
   );
 }
 
@@ -356,7 +400,7 @@ export function ReadyLotsPage() {
                 }}
               />
             }
-            label="Non-GI batch (allows lots outside the GI region or on hold; no GI label; held lots block publishing until their hold is resolved)"
+            label="Non-GI batch: lots outside the GI region or above the yield ceiling can join. The public page shows no GI badge."
           />
           <TextField
             select
@@ -383,18 +427,14 @@ export function ReadyLotsPage() {
             ))}
           </TextField>
           {create.isError && <GateReasons error={create.error} />}
-          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <Button
-              variant="contained"
-              disabled={createBlock !== null || create.isPending}
-              onClick={() => {
-                create.mutate();
-              }}
-            >
-              {nonGi ? 'Create non-GI batch' : 'Create batch'}
-            </Button>
-            {createBlock && <Typography color="text.secondary">{createBlock}</Typography>}
-          </Stack>
+          <GatedButton
+            label={nonGi ? 'Create non-GI batch' : 'Create batch'}
+            reasons={createBlock ? [createBlock] : []}
+            busy={create.isPending}
+            onClick={() => {
+              create.mutate();
+            }}
+          />
         </Stack>
       </Paper>
     </Stack>

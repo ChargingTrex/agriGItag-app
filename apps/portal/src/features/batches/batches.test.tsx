@@ -215,7 +215,9 @@ describe('Ready lots page', () => {
     expect(screen.getByRole('checkbox', { name: 'Tick lot VSV-0006-L1' })).toBeEnabled();
     expect(screen.getByRole('checkbox', { name: 'Tick lot VSV-0010-L2' })).toBeEnabled();
     expect(screen.getByRole('checkbox', { name: /^Lot VSV-0007-L1: Not ready/ })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Create non-GI batch' })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Create non-GI batch: Tick at least one lot.' }),
+    ).toBeDisabled();
     expect(screen.getByText('Tick at least one lot.')).toBeInTheDocument();
   });
 
@@ -249,7 +251,9 @@ describe('Ready lots page', () => {
     await user.click(screen.getByRole('combobox', { name: 'Processor' }));
     await user.click(await screen.findByRole('option', { name: 'Sattur Spices Pvt Ltd' }));
     await user.click(screen.getByRole('button', { name: 'Create non-GI batch' }));
-    expect(await screen.findByText('Non-GI batch')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Non-GI batch: no GI badge on the public page'),
+    ).toBeInTheDocument();
     expect(mockState.batches[0]?.gi_label_requested).toBe(false);
   });
 
@@ -267,17 +271,19 @@ describe('Ready lots page', () => {
         'You created this batch; a different FPO admin must give the second sign-off.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Sign off' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Sign off:/ })).toBeDisabled();
 
     // A second admin opens the same batch.
     const id = mockState.batches[0]?.id ?? '';
     mockState.userId = 'a0000000-0000-7000-8000-000000000002';
     document.body.innerHTML = '';
     renderApp(`/batches/${id}`, true);
-    const signOff = await screen.findByRole('button', { name: 'Sign off' });
+    // Greyed as "Sign off: Checking who you are…" until `/v1/me` answers ("Sign off final packing" is another button).
+    const signOff = await screen.findByRole('button', { name: /^Sign off(:|$)/ });
     await waitFor(() => {
-      expect(signOff).toBeEnabled();
+      expect(signOff).toHaveAccessibleName('Sign off');
     });
+    expect(signOff).toBeEnabled();
     await user.click(signOff);
     expect(await screen.findByText('Second sign-off recorded.')).toBeInTheDocument();
     expect(mockState.batches[0]?.second_signoff_by).toBe(mockState.userId);
@@ -288,7 +294,7 @@ describe('Ready lots page', () => {
     mockState.roles = ['field_officer'];
     renderApp('/batches/b0000000-0000-7000-8000-000000000009', true);
     expect(await screen.findByText('Only an FPO admin can sign off a batch.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Sign off' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Sign off:/ })).toBeDisabled();
   });
 
   it('a refused sign-off lists the server reason', async () => {
@@ -297,10 +303,12 @@ describe('Ready lots page', () => {
     mockState.userId = 'a0000000-0000-7000-8000-000000000002';
     const user = userEvent.setup();
     renderApp('/batches/b0000000-0000-7000-8000-000000000009', true);
-    const signOff = await screen.findByRole('button', { name: 'Sign off' });
+    // Greyed as "Sign off: Checking who you are…" until `/v1/me` answers ("Sign off final packing" is another button).
+    const signOff = await screen.findByRole('button', { name: /^Sign off(:|$)/ });
     await waitFor(() => {
-      expect(signOff).toBeEnabled();
+      expect(signOff).toHaveAccessibleName('Sign off');
     });
+    expect(signOff).toBeEnabled();
     mockState.userId = MOCK_USER_ID;
     await user.click(signOff);
     expect(
@@ -364,7 +372,9 @@ describe('Ready lots page', () => {
     mockState.roles = ['field_officer'];
     renderApp('/ready-lots', true);
     expect(await screen.findByText('Only an FPO admin can create a batch.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Create batch' })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Create batch: Only an FPO admin can create a batch.' }),
+    ).toBeDisabled();
   });
 
   it('says to reload when the batch was already created under this client_id', async () => {
