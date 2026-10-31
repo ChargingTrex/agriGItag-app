@@ -68,7 +68,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G4 Portal + Publish
 
-- [ ] B10 — Publishing — wave 6 — worker: Opus (done, 4e85d79) — reviewer: BE/SEC r1 in progress — verifier:
+- [ ] B10 — Publishing — wave 6 — worker: Opus (micro-patch in progress) — reviewer: BE/SEC PASS-PENDING-STACK r1 (2 P2: YAML visibility ruled public, rebuild race) — verifier:
 - [ ] B11 — Reporting + stubs — wave 6 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
 - [ ] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: — reviewer: — verifier:
 - [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: — reviewer: — verifier:
