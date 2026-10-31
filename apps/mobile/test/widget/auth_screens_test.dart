@@ -247,6 +247,7 @@ void main() {
     await tester.runAsync(pumpEventQueue);
     await tester.pumpAndSettle();
     expect(path(), '/auth');
-    expect(await tester.runAsync(() => db.outboxDao.pendingCount().first), 1);
+    // D-029: the entry stays on the phone, counted as stranded once nobody is signed in.
+    expect(await tester.runAsync(() => db.outboxDao.strandedCount().first), 1);
   });
 }

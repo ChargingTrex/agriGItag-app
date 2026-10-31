@@ -4,7 +4,8 @@
 //   kill-safety "sending older than 5 min → waiting on start", cloud icon = count(status != confirmed));
 //   Arch §Offline-first "Outbox queue", "Small first, photos second"; FR4.
 // Callers: M02 outbox_processor.dart, photo_uploader.dart and sync_service.dart (start-up reset);
-//   M05 cloud_sync_indicator (pendingCount); tests.
+//   M02 lib/core/providers/sync_providers.dart (pendingCount for the M05 cloud indicator, strandedCount); tests.
+// D-029 (schema v2): every query that sends or counts filters by the row's owner.
 
 import 'dart:convert';
 
@@ -18,21 +19,28 @@ part 'outbox_dao.g.dart';
 typedef OutboxBatchItem = ({OutboxItem row, Entry entry});
 
 /// Reads and updates the send queue.
-@DriftAccessor(tables: [Outbox, Entries])
+@DriftAccessor(tables: [Outbox, Entries, SessionTable])
 class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   /// Creates the DAO on [db]; use `db.outboxDao` instead of calling this.
   OutboxDao(super.db);
 
-  /// The next entries to push at [now]: `waiting` entry rows due at or before [now], oldest first.
+  /// The next entries of user [ownerUserId] to push at [now]: `waiting` entry rows due at or before [now], oldest
+  /// first. Other users' rows are never returned (D-029).
   ///
   /// Media rows are not returned: photos go through `MediaDao.pendingUploads`, which waits for the entry's
   /// confirmation (the presigned URL comes with it). Takes at most [limit] rows and stops before the row that would
   /// push the total payload size (UTF-8 bytes) over [maxBytes]. The first row is always returned, so one oversized
   /// entry cannot block the queue. Returns an empty list when nothing is due; throws nothing.
-  Future<List<OutboxBatchItem>> nextBatch({required DateTime now, int limit = 50, int maxBytes = 256 * 1024}) async {
+  Future<List<OutboxBatchItem>> nextBatch({
+    required String ownerUserId,
+    required DateTime now,
+    int limit = 50,
+    int maxBytes = 256 * 1024,
+  }) async {
     final query = select(outbox).join([innerJoin(entries, entries.entryId.equalsExp(outbox.refId))])
       ..where(
         outbox.kind.equalsValue(OutboxKind.entry) &
+            outbox.ownerUserId.equals(ownerUserId) &
             outbox.status.equalsValue(OutboxStatus.waiting) &
             outbox.nextAttemptAt.isSmallerOrEqualValue(now),
       )
@@ -72,6 +80,11 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
         ),
       );
 
+  /// Marks media rows [seqs] as `sent`: the PUT succeeded and `/sync/photos/confirm` is still owed.
+  /// Returns when written; throws nothing.
+  Future<void> markSent(List<int> seqs) =>
+      (update(outbox)..where((o) => o.seq.isIn(seqs))).write(const OutboxCompanion(status: Value(OutboxStatus.sent)));
+
   /// Marks [seqs] as `confirmed` (server acknowledged; for media rows after `/sync/photos/confirm`).
   /// Side effect: the pending count stream emits. Returns when written; throws nothing.
   Future<void> markConfirmed(List<int> seqs) => (update(outbox)..where((o) => o.seq.isIn(seqs))).write(
@@ -97,13 +110,40 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
           ))
           .write(OutboxCompanion(status: const Value(OutboxStatus.waiting), nextAttemptAt: Value(now)));
 
-  /// Number of outbox rows not yet confirmed, re-emitted whenever the outbox changes (the grey cloud icon).
-  /// Emits 0 when everything is confirmed; never errors on its own.
-  Stream<int> pendingCount() {
+  /// The earliest future `nextAttemptAt` (after [now]) of user [ownerUserId]'s waiting rows: when the foreground
+  /// engine should run again for a backoff. Rows already due are ignored (they were just tried, or they wait for
+  /// something else, such as their entry's confirmation). Returns null when none; throws nothing.
+  Future<DateTime?> nextDue({required String ownerUserId, required DateTime now}) {
+    final first = outbox.nextAttemptAt.min();
+    final query = selectOnly(outbox)
+      ..addColumns([first])
+      ..where(
+        outbox.ownerUserId.equals(ownerUserId) &
+            outbox.status.equalsValue(OutboxStatus.waiting) &
+            outbox.nextAttemptAt.isBiggerThanValue(now),
+      );
+    return query.map((r) => r.read(first)).getSingle();
+  }
+
+  /// Number of the signed-in user's outbox rows not yet confirmed, re-emitted whenever the outbox or the session
+  /// changes (the grey cloud icon). Emits 0 when everything is confirmed or nobody is signed in (D-029); never
+  /// errors on its own.
+  Stream<int> pendingCount() => _count(outbox.ownerUserId.isInQuery(_signedInUser()));
+
+  /// Number of unconfirmed outbox rows that belong to users other than the signed-in one (all rows when signed
+  /// out): entries stranded on a shared phone until their owner signs in again, for the officer notice (D-029,
+  /// M10). Re-emitted on outbox or session changes; never errors on its own.
+  Stream<int> strandedCount() => _count(outbox.ownerUserId.isNotInQuery(_signedInUser()));
+
+  /// Counts unconfirmed rows matching [owner] as a stream. Returns the stream; throws nothing.
+  Stream<int> _count(Expression<bool> owner) {
     final count = outbox.seq.count();
     final query = selectOnly(outbox)
       ..addColumns([count])
-      ..where(outbox.status.equalsValue(OutboxStatus.confirmed).not());
+      ..where(outbox.status.equalsValue(OutboxStatus.confirmed).not() & owner);
     return query.map((r) => r.read(count) ?? 0).watchSingle();
   }
+
+  /// The signed-in user's id as a subquery (empty when signed out). Returns the query; throws nothing.
+  BaseSelectStatement<TypedResult> _signedInUser() => selectOnly(sessionTable)..addColumns([sessionTable.userId]);
 }

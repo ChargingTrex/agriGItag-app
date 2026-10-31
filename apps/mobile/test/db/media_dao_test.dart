@@ -5,6 +5,7 @@
 
 import 'dart:io';
 
+import 'package:agritrace/core/db/daos/media_dao.dart';
 import 'package:agritrace/core/db/database.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -25,11 +26,13 @@ void main() {
   test('pendingUploads lists media only once the entry is confirmed', () async {
     final entry = entryAt();
     await db.entriesDao.save(entry, [photoOf(entry.entryId.value, id: 'm1')]);
-    expect(await db.mediaDao.pendingUploads(3), isEmpty);
+    Future<List<MediaUpload>> due([String owner = 'user-1']) => db.mediaDao.pendingUploads(ownerUserId: owner, now: t0);
+    expect(await due(), isEmpty);
     await db.entriesDao.markConfirmed(entry.entryId.value, t0);
-    expect((await db.mediaDao.pendingUploads(3)).single.mediaId, 'm1');
+    expect((await due()).single.media.mediaId, 'm1');
+    expect(await due('user-2'), isEmpty, reason: 'D-029: another user never sees these media');
     await db.mediaDao.markUploaded('m1', 'evidence/fpo/2026/e/m1.jpg');
-    expect(await db.mediaDao.pendingUploads(3), isEmpty);
+    expect(await due(), isEmpty);
   });
 
   test('purgeFullSize refuses before upload, then deletes the full file and keeps the thumbnail', () async {

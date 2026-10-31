@@ -2,6 +2,7 @@
 // Requirement: mobile-design.md §2 (Outbox) and §3 (oldest-first, backoff, needs_attention, kill-safety, cloud icon);
 //   Arch §Offline-first "Outbox queue" and "Small first, photos second"; FR4 (offline capture with later sync).
 // Callers: database.dart (table list), daos/entries_dao.dart (enqueue on save), daos/outbox_dao.dart; M02 sync.
+// Schema v2 (M02) added ownerUserId (D-029).
 
 import 'package:drift/drift.dart';
 
@@ -44,6 +45,13 @@ class Outbox extends Table {
 
   /// `Entries.entryId` or `Media.mediaId` of the row to send.
   TextColumn get refId => text()();
+
+  /// User who created the row: the entry's `enteredByUserId` (for media, its entry's). Schema v2.
+  ///
+  /// DECISION D-029: the outbox is per user on a shared phone; sync sends and counts only the signed-in user's rows.
+  ///   ADV: sign-out keeps unsent rows without letting the next user's token send them; a simple filter to test.
+  ///   COMPROMISE: rows of a user who never signs in again stay (counted as stranded for the officer, M10).
+  TextColumn get ownerUserId => text()();
 
   /// Idempotency key sent with the request; the client UUID of the entry or media (D-005).
   TextColumn get idempotencyKey => text()();

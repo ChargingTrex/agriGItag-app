@@ -121,6 +121,11 @@ class Entries extends Table {
   TextColumn get locationStatus => textEnum<LocationStatus>()();
 
   /// User who entered it (the farmer, or the officer in assist mode). The server takes it from the token.
+  ///
+  /// DECISION D-029: this column is the entry's owner on a shared phone; schema v2 adds no separate
+  ///   `ownerUserId` here (only on Outbox, filled from this column).
+  ///   ADV: one source of truth, already covered by the append-only trigger, no Entries table rebuild.
+  ///   COMPROMISE: "owner" and "author" can never differ; true today because only the signed-in user saves.
   TextColumn get enteredByUserId => text()();
 
   /// True when an officer entered it for the farmer (CLAUDE.md §6: assist mode is recorded on every entry).

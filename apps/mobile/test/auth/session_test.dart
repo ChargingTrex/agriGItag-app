@@ -212,7 +212,8 @@ void main() {
       expect(container.read(sessionProvider).sessionEnded, isFalse);
       expect(await db.sessionDao.read(), isNull);
       expect((await storedValues()).keys, ['device_id']);
-      expect(await db.outboxDao.pendingCount().first, 1, reason: 'unsent entries are never deleted');
+      // D-029: the rows stay; signed out, nobody owns the cloud count, so they show as stranded.
+      expect(await db.outboxDao.strandedCount().first, 1, reason: 'unsent entries are never deleted');
     });
 
     test('a refresh answer arriving after sign-out is discarded', () async {

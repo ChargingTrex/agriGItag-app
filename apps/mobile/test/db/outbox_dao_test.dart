@@ -16,6 +16,7 @@ void main() {
   tearDown(() => db.close());
 
   test('pendingCount emits on insert and on confirm', () async {
+    await signIn(db, 'user-1');
     final counts = StreamIterator(db.outboxDao.pendingCount());
     Future<int> next() async {
       expect(await counts.moveNext(), isTrue);
@@ -42,10 +43,17 @@ void main() {
     await db.entriesDao.save(b, [photoOf(b.entryId.value)]);
     await db.entriesDao.save(later, const []);
 
-    final batch = await db.outboxDao.nextBatch(now: t0.add(const Duration(minutes: 1)), maxBytes: 1 << 20);
+    final batch = await db.outboxDao.nextBatch(
+      ownerUserId: 'user-1',
+      now: t0.add(const Duration(minutes: 1)),
+      maxBytes: 1 << 20,
+    );
     final ids = [a.entryId.value, b.entryId.value];
     expect(batch.map((i) => (i.row.kind, i.entry.entryId)), [(OutboxKind.entry, ids[0]), (OutboxKind.entry, ids[1])]);
-    expect(await db.outboxDao.nextBatch(now: t0.add(const Duration(minutes: 1)), limit: 1), hasLength(1));
+    expect(
+      await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: t0.add(const Duration(minutes: 1)), limit: 1),
+      hasLength(1),
+    );
   });
 
   test('nextBatch respects the byte cap but always returns the first row', () async {
@@ -59,8 +67,14 @@ void main() {
         const [],
       );
     }
-    expect(await db.outboxDao.nextBatch(now: t0.add(const Duration(minutes: 1))), hasLength(2)); // 256 KB cap
-    expect(await db.outboxDao.nextBatch(now: t0.add(const Duration(minutes: 1)), maxBytes: 10), hasLength(1));
+    expect(
+      await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: t0.add(const Duration(minutes: 1))),
+      hasLength(2),
+    ); // 256 KB cap
+    expect(
+      await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: t0.add(const Duration(minutes: 1)), maxBytes: 10),
+      hasLength(1),
+    );
   });
 
   test('markWaiting delays a row by its backoff; markNeedsAttention takes it out of batches', () async {
@@ -74,8 +88,8 @@ void main() {
     await db.outboxDao.markWaiting(rows[0].seq, backoff: const Duration(seconds: 8), now: t0, error: 'timeout');
     await db.outboxDao.markNeedsAttention(rows[1].seq, 'validation_error');
 
-    expect(await db.outboxDao.nextBatch(now: t0.add(const Duration(seconds: 7))), isEmpty);
-    final due = await db.outboxDao.nextBatch(now: t0.add(const Duration(seconds: 8)));
+    expect(await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: t0.add(const Duration(seconds: 7))), isEmpty);
+    final due = await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: t0.add(const Duration(seconds: 8)));
     expect((due.single.row.seq, due.single.row.attempts, due.single.row.lastError), (rows[0].seq, 1, 'timeout'));
   });
 
@@ -98,8 +112,8 @@ void main() {
     await db.entriesDao.markSent(entry.entryId.value);
 
     final restart = t0.add(const Duration(minutes: 6));
-    expect(await db.outboxDao.nextBatch(now: restart), isEmpty);
+    expect(await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: restart), isEmpty);
     expect(await db.outboxDao.resetStaleSending(now: restart), 1);
-    expect((await db.outboxDao.nextBatch(now: restart)).single.row.seq, seq);
+    expect((await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: restart)).single.row.seq, seq);
   });
 }
