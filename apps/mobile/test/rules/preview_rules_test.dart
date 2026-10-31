@@ -43,6 +43,11 @@ void main() {
       expect(r.status, GiStatus.outside);
       expect(r.distanceM, closeTo(500, 1));
     });
+    test("Madurai (9.9252, 78.1198), the server tests' far point, is outside", () {
+      final r = giCheck(region, 9.9252, 78.1198);
+      expect(r.status, GiStatus.outside);
+      expect(r.distanceM, greaterThan(30000));
+    });
     test("the fixture's own 150 m buffer: about 100 m outside is near_edge", () {
       expect(region.bufferM, 150);
       expect(giCheck(region, 9.55, 78.300911).status, GiStatus.nearEdge);
@@ -146,6 +151,16 @@ void main() {
       expect(practiceFlags(declared: {'inorganic', 'ipm'}, inputCategories: organic, hasPestEvent: false), [
         'practice_tag_contradiction',
         'ipm_without_pest_event',
+      ]);
+    });
+    test('`other` inputs are ignored: only `other` derives nothing and contradicts nothing', () {
+      expect(derivedPracticeTags(['other']), isEmpty);
+      expect(practiceFlags(declared: {'inorganic'}, inputCategories: ['other'], hasPestEvent: true), isEmpty);
+    });
+    test('organic inputs plus `other` still derive Organic; declared Inorganic contradicts', () {
+      expect(derivedPracticeTags(['organic_fertilizer', 'other']), {'organic'});
+      expect(practiceFlags(declared: {'inorganic'}, inputCategories: ['bio_pesticide', 'other'], hasPestEvent: true), [
+        'practice_tag_contradiction',
       ]);
     });
     test('no inputs recorded: nothing derived, no contradiction', () {

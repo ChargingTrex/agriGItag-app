@@ -2,7 +2,7 @@
 // Same three outcomes as the server's `registry.geo.locate_point` (PostGIS ST_Covers / ST_DWithin on geography).
 // Requirement: FR28, FR32 (tolerance buffer), FR67 (automatic region check, "Location confirmed"), FR70 (near-edge
 //   review), D-019 (outline is an approximation, so near-edge is reviewed), D-006 (phone preview, server authority).
-// Callers: officer onboarding GI preview (M09), plot screens; test/rules/gi_check_test.dart.
+// Callers: officer onboarding GI preview (M09), plot screens; test/rules/preview_rules_test.dart.
 
 import 'dart:math';
 

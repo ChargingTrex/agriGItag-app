@@ -2,7 +2,7 @@
 // `yieldOutcome` (20 % warn / 30 % hold margins from the Standards Profile).
 // Requirement: FR57, FR68 (yield ceiling with 20–30 % margin), Dataflow Stage 7; D-006 (phone preview, server
 //   re-runs B08 `yield_ceiling`).
-// Callers: harvest and sell screens (M07), QC intake (M11); test/rules/yield_check_test.dart.
+// Callers: harvest and sell screens (M07), QC intake (M11); test/rules/preview_rules_test.dart.
 
 import 'package:decimal/decimal.dart';
 

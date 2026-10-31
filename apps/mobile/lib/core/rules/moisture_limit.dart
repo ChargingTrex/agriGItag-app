@@ -3,7 +3,7 @@
 // Requirement: Dataflow Stage 5 (ready-for-sale lot gate, moisture ≤ 11 % for chilli), FR43, FR50; D-006 (phone
 //   preview through the ported `lotGate`, server authority).
 // Callers: drying / moisture reading screens (M07; features/moisture_reading), QC intake (M11);
-//   test/rules/moisture_limit_test.dart.
+//   test/rules/preview_rules_test.dart.
 
 import '../refdata/models/standards.dart';
 import 'grade_calculator.dart';

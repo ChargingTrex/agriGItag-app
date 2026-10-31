@@ -38,7 +38,10 @@ class Reading {
 
   /// Parses the API/fixture reading object [j] (`value` as a JSON number or numeric string).
   ///
-  /// Throws: [TypeError] on a missing key, [FormatException] on a bad number or timestamp.
+  /// `measured_at` must carry `Z` or an offset, as Python's `AwareDatetime` requires; a naive time would be read as
+  /// device-local and could pick a different "latest" reading than the server.
+  ///
+  /// Throws: [TypeError] on a missing key, [FormatException] on a bad number or a bad or naive timestamp.
   factory Reading.fromJson(Map<String, dynamic> j) => Reading(
     id: j['id'] as String?,
     parameterCode: j['parameter_code'] as String,
@@ -46,7 +49,7 @@ class Reading {
     unit: j['unit'] as String,
     stage: j['stage'] as String,
     source: j['source'] as String,
-    measuredAt: j['measured_at'] == null ? null : DateTime.parse(j['measured_at'] as String),
+    measuredAt: j['measured_at'] == null ? null : _awareTime(j['measured_at'] as String),
     labNablNo: j['lab_nabl_no'] as String?,
   );
 
@@ -73,6 +76,16 @@ class Reading {
 
   /// NABL accreditation number, for the Lab-certified badge.
   final String? labNablNo;
+}
+
+/// Parses ISO 8601 [s] that ends in `Z` or a `±hh:mm` / `±hhmm` offset.
+///
+/// Returns the instant (UTC). Throws: [FormatException] when [s] has no offset or is not ISO 8601.
+DateTime _awareTime(String s) {
+  if (!RegExp(r'(Z|[+-]\d{2}:?\d{2})$', caseSensitive: false).hasMatch(s)) {
+    throw FormatException('measured_at needs Z or an offset (timezone-aware)', s);
+  }
+  return DateTime.parse(s);
 }
 
 /// One parameter's contribution to a [GradeResult] (API `ParameterResult`).

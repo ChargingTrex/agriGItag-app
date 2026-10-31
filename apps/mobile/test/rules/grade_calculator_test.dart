@@ -144,6 +144,20 @@ void main() {
     expect(per['capsaicinoid']!.outcome, 'not_graded');
   });
 
+  test('a naive measured_at (no Z, no offset) is rejected, as Python AwareDatetime does', () {
+    Reading at(String time) => Reading.fromJson({
+      'parameter_code': 'moisture',
+      'value': 9.8,
+      'unit': '%',
+      'stage': 'grading',
+      'source': 'instrument',
+      'measured_at': time,
+    });
+    expect(() => at('2026-07-30T10:00:00'), throwsFormatException);
+    expect(at('2026-07-30T10:00:00+05:30').measuredAt, DateTime.utc(2026, 7, 30, 4, 30));
+    expect(at('2026-07-30T04:30:00Z').measuredAt, DateTime.utc(2026, 7, 30, 4, 30));
+  });
+
   test('plan acceptance: chilli {moisture 10.5} previews Standard', () {
     final reading = Reading(
       parameterCode: 'moisture',

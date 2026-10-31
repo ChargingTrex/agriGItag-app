@@ -2,7 +2,7 @@
 // not yet recorded on or before its date, so the app can ask "Did you already sow?".
 // Requirement: FR55 (nursery split from the main field, date-order rules per crop), FR22, PRD §12 "Nursery before
 //   ploughing" (normal, no flag); D-006 (phone preview, server re-runs B08 `event_order`).
-// Callers: farmer event screens (M07 out-of-order prompt); test/rules/event_order_test.dart.
+// Callers: farmer event screens (M07 out-of-order prompt); test/rules/preview_rules_test.dart.
 
 import '../refdata/models/reference.dart';
 
