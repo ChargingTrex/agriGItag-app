@@ -1,0 +1,48 @@
+# 2026-11-01T16:10:01Z 21:40  up 1 day, 21:12, 1 user, load averages: 8.41 13.73 59.86
+$ (cd apps/api) uv run pytest tests/integration/test_identity.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 20 items
+
+tests/integration/test_identity.py::test_otp_request_twice_within_60_s_is_429 PASSED [  5%]
+tests/integration/test_identity.py::test_five_wrong_codes_lock_the_challenge PASSED [ 10%]
+tests/integration/test_identity.py::test_unknown_phone_is_otp_invalid_and_creates_no_user PASSED [ 15%]
+tests/integration/test_identity.py::test_dev_code_sends_no_sms_and_real_codes_do PASSED [ 20%]
+tests/integration/test_identity.py::test_farmer_gets_a_session_and_me PASSED [ 25%]
+tests/integration/test_identity.py::test_office_role_gets_pin_step_then_pin_lock PASSED [ 30%]
+tests/integration/test_identity.py::test_farmer_on_flags_is_403 PASSED   [ 35%]
+tests/integration/test_identity.py::test_assist_header_sets_on_behalf_of_and_consent_audit_row PASSED [ 40%]
+tests/integration/test_identity.py::test_logout_revokes_refresh PASSED   [ 45%]
+tests/integration/test_identity.py::test_refresh_rotates_and_reuse_revokes_the_device PASSED [ 50%]
+tests/integration/test_identity.py::test_web_client_gets_the_refresh_token_as_an_httponly_cookie PASSED [ 55%]
+tests/integration/test_identity.py::test_pin_hash_never_reaches_the_audit_log PASSED [ 60%]
+tests/integration/test_identity.py::test_pin_change_requires_the_current_pin PASSED [ 65%]
+tests/integration/test_identity.py::test_super_admin_with_farmer_membership_takes_the_pin_step PASSED [ 70%]
+tests/integration/test_identity.py::test_cookie_refresh_without_x_client_stays_in_the_cookie PASSED [ 75%]
+tests/integration/test_identity.py::test_old_access_token_stays_dead_after_signing_in_again PASSED [ 80%]
+tests/integration/test_identity.py::test_guessed_refresh_token_does_not_sign_the_device_out PASSED [ 85%]
+tests/integration/test_identity.py::test_active_device_of_another_user_is_device_in_use PASSED [ 90%]
+tests/integration/test_identity.py::test_otp_daily_cap PASSED            [ 95%]
+tests/integration/test_identity.py::test_consent_response_carries_no_device_id PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_identity.py::test_otp_request_twice_within_60_s_is_429
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_identity.py: 15 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:149: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/integration/test_identity.py: 11 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:370: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 20 passed, 27 warnings in 48.86s =======================
+exit=0
+# 2026-11-01T16:10:58Z 21:40  up 1 day, 21:13, 1 user, load averages: 9.39 13.19 56.52

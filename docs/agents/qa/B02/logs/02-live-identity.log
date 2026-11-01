@@ -1,0 +1,63 @@
+# 2026-11-01T16:11:36Z 21:41  up 1 day, 21:14, 1 user, load averages: 7.25 12.22 54.42
+$ (cd .) [tokens redacted after the run] docs/agents/qa/B02/logs/live_identity.sh
+== 1. OTP request 2x in 60 s -> 429
+$ curl -X POST http://localhost:8000/v1/auth/otp/request -H Content-Type: application/json -d {"phone":"+919000000013"}
+
+-> HTTP 204
+
+$ curl -X POST http://localhost:8000/v1/auth/otp/request -H Content-Type: application/json -d {"phone":"+919000000013"}
+{"error":{"code":"rate_limited","message":"Too many requests.","details":{"retry_after_s":60}}}
+-> HTTP 429
+
+== sign in farmer with dev code (device 5afc6ec4-f3e6-4b38-8323-81621a26cc2d)
+{'kind': 'session', 'access_token': '<access-token redacted>', 'refresh_token': '5afc6ec4-f3e...', 'expires_in': 900, 'roles': ['farmer'], 'fpo_id': '01a197e0-9a48-7db7-b773-fa2ebdcb4597'}
+== 3. farmer on GET /flags -> 403 (real B08 route)
+$ curl http://localhost:8000/v1/flags -H Authorization: Bearer <access-token redacted>
+{"error":{"code":"forbidden","message":"Your role does not allow this action.","details":{"required_roles":["field_officer","qc_officer","fpo_admin","viewer","super_admin"]}}}
+-> HTTP 403
+
+== 6. logout revokes refresh -> 401
+$ curl -X POST http://localhost:8000/v1/auth/logout -H Authorization: Bearer <access-token redacted>
+
+-> HTTP 204
+
+$ curl -X POST http://localhost:8000/v1/auth/refresh -H Content-Type: application/json -d {"refresh_token":"<redacted>"}
+{"error":{"code":"unauthorized","message":"Sign-in is required.","details":null}}
+-> HTTP 401
+
+$ curl http://localhost:8000/v1/me -H Authorization: Bearer <access-token redacted>
+{"error":{"code":"unauthorized","message":"This device has been signed out.","details":{"reason":"device_revoked"}}}
+-> HTTP 401
+
+== 2. 5 wrong codes -> 409 otp_locked (farmer +919000000012)
+$ curl -X POST http://localhost:8000/v1/auth/otp/request -H Content-Type: application/json -d {"phone":"+919000000012"}
+
+-> HTTP 204
+
+$ curl -X POST http://localhost:8000/v1/auth/otp/verify -H Content-Type: application/json -d {"phone":"+919000000012","code":"000000","device_id":"5afc6ec4-f3e6-4b38-8323-81621a26cc2d","platform":"android"}
+{"error":{"code":"otp_invalid","message":"The code is not correct.","details":null}}
+-> HTTP 422
+
+$ curl -X POST http://localhost:8000/v1/auth/otp/verify -H Content-Type: application/json -d {"phone":"+919000000012","code":"000000","device_id":"5afc6ec4-f3e6-4b38-8323-81621a26cc2d","platform":"android"}
+{"error":{"code":"otp_invalid","message":"The code is not correct.","details":null}}
+-> HTTP 422
+
+$ curl -X POST http://localhost:8000/v1/auth/otp/verify -H Content-Type: application/json -d {"phone":"+919000000012","code":"000000","device_id":"5afc6ec4-f3e6-4b38-8323-81621a26cc2d","platform":"android"}
+{"error":{"code":"otp_invalid","message":"The code is not correct.","details":null}}
+-> HTTP 422
+
+$ curl -X POST http://localhost:8000/v1/auth/otp/verify -H Content-Type: application/json -d {"phone":"+919000000012","code":"000000","device_id":"5afc6ec4-f3e6-4b38-8323-81621a26cc2d","platform":"android"}
+{"error":{"code":"otp_invalid","message":"The code is not correct.","details":null}}
+-> HTTP 422
+
+$ curl -X POST http://localhost:8000/v1/auth/otp/verify -H Content-Type: application/json -d {"phone":"+919000000012","code":"000000","device_id":"5afc6ec4-f3e6-4b38-8323-81621a26cc2d","platform":"android"}
+{"error":{"code":"otp_locked","message":"Too many wrong codes.","details":null}}
+-> HTTP 409
+
+== right code after lock is still refused
+$ curl -X POST http://localhost:8000/v1/auth/otp/verify -H Content-Type: application/json -d {"phone":"+919000000012","code":"123456","device_id":"5afc6ec4-f3e6-4b38-8323-81621a26cc2d","platform":"android"}
+{"error":{"code":"otp_locked","message":"Too many wrong codes.","details":null}}
+-> HTTP 409
+
+exit=0
+# 2026-11-01T16:11:39Z 21:41  up 1 day, 21:14, 1 user, load averages: 6.99 12.09 54.13
