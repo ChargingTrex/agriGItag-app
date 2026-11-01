@@ -95,6 +95,14 @@ class RefreshIn(BaseModel):
     )
 
 
+class DeviceRevokeIn(BaseModel):
+    """Sign a lost or stolen device out (B23); the body may be omitted."""
+
+    reason: str | None = Field(
+        None, max_length=500, description="Why the device is signed out (e.g. `phone lost`); audited."
+    )
+
+
 class UserOut(BaseModel):
     """The signed-in user's own profile."""
 
@@ -120,6 +128,10 @@ class DeviceOut(BaseModel):
     platform: str = Field(description="`android`, `ios` or `web`.")
     app_version: str | None = Field(description="App version last reported.")
     last_seen_at: datetime | None = Field(description="Last sign-in or token refresh from it.")
+    signed_in_at: datetime | None = Field(
+        None, description="Last OTP/PIN sign-in; the session ends `SESSION_MAX_DAYS` after it."
+    )
+    revoked_at: datetime | None = Field(None, description="When it was signed out; null while signed in.")
 
 
 class MeOut(BaseModel):

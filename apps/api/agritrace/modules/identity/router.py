@@ -1,7 +1,8 @@
-"""identity HTTP routes: OTP sign-in, PIN, refresh, sign-out, me, assist sessions and consent (under `/v1`).
+"""identity HTTP routes: OTP sign-in, PIN, refresh, sign-out, device revoke, me, assist, consent (`/v1`).
 
 Serves: FR1 (OTP sign-in), FR14 (roles), FR41 (consent), Arch §Security and privacy, UserFlows §Onboarding
-a farmer steps 1–2, UserFlows §Log in once, CLAUDE.md §6 (assist mode), D-005, D-020, D-022, D-024.
+a farmer steps 1–2, UserFlows §Log in once, CLAUDE.md §6 (assist mode), D-005, D-020, D-022, D-024;
+B23 / SEC P1-1 (`POST /v1/devices/{device_id}/revoke`, `GET /v1/users/{user_id}/devices`, `session_expired`).
 Callers: `agritrace.main` mounts `router` under `/v1` by discovery; the mobile app and portal through the
 generated clients; tests/integration/test_identity.py.
 """
@@ -25,6 +26,8 @@ from agritrace.modules.identity.schemas import (
     AssistStartIn,
     ConsentIn,
     ConsentOut,
+    DeviceOut,
+    DeviceRevokeIn,
     MeOut,
     OtpRequestIn,
     OtpVerifyIn,
@@ -222,7 +225,12 @@ async def pin_set(
 @router.post(
     "/auth/refresh",
     response_model=SessionOut,
-    responses={401: {"description": "`unauthorized` (signed out) or `refresh_reused` (device revoked)."}},
+    responses={
+        401: {
+            "description": "`unauthorized` (signed out), `refresh_reused` (device revoked) or "
+            "`session_expired` (sign-in older than `SESSION_MAX_DAYS`, device revoked)."
+        }
+    },
 )
 async def refresh(body: RefreshIn, request: Request, response: Response, session: Session) -> SessionOut:
     """Rotate the refresh token and get a new 15-minute access token.
@@ -243,6 +251,7 @@ async def refresh(body: RefreshIn, request: Request, response: Response, session
     Raises:
         UnauthorizedError: no or unknown token, signed-out device.
         RefreshReusedError: reuse of a rotated token.
+        SessionExpiredError: the device's sign-in is older than `SESSION_MAX_DAYS` (device signed out).
     """
     from_cookie = body.refresh_token is None
     token = request.cookies.get(REFRESH_COOKIE) if from_cookie else body.refresh_token
@@ -270,6 +279,68 @@ async def logout(user: Caller, response: Response, session: Session) -> None:
     response.delete_cookie(
         REFRESH_COOKIE, path=REFRESH_COOKIE_PATH, secure=True, httponly=True, samesite="strict"
     )
+
+
+@router.post(
+    "/devices/{device_id}/revoke",
+    status_code=204,
+    responses={
+        403: {"description": "`forbidden`: another member's device and the caller is not an FPO admin."},
+        404: {"description": "`not_found`: unknown device, or its user is outside the caller's FPO."},
+    },
+)
+async def device_revoke(
+    device_id: uuid.UUID, user: Caller, session: Session, body: DeviceRevokeIn | None = None
+) -> None:
+    """Sign a lost or stolen device out: the user's own device, or (FPO admin) any member's device.
+
+    Afterwards its access tokens and its refresh token answer 401. Revoking a signed-out device again is
+    a no-op that is still audited.
+
+    Args:
+        device_id: the device.
+        user: the caller (the device's user, or an FPO admin of the device user's FPO).
+        session: database session.
+        body: optional reason, kept in the audit trail.
+
+    Raises:
+        UnauthorizedError: not signed in.
+        ForbiddenError: another member's device and the caller is not an FPO admin.
+        NotFoundError: unknown device, or outside the caller's FPO.
+
+    Side effects:
+        Revokes the device; writes the `device.revoke` audit row.
+    """
+    await service.revoke_device(session, user, device_id, body.reason if body else None)
+
+
+@router.get(
+    "/users/{user_id}/devices",
+    response_model=list[DeviceOut],
+    responses={
+        403: {"description": "`forbidden`: another member and the caller is not an FPO admin."},
+        404: {"description": "`not_found`: the user is outside the caller's FPO."},
+    },
+)
+async def device_list(user_id: uuid.UUID, user: Caller, session: Session) -> list[DeviceOut]:
+    """List a user's devices (signed out ones included), newest first, to pick the one to revoke.
+
+    Args:
+        user_id: the user.
+        user: the caller (the user themself, or an FPO admin of the user's FPO).
+        session: database session.
+
+    Returns:
+        The user's devices.
+
+    Raises:
+        UnauthorizedError: not signed in.
+        ForbiddenError: another member and the caller is not an FPO admin.
+        NotFoundError: the user is outside the caller's FPO.
+    """
+    # shortcut: one unpaged list; a user has a handful of phones (each reinstall adds one); page it if a
+    #   user ever collects dozens.
+    return await service.list_devices(session, user, user_id)
 
 
 @router.get("/me", response_model=MeOut)

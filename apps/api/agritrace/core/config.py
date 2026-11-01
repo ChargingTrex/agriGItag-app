@@ -1,7 +1,8 @@
 """Process settings read from environment variables (and `apps/api/.env` when present).
 
 Serves: Arch §Backend services (twelve-factor config), D-008 (bucket names), D-009 (Redis broker URL),
-D-024 (JWT secret, OTP dev code and daily cap), FR7 (SMS provider, B04), plan §13 E3 (CDN, B10).
+D-024 (JWT secret, OTP dev code and daily cap, absolute session lifetime B23), FR7 (SMS provider, B04),
+plan §13 E3 (CDN, B10).
 Callers: `core.db`, `core.storage`, `core.auth`, identity service (B02), notifications providers (B04),
 `agritrace.main`, `agritrace.worker`, `alembic/env.py`, tests.
 Every variable is documented in `apps/api/.env.example`.
@@ -57,6 +58,19 @@ class Settings(BaseSettings):
 
     otp_daily_cap: int = Field(
         10, ge=1, description="Most OTP codes one phone may request in any 24 hours (SMS cost and guessing)."
+    )
+    session_max_days: int = Field(
+        30,
+        ge=1,
+        description="Days after a device's OTP/PIN sign-in when its refresh is refused and the device signed "
+        "out, so the user signs in again (`session_expired`; ASVS 3.3.2 L1 wants at most 30; D-024). "
+        "Applies to every staff session (and super-admins).",
+    )
+    session_max_days_farmer: int = Field(
+        90,
+        ge=1,
+        description="Same as `session_max_days` for farmer sessions: an accepted ASVS 3.3.2 deviation "
+        '(UserFlows "log in once"; D-024, pending FPO/user confirmation).',
     )
     # TODO(provider): add the real gateway's name to this Literal; until then ENV=prod cannot start.
     sms_provider: Literal["console"] | None = Field(

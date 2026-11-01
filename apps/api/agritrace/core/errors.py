@@ -397,6 +397,14 @@ class RefreshReusedError(AppError):
     fix = "Sign in again with an OTP; make sure the app sends only one refresh at a time."
 
 
+class SessionExpiredError(AppError):
+    """The device's sign-in is older than `SESSION_MAX_DAYS`; the device is signed out (D-024, ASVS 3.3.2)."""
+
+    code, status, message_key = "session_expired", 401, "error.session_expired"
+    message = "This sign-in is too old and has been closed."
+    fix = "Sign in again with an OTP."
+
+
 class AssistSessionInvalidError(AppError):
     """The assist session named by `X-Assist-Session` or a sync entry's `assist_session_id` is not usable.
 
@@ -521,6 +529,25 @@ def append_only_error(exc: BaseException) -> AppendOnlyViolationError | None:
     return AppendOnlyViolationError() if sqlstate == SQLSTATE_RESTRICT_VIOLATION else None
 
 
+def data_error(exc: BaseException) -> ValidationFailedError | None:
+    """Recognise a value Postgres or the driver refuses (SQLSTATE class 22, data exception; B21, B23).
+
+    Args:
+        exc: any exception, typically `sqlalchemy.exc.DBAPIError` from a flush or execute.
+
+    Returns:
+        `validation_error` for class 22 (a bad character such as NUL, a number out of range, including
+        asyncpg's own bind-time encode errors such as an int above int32, reported as 22000), with a fixed
+        message and no database text; None for anything else (connection loss, deadlock, a bug), which
+        must stay a 500 so the client retries.
+    """
+    sqlstate = getattr(getattr(exc, "orig", None), "sqlstate", None) or ""
+    if not sqlstate.startswith("22"):
+        return None
+    msg = "a value is out of range or holds a character the database cannot store"
+    return ValidationFailedError(details=[{"loc": ["data"], "msg": msg, "type": "db_data_error"}])
+
+
 def _envelope(
     status: int, code: str, message: str, details: Any = None, headers: Mapping[str, str] | None = None
 ) -> JSONResponse:
@@ -595,28 +622,35 @@ async def _http_error(request: Request, exc: Exception) -> JSONResponse:
 
 
 async def _db_error(request: Request, exc: Exception) -> JSONResponse:
-    """Render SQLSTATE 23001 as `append_only_violation`, 40P01/40001 as `retry_later`; hide every other error.
+    """Render 23001 as `append_only_violation`, class 22 as `validation_error`, 40P01/40001 as `retry_later`.
+
+    Every other database error is hidden behind `internal_error`.
 
     Args:
         request: the request (passed on to `_unhandled`).
         exc: a `sqlalchemy.exc.DBAPIError`.
 
     Returns:
-        409 `append_only_violation`, 503 `retry_later` with `Retry-After: 1`, or the `internal_error`
-        envelope from `_unhandled`.
+        409 `append_only_violation`, 422 `validation_error` (fixed message, no database text, `data_error`),
+        503 `retry_later` with `Retry-After: 1`, or the `internal_error` envelope from `_unhandled`.
 
     Side effects:
-        Logs a WARNING for a retryable error; every other error with its traceback (through `_unhandled`).
+        Logs a WARNING (SQLSTATE, method, path; no database text) for a retryable or class-22 error; every
+        other error with its traceback (through `_unhandled`).
     """
     if getattr(getattr(exc, "orig", None), "sqlstate", None) in SQLSTATE_RETRYABLE:
         log.warning(
             "retryable database error on %s %s: %s", request.method, request.url.path, exc.__class__.__name__
         )
         return _envelope(503, RetryLaterError.code, RetryLaterError.message, headers={"Retry-After": "1"})
-    mapped = append_only_error(exc)
+    mapped = append_only_error(exc) or data_error(exc)
     if mapped is None:
         return await _unhandled(request, exc)
-    return _envelope(mapped.status, mapped.code, mapped.detail_message)
+    if isinstance(mapped, ValidationFailedError):
+        # Some class-22 errors are server bugs (a computed sum overflowing INTEGER): log it, no DB text.
+        sqlstate = getattr(getattr(exc, "orig", None), "sqlstate", None)
+        log.warning("data error %s on %s %s", sqlstate, request.method, request.url.path)
+    return _envelope(mapped.status, mapped.code, mapped.detail_message, mapped.details)
 
 
 async def _unhandled(_: Request, exc: Exception) -> JSONResponse:
