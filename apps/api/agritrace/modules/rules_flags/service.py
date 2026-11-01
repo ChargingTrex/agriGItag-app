@@ -22,7 +22,7 @@ from typing import Any
 from geoalchemy2.shape import to_shape
 from pydantic import ValidationError
 from shapely.geometry import Point
-from sqlalchemy import ColumnElement, func, select
+from sqlalchemy import ColumnElement, Numeric, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -342,23 +342,19 @@ async def _event_context(session: AsyncSession, event: Event, version: EventVers
     )
 
 
-def _kg(rows: Sequence[tuple[Event, dict[str, Any]]], event_type: EventType) -> Decimal | None:
-    """Sum the `quantity` of one event type's live payloads.
+def _kg(event_type: EventType) -> ColumnElement[Decimal | None]:
+    """Sum, in SQL, the `quantity` of one event type's live payloads (for `_lot_context`'s aggregate query).
 
     Args:
-        rows: (event, current payload) pairs of a lot.
         event_type: harvest or packing.
 
     Returns:
-        Total kilograms, or None when no such event carries a quantity in kg.
+        A `sum(...) FILTER (...)` column: total kilograms, NULL when no such event carries a quantity in kg.
     """
     # shortcut: only unit `kg` counts (the payloads document kg); convert quintals once a form offers them.
-    values = [
-        Decimal(str(p["quantity"]["value"]))
-        for e, p in rows
-        if e.event_type == event_type and (p.get("quantity") or {}).get("unit") == "kg"
-    ]
-    return sum(values, Decimal(0)) if values else None
+    quantity = EventVersion.payload["quantity"]
+    kg = quantity["value"].astext.cast(Numeric)
+    return func.sum(kg).filter(Event.event_type == event_type, quantity["unit"].astext == "kg")
 
 
 async def _lot_context(session: AsyncSession, lot: Lot) -> LotContext:
@@ -376,17 +372,14 @@ async def _lot_context(session: AsyncSession, lot: Lot) -> LotContext:
     """
     crop = await session.get(Crop, lot.crop_id)
     plot = await session.get(Plot, lot.plot_id)
-    query = (
-        select(Event, EventVersion.payload)
-        .join(EventVersion, EventVersion.id == Event.current_version_id)
-        .where(Event.lot_id == lot.id, Event.status.not_in(DEAD_EVENTS))
-    )
-    rows = [(e, p) for e, p in (await session.execute(query)).all()]
-    input_ids = {
-        uuid.UUID(str(p["input_id"]))
-        for e, p in rows
-        if e.event_type == EventType.INPUT_APPLICATION and p.get("input_id")
-    }
+    # Only the columns the lot rules read (kg sums in SQL): no ORM rows or payload JSON per event (B22).
+    live = (Event.lot_id == lot.id, Event.status.not_in(DEAD_EVENTS))
+    current = (EventVersion, EventVersion.id == Event.current_version_id)
+    query = select(Event.id, Event.event_type, Event.occurred_on, EventVersion.payload["input_id"].astext)
+    rows = (await session.execute(query.join(*current).where(*live))).all()
+    sums = select(_kg(EventType.HARVEST), _kg(EventType.PACKING)).join(*current).where(*live)
+    harvest_kg, packing_kg = (await session.execute(sums)).one()
+    input_ids = {uuid.UUID(i) for _, t, _, i in rows if t == EventType.INPUT_APPLICATION and i}
     categories = (
         (await session.scalars(select(InputMaster.category).where(InputMaster.id.in_(input_ids)))).all()
         if input_ids
@@ -395,7 +388,7 @@ async def _lot_context(session: AsyncSession, lot: Lot) -> LotContext:
     received = select(func.sum(LotIntake.received_kg)).where(LotIntake.lot_id == lot.id, current_intake())
     used = select(func.sum(BatchShare.kg_contributed)).where(BatchShare.lot_id == lot.id)
     rule = await quality_service.yield_params_for_crop(session, lot.crop_id)
-    harvested = _kg(rows, EventType.HARVEST) or lot.harvested_kg
+    harvested = harvest_kg or lot.harvested_kg
     limits = (
         (
             Decimal(str(rule.ceiling_kg_per_acre)),
@@ -408,12 +401,12 @@ async def _lot_context(session: AsyncSession, lot: Lot) -> LotContext:
     return LotContext(
         lot_id=lot.id,
         event_schema=crop.event_schema if crop else {},
-        events=tuple(LotEvent(e.id, str(e.event_type), e.occurred_on) for e, _ in rows),
+        events=tuple(LotEvent(event_id, str(t), on) for event_id, t, on, _ in rows),
         declared_tags=tuple((lot.practice_tags or {}).get("declared") or ()),
         input_categories=tuple(str(c) for c in categories),
-        has_pest_event=any(e.event_type == EventType.PROBLEM for e, _ in rows),
+        has_pest_event=any(t == EventType.PROBLEM for _, t, _, _ in rows),
         harvested_kg=harvested,
-        packed_kg=_kg(rows, EventType.PACKING) or lot.packed_kg,
+        packed_kg=packing_kg or lot.packed_kg,
         received_kg=await session.scalar(received),
         used_kg=await session.scalar(used),
         declared_acres=plot.declared_area_acres if plot else None,
