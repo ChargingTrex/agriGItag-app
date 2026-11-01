@@ -4,7 +4,9 @@ Documentation       Public batch page: render, privacy lint, HTML validity, size
 ...                 FR-41, FR-58, FR-61, FR-63; gate G4; BM-03, BM-09, BM-16. Run by: W02 and Q03 Verifiers.
 ...                 Needs uv (builds fixtures/batch_sample.json into apps/public-page/out/site) and, for the
 ...                 html-validate and Lighthouse tests, `npm ci` in apps/public-page. Lighthouse tests are tagged
-...                 needs-chrome and skip when lhci finds no Chrome (set CHROME_PATH).
+...                 needs-chrome and skip when lhci finds no Chrome (set CHROME_PATH). The W03 Tamil font test
+...                 needs `rfbrowser init` (Browser library). The two Q03 tests (WP Q07 round 2) need the live
+...                 stack: API_BASE, PUBLIC_BASE_URL and COMPOSE (they stop and restart its api and worker).
 ...                 Placeholders are tagged not-ready and skip until their WP merges.
 Resource            ../resources/common.resource
 Test Tags           public
@@ -133,23 +135,99 @@ Lighthouse Normal 4G Transfers Under 100 KB With LCP At Most 2.5 s
     Should Be Equal As Integers    ${run.rc}    0    msg=${run.stdout}
 
 OG Tags Pass The Privacy Lint
-    [Tags]    WP-W03    FR-41    not-ready
-    Not Ready    W03
+    [Documentation]    The share tags (og:*, description, title) carry no farmer name, lot code or personal data:
+    ...    they are written alone into a file that tools/check_output.sh (privacy-lint + every canary) scans.
+    [Tags]    WP-W03    FR-41
+    [Setup]    Public Page Fixture Is Built
+    ${html}=    Get File    ${SITE}/index.html
+    @{tags}=    Evaluate    re.findall(r"<meta [^>]*>|<title>[^<]*</title>", $html)    modules=re
+    ${og}=    Evaluate    sorted(set(re.findall(r'property="(og:[a-z:]+)"', " ".join($tags))))    modules=re
+    Should Contain    ${og}    og:title
+    Should Contain    ${og}    og:description
+    Should Contain    ${og}    og:type
+    ${record}=    Evaluate    json.loads(pathlib.Path($PAGE_APP, "fixtures", "batch_sample.json").read_text("utf-8"))
+    ...    modules=json,pathlib
+    ${head}=    Catenate    SEPARATOR=\n    @{tags}
+    # Opted-out lots have no farmer_name in the record; only the values present can leak.
+    ${private}=    Evaluate    [v for lot in $record["lots"] for v in (lot.get("farmer_name"), lot.get("lot_code")) if v]
+    Should Not Be Empty    ${private}
+    FOR    ${value}    IN    @{private}
+        Should Not Contain    ${head}    ${value}
+    END
+    ${dir}=    Set Variable    ${OUTPUT DIR}/og-tags
+    Remove Directory    ${dir}    recursive=True
+    Create File    ${dir}/head.html    <!doctype html><html><head>${head}</head><body></body></html>
+    ${run}=    Run Page Tool    bash    tools/check_output.sh    ${dir}
+    Should Be Equal As Integers    ${run.rc}    0    msg=${run.stdout}
+    Should Contain    ${run.stdout}    0 hit(s) in 1 file(s) scanned
 
 Tamil Renders With The System Font
-    [Tags]    WP-W03    FR-5    not-ready
-    Not Ready    W03
+    [Documentation]    At a 390 px phone width the page loads no web font (document.fonts is empty, no @font-face,
+    ...    no stylesheet link), the body font stack names system fonts with Noto Sans Tamil, and the Tamil
+    ...    heading is drawn (non-zero width).
+    [Tags]    WP-W03    FR-5
+    [Setup]    Public Page Fixture Is Built
+    Import Library    Browser    auto_closing_level=TEST
+    New Browser    chromium    headless=True
+    New Context    viewport={'width': 390, 'height': 844}
+    New Page    file://${SITE}/index.html
+    ${facts}=    Evaluate JavaScript    ${None}
+    ...    (() => ({fonts: document.fonts.size,
+    ...    faces: [...document.styleSheets].flatMap((s) => [...s.cssRules]).filter((r) => r instanceof CSSFontFaceRule).length,
+    ...    links: document.querySelectorAll('link[rel="stylesheet"]').length,
+    ...    family: getComputedStyle(document.body).fontFamily,
+    ...    tamil: document.querySelectorAll('[lang="ta"]').length,
+    ...    width: document.querySelector('h1 [lang="ta"]').getBoundingClientRect().width}))()
+    Log    ${facts}
+    Should Be Equal As Integers    ${facts}[fonts]    0
+    Should Be Equal As Integers    ${facts}[faces]    0
+    Should Be Equal As Integers    ${facts}[links]    0
+    Should Contain    ${facts}[family]    system-ui
+    Should Contain    ${facts}[family]    Noto Sans Tamil
+    Should Be True    ${facts}[tamil] > 0
+    Should Be True    ${facts}[width] > 0
+    [Teardown]    Close Browser
 
 Page Is Served From Object Storage With The Backend Down
-    [Tags]    WP-Q03    FR-15    not-ready
-    Not Ready    Q03
+    [Documentation]    Live stack: publish a batch, stop api and worker, and the page, QR and data still load from
+    ...    LocalStack S3 (D-007); the teardown starts them again and waits for healthz.
+    [Tags]    WP-Q03    FR-15
+    ${lot}=    Received Lot    20
+    ${batch}=    Publish Batch    ${{ [$lot] }}
+    ${stop}=    Compose    stop    api    worker
+    Should Be Equal As Integers    ${stop}[rc]    0    msg=${stop}[out]
+    ${down}=    Run Keyword And Return Status    GET    ${API_BASE}/healthz    timeout=5
+    Should Not Be True    ${down}    msg=the API still answers with api stopped
+    FOR    ${name}    ${type}    IN    index.html    text/html    qr.png    image/png    data.json    application/json
+        ${r}=    GET    ${PUBLIC_BASE}/batches/${batch}[code]/${name}    expected_status=200
+        Should Start With    ${r.headers}[content-type]    ${type}
+    END
+    [Teardown]    Start Api And Worker
 
 Old Page Version Is Retrievable
-    [Tags]    WP-Q03    FR-17    not-ready
-    Not Ready    Q03
+    [Documentation]    Live stack: a rebuild writes a new version of the page; the older one is still served
+    ...    anonymously with ?versionId= (S3 versioning, FR-17).
+    [Tags]    WP-Q03    FR-17
+    ${lot}=    Received Lot    20
+    ${batch}=    Publish Batch    ${{ [$lot] }}
+    ${r}=    Call API    POST    /batches/${batch}[id]/rebuild    ${ADMIN}    expect=202
+    ${build}=    Wait For Build    ${batch}[id]    ${r.json()}[build_no]
+    Should Be Equal    ${build}[status]    built    msg=${build}
+    ${versions}=    S3 Versions    public-pages    batches/${batch}[code]/index.html
+    Length Should Be    ${versions}    2
+    ${old}=    Evaluate    [v["VersionId"] for v in $versions if not v["IsLatest"]][0]
+    ${page}=    GET    ${PUBLIC_BASE}/batches/${batch}[code]/index.html    params=versionId=${old}    expected_status=200
+    Should Start With    ${page.headers}[content-type]    text/html
+    Should Contain    ${page.text}    ${batch}[code]
 
 
 *** Keywords ***
+Start Api And Worker
+    [Documentation]    Start the stack's api and worker again (after the backend-down line) and wait until healthz
+    ...    reports db, redis and s3 ok. Fails: not healthy within 180 s.
+    Compose    start    api    worker
+    Wait Until Keyword Succeeds    180s    5s    Stack Is Healthy
+
 Public Page Fixture Is Built
     [Documentation]    Build fixtures/batch_sample.json into apps/public-page/out/site once per Robot run,
     ...    with the W01 CLI under uv. Fails: uv is missing or the build exits non-zero (the output is shown).

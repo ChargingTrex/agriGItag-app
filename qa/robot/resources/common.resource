@@ -93,6 +93,21 @@ Second FPO Admin
     Execute Sql String    INSERT INTO memberships (id, fpo_id, user_id, role) VALUES (gen_random_uuid(), '${fpo}', '${user}', 'fpo_admin')
     RETURN    ${phone}
 
+Publish Batch
+    [Documentation]    Batch the received lots (B10, Q03), grade Standard (10.5 %), approve and pack 20 kg, publish, and wait
+    ...    for the worker to build the page. Returns: the batch body. Fails: the build is not `built`.
+    [Arguments]    ${lots}
+    ${batch}=    New Batch    ${lots}
+    ${reading}=    Moisture    10.5    grading    batch_id=${batch}[id]
+    Call API    POST    /batches/${batch}[id]/grading    ${ADMIN}    expect=201    json=${{ {"declared_grade": "Standard", "readings": [$reading]} }}
+    Call API    POST    /batches/${batch}[id]/grading/approve    ${ADMIN}    expect=200    json=${{ {"graded": {"value": 20, "unit": "kg"}} }}
+    ${pack}=    Packing    20
+    Call API    POST    /batches/${batch}[id]/final-packing    ${ADMIN}    expect=200    json=${pack}
+    Call API    POST    /batches/${batch}[id]/publish    ${ADMIN}    expect=202
+    ${build}=    Wait For Build    ${batch}[id]    1
+    Should Be Equal    ${build}[status]    built    msg=${build}
+    RETURN    ${batch}
+
 Connect To AgriTrace Database
     [Documentation]    Open a DatabaseLibrary connection to the stack's Postgres/PostGIS using pg8000.
     ...    Fails: database unreachable or credentials wrong.

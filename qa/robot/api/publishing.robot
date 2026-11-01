@@ -178,21 +178,6 @@ Publishing Suite Setup
     ${x}=    Publish Batch    ${{ [$c, $d, $e] }}
     Set Suite Variable    ${X}    ${x}
 
-Publish Batch
-    [Documentation]    Batch the received lots, grade Standard (10.5 %), approve and pack 20 kg, publish, and wait
-    ...    for the worker to build the page. Returns: the batch body. Fails: the build is not `built`.
-    [Arguments]    ${lots}
-    ${batch}=    New Batch    ${lots}
-    ${reading}=    Moisture    10.5    grading    batch_id=${batch}[id]
-    Call API    POST    /batches/${batch}[id]/grading    ${ADMIN}    expect=201    json=${{ {"declared_grade": "Standard", "readings": [$reading]} }}
-    Call API    POST    /batches/${batch}[id]/grading/approve    ${ADMIN}    expect=200    json=${{ {"graded": {"value": 20, "unit": "kg"}} }}
-    ${pack}=    Packing    20
-    Call API    POST    /batches/${batch}[id]/final-packing    ${ADMIN}    expect=200    json=${pack}
-    Call API    POST    /batches/${batch}[id]/publish    ${ADMIN}    expect=202
-    ${build}=    Wait For Build    ${batch}[id]    1
-    Should Be Equal    ${build}[status]    built    msg=${build}
-    RETURN    ${batch}
-
 Page Object
     [Documentation]    GET one object of a batch's public page anonymously, as a consumer would (D-007).
     ...    Args: ${name} index.html | data.json | qr.png; ${code} batch code (default batch X).
