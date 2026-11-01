@@ -188,12 +188,14 @@ async def _upload(client: AsyncClient, kind: str, body: bytes, dry_run: bool) ->
 
 
 def test_migration_0003_applies_and_alembic_check_is_clean(ids: dict[str, Any]) -> None:
-    """Head is 0003_masters and the models match the schema (no drift).
+    """The database is at the script head (0003_masters or later) and the models match the schema (no drift).
 
     Args:
         ids: the seeded ids (fixture ran `alembic upgrade head`).
     """
-    assert "0003_masters" in _alembic("current").stdout
+    # Read the head from the scripts, so the next migration does not break this test (B17).
+    head = _alembic("heads").stdout.split()[0]
+    assert head in _alembic("current").stdout
     _alembic("check")
 
 

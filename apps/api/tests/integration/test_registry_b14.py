@@ -98,7 +98,10 @@ async def test_reject_pending_and_refuse_active(api: tuple[AsyncClient, Caller],
     rejected = await client.post(f"/v1/farmers/{pending['id']}/reject", json=body)
     assert rejected.status_code == 200, rejected.text
     assert rejected.json()["status"] == "suspended"
-    assert await _audit(pending["id"], "farmer.reject") == [body]
+    # Registered without a phone, so there is no account whose membership or devices reject could end.
+    assert await _audit(pending["id"], "farmer.reject") == [
+        {**body, "devices_revoked": 0, "membership_removed": False}
+    ]
     active = await _farmer(client, caller, ids)
     assert (await client.post(f"/v1/farmers/{active['id']}/approve")).status_code == 200
     again = await client.post(f"/v1/farmers/{active['id']}/reject", json=body)
