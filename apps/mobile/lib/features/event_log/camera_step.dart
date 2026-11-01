@@ -145,7 +145,11 @@ class _CameraStepState extends ConsumerState<CameraStep> {
         db: ref.read(appDatabaseProvider),
         now: DateTime.now().toUtc(),
       );
-      if (full && mounted) await showPhoneFull(context, ref);
+      if (full && mounted) {
+        // The photo is saved: stop the "saving" spinner (and its live-region announcement) behind the sheet.
+        setState(() => _busy = false);
+        await showPhoneFull(context, ref);
+      }
       if (!mounted) return;
       if (_best != null && _best!.accuracyM <= kGpsGoodAccuracyM) {
         _accept(LocationStatus.ok);

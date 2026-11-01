@@ -1,5 +1,6 @@
 // Tests for the low-storage rule: below 100 MB free the files of confirmed photos are deleted and unconfirmed ones
-// kept; the farmer home opens the "Phone is full" sheet at app start; with room or an unknown size nothing happens.
+// kept; the farmer home opens the "Phone is full" sheet at app start, and the photo step after a photo, then the flow
+// goes on; with room or an unknown size nothing happens.
 // Requirement: PLAN §7.2 M13 ("storage < 100 MB → prompt + purge confirmed photos"); mobile-design.md §3.
 // Callers: `flutter test test/features`.
 
@@ -64,6 +65,25 @@ void main() {
     await tester.tap(find.text('Send now'));
     await tester.pumpAndSettle();
     expect(h.kicks, 1);
+    await h.dispose(tester);
+  });
+
+  testWidgets('a full phone after a photo: the photo step opens "Phone is full", then the flow goes on', (
+    tester,
+  ) async {
+    // The farmer home's start check makes the first call, so it sees room; the photo step's check sees a full phone.
+    var calls = 0;
+    final h = FlowHarness(freeBytes: () async => calls++ == 0 ? 200 * mib : 50 * mib);
+    await h.start(tester);
+    expect(find.text('Phone is full. Send your entries now?'), findsNothing);
+    await h.tap(tester, find.text('Log'));
+    await h.tap(tester, find.text('Sowing'));
+    await h.tap(tester, find.text('Take photo'));
+    expect(find.text('Phone is full. Send your entries now?'), findsOneWidget);
+    await h.tap(tester, find.text('Send now'));
+    expect(h.kicks, 1);
+    await h.tap(tester, find.text('Correct'));
+    expect(h.path, '/home/saved');
     await h.dispose(tester);
   });
 }

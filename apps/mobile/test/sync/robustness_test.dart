@@ -157,6 +157,60 @@ void main() {
     expect((await db.select(db.farmers).get()).map((f) => f.farmerId), ['farmer-9']);
   });
 
+  test(
+    'D-029 + D-006: A\'s ready lot survives B signing in and back, with its moisture (review M13-r1 P2-1)',
+    () async {
+      final db = w.db;
+      final packing = await w.saveEntry('packing', {'bags': 6}, lotId: 'lot-r');
+      await db
+          .into(db.lots)
+          .insert(
+            LotsCompanion.insert(
+              lotId: 'lot-r',
+              plotId: 'plot-1',
+              farmerId: 'farmer-1',
+              cropId: 'crop-1',
+              season: '2026-rabi',
+              status: 'ready_for_sale',
+              lastMoisture: const Value(11.5),
+              updatedAt: t0,
+            ),
+          );
+      await w.sync.runOnce(); // A's packing is sent and accepted
+      expect((await w.entry(packing)).status, EntryStatus.confirmed);
+
+      await w.init(userId: 'user-2');
+      await w.sync.runOnce();
+      expect((await db.select(db.lots).get()).map((l) => l.lotId), ['lot-r']);
+
+      await w.init();
+      // A's fresh pull says `open` (the server never sets ready after packing).
+      w.server.pullPages.add((
+        [
+          {
+            'entity': 'lot',
+            'op': 'upsert',
+            'data': {
+              'id': 'lot-r',
+              'farmer_id': 'farmer-1',
+              'plot_id': 'plot-1',
+              'crop_id': 'crop-1',
+              'season_label': '2026-rabi',
+              'status': 'open',
+              'harvested_kg': '195.000',
+              'packed_kg': '300.000',
+            },
+          },
+        ],
+        'c-a',
+        false,
+      ));
+      await w.sync.runOnce();
+      final lot = await db.select(db.lots).getSingle();
+      expect((lot.lotId, lot.status, lot.lastMoisture), ('lot-r', 'ready_for_sale', 11.5));
+    },
+  );
+
   test('a row left sending by a quick kill is retried by the next run once 5 min have passed', () async {
     final id = await w.save();
     await w.db.outboxDao.markSending([(await w.outboxOf(id)).seq], w.clock);

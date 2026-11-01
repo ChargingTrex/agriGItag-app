@@ -93,6 +93,8 @@ class MediaDao extends DatabaseAccessor<AppDatabase> with _$MediaDaoMixin {
   /// Returns the number of media rows swept. Throws [FileSystemException] when a file cannot be deleted. Side
   /// effect: deletes files on disk.
   Future<int> purgeConfirmed({required DateTime now}) async {
+    // shortcut: re-sweeps every confirmed photo on each capture while the phone stays full; upgrade to a
+    //   since-last-purge cursor if the Q01 device check shows a visible delay.
     final done = await (select(media)..where((m) => m.uploadStatus.equalsValue(UploadStatus.done))).get();
     for (final m in done) {
       await purgeFullSize(m.mediaId, now: now, keepThumb: false);
