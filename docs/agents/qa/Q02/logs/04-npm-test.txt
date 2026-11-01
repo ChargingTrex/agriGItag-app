@@ -1,0 +1,24 @@
+# 2026-11-02T01:14:04+05:30 main a51d071 uptime:  1:14  up 2 days, 46 mins, 1 user, load averages: 17.51 18.64 18.58
+$ npm test -- --no-file-parallelism
+
+> @agritrace/portal@0.1.0 test
+> vitest run --no-file-parallelism
+
+
+ RUN  v5.0.5 /Users/fi-it/Documents/projects/agriGitag/apps/portal
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+
+ Test Files  15 passed (15)
+      Tests  139 passed (139)
+   Start at  01:14:05
+   Duration  68.89s (tests 56%, import 19%, environment 19%, setup 5%, transform 1%)
+
+    Isolate  15 workers spawned · ~981ms startup each (spawn + environment, per file)
+             at least ~13.74s faster with isolate: false — reuses workers across files instead of one per file
+
+real 69.68
+user 83.58
+sys 8.50
+# end uptime:  1:15  up 2 days, 47 mins, 1 user, load averages: 11.18 16.53 17.79

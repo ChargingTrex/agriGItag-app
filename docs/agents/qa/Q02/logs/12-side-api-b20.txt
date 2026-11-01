@@ -1,0 +1,8 @@
+# 2026-11-02T01:26:49+05:30 main 0814a25. Image build failed twice (buildkit lease error, log 11), so a side API container runs the shared image with main's apps/api/agritrace mounted read-only. It joins the shared network and DB; agritrace-api-1 is not restarted.
+$ docker compose -f infra/docker-compose.yml run -d --rm --no-deps --name q02-api-b20 -p 127.0.0.1:8030:8000 -v $REPO/apps/api/agritrace:/app/agritrace:ro api
+ Container q02-api-b20 Creating 
+ Container q02-api-b20 Created 
+4a8e8d745e7e8c65388f3ddddadd42619b550211223dae4785ae40e08d842b7a
+# 2026-11-02T01:31:51+05:30 stop side api
+q02-api-b20
+0

@@ -1,0 +1,22 @@
+# 2026-11-02T01:11:13+05:30 uptime:  1:11  up 2 days, 43 mins, 1 user, load averages: 15.24 17.47 18.14
+$ npx vitest run --coverage --coverage.reporter=json-summary --coverage.reportsDirectory=$SCRATCH/cov --no-file-parallelism --reporter=default --reporter=json --outputFile.json=$SCRATCH/vitest.json
+
+ RUN  v5.0.5 /Users/fi-it/Documents/projects/agriGitag/apps/portal
+      Coverage enabled with v8
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+
+ Test Files  15 passed (15)
+      Tests  139 passed (139)
+   Start at  01:11:15
+   Duration  146.88s (tests 67%, import 15%, environment 12%, setup 5%, transform 1%, worker 1%)
+
+    Isolate  15 workers spawned · ~1.35s startup each (spawn + environment, per file)
+             at least ~18.90s faster with isolate: false — reuses workers across files instead of one per file
+
+JSON report written to /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/vitest.json
+real 149.07
+user 137.41
+sys 19.59
+# end uptime:  1:13  up 2 days, 46 mins, 1 user, load averages: 21.11 19.31 18.81

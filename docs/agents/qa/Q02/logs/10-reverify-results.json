@@ -1,0 +1,44 @@
+[
+ {
+  "wp": "P01",
+  "line": "phone-masked-by-default",
+  "result": "PASS",
+  "detail": "farmer muthu murugan (01a197e0-9a93-7f85-82e3-c49216199139): \"Mobile: XXXXXX0011\" shown, no +91 number on the page, admin sees \"Reveal number\"",
+  "shot": "Q02/shots/P01-phone-masked-by-default_en.png"
+ },
+ {
+  "wp": "P01",
+  "line": "admin-reveal-full-number-audited",
+  "result": "PASS",
+  "detail": "GET /phone 200, page shows the full +91 number (ends 0011, matches the mask); button gone; audit rows for this farmer 0 -> 1; latest row farmer.phone_reveal|farmers|01a197e0-9a93-7f85-82e3-c49216199139|01a197e0-9a3e-772c-acc4-93407882f68b|{}",
+  "shot": "Q02/shots/P01-admin-reveal-full-number-audited_en.png"
+ },
+ {
+  "wp": "P01",
+  "line": "reveal-row-in-audit-log-page",
+  "result": "PASS",
+  "detail": "Audit log page, farmers + 01a197e0-9a93-7f85-82e3-c49216199139: When Actor Action Entity Changes 2 Nov 2026, 01:23 01a197e0-9a3e-772c-acc4-93407882f68b farmer.phone_reveal farmers 01a197e0-9a93-7f85-82e3-c49216199139 — 1 Nov 2026, 21:40 System create farmers 01a197e0-9a93-7f85-82e3-c49216199139 id: 01a197e0-9a93-7f85-82e3-c49216199139 code: F000001 name: muthu m",
+  "shot": "Q02/shots/P01-reveal-row-in-audit-log-page_en.png"
+ },
+ {
+  "wp": "P06",
+  "line": "audit-search-correction-actor-and-reason",
+  "result": "FAIL",
+  "detail": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m |  | Expected pattern: \u001b[32m/wrong_quantity/\u001b[39m | Received string:  \u001b[31m\"When Actor Action Entity Changes 2 Nov 2026, 01:23 01a197e0-9a3f-7678-b124-874b1d704f23 event.correct event_versions df5b634c-6cdb-4c05-babf-14a77aa101f2 photos: [] event id: 0ccbebfa-f2ab-4104-ab6a-75d2d8eb40b1 event type: harvest version no: 2 change kind: correct Reason: not in the audit log yet; see the entry history on the lot.\"\u001b[39m",
+  "shot": "Q02/shots/P06-audit-search-correction-actor-and-reason_en.png"
+ },
+ {
+  "wp": "P07",
+  "line": "live-chain-batch-published",
+  "result": "PASS",
+  "detail": "batch VSDR6JJ0X6NM (chain run 2) page: Batch VSDR6JJ0X6NM Published GI verified Total 20 kg Processor VIRUDHAI_SCFC_VINOBA_BHAVA_FPO Batch ID and QR Batch ID: VSDR6JJ0X6NM (super lot COMBO_LOT_2C429D79) Reference 4d686013-19d3-4df3-a15a-0566fddc69ad. The QR code opens the public page at /b/VSDR6JJ0X6NM; it appears under Public page once ",
+  "shot": "Q02/shots/P07-live-chain-batch-published_en.png"
+ },
+ {
+  "wp": "P01",
+  "line": "field-officer-no-reveal-button",
+  "result": "PASS",
+  "detail": "field officer on /members/01a197e0-9a93-7f85-82e3-c49216199139: 0 \"Reveal number\" buttons, no +91 number; page: BACK TO MEMBERS muthu murugan Active Farmer code: F000001 Address: PM Pudhupatti, Tiruchuli, Virudhunagar, Tamil Nadu Mobile: XXXXXX0011 GI status: GI authorised user no. DEMO-GI-AU-883-0101 Approved on 1 Aug 2025 Plots PLOT P-01 Inside GI region OPE; API GET /phone as officer -> 403 {\"error\":{\"code\":\"forbidden\",\"message\":\"Your role does not allow this action.\",\"details\":{\"required_roles\":[\"fpo_admin\"]",
+  "shot": "Q02/shots/P01-field-officer-no-reveal-button_en.png"
+ }
+]

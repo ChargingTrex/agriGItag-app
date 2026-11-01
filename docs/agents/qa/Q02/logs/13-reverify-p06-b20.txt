@@ -1,0 +1,39 @@
+# 2026-11-02T01:27:37+05:30 uptime:  1:27  up 2 days, 1 hr, 1 user, load averages: 17.02 17.95 17.72
+$ Q02_STATE=$SCRATCH/admin-state.json B20_API=http://localhost:8030 E2E_BASE_URL=http://localhost:5173 PW_DIR=./p06 npx playwright test -c playwright.config.ts
+
+Running 1 test using 1 worker
+
+[qa] no stored admin session: OTP sign-in
+  ✘  1 [chromium] › p06/q02-p06-b20.spec.ts:97:1 › Q02 live re-verify P06 line 5 with B20 code (correction written through the side API on the shared DB) (35.2s)
+
+
+  1) [chromium] › p06/q02-p06-b20.spec.ts:97:1 › Q02 live re-verify P06 line 5 with B20 code (correction written through the side API on the shared DB) 
+
+    TimeoutError: locator.fill: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for getByLabel('SMS code')
+
+
+      66 |   await page.getByLabel('Mobile number').fill(phone10);
+      67 |   await page.getByRole('button', { name: 'Send code' }).click();
+    > 68 |   await page.getByLabel('SMS code').fill(OTP);
+         |                                     ^
+      69 |   await page.getByRole('button', { name: 'Verify code' }).click();
+      70 |   await page.getByLabel('PIN', { exact: true }).fill(PIN);
+      71 |   await page.getByRole('button', { name: 'Sign in' }).click();
+        at uiSignIn (/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q02live/p06/q02-p06-b20.spec.ts:68:37)
+        at /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q02live/p06/q02-p06-b20.spec.ts:104:5
+
+    Error Context: test-results/q02-p06-b20-Q02-live-re-ve-458a3--side-API-on-the-shared-DB--chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/q02-p06-b20-Q02-live-re-ve-458a3--side-API-on-the-shared-DB--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/q02-p06-b20-Q02-live-re-ve-458a3--side-API-on-the-shared-DB--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › p06/q02-p06-b20.spec.ts:97:1 › Q02 live re-verify P06 line 5 with B20 code (correction written through the side API on the shared DB) 
+# end 2026-11-02T01:28:30+05:30 uptime:  1:28  up 2 days,  1:01, 1 user, load averages: 12.22 16.63 17.25

@@ -1,0 +1,14 @@
+# 2026-11-02T01:31:30+05:30 field officer corrects the Q02 harvest entry (v2 written by the shared pre-B20 API, log 09) to v3 via the side API running main's code (log 12)
+$ node fo-correct-v3.mjs 0ccbebfa-f2ab-4104-ab6a-75d2d8eb40b1 8a7f02c1-5b5e-413a-afbd-2b84dc1710c5 39c8dcbd-3885-48ac-8ddc-a78218adfecd 9.586 78.112   (script copied to Q02/scripts/)
+POST http:/v1/auth/otp/request 204
+POST http:/v1/auth/otp/verify 200
+POST http:/v1/auth/pin/verify 200
+POST http:/v1/events/0ccbebfa-f2ab-4104-ab6a-75d2d8eb40b1/versions 200
+v3 {"client_id":"274e2ca4-9b1c-4093-999c-222ebb5781a7","status":"accepted","server_id":"274e2ca4-9b1c-4093-999c-222ebb5781a7","photo_uploads":[],"error":null}
+--- audit_log event.correct rows for this event (v2 = shared pre-B20 api, v3 = side api with B20)
+              at               |            actor_user_id             | v |                                                                                                                 diff                                                                                                                 
+-------------------------------+--------------------------------------+---+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-11-01 19:53:17.59028+00  | 01a197e0-9a3f-7678-b124-874b1d704f23 | 2 | {"photos": [], "event_id": "0ccbebfa-f2ab-4104-ab6a-75d2d8eb40b1", "event_type": "harvest", "version_no": 2, "change_kind": "correct"}
+ 2026-11-01 20:01:34.627802+00 | 01a197e0-9a3f-7678-b124-874b1d704f23 | 3 | {"photos": [], "event_id": "0ccbebfa-f2ab-4104-ab6a-75d2d8eb40b1", "event_type": "harvest", "version_no": 3, "change_kind": "correct", "reason_code": "wrong_quantity", "reason_text": "Q02 Verifier: scale re-read (B20 side API)"}
+(2 rows)
+

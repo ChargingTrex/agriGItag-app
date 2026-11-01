@@ -1,0 +1,80 @@
+# 2026-11-02T01:08:40+05:30 main a51d071 uptime:  1:08  up 2 days, 41 mins, 1 user, load averages: 18.20 14.04 17.01
+$ npx vitest run --coverage --no-file-parallelism
+
+ RUN  v5.0.5 /Users/fi-it/Documents/projects/agriGitag/apps/portal
+      Coverage enabled with v8
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+
+ Test Files  15 passed (15)
+      Tests  139 passed (139)
+   Start at  01:08:42
+   Duration  128.21s (tests 65%, import 17%, environment 12%, setup 4%, transform 1%, worker 1%)
+
+    Isolate  15 workers spawned · ~1.19s startup each (spawn + environment, per file)
+             at least ~16.61s faster with isolate: false — reuses workers across files instead of one per file
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   90.41 |    80.45 |   95.66 |   94.94 |                   
+ src               |   47.36 |       25 |    62.5 |   52.94 |                   
+  AppRoutes.tsx    |   66.66 |      100 |   66.66 |   66.66 | 60                
+  main.tsx         |       0 |        0 |       0 |       0 | 18-27             
+ src/api           |     100 |    89.65 |     100 |     100 |                   
+  client.ts        |     100 |       75 |     100 |     100 | 42,55             
+  cursor.ts        |     100 |    85.71 |     100 |     100 | 62                
+ src/auth          |   93.46 |    86.81 |   97.67 |   97.03 |                   
+  AuthProvider.tsx |    90.9 |    76.47 |   95.45 |   93.84 | 155-157,214       
+  LoginPage.tsx    |   93.47 |    91.48 |     100 |     100 | 46,135,137,172    
+ ...features/audit |   93.75 |    90.47 |   92.85 |   96.55 |                   
+  AuditLogPage.tsx |   93.75 |    90.47 |   92.85 |   96.55 | 283               
+ ...atures/batches |    96.6 |    86.28 |   95.86 |   97.73 |                   
+  BatchPage.tsx    |   95.37 |    81.34 |   97.67 |   96.96 | 144,170,273       
+  BatchesPage.tsx  |     100 |    80.76 |     100 |     100 | 61-73,79,109      
+  ...shSection.tsx |     100 |    82.97 |     100 |     100 | ...18-219,255,263 
+  ...yLotsPage.tsx |   95.45 |    88.78 |   94.87 |   98.66 | 368               
+  batchModel.ts    |   97.11 |    94.25 |    92.3 |   96.47 | 195,203-204       
+ ...ures/dashboard |   97.05 |    84.88 |   98.11 |   98.85 |                   
+  ...boardPage.tsx |   97.05 |    84.88 |   98.11 |   98.85 | 209               
+ ...atures/exports |   98.66 |    91.37 |   96.55 |   98.55 |                   
+  BatchExports.tsx |     100 |    91.66 |     100 |     100 | 45,107            
+  ExportsPage.tsx  |     100 |       75 |     100 |     100 | 32-52             
+  exportModel.ts   |   97.14 |    96.15 |   93.75 |   96.77 | 60                
+ ...features/flags |   96.29 |    88.43 |   98.66 |   98.25 |                   
+  FlagPage.tsx     |    93.1 |    86.76 |      95 |   96.22 | 50-51             
+  FlagsPage.tsx    |     100 |    97.77 |     100 |     100 | 124               
+  LotPage.tsx      |   93.87 |    73.91 |     100 |   97.67 | 144               
+  PlotReview.tsx   |     100 |    81.81 |     100 |     100 | 89,115,139        
+ ...atures/imports |   99.09 |     91.3 |     100 |     100 |                   
+  ...rDataPage.tsx |   98.43 |    88.23 |     100 |     100 | ...69,294,351,360 
+ ...atures/members |   72.32 |    70.71 |   86.79 |   73.97 |                   
+  FarmerPage.tsx   |   96.15 |    86.11 |     100 |     100 | 78,99,122,131-149 
+  MembersPage.tsx  |   97.14 |    95.45 |     100 |     100 | 115               
+  PlotMap.tsx      |       0 |        0 |       0 |       0 | 25-146            
+  PlotPage.tsx     |   95.65 |    74.19 |     100 |     100 | ...08,115-121,124 
+  ...ssorsPage.tsx |   94.73 |    77.77 |   88.88 |   94.73 | 139               
+  geo.ts           |   94.11 |     90.9 |     100 |     100 | 23                
+ ...tures/settings |     100 |    96.42 |     100 |     100 |                   
+  SettingsPage.tsx |     100 |    96.42 |     100 |     100 | 42                
+ src/mocks         |   84.98 |    67.47 |   96.47 |   96.69 |                   
+  browser.ts       |       0 |      100 |     100 |       0 | 10-17             
+  ...rdHandlers.ts |   90.36 |    68.47 |     100 |     100 | ...91-298,307-314 
+  handlers.ts      |   84.38 |    67.21 |   95.57 |   96.67 | ...1205,1236,1247 
+ src/pages         |       0 |      100 |       0 |       0 |                   
+  ...olderPage.tsx |       0 |      100 |       0 |       0 | 15                
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 90.41% ( 1632/1805 )
+Branches     : 80.45% ( 1309/1627 )
+Functions    : 95.66% ( 596/623 )
+Lines        : 94.94% ( 1465/1543 )
+================================================================================
+real 129.92
+user 130.35
+sys 12.44
+exit 0
+# end uptime:  1:10  up 2 days, 43 mins, 1 user, load averages: 19.84 18.42 18.48
