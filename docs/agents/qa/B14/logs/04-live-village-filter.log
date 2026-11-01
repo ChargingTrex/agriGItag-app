@@ -1,0 +1,7 @@
+# The compose DB has 0 villages (village import is super-admin only; the seed adds none), so no farmer has a village_id.
+# Live evidence is limited to: the filter is applied server-side (an unknown village gives an empty page; no filter gives every farmer).
+$ GET http://localhost:8000/v1/farmers?village_id=0b5a3fd2-6643-4ff8-bbbb-b4751a167b32
+-> HTTP 200  etag=None
+  {"items": [], "next_cursor": null, "has_more": false}
+  no filter -> 5 farmers
+exit=0

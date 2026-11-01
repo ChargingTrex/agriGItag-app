@@ -1,0 +1,82 @@
+$ cd apps/api && uv run python ../../docs/agents/qa/B14/logs/live_b14.py
+== 1. list shows phone_masked, never the full phone; reveal: officer 403, admin 200 + one audit row
+$ GET http://localhost:8000/v1/farmers?limit=50
+-> HTTP 200  etag=None
+  {"items": [{"id": "01a197e0-9a93-7f85-82e3-c49216199139", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": "01a197e0-9a5f-7b49-9864-b4c62d0c3cbf", "code": "F000001", "name": "muthu murugan", "name_local": null, "photo_key": null, "address": {"village": "PM Pudhupatti", "block": "Tiruchuli", "taluk": null, "district": "Virudhunagar", "state": "Tamil Nadu", "pin": null}, "village_id": null, "gi_authorised_user_no": "DEMO-GI-AU-883-0101", "status": "active", "approved_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "approved_at": "2025-08-01T03:30:00Z", "no_smartphone": false, "phone_masked": "XXXXXX0011", "address_line": "PM Pudhupatti, Tiruchuli, Virudhunagar, Tamil Nadu"}, {"id": "0 ...
+  admin: 4 farmers; phone_masked values: ['XXXXXX0011', 'XXXXXX0012', 'XXXXXX0013', 'XXXXXX0091']; full-phone matches in body: []; 'phone' key present: False
+$ GET http://localhost:8000/v1/farmers?limit=50
+-> HTTP 200  etag=None
+  {"items": [{"id": "01a197e0-9a93-7f85-82e3-c49216199139", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": "01a197e0-9a5f-7b49-9864-b4c62d0c3cbf", "code": "F000001", "name": "muthu murugan", "name_local": null, "photo_key": null, "address": {"village": "PM Pudhupatti", "block": "Tiruchuli", "taluk": null, "district": "Virudhunagar", "state": "Tamil Nadu", "pin": null}, "village_id": null, "gi_authorised_user_no": "DEMO-GI-AU-883-0101", "status": "active", "approved_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "approved_at": "2025-08-01T03:30:00Z", "no_smartphone": false, "phone_masked": "XXXXXX0011", "address_line": "PM Pudhupatti, Tiruchuli, Virudhunagar, Tamil Nadu"}, {"id": "0 ...
+  officer: 4 farmers; phone_masked values: ['XXXXXX0011', 'XXXXXX0012', 'XXXXXX0013', 'XXXXXX0091']; full-phone matches in body: []; 'phone' key present: False
+  sql> select count(*) from audit_log where action='farmer.phone_reveal' and entity_id='56a622ff-6789-4ae0-9a65-775491f5d2cf'
+  =>  '0'
+$ GET http://localhost:8000/v1/farmers/56a622ff-6789-4ae0-9a65-775491f5d2cf/phone
+-> HTTP 403  etag=None
+  {"error": {"code": "forbidden", "message": "Your role does not allow this action.", "details": {"required_roles": ["fpo_admin"]}}}
+RESULT line1 officer: HTTP 403 forbidden
+$ GET http://localhost:8000/v1/farmers/56a622ff-6789-4ae0-9a65-775491f5d2cf/phone
+-> HTTP 200  etag=None
+  {"farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "phone": "+919000000091"}
+RESULT line1 admin: HTTP 200
+  sql> select count(*) from audit_log where action='farmer.phone_reveal' and entity_id='56a622ff-6789-4ae0-9a65-775491f5d2cf'
+  =>  '1'
+  sql> select action, actor_user_id is not null, diff from audit_log where action='farmer.phone_reveal' and entity_id='56a622ff-6789-4ae0-9a65-775491f5d2cf' order by at desc limit 1
+  =>  'farmer.phone_reveal|t|{}'
+RESULT line1 audit rows: before=0 after=1
+$ GET http://localhost:8000/v1/farmers/84d7f7ed-3c64-428a-935b-674f2c88f824/phone
+-> HTTP 404  etag=None
+  {"error": {"code": "not_found", "message": "Not found.", "details": {"farmer_id": "84d7f7ed-3c64-428a-935b-674f2c88f824"}}}
+  unknown / not-in-FPO farmer id -> HTTP 404 not_found
+
+== 2. reject a pending farmer -> status changes + audit row with reason; reject an active farmer -> 409
+$ POST http://localhost:8000/v1/farmers
+  body: {"name":"QA Verifier Reject Me","lang":"en","no_smartphone":true,"client_id":"939f7e81-c645-4c6e-9232-9053b3a7f997"}
+-> HTTP 201  etag=None
+  {"id": "939f7e81-c645-4c6e-9232-9053b3a7f997", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": null, "code": "F1413C1", "name": "QA Verifier Reject Me", "name_local": null, "photo_key": null, "address": null, "village_id": null, "gi_authorised_user_no": null, "status": "pending", "approved_by": null, "approved_at": null, "no_smartphone": true, "phone_masked": null, "address_line": ""}
+$ POST http://localhost:8000/v1/farmers/939f7e81-c645-4c6e-9232-9053b3a7f997/reject
+  body: {"reason_code":"duplicate_registration","reason_text":"QA verifier: registered twice"}
+-> HTTP 200  etag=None
+  {"id": "939f7e81-c645-4c6e-9232-9053b3a7f997", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": null, "code": "F1413C1", "name": "QA Verifier Reject Me", "name_local": null, "photo_key": null, "address": null, "village_id": null, "gi_authorised_user_no": null, "status": "suspended", "approved_by": null, "approved_at": null, "no_smartphone": true, "phone_masked": null, "address_line": ""}
+RESULT line2 pending: HTTP 200 status pending -> suspended
+  sql> select action, diff from audit_log where action='farmer.reject' and entity_id='939f7e81-c645-4c6e-9232-9053b3a7f997'
+  =>  'farmer.reject|{"reason_code": "duplicate_registration", "reason_text": "QA verifier: registered twice", "devices_revoked": 0, "membership_removed": false}'
+$ POST http://localhost:8000/v1/farmers/56a622ff-6789-4ae0-9a65-775491f5d2cf/reject
+  body: {"reason_code":"duplicate_registration","reason_text":"QA verifier: registered twice"}
+-> HTTP 409  etag=None
+  {"error": {"code": "farmer_not_pending", "message": "This farmer is not waiting for approval.", "details": {"status": "active"}}}
+RESULT line2 active: HTTP 409 farmer_not_pending
+
+== 3. GET /farmers/{id}/plots returns that farmer's plots only; PlotOut carries gi_tag_id
+$ GET http://localhost:8000/v1/farmers/56a622ff-6789-4ae0-9a65-775491f5d2cf/plots
+-> HTTP 200  etag=None
+  {"items": [{"id": "4c50d79a-c871-4ded-8a27-17a65358c4cb", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "code": "QA-P1", "gi_tag_id": null, "pin": {"lat": 9.585, "lon": 78.105, "accuracy_m": 5.0}, "pin_method": "live_gps", "pin_device_time": "2026-11-01T16:19:37.746812Z", "pin_gps_time": null, "pin_server_received_at": "2026-11-01T16:19:37.7 ...
+RESULT line3: 3 plots ['QA-P1', 'QA-P2', 'QA-P3']; all farmer_id == QA farmer: True; gi_tag_id key on every row: True
+  sql> select count(*) from plots where farmer_id='56a622ff-6789-4ae0-9a65-775491f5d2cf'
+  =>  '3'
+  seeded farmer F000001: [('P-01', True, '01a197e0-9962-766b-a4d8-4dc931a7ff9f')]
+
+== 4. ?village_id= and ?q= filter server-side; ?fields=code,name trims the rows
+  all: [('F000001', 'muthu murugan', None), ('F000002', 'Selvi Ramasamy', None), ('F000003', 'Karuppasamy P', None), ('FF88C00', 'QA Verifier Farmer', None), ('F1413C1', 'QA Verifier Reject Me', None)]
+$ GET http://localhost:8000/v1/farmers?q=selvi
+-> HTTP 200  etag=None
+  {"items": [{"id": "01a197e0-9b81-7d38-a211-02219523dbdb", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": "01a197e0-9a60-773a-8397-6ced3a3b4db6", "code": "F000002", "name": "Selvi Ramasam ...
+RESULT line4 q=selvi: ['F000002 Selvi Ramasamy']
+$ GET http://localhost:8000/v1/farmers?q=FF88
+-> HTTP 200  etag=None
+  {"items": [{"id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": "01a197e8-c83a-769a-aaa4-e8fc9255019e", "code": "FF88C00", "name": "QA Verifier F ...
+RESULT line4 q=FF88: ['FF88C00 QA Verifier Farmer']
+$ GET http://localhost:8000/v1/farmers?q=0091
+-> HTTP 200  etag=None
+  {"items": [{"id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": "01a197e8-c83a-769a-aaa4-e8fc9255019e", "code": "FF88C00", "name": "QA Verifier F ...
+RESULT line4 q=0091: ['FF88C00 QA Verifier Farmer']
+$ GET http://localhost:8000/v1/farmers?fields=code%2Cname&limit=2
+-> HTTP 200  etag=None
+  {"items": [{"code": "F000001", "name": "muthu murugan"}, {"code": "F000002", "name": "Selvi Ramasamy"}], "next_cursor": "WyIwMWExOTdlMC05YjgxLTdkMzgtYTIxMS0wMjIxOTUyM2RiZGIiXQ", "has_more": true}
+RESULT line4 fields: row keys [['code', 'name'], ['code', 'name']]
+
+== 5. GET /v1/fpos/{id} carries bbox
+$ GET http://localhost:8000/v1/fpos/01a197e0-9a48-7db7-b773-fa2ebdcb4597
+-> HTTP 200  etag=None
+  {"id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "code": "VIRUDHAI_SCFC_VINOBA_BHAVA_FPO", "name": "VIRUDHAI_SCFC_VINOBA_BHAVA_FPO", "kind": "fpo", "address": {"village": "P Thottiyangulam", "block": "Tiruchuli", "taluk": null, "district": "Virudhunagar", "state": "Tamil Nadu", "pin": null}, "fssai_no": "DEMO-FSSAI-12426999000001", "gi_authorised_user_no": "DEMO-GI-AU-883-0001", "public_show_farmer_names": true, "bbox": [78.105, 9.5521, 78.145, 9.585], "address_line": "P Thottiyangulam, Tiruchuli, Virudhunagar, Tamil Nadu"}
+RESULT line5: bbox=[78.105, 9.5521, 78.145, 9.585]
+exit=0

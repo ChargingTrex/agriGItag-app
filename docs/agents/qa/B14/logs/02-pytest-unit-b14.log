@@ -1,0 +1,39 @@
+$ uv run pytest tests/unit/test_registry_b14_logic.py tests/unit/test_registry_b14_signin.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 27 items
+
+tests/unit/test_registry_b14_logic.py::test_mask_phone[+919876543210-XXXXXX3210] PASSED [  3%]
+tests/unit/test_registry_b14_logic.py::test_mask_phone[None-None] PASSED [  7%]
+tests/unit/test_registry_b14_logic.py::test_mask_phone[-None] PASSED     [ 11%]
+tests/unit/test_registry_b14_logic.py::test_farmer_out_never_carries_the_full_phone PASSED [ 14%]
+tests/unit/test_registry_b14_logic.py::test_fields_whitelist_follows_the_tenant PASSED [ 18%]
+tests/unit/test_registry_b14_logic.py::test_search_matches_phone_only_by_masked_suffix[3210-True] PASSED [ 22%]
+tests/unit/test_registry_b14_logic.py::test_search_matches_phone_only_by_masked_suffix[0-True] PASSED [ 25%]
+tests/unit/test_registry_b14_logic.py::test_search_matches_phone_only_by_masked_suffix[Muthu-False] PASSED [ 29%]
+tests/unit/test_registry_b14_logic.py::test_search_matches_phone_only_by_masked_suffix[12345-False] PASSED [ 33%]
+tests/unit/test_registry_b14_logic.py::test_search_matches_phone_only_by_masked_suffix[\u0be7\u0be8-False] PASSED [ 37%]
+tests/unit/test_registry_b14_logic.py::test_reject_pending_suspends_drops_membership_and_revokes_devices PASSED [ 40%]
+tests/unit/test_registry_b14_logic.py::test_reject_keeps_devices_while_another_membership_remains PASSED [ 44%]
+tests/unit/test_registry_b14_logic.py::test_reject_not_pending_is_refused[active] PASSED [ 48%]
+tests/unit/test_registry_b14_logic.py::test_reject_not_pending_is_refused[suspended] PASSED [ 51%]
+tests/unit/test_registry_b14_logic.py::test_reveal_phone_route_admin_only_and_audited PASSED [ 55%]
+tests/unit/test_registry_b14_logic.py::test_farmer_list_fields_trims_rows_and_masks PASSED [ 59%]
+tests/unit/test_registry_b14_logic.py::test_bbox_falls_back_to_regions_only_without_plots PASSED [ 62%]
+tests/unit/test_registry_b14_logic.py::test_get_fpo_scope_and_bbox_roles[fpo_admin-False-True-200-True] PASSED [ 66%]
+tests/unit/test_registry_b14_logic.py::test_get_fpo_scope_and_bbox_roles[qc_officer-False-True-200-True] PASSED [ 70%]
+tests/unit/test_registry_b14_logic.py::test_get_fpo_scope_and_bbox_roles[farmer-False-True-200-False] PASSED [ 74%]
+tests/unit/test_registry_b14_logic.py::test_get_fpo_scope_and_bbox_roles[viewer-False-True-200-False] PASSED [ 77%]
+tests/unit/test_registry_b14_logic.py::test_get_fpo_scope_and_bbox_roles[fpo_admin-False-False-404-False] PASSED [ 81%]
+tests/unit/test_registry_b14_logic.py::test_get_fpo_scope_and_bbox_roles[fpo_admin-True-False-200-True] PASSED [ 85%]
+tests/unit/test_registry_b14_signin.py::test_request_otp_sends_to_a_known_phone_without_membership PASSED [ 88%]
+tests/unit/test_registry_b14_signin.py::test_wrong_code_on_inactive_account_is_otp_invalid PASSED [ 92%]
+tests/unit/test_registry_b14_signin.py::test_right_code_on_inactive_account_is_account_inactive PASSED [ 96%]
+tests/unit/test_registry_b14_signin.py::test_right_code_on_unknown_phone_is_otp_invalid PASSED [100%]
+
+============================== 27 passed in 8.18s ==============================
+exit=0

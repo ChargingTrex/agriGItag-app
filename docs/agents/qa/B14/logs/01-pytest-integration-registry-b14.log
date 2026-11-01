@@ -1,0 +1,34 @@
+22:49  up 1 day, 22:22, 1 user, load averages: 6.60 89.12 112.53
+$ cd apps/api && uv run pytest tests/integration/test_registry_b14.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 6 items
+
+tests/integration/test_registry_b14.py::test_phone_masked_and_audited_reveal PASSED [ 16%]
+tests/integration/test_registry_b14.py::test_reject_pending_and_refuse_active PASSED [ 33%]
+tests/integration/test_registry_b14.py::test_farmer_plots_only_that_farmer PASSED [ 50%]
+tests/integration/test_registry_b14.py::test_farmer_list_village_q_and_fields PASSED [ 66%]
+tests/integration/test_registry_b14.py::test_fpo_bbox PASSED             [ 83%]
+tests/integration/test_registry_b14.py::test_rejected_farmer_loses_sign_in PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_registry_b14.py::test_phone_masked_and_audited_reveal
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_registry_b14.py::test_rejected_farmer_loses_sign_in
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:149: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/integration/test_registry_b14.py::test_rejected_farmer_loses_sign_in
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:370: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 6 passed, 3 warnings in 28.40s ========================
+exit=0
+22:50  up 1 day, 22:22, 1 user, load averages: 6.47 79.94 108.23
