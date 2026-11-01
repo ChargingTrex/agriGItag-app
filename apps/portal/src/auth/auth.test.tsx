@@ -1,7 +1,9 @@
 /**
  * Tests the auth guard, the OTP + PIN login of the final B02 contract (pin_required, first PIN, pin_locked)
- * and the cookie-based session restore, against the MSW mock API.
- * Serves: plan §7.3 P00 "login passes with MSW", P01 auth adaptation, D-022/D-024. Called by: Vitest.
+ * the cookie-based session restore, a fresh device id after `device_in_use`, and a sign-out that reports
+ * failure, against the MSW mock API.
+ * Serves: plan §7.3 P00 "login passes with MSW", P01 auth adaptation, P09 shared-PC fixes, D-022/D-024.
+ * Called by: Vitest.
  */
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -12,6 +14,7 @@ import {
   MOCK_NEW_USER_PHONE,
   MOCK_OTP,
   MOCK_PIN,
+  fail,
   mockState,
 } from '../mocks/handlers';
 import { renderApp } from '../test/render';
@@ -85,6 +88,30 @@ describe('login with MSW', () => {
     });
     expect(mockState.signedIn).toBe(true);
     expect(sessionStorage.length).toBe(0);
+    server.events.removeAllListeners();
+  });
+
+  it('retries once with a fresh device id when the stored one is still bound to another user', async () => {
+    const user = userEvent.setup();
+    localStorage.setItem(DEVICE_ID_KEY, 'left-signed-in-by-staff-a');
+    const sent: unknown[] = [];
+    server.events.on('request:start', ({ request }) => {
+      if (new URL(request.url).pathname === '/v1/auth/otp/verify') {
+        void request
+          .clone()
+          .json()
+          .then((body: Record<string, unknown>) => sent.push(body['device_id']));
+      }
+    });
+    server.use(http.post('/v1/auth/otp/verify', () => fail(409, 'device_in_use'), { once: true }));
+    renderApp('/');
+
+    await passOtp(user);
+
+    expect(await screen.findByLabelText('PIN')).toBeInTheDocument();
+    const fresh = localStorage.getItem(DEVICE_ID_KEY);
+    expect(sent).toEqual(['left-signed-in-by-staff-a', fresh]);
+    expect(fresh).not.toBe('left-signed-in-by-staff-a');
     server.events.removeAllListeners();
   });
 
@@ -178,5 +205,41 @@ describe('login with MSW', () => {
     await waitFor(() => {
       expect(mockState.signedIn).toBe(false);
     });
+  });
+
+  it('keeps the session and says so when sign-out fails; a dead token is swapped via the cookie', async () => {
+    server.use(
+      http.post('/v1/auth/logout', () => HttpResponse.error(), { once: true }),
+      http.post('/v1/auth/logout', () => fail(401, 'unauthorized'), { once: true }),
+    );
+    const user = userEvent.setup();
+    renderApp('/', true);
+
+    await user.click(await screen.findByRole('button', { name: 'Sign out' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Could not sign out. Cannot reach the server.',
+    );
+    expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(mockState.signedIn).toBe(true);
+
+    await user.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in to AgriTrace' }),
+    ).toBeInTheDocument();
+    expect(mockState.signedIn).toBe(false);
+  });
+
+  it('keeps the session when logout gets a 401 and the refresh then fails with a 503', async () => {
+    const user = userEvent.setup();
+    renderApp('/', true);
+    await screen.findByRole('heading', { name: 'Dashboard' });
+    server.use(
+      http.post('/v1/auth/logout', () => fail(401, 'unauthorized'), { once: true }),
+      http.post('/v1/auth/refresh', () => fail(503, 'internal_error'), { once: true }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not sign out.');
+    expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(mockState.signedIn).toBe(true);
   });
 });

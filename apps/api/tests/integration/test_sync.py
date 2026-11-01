@@ -4,7 +4,8 @@ Serves: B06 acceptance (same client_id twice → 1 row + `duplicate`; foreign id
 mixed batch #1/#3 accepted, #2 rejected; wrong checksum → `checksum_mismatch` + flag task; undo after
 24 h → 409; farmer correction → 403; device clock +3 d → stored + `clock_skew` hint), presigned PUT with
 SHA-256 then confirm → verify → variants, confirm without upload → `missing`, audit rows for Core writes,
-SQLSTATE 23001 → `append_only_violation`. backend-design.md §3, D-005, D-011, FR61.
+SQLSTATE 23001 → `append_only_violation`, an object bigger than declared → `checksum_mismatch` (B18).
+backend-design.md §3, D-005, D-011, FR61.
 Callers: pytest (`make test`); needs Docker (tests/conftest.py `stack`). The caller is injected by a
 dependency override; Celery's `send_task` is recorded (eager mode does not apply to tasks sent by name);
 tasks are run in a thread (they open their own loop and NullPool engine, D-009).
@@ -349,6 +350,37 @@ async def test_wrong_checksum_is_flagged(world: tuple[World, AsyncClient]) -> No
     # Written around the presigned URL (which storage would refuse), as a tampered object would be.
     storage.client().put_object(
         Bucket=get_settings().s3_bucket_evidence, Key=key, Body=b"tampered", ChecksumAlgorithm="SHA256"
+    )
+    await client.post("/v1/sync/photos/confirm", json={"photos": [{"client_id": str(photo_id)}]})
+    from agritrace.modules.events import tasks  # lazy: the worker module reads settings on import
+
+    assert await asyncio.to_thread(tasks.verify_photo, str(photo_id)) == "checksum_mismatch"
+    rules = [k for n, k in w.sent if n == task_names.RULES_CHECK_EVENT]
+    assert rules and rules[-1]["hints"] == ["checksum_mismatch"]
+    assert not any(n == task_names.EVENTS_MAKE_VARIANTS for n, _ in w.sent)
+
+
+async def test_oversize_object_is_flagged_without_reading_it_whole(world: tuple[World, AsyncClient]) -> None:
+    """An object bigger than the declared size is `checksum_mismatch`, read only to size + 1 (B18).
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    photo_id = uuid7()
+    head = b"\xff\xd8 promised"
+    # The SHA-256 of the first size + 1 bytes: the bounded read matches it, so only the length check refuses.
+    digest = hashlib.sha256(head + b"x").hexdigest()
+    meta = {"client_id": str(photo_id), "sha256": digest, "size_bytes": len(head)}
+    await client.post("/v1/sync/push", json=envelope(harvest(w, photos=[meta])))
+    async with get_sessionmaker()() as s:
+        row = await s.get(EvidencePhoto, photo_id)
+        assert row is not None
+        key = row.object_key
+    # Written around the presigned URL (which signs the length), as a store that ignores it would allow.
+    big = head + b"x" * 4096
+    storage.client().put_object(
+        Bucket=get_settings().s3_bucket_evidence, Key=key, Body=big, ChecksumAlgorithm="SHA256"
     )
     await client.post("/v1/sync/photos/confirm", json={"photos": [{"client_id": str(photo_id)}]})
     from agritrace.modules.events import tasks  # lazy: the worker module reads settings on import
