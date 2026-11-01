@@ -15,6 +15,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { Link, useParams } from 'react-router';
 import { unwrap } from '../../api/client';
 import { errorMessage } from '../../api/errors';
@@ -40,13 +41,20 @@ export function FarmerPage() {
   const approve = useApproveFarmer();
   // Same role as the server's check (B14: FPO admin only); the server writes the audit row on every call.
   const canReveal = session?.roles.includes('fpo_admin') === true;
-  // Held only in this mutation, never in the query cache, so the number is gone once the page is left.
+  // The number lives only in this mutation's state: `gcTime: 0` drops it from the mutation cache as soon as
+  // the page unmounts, and the effect below clears it (and any refusal) when the route moves to another
+  // farmer, so seeing it again always takes a new, audited call.
   const reveal = useMutation({
     mutationFn: () =>
       unwrap(
         api.GET('/v1/farmers/{farmer_id}/phone', { params: { path: { farmer_id: farmerId } } }),
       ),
+    gcTime: 0,
   });
+  const { reset } = reveal;
+  useEffect(() => {
+    reset();
+  }, [farmerId, reset]);
   const farmer = useQuery({
     queryKey: ['farmers', 'detail', farmerId],
     queryFn: ({ signal }) =>
@@ -69,7 +77,7 @@ export function FarmerPage() {
   if (farmer.isPending) return <LinearProgress aria-label="Loading farmer" />;
   if (farmer.isError) return <Alert severity="error">{errorMessage(farmer.error)}</Alert>;
   const f = farmer.data;
-  // The page component stays mounted when the route moves to another farmer.
+  // Guards the render between a route change and the reset effect (the component stays mounted).
   const revealed = reveal.data?.farmer_id === f.id ? reveal.data.phone : null;
 
   return (
