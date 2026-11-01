@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 35 % (23/65 items)
+Completion: 38 % (25/65 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -16,8 +16,8 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G0 Foundation
 
-- [ ] B00 — Scaffold + infra + test harness — wave 0 — worker: Opus (4 rounds) — reviewer: BE r1/r2 PASS-PENDING-STACK — verifier: CONDITIONAL 2026-11-01 (docs/agents/qa/B00.md: all 4 lines pass, healthz/seed/alembic check live; 2 P2 harness flakes B00-1/B00-2 → fixed in B17; tick when B17 merges)
-- [ ] B17 — First live-stack fixes (seed `gi_eligible`, B13 head assertion, B14 audit payload, stack fixture env leak + idempotent CreateBucket) — hotfix — worker: Opus (in progress 2026-11-01) — reviewer: — verifier: full suite rerun
+- [x] B00 — Scaffold + infra + test harness — wave 0 — worker: Opus (4 rounds) — reviewer: BE r1/r2 PASS-PENDING-STACK → stack run 2026-11-01 — verifier: CONDITIONAL → PASS 2026-11-01 (docs/agents/qa/B00.md: all 4 lines pass live; the 2 P2 harness flakes B00-1/B00-2 fixed and merged in B17, combined suite 768/768)
+- [x] B17 — First live-stack fixes (seed `gi_eligible`, B13 head assertion, B14 audit payload, stack fixture env leak + idempotent CreateBucket) — hotfix — worker: Opus (1 round) — reviewer: Orchestrator (test-only + 1-line seed diff) — verifier: combined `pytest tests` 768/768 on the branch (merged 2026-11-01)
 - [ ] Q00 — Harness: compose stack, seed, Go AVD profile (API 27, 2 GB, 2 cores, 720×1280), network sc — wave 0 — worker: Opus (4 rounds) — reviewer: QA Lead r1/r2/r3 FAIL, r4 closure — verifier: CONDITIONAL (Docker lines deferred; docs/agents/qa/Q00.md)
 - [ ] **Gate G0 signed** (docs/agents/gates/G0.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
