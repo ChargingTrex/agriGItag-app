@@ -103,6 +103,9 @@ LEAKS = [
     ("index.html", "<p>Kumarapuram புல எண் 123/4</p>", "sensitive_label"),
     ("index.html", "<p>Kumarapuram 9.559806 78.133521</p>", "coordinate_precision"),
     ("index.html", "<p>Call (98765) 43210</p>", "phone"),
+    ("index.html", "<p>Kumarapuram T.S. No. 45</p>", "sensitive_label"),
+    ("index.html", "<p>Kumarapuram சர்வே எண் 45</p>", "sensitive_label"),
+    ("index.html", "<p>Kumarapuram பட்டா எண் 452</p>", "sensitive_label"),
 ]
 
 

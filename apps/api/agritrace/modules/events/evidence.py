@@ -92,6 +92,7 @@ def upload_instruction(
         ValueError: `sha256_hex` is not 64 hex characters (from `storage.presign_put`).
     """
     # DECISION D-011: one presigned PUT per photo, SHA-256 and Content-Type bound into the signature.
+    #   Since 2026-11-01 (B18) the declared Content-Length is signed too, so storage refuses any other size.
     #   ADV: the API never proxies bytes; storage itself refuses bytes that differ from the promised digest.
     #   COMPROMISE: a dropped upload restarts the whole ~300 KB; no resumable upload in the pilot.
     url = storage.presign_put(

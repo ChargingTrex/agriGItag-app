@@ -349,6 +349,8 @@ def test_privacy_hits_refuse_free_text_leaks(village: str, rule: str) -> None:
     rows.processor.address = {**(rows.processor.address or {}), "village": village}
     hits = builder.privacy_hits(render(builder.assemble(rows, build, NOW)))
     assert {h["loc"][0] for h in hits if h["type"] == rule} == {"index.html", "data.json"}
+    msgs = [h["msg"] for h in hits if h["type"] == rule]
+    assert all(rule.replace("_", " ") in m and "village" in m for m in msgs)
     assert village.split(" ", 1)[1] not in json.dumps(hits, ensure_ascii=False)
 
 

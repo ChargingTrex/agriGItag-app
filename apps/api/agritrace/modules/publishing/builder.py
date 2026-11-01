@@ -630,7 +630,8 @@ def privacy_hits(page: RenderResult) -> list[dict[str, Any]]:
 
     Returns:
         One `{loc: [file, line], msg, type: rule}` per rule and line that hit, in the shape of the
-        `public_record_invalid` details; the matched text is never included. Empty when the page is clean.
+        `public_record_invalid` details; `msg` names the rule and the free-text fields to check (the portal
+        shows it), and the matched text is never included. Empty when the page is clean.
     """
     # The schema check inside `render` is the first line of defence, this linter the second (CLAUDE.md §6,
     # audit waves 3-6 #3): free text such as a typed village can still carry a survey number or a phone.
@@ -638,4 +639,12 @@ def privacy_hits(page: RenderResult) -> list[dict[str, Any]]:
     for name, text, as_json in (("index.html", page.html, False), ("data.json", page.data_json, True)):
         for offset, rule, _ in privacy_lint.scan_text(text, [], as_json):
             hits.add((name, text.count("\n", 0, offset) + 1, rule))
-    return [{"loc": [f, line], "msg": "privacy lint hit", "type": rule} for f, line, rule in sorted(hits)]
+    return [
+        {
+            "loc": [f, line],
+            "msg": f"the page shows what looks like a {rule.replace('_', ' ')}; check the free-text fields "
+            "(village, processor address, seed variety, farmer name)",
+            "type": rule,
+        }
+        for f, line, rule in sorted(hits)
+    ]
