@@ -1,0 +1,42 @@
+agritrace-b21-api-1	107.20%
+agritrace-b21-worker-1	352.75%
+agritrace-b21-s3-1	8.23%
+agritrace-b21-mosquitto-1	0.03%
+agritrace-b21-valkey-1	6.57%
+agritrace-b21-db-1	229.51%
+--
+agritrace-b21-api-1	227.96%
+agritrace-b21-worker-1	327.20%
+agritrace-b21-s3-1	0.31%
+agritrace-b21-mosquitto-1	0.06%
+agritrace-b21-valkey-1	9.38%
+agritrace-b21-db-1	211.29%
+--
+agritrace-b21-api-1	151.46%
+agritrace-b21-worker-1	279.31%
+agritrace-b21-s3-1	0.05%
+agritrace-b21-mosquitto-1	0.05%
+agritrace-b21-valkey-1	1.97%
+agritrace-b21-db-1	179.53%
+--
+agritrace-b21-api-1	124.99%
+agritrace-b21-worker-1	340.05%
+agritrace-b21-s3-1	0.06%
+agritrace-b21-mosquitto-1	0.07%
+agritrace-b21-valkey-1	1.88%
+agritrace-b21-db-1	203.03%
+--
+agritrace-b21-api-1	127.10%
+agritrace-b21-worker-1	391.25%
+agritrace-b21-s3-1	0.04%
+agritrace-b21-mosquitto-1	0.04%
+agritrace-b21-valkey-1	2.10%
+agritrace-b21-db-1	203.81%
+--
+agritrace-b21-api-1	154.38%
+agritrace-b21-worker-1	322.14%
+agritrace-b21-s3-1	0.10%
+agritrace-b21-mosquitto-1	0.04%
+agritrace-b21-valkey-1	1.68%
+agritrace-b21-db-1	245.53%
+--
