@@ -390,6 +390,6 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] **P1 M02** (finding 2): the background isolate rotates the refresh token and the foreground's stale copy trips `refresh_reused` (device signed out); `_doRefresh` re-reads the keystore first and adopts newer tokens, with a two-notifier test. Blocks G2.
 - [ ] **P2 B10/W03** (finding 3): run the built-output privacy linter on `page.html` and `page.data_json` in `build_page` before `_write` (fail the build on a hit); add `R.S./T.S. No.`, Tamil survey/patta labels, the space-separated coordinate pair and dotted phones to the schema patterns.
 - [ ] **P2 B06** (finding 4): `confirm_photos` refuses objects whose `ContentLength` exceeds `MAX_PHOTO_BYTES` or differs from `size_bytes` (answer `missing`, no verify), and `_read_object` refuses oversize objects.
-- [ ] **P2 M11** (finding 5): QC "Pick lot" lists lots in `open`/`drying`/`ready_for_sale` instead of only `ready_for_sale` (never set on the QC phone), with a widget test.
+- [x] **P2 M11** (finding 5): QC "Pick lot" lists lots in `open`/`drying`/`ready_for_sale` instead of only `ready_for_sale` (never set on the QC phone), with a widget test. Done in WP-M15 (2026-11-01).
 - [ ] **P2 W03/B10** (finding 6): `build_page` measures the page against `BUDGETS` and records the size; add a 20-lot render test to show the 100 KB breach (~8 lots).
 - [ ] **P2 P03/B09** (finding 7): add `farmer_name` to `LotOut`/`ShareOut` and delete the per-farmer `useFarmerNames` reads; refresh TODO §3 with the portal `shortcut:` comments.
