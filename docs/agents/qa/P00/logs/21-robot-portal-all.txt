@@ -1,0 +1,86 @@
+==============================================================================
+Portal                                                                        
+==============================================================================
+Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) and the P0...
+==============================================================================
+Portal Loads In A Headless Browser                                    | PASS |
+------------------------------------------------------------------------------
+Approving A Member Makes It Active Without Reload                     | SKIP |
+Placeholder: written when P01 merges.
+------------------------------------------------------------------------------
+Phone Is Masked Except An Audited Reveal                              | SKIP |
+Placeholder: written when P01 merges.
+------------------------------------------------------------------------------
+Reviewing A Held Lot Makes It Tickable In Create Batch                | SKIP |
+Placeholder: written when P02 merges.
+------------------------------------------------------------------------------
+Required Review Fields Block Submit                                   | SKIP |
+Placeholder: written when P02 merges.
+------------------------------------------------------------------------------
+Lots 100 200 20 kg Show Shares 31.25 62.5 6.25                        | SKIP |
+Placeholder: written when P03 merges.
+------------------------------------------------------------------------------
+Out Of GI Lot Is Greyed With A Tooltip                                | SKIP |
+Placeholder: written when P03 merges.
+------------------------------------------------------------------------------
+Create Batch Returns An Id And A QR                                   | SKIP |
+Placeholder: written when P03 merges.
+------------------------------------------------------------------------------
+Batch Over Threshold Needs A Second Sign Off                          | SKIP |
+Placeholder: written when P03 merges.
+------------------------------------------------------------------------------
+Declared Special Computed Standard Disables Approve With Reason       | SKIP |
+Placeholder: written when P04 merges.
+------------------------------------------------------------------------------
+Missing Reading Disables Approve                                      | SKIP |
+Placeholder: written when P04 merges.
+------------------------------------------------------------------------------
+Happy Path Publishes And Shows The URL                                | SKIP |
+Placeholder: written when P04 merges.
+------------------------------------------------------------------------------
+Labels PDF Is Named Labels Batch Id                                   | SKIP |
+Placeholder: written when P05 merges.
+------------------------------------------------------------------------------
+CSV Export Has A Unit On Every Quantity                               | SKIP |
+Placeholder: written when P05 merges.
+------------------------------------------------------------------------------
+Stage Tiles Match Seed Counts                                         | SKIP |
+Placeholder: written when P06 merges.
+------------------------------------------------------------------------------
+Village Filter Updates Tiles And Table                                | SKIP |
+Placeholder: written when P06 merges.
+------------------------------------------------------------------------------
+Column Toggle Persists                                                | SKIP |
+Placeholder: written when P06 merges.
+------------------------------------------------------------------------------
+Audit Search Shows The Seeded Correction With Actor And Reason        | SKIP |
+Placeholder: written when P06 merges.
+------------------------------------------------------------------------------
+Name Opt Out Is Reflected In The Preview                              | SKIP |
+Placeholder: written when P06 merges.
+------------------------------------------------------------------------------
+Upload With 2 Bad Rows Previews 2 Red Rows With Codes                 | SKIP |
+Placeholder: written when P08 merges.
+------------------------------------------------------------------------------
+Confirm Creates Only The Valid Rows                                   | SKIP |
+Placeholder: written when P08 merges.
+------------------------------------------------------------------------------
+Template Matches Config Fields                                        | SKIP |
+Placeholder: written when P08 merges.
+------------------------------------------------------------------------------
+Full Chain Login To Labels Is Green Under 10 Minutes Twice            | SKIP |
+Placeholder: written when P07 merges.
+------------------------------------------------------------------------------
+No Serious Axe Violations                                             | SKIP |
+Placeholder: written when P07 merges.
+------------------------------------------------------------------------------
+Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) a... | PASS |
+24 tests, 1 passed, 0 failed, 23 skipped
+==============================================================================
+Portal                                                                | PASS |
+24 tests, 1 passed, 0 failed, 23 skipped
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/portal-all/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/portal-all/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/portal-all/report.html
+exit=0

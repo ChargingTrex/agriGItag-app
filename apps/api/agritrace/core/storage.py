@@ -63,12 +63,18 @@ def client() -> Any:
 
 
 def presign_put(
-    key: str, content_type: str, sha256: str, expires: int = 900, bucket: str | None = None
+    key: str,
+    content_type: str,
+    sha256: str,
+    expires: int = 900,
+    bucket: str | None = None,
+    size_bytes: int | None = None,
 ) -> str:
-    """Presign a single PUT of a file that S3 accepts only if the bytes match `sha256`.
+    """Presign a single PUT of a file that S3 accepts only if the bytes match `sha256` (and `size_bytes`).
 
     The client must send headers `Content-Type: <content_type>` and
-    `x-amz-checksum-sha256: <base64 of the digest>`; S3 rejects the upload on a mismatch.
+    `x-amz-checksum-sha256: <base64 of the digest>`; S3 rejects the upload on a mismatch. With `size_bytes`
+    the `Content-Length` is signed too, so S3 refuses a body of any other length (B18, audit waves 3-6 #4).
 
     Args:
         key: object key inside the evidence bucket.
@@ -76,6 +82,7 @@ def presign_put(
         sha256: hex SHA-256 of the file, as computed on the phone.
         expires: URL lifetime in seconds.
         bucket: target bucket; default the evidence bucket (ID documents pass `S3_BUCKET_IDDOCS`).
+        size_bytes: the declared length to sign as `Content-Length`; None leaves the length unsigned.
 
     Returns:
         The presigned URL on `S3_PUBLIC_ENDPOINT`, the host the phone can reach (signing needs no network).
@@ -87,15 +94,16 @@ def presign_put(
     if len(digest) != 32:
         raise ValueError("sha256 must be 64 hex characters")
     checksum = base64.b64encode(digest).decode()
+    params: dict[str, Any] = {
+        "Bucket": bucket or get_settings().s3_bucket_evidence,
+        "Key": key,
+        "ContentType": content_type,
+        "ChecksumSHA256": checksum,
+    }
+    if size_bytes is not None:
+        params["ContentLength"] = size_bytes
     url: str = _client_for(get_settings().s3_public_endpoint).generate_presigned_url(
-        "put_object",
-        Params={
-            "Bucket": bucket or get_settings().s3_bucket_evidence,
-            "Key": key,
-            "ContentType": content_type,
-            "ChecksumSHA256": checksum,
-        },
-        ExpiresIn=expires,
+        "put_object", Params=params, ExpiresIn=expires
     )
     return url
 

@@ -2,7 +2,7 @@
 
 Serves: B10 acceptance (HTML has no phone/survey/`temp_uploads`; revoked name consent → "Farmer 2"; QR decodes
 to `{PUBLIC_BASE_URL}/b/<code>`; events ascending; `generation` in data.json), FR51, FR60, FR62, FR63, FR72,
-CLAUDE.md §6 (privacy-lint over a built page), D-034.
+CLAUDE.md §6 (privacy-lint over a built page; B18 `privacy_hits` refuses free-text leaks), D-034.
 Callers: pytest (`make test-unit`). The fixture batch mirrors the reference batch FGP8T4033HM7 (PRD §12) with
 its data problems fixed; the rows are ORM objects built in memory and fed to `builder.assemble`.
 """
@@ -323,6 +323,35 @@ def test_built_page_passes_privacy_lint(tmp_path: Path) -> None:
     for text in (html, json.dumps(data)):
         assert "temp_uploads" not in text and "123/4A" not in text and "/evidence/evidence/" not in text
     assert data["footer"]["generation"] == "3" and data["footer"]["page_version"] == 3
+
+
+@pytest.mark.parametrize(
+    ("village", "rule"),
+    [
+        ("Kumarapuram R.S. No. 112/3", "sensitive_label"),
+        ("Kumarapuram புல எண் 123/4", "sensitive_label"),
+        ("Kumarapuram 98765.43210", "phone"),
+        ("Kumarapuram 9.559806 78.133521", "coordinate_precision"),
+    ],
+)
+def test_privacy_hits_refuse_free_text_leaks(village: str, rule: str) -> None:
+    """The clean page has no hit; a leak typed into the free-text village is found in both files (B18).
+
+    These four formats pass the renderer's own schema check, so only the linter stops them.
+
+    Args:
+        village: the processor's free-text village (no directory village, `builder._place`).
+        rule: the linter rule that must fire.
+    """
+    rows = _rows()
+    build = PageBuild(batch_id=rows.batch.id, build_no=1, generation=1, snapshot={}, status="queued")
+    assert builder.privacy_hits(render(builder.assemble(rows, build, NOW))) == []
+    rows.processor.address = {**(rows.processor.address or {}), "village": village}
+    hits = builder.privacy_hits(render(builder.assemble(rows, build, NOW)))
+    assert {h["loc"][0] for h in hits if h["type"] == rule} == {"index.html", "data.json"}
+    msgs = [h["msg"] for h in hits if h["type"] == rule]
+    assert all(rule.replace("_", " ") in m and "village" in m for m in msgs)
+    assert village.split(" ", 1)[1] not in json.dumps(hits, ensure_ascii=False)
 
 
 def test_revoked_name_consent_shows_farmer_2() -> None:

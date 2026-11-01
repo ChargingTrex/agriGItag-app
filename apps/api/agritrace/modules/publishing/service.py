@@ -295,7 +295,8 @@ async def build_page(session: AsyncSession, page_build_id: uuid.UUID) -> PageBui
 
     Raises:
         PublicRecordInvalidError: `public_record_invalid` when the renderer's allow-list or privacy check
-            refuses the record; the row is `failed` with the reasons (paths, never values) before raising.
+            refuses the record, or the privacy linter finds a hit in the rendered page (B18); the row is
+            `failed` with the reasons (paths or file and line, never values) before raising.
         botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError: S3 refused or is unreachable;
             the row stays `queued` and the task retries with backoff. A CloudFront failure comes after the
             commit (row `built`); the 60 s page cache bounds the staleness.
@@ -331,12 +332,15 @@ async def build_page(session: AsyncSession, page_build_id: uuid.UUID) -> PageBui
             {"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]}
             for e in exc.errors(include_input=False)
         ]
+    else:
+        errors = builder.privacy_hits(page)
+    if errors:  # nothing is written to S3 for a refused page
         build.status, build.snapshot = (
             "failed",
             {"error": {"code": PublicRecordInvalidError.code, "details": errors}},
         )
         await session.commit()
-        raise PublicRecordInvalidError(details=errors) from exc
+        raise PublicRecordInvalidError(details=errors)
     copies = [
         pair
         for photos in rows.photos.values()

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5 (Python 3.12.13 on darwin)" generated="2026-11-01T23:21:45.643392" rpa="false" schemaversion="5">
+<suite id="s1" name="Portal" source="/Users/fi-it/Documents/projects/agriGitag/qa/robot/portal/portal.robot">
+<test id="s1-t1" name="Portal Loads In A Headless Browser" line="12">
+<kw name="New Browser" owner="Browser">
+<msg time="2026-11-01T23:21:47.516032" level="INFO">{"browser": "chromium", "headless": true, "chromiumSandbox": false, "devtools": false, "handleSIGHUP": true, "handleSIGINT": true, "handleSIGTERM": true, "slowMo": 0.0, "timeout": 30000.0, "tracesDir": "/Users/fi-it/Documents/projects/agriGitag/qa/robot/results/G1/browser/traces/temp/704abaab-ef7b-4efb-bb93-416bd35d83a8"}</msg>
+<msg time="2026-11-01T23:21:47.580316" level="INFO">Starting Browser process /Users/fi-it/Documents/projects/agriGitag/qa/.venv/lib/python3.12/site-packages/Browser/wrapper/index.js using at 127.0.0.1:62345</msg>
+<msg time="2026-11-01T23:21:53.958663" level="INFO">Successfully created browser with options: {"browser":"chromium","headless":true,"chromiumSandbox":false,"devtools":false,"handleSIGHUP":true,"handleSIGINT":true,"handleSIGTERM":true,"slowMo":0,"timeout":30000,"tracesDir":"/Users/fi-it/Documents/projects/agriGitag/qa/robot/results/G1/browser/traces/temp/704abaab-ef7b-4efb-bb93-416bd35d83a8"}</msg>
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="PASS" start="2026-11-01T23:21:47.514770" elapsed="6.444752"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<msg time="2026-11-01T23:21:55.246679" level="INFO">Successfully initialized new page object and opened url: http://localhost:5173</msg>
+<msg time="2026-11-01T23:21:55.247231" level="INFO">No context was open. New context was automatically opened when this page is created.</msg>
+<arg>${PORTAL_BASE}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="PASS" start="2026-11-01T23:21:53.960776" elapsed="1.287681"/>
+</kw>
+<kw name="Get Title" owner="Browser">
+<msg time="2026-11-01T23:21:55.301306" level="INFO">Title: 'AgriTrace FPO portal'</msg>
+<arg>!=</arg>
+<arg>${EMPTY}</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the title of the current page.</doc>
+<status status="PASS" start="2026-11-01T23:21:55.249629" elapsed="0.052636"/>
+</kw>
+<kw name="Close Browser" owner="Browser" type="TEARDOWN">
+<msg time="2026-11-01T23:21:55.393930" level="INFO">Closed browser</msg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-11-01T23:21:55.309367" elapsed="0.084923"/>
+</kw>
+<tag>FR-14</tag>
+<tag>portal</tag>
+<tag>smoke</tag>
+<tag>WP-P00</tag>
+<status status="PASS" start="2026-11-01T23:21:47.512914" elapsed="7.881636"/>
+</test>
+<doc>FPO admin portal acceptance (plan §7.3 P01-P08) and the P07 chain.
+Serves: FR-8, FR-9, FR-12, FR-13, FR-14, FR-15, FR-23, FR-25, FR-29, FR-37, FR-41, FR-46,
+FR-49, FR-58, FR-70; gate G4. Run by: Q02 Verifier. Needs `rfbrowser init` once.
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-11-01T23:21:45.647025" elapsed="9.776072"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="1" fail="0" skip="0">FR-14</stat>
+<stat pass="1" fail="0" skip="0">portal</stat>
+<stat pass="1" fail="0" skip="0">smoke</stat>
+<stat pass="1" fail="0" skip="0">WP-P00</stat>
+</tag>
+<suite>
+<stat name="Portal" id="s1" pass="1" fail="0" skip="0">Portal</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

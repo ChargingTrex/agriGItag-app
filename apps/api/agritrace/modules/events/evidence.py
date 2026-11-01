@@ -73,7 +73,7 @@ def object_key(
 
 
 def upload_instruction(
-    photo_id: uuid.UUID, key: str, content_type: str, sha256_hex: str, expires_at: datetime
+    photo_id: uuid.UUID, key: str, content_type: str, sha256_hex: str, size_bytes: int, expires_at: datetime
 ) -> PhotoUpload:
     """Presign the single PUT of one photo (D-011).
 
@@ -82,6 +82,7 @@ def upload_instruction(
         key: its object key.
         content_type: MIME type bound into the signature.
         sha256_hex: the phone's hex SHA-256, bound into the signature.
+        size_bytes: the phone's declared size, bound into the signature as `Content-Length`.
         expires_at: expiry stored on the row; the URL lives `UPLOAD_TTL`.
 
     Returns:
@@ -91,9 +92,13 @@ def upload_instruction(
         ValueError: `sha256_hex` is not 64 hex characters (from `storage.presign_put`).
     """
     # DECISION D-011: one presigned PUT per photo, SHA-256 and Content-Type bound into the signature.
+    #   Since 2026-11-01 (B18) the declared Content-Length is signed too, so storage refuses any other size.
     #   ADV: the API never proxies bytes; storage itself refuses bytes that differ from the promised digest.
     #   COMPROMISE: a dropped upload restarts the whole ~300 KB; no resumable upload in the pilot.
-    url = storage.presign_put(key, content_type, sha256_hex, int(UPLOAD_TTL.total_seconds()))
+    url = storage.presign_put(
+        key, content_type, sha256_hex, int(UPLOAD_TTL.total_seconds()), size_bytes=size_bytes
+    )
+    # The phone sets Content-Length from the body itself (photo_uploader.dart), so it is not listed here.
     checksum = base64.b64encode(bytes.fromhex(sha256_hex)).decode()
     headers = {"Content-Type": content_type, "x-amz-checksum-sha256": checksum}
     return PhotoUpload(photo_client_id=photo_id, url=url, headers=headers, expires_at=expires_at)
@@ -203,21 +208,23 @@ def webp_variant(image: Image.Image, long_edge: int, max_bytes: int) -> tuple[by
         copy = copy.resize((int(copy.width * 0.85), int(copy.height * 0.85)), Image.Resampling.LANCZOS)
 
 
-def _read_object(key: str) -> bytes:
-    """Download one evidence object (photos are <= a few hundred KB, so it is read whole).
+def _read_object(key: str, size_bytes: int) -> bytes:
+    """Download one evidence object, at most one byte more than the phone declared.
 
     Args:
         key: object key in the evidence bucket.
+        size_bytes: the declared size (at most `MAX_PHOTO_BYTES`).
 
     Returns:
-        The bytes.
+        The bytes; longer than `size_bytes` when the stored object is bigger than declared, so an oversize
+        object never sits whole in worker memory (audit waves 3-6 #4).
 
     Raises:
         botocore.exceptions.ClientError: missing object or storage refused.
     """
     body = storage.get_stream(key)
     try:
-        data: bytes = body.read()
+        data: bytes = body.read(size_bytes + 1)
     finally:
         body.close()
     return data
@@ -265,7 +272,7 @@ def signed_variants(variants: dict[str, Any] | None) -> dict[str, Any] | None:
 
 
 async def verify(session: AsyncSession, photo_id: uuid.UUID) -> tuple[PhotoStatus, uuid.UUID | None, bool]:
-    """Check an uploaded photo's SHA-256 and EXIF against its entry (task `events.verify_photo`).
+    """Check an uploaded photo's size, SHA-256 and EXIF against its entry (task `events.verify_photo`).
 
     Args:
         session: database session (committed here).
@@ -280,9 +287,10 @@ async def verify(session: AsyncSession, photo_id: uuid.UUID) -> tuple[PhotoStatu
         LookupError: no photo with this id.
 
     Side effects:
-        Downloads the object; updates `sha256_server`, `exif_taken_at`, `exif_gps` (what the file says;
-        the phone's declared values stay in the push audit row), `status`, `verified_at` (columns the
-        append-only trigger allows) and commits. Voice notes get the checksum check only.
+        Downloads the object (at most `size_bytes` + 1 bytes; another size is `checksum_mismatch`); updates
+        `sha256_server`, `exif_taken_at`, `exif_gps` (what the file says; the phone's declared values stay in
+        the push audit row), `status`, `verified_at` (columns the append-only trigger allows) and commits.
+        Voice notes get the size and checksum check only.
     """
     photo = await session.get(EvidencePhoto, photo_id)
     if photo is None:
@@ -291,10 +299,11 @@ async def verify(session: AsyncSession, photo_id: uuid.UUID) -> tuple[PhotoStatu
     event_id = version.event_id if version else None
     if photo.status != PhotoStatus.UPLOADED:
         return photo.status, event_id, False
-    data = await asyncio.to_thread(_read_object, photo.object_key)
+    data = await asyncio.to_thread(_read_object, photo.object_key, photo.size_bytes)
     photo.sha256_server = hashlib.sha256(data).hexdigest()
     photo.verified_at = utcnow()
-    if photo.sha256_server != photo.sha256_client:
+    # A size other than declared is not the file the phone hashed: handled as a checksum mismatch.
+    if len(data) != photo.size_bytes or photo.sha256_server != photo.sha256_client:
         photo.status = PhotoStatus.CHECKSUM_MISMATCH
         await session.commit()
         return photo.status, event_id, True
@@ -343,7 +352,7 @@ async def make_variants(session: AsyncSession, photo_id: uuid.UUID) -> dict[str,
         return None
     if not photo.content_type.startswith("image/"):
         return None
-    data = await asyncio.to_thread(_read_object, photo.object_key)
+    data = await asyncio.to_thread(_read_object, photo.object_key, photo.size_bytes)
     image = ImageOps.exif_transpose(Image.open(BytesIO(data)))
     base = photo.object_key.removesuffix(".jpg")
     thumb, width, height = webp_variant(image, *THUMB)
