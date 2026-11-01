@@ -1,0 +1,35 @@
+ 2:13  up 2 days,  1:46, 1 user, load averages: 11.09 11.02 13.67
+Mon Nov  2 02:13:41 IST 2026
+host=http://localhost:8040 locustfile=/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac5367febd6d197aa/docs/agents/qa/B21/bm07_b21.py
+$ Q04_TOKENS=<scratch>/tokens.json uvx --python 3.12 --from locust==2.47.0 locust -f bm07_b21.py --headless -u 50 -r 5 -t 60s --host http://localhost:8040 --csv docs/agents/qa/B21/locust/after-b21-4proc-fresh2 --only-summary
+[2026-11-02 02:13:42,533] Arun-MaAC/INFO/locust.main: Starting Locust 2.47.0
+[2026-11-02 02:13:42,535] Arun-MaAC/INFO/locust.main: Run time limit set to 60 seconds
+[2026-11-02 02:13:42,536] Arun-MaAC/INFO/locust.runners: Ramping to 50 users at a rate of 5.00 per second
+[2026-11-02 02:13:51,574] Arun-MaAC/INFO/locust.runners: All users spawned: {"FarmerSync": 30, "StaffBatches": 20} (50 total users)
+[2026-11-02 02:14:42,103] Arun-MaAC/INFO/locust.main: --run-time limit reached, shutting down
+[2026-11-02 02:14:42,244] Arun-MaAC/INFO/locust.main: Shutting down (exit code 0)
+Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+GET      GET /v1/batches                                                                  320     0(0.00%) |     38       9    1326     20 |    5.36        0.00
+GET      GET /v1/batches/{id}                                                             279     0(0.00%) |     44       9    1087     20 |    4.67        0.00
+GET      GET /v1/batches/{id}/builds                                                      140     0(0.00%) |     48       8    1142     17 |    2.35        0.00
+GET      GET /v1/batches/{id}/grade                                                       127     0(0.00%) |     69       9    1289     19 |    2.13        0.00
+POST     POST /v1/sync/push (new)                                                         809     0(0.00%) |    145      27    2292     89 |   13.55        0.00
+POST     POST /v1/sync/push (replay)                                                      403     0(0.00%) |     77      14    1600     39 |    6.75        0.00
+--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+         Aggregated                                                                      2078     0(0.00%) |     91       8    2292     43 |   34.81        0.00
+
+Response time percentiles (approximated)
+Type     Name                                                                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+GET      GET /v1/batches                                                                        20     25     30     36     54     75    200    500   1300   1300   1300    320
+GET      GET /v1/batches/{id}                                                                   20     27     34     40     63    120    350    710   1100   1100   1100    279
+GET      GET /v1/batches/{id}/builds                                                            17     20     24     30     52     83    960   1000   1100   1100   1100    140
+GET      GET /v1/batches/{id}/grade                                                             19     26     31     34     67    150   1100   1200   1300   1300   1300    127
+POST     POST /v1/sync/push (new)                                                               89    110    130    150    230    370   1200   1600   2300   2300   2300    809
+POST     POST /v1/sync/push (replay)                                                            39     52     65     75    120    220    480    950   1600   1600   1600    403
+--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+         Aggregated                                                                             43     68     88    100    150    270    620   1200   2100   2300   2300   2078
+
+exit=0
+ 2:14  up 2 days,  1:47, 1 user, load averages: 13.55 11.52 13.66

@@ -9,7 +9,8 @@ FR26 (GPS at submission), FR59 (person vs system entries), FR61 (evidence photos
 timeline), FR69 (`entered_remotely` in assist mode), Arch §Offline-first, backend-design.md §3 (binding),
 plan §13 A3, A4, F1, CLAUDE.md §6 (assist mode recorded), D-005, D-011, D-014; B15: push kinds `farmer`
 (D-031) and `assist_session`, per-entry `assist_session_id` (D-032); B16: push kind `lot_intake` (D-040),
-assist session per kind (D-042).
+assist session per kind (D-042); B21: an entry Postgres refuses (NUL, value out of range) is that entry's
+`validation_error`, never the batch's 500 (Q04-1).
 Callers: `events.router`, `events.sync_router`, `events.pull_service` (`event_outs`);
 tests/unit/test_events_service.py, tests/integration/test_sync.py. No other module calls it yet (`__all__` is
 empty).
@@ -51,7 +52,7 @@ from agritrace.core.errors import (
     append_only_error,
 )
 from agritrace.core.ids import uuid7
-from agritrace.core.schemas import ErrorBody, GeoPoint, ThreeClocks
+from agritrace.core.schemas import ErrorBody, GeoPoint, ThreeClocks, has_nul
 from agritrace.core.time import clock_skew, utcnow
 from agritrace.modules.events import evidence
 from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto, SyncCursor, SyncMetric
@@ -899,6 +900,24 @@ HANDLERS: dict[str, Handler] = {
 NO_ASSIST_KINDS = frozenset({"farmer", "flag_resolution", "assist_session", "lot_intake"})
 
 
+def _data_error(exc: DBAPIError) -> ValidationFailedError | None:
+    """Recognise a value Postgres or the driver refuses for this entry alone.
+
+    Args:
+        exc: the database error of one entry.
+
+    Returns:
+        `validation_error` for SQLSTATE class 22 (data exception: bad character, number out of range,
+        including asyncpg's own bind-time encode errors such as an int above int32, reported as 22000); None
+        for anything else (connection loss, deadlock, a bug), which must stay a 500 so the phone retries.
+    """
+    sqlstate = getattr(exc.orig, "sqlstate", None) or ""
+    if not sqlstate.startswith("22"):
+        return None
+    msg = "a value is out of range or holds a character the database cannot store"
+    return ValidationFailedError(details=[{"loc": ["data"], "msg": msg, "type": "db_data_error"}])
+
+
 def _rejected(client_id: uuid.UUID, error: AppError) -> SyncResult:
     """Build a rejected entry result.
 
@@ -984,8 +1003,9 @@ async def push(session: AsyncSession, user: CurrentUser, body: SyncPushIn) -> Sy
         Server time and one result per entry.
 
     Raises:
-        sqlalchemy.exc.SQLAlchemyError: unexpected database failures (entries before it stay committed;
-            the phone's retry turns them into duplicates).
+        sqlalchemy.exc.SQLAlchemyError: unexpected database failures other than append-only and data errors,
+            which reject only their entry (entries before it stay committed; the phone's retry turns them
+            into duplicates).
 
     Side effects:
         Commits each accepted entry; stores `metrics[]` in `sync_metrics` and the device's last push time.
@@ -998,6 +1018,9 @@ async def push(session: AsyncSession, user: CurrentUser, body: SyncPushIn) -> Sy
     for entry in body.entries:
         token = None
         try:
+            if has_nul(entry.data):
+                msg = "NUL (\\u0000) is not allowed"
+                raise ValidationFailedError(details=[{"loc": ["data"], "msg": msg, "type": "string_nul"}])
             caller = await _entry_caller(session, user, entry)
             token = _stamp_audit(caller) if caller else None
             results.append(await HANDLERS[entry.kind](session, caller or user, entry, body.app_version))
@@ -1006,7 +1029,7 @@ async def push(session: AsyncSession, user: CurrentUser, body: SyncPushIn) -> Sy
             results.append(_rejected(entry.client_id, e))
         except DBAPIError as e:
             await session.rollback()
-            if (mapped := append_only_error(e)) is None:
+            if (mapped := append_only_error(e) or _data_error(e)) is None:
                 raise
             results.append(_rejected(entry.client_id, mapped))
         finally:
