@@ -1541,6 +1541,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -1635,6 +1636,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -2777,6 +2779,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -2871,6 +2874,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -3954,6 +3958,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -4048,6 +4053,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -4155,6 +4161,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -4249,6 +4256,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -4546,6 +4554,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -4640,6 +4649,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -5382,6 +5392,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -5476,6 +5487,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -5670,6 +5682,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -5764,6 +5777,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -6324,6 +6338,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -6418,6 +6433,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -6605,6 +6621,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -6699,6 +6716,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -8716,6 +8734,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -8810,6 +8829,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -10275,6 +10295,7 @@
           "instance_no": {
             "default": 1,
             "description": "1-based instance of this type on the subject (FR3).",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Instance No",
             "type": "integer"
@@ -10369,6 +10390,7 @@
           },
           "version_no": {
             "description": "1 for a new event; each later version must be max + 1.",
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version No",
             "type": "integer"
@@ -10882,6 +10904,7 @@
           "failures": {
             "default": 0,
             "description": "Failed send attempts before success.",
+            "maximum": 2147483647.0,
             "minimum": 0.0,
             "title": "Failures",
             "type": "integer"
@@ -10902,6 +10925,7 @@
           "photo_upload_ms": {
             "anyOf": [
               {
+                "maximum": 2147483647.0,
                 "minimum": 0.0,
                 "type": "integer"
               },
@@ -11248,6 +11272,7 @@
           },
           "version_no": {
             "description": "Current max version + 1.",
+            "maximum": 2147483647.0,
             "minimum": 2.0,
             "title": "Version No",
             "type": "integer"

@@ -3,18 +3,62 @@
 Serves: FR58 (quantities always carry units), Arch §Offline-first (three clocks, client UUIDs, D-005),
 plan §7.1 ground rules (error envelope), docs/api/conventions.md (cursor pages), FR53 (structured address),
 FR56 (practice tags), FR60 (per-lot reconciliation), FR68 (yield check) — the last four are the shapes of
-JSONB columns (`*.address`, `lots.practice_tags`, `lot_intakes.reconciliation`, `lot_intakes.yield_check`).
+JSONB columns (`*.address`, `lots.practice_tags`, `lot_intakes.reconciliation`, `lot_intakes.yield_check`);
+B21 / Q04-1, Q04-2 (`NoNulStr`, `INT32_MAX`, `find_nul`: values Postgres refuses are 422s, not 500s).
 Callers: `modules/*/schemas.py` (B01+), registry / lots_batches / rules_flags services (B03, B08, B09),
 `core.time`, `core.audit`, `core.errors` envelope docs, `agritrace.main`.
 """
 
 from decimal import Decimal
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AfterValidator, AwareDatetime, BaseModel, Field
 
 from agritrace.core.enums import PracticeTag
+
+INT32_MAX = 2**31 - 1  # Postgres INTEGER ceiling: the `le=` of every int that lands in an INTEGER column
+
+
+def find_nul(value: Any, path: tuple[str | int, ...] = ()) -> tuple[str | int, ...] | None:
+    """Find the first string (or dict key) holding a NUL character in JSON-like data.
+
+    Args:
+        value: a str, dict, list or scalar, as parsed from JSON.
+        path: location of `value`, for the result.
+
+    Returns:
+        The location of the first NUL, or None when there is none.
+    """
+    if isinstance(value, str):
+        return path if "\x00" in value else None
+    items = value.items() if isinstance(value, dict) else enumerate(value) if isinstance(value, list) else ()
+    for key, item in items:
+        if isinstance(key, str) and "\x00" in key:
+            return (*path, key)
+        if (found := find_nul(item, (*path, key))) is not None:
+            return found
+    return None
+
+
+def _no_nul(value: str) -> str:
+    """Refuse a NUL character, which Postgres text and jsonb cannot store.
+
+    Args:
+        value: the string.
+
+    Returns:
+        The string unchanged.
+
+    Raises:
+        ValueError: it contains a NUL (U+0000).
+    """
+    if "\x00" in value:
+        raise ValueError("NUL (\\u0000) is not allowed")
+    return value
+
+
+NoNulStr = Annotated[str, AfterValidator(_no_nul)]
 
 
 class Quantity(BaseModel):

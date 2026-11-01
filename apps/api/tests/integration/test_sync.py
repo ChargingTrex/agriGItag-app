@@ -4,7 +4,8 @@ Serves: B06 acceptance (same client_id twice → 1 row + `duplicate`; foreign id
 mixed batch #1/#3 accepted, #2 rejected; wrong checksum → `checksum_mismatch` + flag task; undo after
 24 h → 409; farmer correction → 403; device clock +3 d → stored + `clock_skew` hint), presigned PUT with
 SHA-256 then confirm → verify → variants, confirm without upload → `missing`, audit rows for Core writes,
-SQLSTATE 23001 → `append_only_violation`, an object bigger than declared → `checksum_mismatch` (B18).
+SQLSTATE 23001 → `append_only_violation`, an object bigger than declared → `checksum_mismatch` (B18),
+a NUL payload and an int32-overflow `instance_no` reject only their entries (B21, Q04-1).
 backend-design.md §3, D-005, D-011, FR61.
 Callers: pytest (`make test`); needs Docker (tests/conftest.py `stack`). The caller is injected by a
 dependency override; Celery's `send_task` is recorded (eager mode does not apply to tasks sent by name);
@@ -616,3 +617,21 @@ async def test_declared_exif_is_kept_in_the_audit_row(world: tuple[World, AsyncC
     assert declared["client_id"] == str(photo_id) and declared["exif_gps"]["lat"] == LAT
     assert declared["exif_taken_at"].startswith("2026-03-04T08:10:00")
     assert photo is not None and photo.exif_taken_at is None
+
+
+async def test_nul_and_int32_overflow_reject_only_their_entries(world: tuple[World, AsyncClient]) -> None:
+    """[NUL in payload, clean, instance_no above int32] → rejected, accepted, rejected; 200 (Q04-1).
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    nul = harvest(w, event_type="problem", payload={"problem_type": "pest", "description": "a\x00b"})
+    big = harvest(w, instance_no=3_000_000_000)
+    response = await client.post("/v1/sync/push", json=envelope(nul, harvest(w), big))
+    assert response.status_code == 200
+    results = response.json()["results"]
+    assert [r["status"] for r in results] == ["rejected", "accepted", "rejected"]
+    assert {results[0]["error"]["code"], results[2]["error"]["code"]} == {"validation_error"}
+    refused = [uuid.UUID(nul["client_id"]), uuid.UUID(big["client_id"])]
+    assert await count(EventVersion, EventVersion.id.in_(refused)) == 0
