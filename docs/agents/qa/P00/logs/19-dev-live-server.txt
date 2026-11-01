@@ -7,3 +7,26 @@
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
+11:25:26 PM [vite] (client) page reload playwright-report/trace/index.html
+11:25:26 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:25:26 PM [vite] (client) page reload playwright-report/index.html
+11:25:26 PM [vite] (client) page reload playwright-report/index.html
+11:25:26 PM [vite] (client) page reload playwright-report/trace/index.html
+11:25:26 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:25:26 PM [vite] (client) page reload playwright-report/trace/uiMode.html
+11:25:26 PM [vite] (client) page reload playwright-report/index.html
+11:26:16 PM [vite] (client) page reload playwright-report/index.html
+11:26:16 PM [vite] (client) page reload playwright-report/trace/index.html
+11:26:16 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:26:16 PM [vite] (client) page reload playwright-report/trace/uiMode.html
+11:26:16 PM [vite] (client) page reload playwright-report/index.html
+11:26:45 PM [vite] (client) page reload playwright-report/index.html
+11:26:45 PM [vite] (client) page reload playwright-report/trace/index.html
+11:26:45 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:26:45 PM [vite] (client) page reload playwright-report/trace/uiMode.html
+11:26:45 PM [vite] (client) page reload playwright-report/index.html
+11:26:45 PM [vite] (client) page reload playwright-report/trace/index.html
+11:26:45 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:26:45 PM [vite] (client) page reload playwright-report/trace/uiMode.html
+11:26:45 PM [vite] (client) page reload playwright-report/index.html
+11:26:45 PM [vite] (client) page reload playwright-report/index.html
