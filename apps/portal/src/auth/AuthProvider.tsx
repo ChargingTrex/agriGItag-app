@@ -82,13 +82,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // The message of the last sign-out that failed; null when there is none to show.
   const [signOutError, setSignOutError] = useState<string | null>(null);
 
+  /**
+   * Signs the device out on the server, then clears the session; on failure keeps the session and shows why.
+   * Side effects: logout (and on a 401 refresh) calls; on success clears the session and the query cache, on
+   * failure sets the sign-out error and clears the 401-recovery marker so later 401s recover again.
+   */
   const signOut = useCallback(() => {
     const token = tokenRef.current;
     /**
      * Revokes the device on the server. A dead access token gets a 401, so it trades the refresh cookie for
-     * a live one first; when the cookie is dead too nothing is left to revoke.
+     * a live one first; when the refresh is refused (401) the cookie is dead and nothing is left to revoke.
      * @returns Resolves when the device is signed out on the server (or had nothing left to sign out).
-     * @throws {ApiError} Any refusal of logout other than a 401, or of the retried logout.
+     * @throws {ApiError} Any refusal of logout other than a 401, a refresh that fails other than with a 401,
+     *   or a refusal of the retried logout.
      * @throws {TypeError} When the network request fails.
      */
     const revoke = async () => {
@@ -97,7 +103,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await logout(token);
       } catch (error) {
         if (!(error instanceof ApiError && error.status === 401)) throw error;
-        const next = await refreshSession().catch(() => null);
+        const next = await refreshSession().catch((refused: unknown) => {
+          // Only a refusal proves the cookie dead; a 5xx or network error may leave it live for the next person.
+          if (refused instanceof ApiError && refused.status === 401) return null;
+          throw refused;
+        });
         if (next) await logout(next.access_token);
       }
     };
@@ -109,19 +119,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       // Clearing only the local state would leave the cookie and device binding alive for the next person.
       (error: unknown) => {
+        recoveringFor.current = null;
         setSignOutError(errorMessage(error));
       },
     );
   }, [queryClient, store]);
 
   /**
-   * Ends the session when the server refused the refresh (401/403); keeps it on a network error, 5xx or 429
+   * Ends the session when the server refused the refresh (401); keeps it on a network error, 5xx or 429
    * (the next call or timer tries again), so a Wi-Fi blip or an API restart does not sign the user out.
    * @param error Whatever `refreshSession` rejected with.
    */
   const endIfRejected = useCallback(
     (error: unknown) => {
-      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) signOut();
+      if (error instanceof ApiError && error.status === 401) signOut();
       else recoveringFor.current = null;
     },
     [signOut],

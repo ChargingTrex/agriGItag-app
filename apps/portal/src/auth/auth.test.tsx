@@ -228,4 +228,18 @@ describe('login with MSW', () => {
     ).toBeInTheDocument();
     expect(mockState.signedIn).toBe(false);
   });
+
+  it('keeps the session when logout gets a 401 and the refresh then fails with a 503', async () => {
+    const user = userEvent.setup();
+    renderApp('/', true);
+    await screen.findByRole('heading', { name: 'Dashboard' });
+    server.use(
+      http.post('/v1/auth/logout', () => fail(401, 'unauthorized'), { once: true }),
+      http.post('/v1/auth/refresh', () => fail(503, 'internal_error'), { once: true }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not sign out.');
+    expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(mockState.signedIn).toBe(true);
+  });
 });
