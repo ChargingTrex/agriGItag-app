@@ -26,11 +26,13 @@ Published Objects Exist With Matching Generation
 
 Page HTML Has No Phone Survey Number Or Temp Uploads
     [Tags]    WP-B10    FR-16
-    ${w}=    QA World
-    ${phones}=    Query    SELECT phone FROM users
-    ${leaks}=    Evaluate    [$w["farmer"]["phone"], $w["farmer"]["phone"][-10:], "QA-SURVEY", "77/3B", "Survey", "temp_uploads", "626129"] + [p for (p,) in $phones] + [p[-10:] for (p,) in $phones]
+    # Every user's phone (the QA farmer's included) is compared inside one keyword that returns only a count, so
+    # no number reaches the Robot log or report (audit wave 7, finding 1; CLAUDE.md §6).
+    @{leaks}=    Create List    QA-SURVEY    77/3B    Survey    temp_uploads    626129
     FOR    ${name}    IN    index.html    data.json
         ${r}=    Page Object    ${name}
+        ${phones}=    Page Leaks Any User Phone    ${r.text}
+        Should Be Equal As Integers    ${phones}    0    msg=${name} leaks ${phones} user phone numbers
         ${hits}=    Evaluate    [x for x in $leaks if x in $r.text]
         Should Be Empty    ${hits}    msg=${name} leaks ${hits}
     END
@@ -177,21 +179,6 @@ Publishing Suite Setup
     ${e}=    Received Lot    20
     ${x}=    Publish Batch    ${{ [$c, $d, $e] }}
     Set Suite Variable    ${X}    ${x}
-
-Publish Batch
-    [Documentation]    Batch the received lots, grade Standard (10.5 %), approve and pack 20 kg, publish, and wait
-    ...    for the worker to build the page. Returns: the batch body. Fails: the build is not `built`.
-    [Arguments]    ${lots}
-    ${batch}=    New Batch    ${lots}
-    ${reading}=    Moisture    10.5    grading    batch_id=${batch}[id]
-    Call API    POST    /batches/${batch}[id]/grading    ${ADMIN}    expect=201    json=${{ {"declared_grade": "Standard", "readings": [$reading]} }}
-    Call API    POST    /batches/${batch}[id]/grading/approve    ${ADMIN}    expect=200    json=${{ {"graded": {"value": 20, "unit": "kg"}} }}
-    ${pack}=    Packing    20
-    Call API    POST    /batches/${batch}[id]/final-packing    ${ADMIN}    expect=200    json=${pack}
-    Call API    POST    /batches/${batch}[id]/publish    ${ADMIN}    expect=202
-    ${build}=    Wait For Build    ${batch}[id]    1
-    Should Be Equal    ${build}[status]    built    msg=${build}
-    RETURN    ${batch}
 
 Page Object
     [Documentation]    GET one object of a batch's public page anonymously, as a consumer would (D-007).

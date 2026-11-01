@@ -1,0 +1,86 @@
+ 2:33  up 2 days,  2:06, 1 user, load averages: 7.86 6.34 7.70
+2026-11-01T21:03:44Z
+==============================================================================
+Public & E2E                                                                  
+==============================================================================
+Public & E2E.Public                                                           
+==============================================================================
+Public & E2E.Public.Page :: Public batch page: render, privacy lint, HTML v...
+==============================================================================
+Privacy Lint Passes The Clean Fixture And Catches The Dirty One ::... | PASS |
+------------------------------------------------------------------------------
+Fixture Renders Valid HTML :: html-validate (.htmlvalidate.mjs: st... | PASS |
+------------------------------------------------------------------------------
+Crop Name Is Bilingual :: The heading shows the fixture's Tamil cr... | PASS |
+------------------------------------------------------------------------------
+Every Quantity Carries A Unit :: Every <data class="q"> reads "<nu... | PASS |
+------------------------------------------------------------------------------
+Events Are In Date Order :: In every timeline (each lot, processin... | PASS |
+------------------------------------------------------------------------------
+No Temp Uploads Or Non Evidence Paths :: No temporary path anywher... | PASS |
+------------------------------------------------------------------------------
+Built Fixture Passes Privacy Lint With Canaries :: tools/check_out... | PASS |
+------------------------------------------------------------------------------
+Injected Phone Number Fails Privacy Lint :: A copy of the build wi... | PASS |
+------------------------------------------------------------------------------
+Initial HTML CSS And JS Are Under 100 KB :: `python -m agritrace_p... | PASS |
+------------------------------------------------------------------------------
+Lighthouse 3G Performance Is At Least 90 With LCP At Most 2 s :: l... | PASS |
+------------------------------------------------------------------------------
+Lighthouse Normal 4G Transfers Under 100 KB With LCP At Most 2.5 s... | PASS |
+------------------------------------------------------------------------------
+OG Tags Pass The Privacy Lint :: The share tags (og:*, description... | FAIL |
+TypeError: 'in <string>' requires string as left operand, not NoneType
+------------------------------------------------------------------------------
+Tamil Renders With The System Font :: At a 390 px phone width the ... | PASS |
+------------------------------------------------------------------------------
+Page Is Served From Object Storage With The Backend Down :: Live s... | PASS |
+------------------------------------------------------------------------------
+Old Page Version Is Retrievable :: Live stack: a rebuild writes a ... | PASS |
+------------------------------------------------------------------------------
+Public & E2E.Public.Page :: Public batch page: render, privacy lin... | FAIL |
+15 tests, 14 passed, 1 failed
+==============================================================================
+Public & E2E.Public                                                   | FAIL |
+15 tests, 14 passed, 1 failed
+==============================================================================
+Public & E2E.E2E                                                              
+==============================================================================
+Public & E2E.E2E.Reference Batch :: Seeded reference batch FGP8T4033HM7 end...
+==============================================================================
+Demo Seed Is Idempotent                                               | PASS |
+------------------------------------------------------------------------------
+Reference Batch Raises Exactly The Expected Flag Set                  | PASS |
+------------------------------------------------------------------------------
+Grade A Returns 422 Unknown Grade For Profile                         | PASS |
+------------------------------------------------------------------------------
+Approve And Publish Return 409 Before Fixes                           | PASS |
+------------------------------------------------------------------------------
+After Fixes Publish Succeeds With GI Verified And Shares 31.25 62.... | PASS |
+------------------------------------------------------------------------------
+Dart And TS Clients Compile                                           | FAIL |
+bile/packages/agritrace_api/test/assist_start_in_test.dart (Ignored by rule in ignore file.)
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/doc/AssistStartIn.md
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/lib/src/model/audit_row.dart
+[main] INFO  o.o.codegen.TemplateManager - Ignored /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/test/audit_row_test.dart (Ignored by rule in ignore file.)
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/doc/AuditRow.md
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/lib/src/model/avg_sale_price_per_kg.dart
+[main] INFO  o.o.codegen.TemplateManager - Ignored /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/test/avg_sale_price_per_kg_test.dart (Ignored by rule in ignore file.)
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/doc/AvgSalePricePerKg.md
+[main] INFO  o.o.codegen.TemplateManager - writing file /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/lib/src/model/batch_in.dart
+[main] INFO  o.o.codegen.TemplateManager - Ignored /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/apps/mobile/packages/agritrace_api/test/batch_in_test.dart (Ignored by rule in ignore file.): 143 != 0
+------------------------------------------------------------------------------
+Public & E2E.E2E.Reference Batch :: Seeded reference batch FGP8T40... | FAIL |
+6 tests, 5 passed, 1 failed
+==============================================================================
+Public & E2E.E2E                                                      | FAIL |
+6 tests, 5 passed, 1 failed
+==============================================================================
+Public & E2E                                                          | FAIL |
+21 tests, 19 passed, 2 failed
+==============================================================================
+Output:  /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/r2pub1/output.xml
+Log:     /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/r2pub1/log.html
+Report:  /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/r2pub1/report.html
+robot exit=2 wall=1104 s
+ 2:52  up 2 days,  2:24, 1 user, load averages: 7.30 8.71 10.01

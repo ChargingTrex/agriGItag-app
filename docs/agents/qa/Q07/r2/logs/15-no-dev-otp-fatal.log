@@ -1,0 +1,41 @@
+2026-11-01T21:49:28Z
+==============================================================================
+E2E & Portal                                                                  
+==============================================================================
+E2E & Portal.E2E                                                              
+==============================================================================
+E2E & Portal.E2E.Reference Batch :: Seeded reference batch FGP8T4033HM7 end...
+==============================================================================
+Grade A Returns 422 Unknown Grade For Profile                         | FAIL |
+Test execution stopped due to a fatal error.
+------------------------------------------------------------------------------
+E2E & Portal.E2E.Reference Batch :: Seeded reference batch FGP8T40... | FAIL |
+Suite setup failed:
+OTP_DEV_CODE is not set: the suites sign in only on stacks with the dev OTP (export OTP_DEV_CODE=123456 for the local compose stack); no code was requested.
+
+1 test, 0 passed, 1 failed
+==============================================================================
+E2E & Portal.E2E                                                      | FAIL |
+1 test, 0 passed, 1 failed
+==============================================================================
+E2E & Portal.Portal                                                           
+==============================================================================
+E2E & Portal.Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P0...
+==============================================================================
+Approving A Member Makes It Active Without Reload                     | FAIL |
+Test execution stopped due to a fatal error.
+------------------------------------------------------------------------------
+E2E & Portal.Portal.Portal :: FPO admin portal acceptance (plan §7... | FAIL |
+1 test, 0 passed, 1 failed
+==============================================================================
+E2E & Portal.Portal                                                   | FAIL |
+1 test, 0 passed, 1 failed
+==============================================================================
+E2E & Portal                                                          | FAIL |
+2 tests, 0 passed, 2 failed
+==============================================================================
+Output:  /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/no-otp/output.xml
+Log:     /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/no-otp/log.html
+Report:  /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/no-otp/report.html
+robot exit=2
+POST /v1/auth/otp/request lines in the api log: before=0 after=0

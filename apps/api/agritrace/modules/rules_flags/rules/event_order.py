@@ -50,9 +50,12 @@ def run(ctx: LotContext) -> list[FlagCandidate]:
         One `event_out_of_order` warn per such event (subject: the event), with the `missing` steps.
     """
     tracks = ctx.event_schema.get("tracks") or {}
+    # A step is done by a date iff its earliest event is on or before it, so the earliest event of each type
+    #   gives `order_gaps` the same answer as all of them: O(events × types) instead of O(events²) (B22).
+    firsts = {e.type: e for e in sorted(ctx.events, key=lambda e: e.on, reverse=True)}.values()
     flags = []
     for event in ctx.events:
-        if missing := order_gaps(tracks, ctx.events, event.type, event.on):
+        if missing := order_gaps(tracks, firsts, event.type, event.on):
             details = {"event_type": event.type, "occurred_on": event.on.isoformat(), "missing": missing}
             flags.append(
                 FlagCandidate(FlagSubject.EVENT, event.id, "event_out_of_order", Severity.WARN, details)

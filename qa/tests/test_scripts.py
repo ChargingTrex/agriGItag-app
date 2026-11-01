@@ -11,6 +11,7 @@ import importlib.util
 import json
 import os
 import pathlib
+import re
 import types
 
 import pytest
@@ -215,3 +216,24 @@ def test_portal_fixtures_send_the_right_bodies(monkeypatch: pytest.MonkeyPatch) 
     entries = sent["/sync/push"]["entries"]
     assert [e["data"]["event_type"] for e in entries] == ["harvest", "packing"]
     assert entries[1]["data"]["payload"]["quantity"] == {"value": 50, "unit": "kg"}
+
+
+def test_export_unit_checks_and_template_csv(tmp_path: pathlib.Path) -> None:
+    """Q07 round 2: the CSV unit check finds a unitless quantity column and spares counts, units and text; the
+    JSON check finds a unitless quantity; the template writer fills missing columns.
+
+    Args:
+        tmp_path: pytest's temporary directory.
+    """
+    keywords = load("qa/robot/lib/agritrace_keywords.py")
+    path = tmp_path / "lots.csv"
+    path.write_text("lot_code,received,received_unit,share,lots,version_no,note\r\n"
+                    "LOT1,100.000,kg,31.250,3,1,dry\r\nLOT2,200.000,kg,62.500,3,2,\r\n", encoding="utf-8")
+    assert keywords.unitless_quantity_columns(str(path), counts=["lots", "version_no"]) == {
+        "quantities": ["received"], "unitless": ["share"], "rows": 2}
+    page = {"lots": [{"q": {"value": 1, "unit": "kg"}}, {"q": {"value": 2}}], "n": 3}
+    assert keywords.unitless_quantities(page) == [{"value": 2}]
+    # Test phones stay in the demo seed's +919000 block and never collide with the seeded +919000000xxx users.
+    assert all(re.fullmatch(r"\+919000[1-9]\d{5}", keywords.new_phone()) for _ in range(200))
+    csv = keywords.template_csv("name, phone,village_lgd_code", {"name": "A", "village_lgd_code": "9"}, {"phone": "1"})
+    assert csv == "name,phone,village_lgd_code\r\nA,,9\r\n,1,\r\n"

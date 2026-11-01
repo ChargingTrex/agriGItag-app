@@ -285,11 +285,13 @@ def _sign_in(phone: str) -> dict:
 
     Raises:
         AssertionError: OTP verify or PIN verify did not give a session.
+        robot.api.exceptions.FatalError: ``OTP_DEV_CODE`` is not set (see require_dev_otp); nothing is sent.
 
     Side effects:
         Creates an OTP challenge (one per phone per 60 s, 10 a day) and a device row; on a fresh seed the
         first PIN verify sets the office user's PIN to ``${OFFICE_PIN}``.
     """
+    code = require_dev_otp()
     http, api, device = _http(), _var("API_BASE", "http://localhost:8000/v1"), str(uuid.uuid4())
     r = http.post(f"{api}/auth/otp/request", json={"phone": phone}, timeout=30)
     wait = ((r.json().get("error") or {}).get("details") or {}).get("retry_after_s", 0) if r.status_code == 429 else 0
@@ -297,7 +299,7 @@ def _sign_in(phone: str) -> dict:
         time.sleep(wait + 1)
         http.post(f"{api}/auth/otp/request", json={"phone": phone}, timeout=30)
     r = http.post(f"{api}/auth/otp/verify", timeout=30, json={
-        "phone": phone, "code": _var("OTP_DEV_CODE", "123456"), "device_id": device, "platform": "android"})
+        "phone": phone, "code": code, "device_id": device, "platform": "android"})
     body = r.json()
     if body.get("kind") == "pin_required":
         r = http.post(f"{api}/auth/pin/verify", json={"pin": _var("OFFICE_PIN", "2468")}, timeout=30,
@@ -357,10 +359,13 @@ def call_api(method: str, path: str, phone: str | None = None, expect: int | str
 
     Raises:
         AssertionError: the status differs from ``expect``.
+        robot.api.exceptions.FatalError: an ``/auth/otp`` call while ``OTP_DEV_CODE`` is unset (require_dev_otp).
 
     Side effects:
         Whatever the endpoint does.
     """
+    if path.startswith("/auth/otp"):
+        require_dev_otp()  # a code request on a stack without the dev OTP texts a real phone
     extra = kwargs.pop("headers", None) or {}
     url = _var("API_BASE", "http://localhost:8000/v1") + path
     r = _http().request(method, url, headers={**(login_as(phone) if phone else {}), **extra}, timeout=120, **kwargs)
@@ -386,21 +391,72 @@ def days_ago(days: int | str) -> str:
 
 
 def new_phone() -> str:
-    """Return a random Indian mobile number nobody in the seed uses (+9197 + 8 digits).
+    """Return a random number from the demo seed's own ``+919000…`` block that no seeded user has.
+
+    Seed users are ``+919000000001..`` (``+919000`` + ``0000xx``); these are ``+919000`` + 100000..999999. A random
+    real-format number could belong to a stranger: it would sit in committed Robot reports and, on a stack without
+    the dev OTP, get a real SMS (audit wave 7, findings 1 and 5).
 
     Returns:
         An E.164 phone string.
     """
-    return f"+9197{random.randrange(10**8):08d}"
+    return f"+919000{random.randrange(100000, 1000000)}"
 
 
-def new_farmer(name: str = "QA Robot Farmer", phone: str | None = None, approve: bool | str = True) -> dict:
+def require_dev_otp() -> str:
+    """Stop the whole Robot run unless ``OTP_DEV_CODE`` is set, before any OTP is requested.
+
+    Without the dev code the target stack sends real SMS for every sign-in (audit wave 7, finding 5).
+
+    Returns:
+        The dev OTP.
+
+    Raises:
+        robot.api.exceptions.FatalError: ``OTP_DEV_CODE`` is unset or empty (via BuiltIn ``Fatal Error``).
+    """
+    code = _var("OTP_DEV_CODE", "")
+    if not code:
+        BuiltIn().fatal_error("OTP_DEV_CODE is not set: the suites sign in only on stacks with the dev OTP "
+                              "(export OTP_DEV_CODE=123456 for the local compose stack); no code was requested.")
+    return code
+
+
+def page_leaks_any_user_phone(text: str) -> int:
+    """Count the stack's user phone numbers (E.164 or 10-digit form) that appear in a text (B10, FR-16).
+
+    The numbers are read straight from the database here and never returned or logged, so a Robot report holds
+    only the count (audit wave 7, finding 1; CLAUDE.md §6).
+
+    Args:
+        text: e.g. a public page's HTML or data.json.
+
+    Returns:
+        How many users' numbers occur in ``text``.
+
+    Raises:
+        pg8000.exceptions.InterfaceError: the database (``DB_HOST``/``DB_PORT``...) is unreachable.
+    """
+    import pg8000.native
+
+    con = pg8000.native.Connection(user=_var("DB_USER", "agritrace"), password=_var("DB_PASSWORD", "agritrace"),
+                                   host=_var("DB_HOST", "localhost"), port=int(_var("DB_PORT", "5432")),
+                                   database=_var("DB_NAME", "agritrace"))
+    try:
+        phones = [row[0] for row in con.run("SELECT phone FROM users") if row[0]]
+    finally:
+        con.close()
+    return sum(1 for p in phones if p in text or p[-10:] in text)
+
+
+def new_farmer(name: str = "QA Robot Farmer", phone: str | None = None, approve: bool | str = True,
+               village_id: str | None = None) -> dict:
     """Onboard, approve and record data consent for a farmer in the demo FPO (as the FPO admin).
 
     Args:
         name: display name (also the canary the public-page checks search for).
         phone: phone to use; a random one by default.
         approve: False leaves the farmer `pending` with no consent (the portal's approval line, P01).
+        village_id: a village master row (the dashboard's place filter, P06); None leaves it unset.
 
     Returns:
         ``{"id", "user_id", "phone", "name"}``.
@@ -412,8 +468,8 @@ def new_farmer(name: str = "QA Robot Farmer", phone: str | None = None, approve:
         Creates a farmer and its user; when approved, also a `data_collection` consent.
     """
     phone = phone or new_phone()
-    f = call_api("POST", "/farmers", ADMIN, 201, json={"name": name, "phone": phone, "lang": "en",
-                                                       "client_id": str(uuid.uuid4()), "address": ADDRESS}).json()
+    body = {"name": name, "phone": phone, "lang": "en", "client_id": str(uuid.uuid4()), "address": ADDRESS}
+    f = call_api("POST", "/farmers", ADMIN, 201, json={**body, **({"village_id": village_id} if village_id else {})}).json()
     if str(approve).lower() == "false":
         return {"id": f["id"], "user_id": f["user_id"], "phone": phone, "name": name}
     call_api("POST", f"/farmers/{f['id']}/approve", ADMIN, 200)
@@ -735,6 +791,149 @@ def grade_batch(batch_id: str, declared_grade: str, moisture_pct: str | None = N
     readings = [moisture(moisture_pct, "grading", batch_id=batch_id)] if moisture_pct else []
     return call_api("POST", f"/batches/{batch_id}/grading", QC, 201,
                     json={"declared_grade": declared_grade, "readings": readings}).json()
+
+
+def fix_reference_batch(batch_id: str) -> None:
+    """Apply the PRD §12.2 fixes to the seeded reference batch over the API, as B12's e2e test does.
+
+    The farmers declared Inorganic, so a chemical input is logged on every lot and each lot gets the pest
+    event its IPM claim needs (field officer push); QC registers a meter and grades Standard on one 10.5 %
+    reading; the admin approves 20 kg and signs off 20 kg of packs (apps/api/tests/e2e `_apply_fixes`).
+
+    Args:
+        batch_id: the reference batch (FGP8T4033HM7) id.
+
+    Raises:
+        AssertionError: any call failed or a pushed entry was not accepted.
+
+    Side effects:
+        Creates an input, 2 events per lot, an instrument, a grading, the grading approval and final packing.
+    """
+    npk = call_api("POST", "/inputs", ADMIN, 201, json={
+        "name_en": f"QA NPK 17:17:17 {uuid.uuid4().hex[:6]}", "category": "chemical_fertilizer", "unit": "kg"}).json()
+    lots = [s["lot_id"] for s in call_api("GET", f"/batches/{batch_id}", ADMIN, 200).json()["shares"]]
+
+    def entry(lot: str, event_type: str, on: str, payload: dict) -> dict:
+        """Build a version-1 event entry with no plot or fix (as the e2e test sends it).
+
+        Args:
+            lot: lot id.
+            event_type: event type.
+            on: ISO date.
+            payload: event payload.
+
+        Returns:
+            The sync entry.
+        """
+        data = {"event_id": str(uuid.uuid4()), "version_no": 1, "subject_type": "lot", "lot_id": lot,
+                "event_type": event_type, "occurred_on": on, "payload": payload,
+                "clocks": {"device_time": datetime.now(UTC).isoformat()}}
+        return {"client_id": str(uuid.uuid4()), "kind": "event_version", "data": data}
+
+    entries = []
+    for lot in lots:
+        entries += [entry(lot, "input_application", "2025-12-08",
+                          {"input_id": npk["id"], "quantity": {"value": 10, "unit": "kg"}}),
+                    entry(lot, "problem", "2026-01-10", {"problem_type": "pest", "description": "Thrips; neem spray"})]
+    results = push(OFFICER, *entries)
+    if any(r["status"] != "accepted" for r in results):
+        raise AssertionError(f"fix events not accepted: {results}")
+    meter = call_api("POST", "/instruments", QC, 201, json={
+        "kind": "moisture_meter", "make_model": "QA reference meter", "serial_no": f"QA-REF-{uuid.uuid4().hex[:6]}",
+        "calibrated_on": days_ago(30), "calibration_due_on": days_ago(-300)}).json()
+    reading = moisture("10.5", "grading", batch_id=batch_id, instrument_id=meter["id"])
+    call_api("POST", f"/batches/{batch_id}/grading", QC, 201, json={"declared_grade": "Standard", "readings": [reading]})
+    call_api("POST", f"/batches/{batch_id}/grading/approve", ADMIN, 200, json={"graded": {"value": 20, "unit": "kg"}})
+    call_api("POST", f"/batches/{batch_id}/final-packing", ADMIN, 200, json=packing(20))
+
+
+def unitless_quantities(node: dict | list) -> list:
+    """List the quantity objects (``{"value": ...}``) in a JSON document that carry no unit (FR-58, B12).
+
+    Args:
+        node: the parsed JSON, e.g. a public page's data.json.
+
+    Returns:
+        Every dict holding a ``value`` key whose ``unit`` is missing or empty.
+    """
+    found = []
+    if isinstance(node, dict):
+        if "value" in node and not node.get("unit"):
+            found.append(node)
+        for child in node.values():
+            found += unitless_quantities(child)
+    elif isinstance(node, list):
+        for child in node:
+            found += unitless_quantities(child)
+    return found
+
+
+def template_csv(header: str, *rows: dict) -> str:
+    """Write rows under an import template's header line (P08 uploads).
+
+    Args:
+        header: the template's first line, e.g. ``name,name_local,phone,...``.
+        *rows: one dict per row, keyed by column; missing columns stay empty.
+
+    Returns:
+        The CSV text, CRLF line ends, header first.
+    """
+    import csv
+    import io
+
+    columns = [c.strip() for c in header.split(",")]
+    out = io.StringIO()
+    writer = csv.writer(out, lineterminator="\r\n")
+    writer.writerow(columns)
+    writer.writerows([[row.get(c, "") for c in columns] for row in rows])
+    return out.getvalue()
+
+
+def unitless_quantity_columns(path: str, counts: list | tuple = ()) -> dict:
+    """Find the quantity columns of a CSV export that have no unit column (FR-58, P05).
+
+    A column is a quantity when every non-empty value is a number. It is fine when the file also has a
+    ``<column>_unit`` column, or it is ``quantity`` next to a ``unit`` column, or it is a count named in ``counts``.
+
+    Args:
+        path: the CSV file.
+        counts: columns that are plain counts (``plots``, ``lots``...), which carry no unit.
+
+    Returns:
+        ``{"quantities": [...with a unit], "unitless": [...without one], "rows": n}``.
+
+    Raises:
+        FileNotFoundError: the file does not exist.
+    """
+    import csv
+
+    with open(path, encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    headers = list(rows[0]) if rows else []
+
+    def number(text: str) -> bool:
+        """Tell whether a cell reads as a number.
+
+        Args:
+            text: the cell.
+
+        Returns:
+            True for e.g. ``31.250`` or ``1200``.
+        """
+        try:
+            float(text.replace(",", ""))
+        except ValueError:
+            return False
+        return True
+
+    found = {"quantities": [], "unitless": [], "rows": len(rows)}
+    for h in headers:
+        values = [r[h] for r in rows if r[h] not in ("", None)]
+        if h in counts or h == "unit" or h.endswith("_unit") or not values or not all(number(v) for v in values):
+            continue
+        has_unit = f"{h}_unit" in headers or (h == "quantity" and "unit" in headers)
+        found["quantities" if has_unit else "unitless"].append(h)
+    return found
 
 
 def packing(kg: int | str) -> dict:

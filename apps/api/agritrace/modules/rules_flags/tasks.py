@@ -10,6 +10,8 @@ Callers: the Celery worker (`agritrace.worker` autodiscovers this module); enque
 
 import uuid
 
+from sqlalchemy.exc import DBAPIError
+
 from agritrace.core import task_names
 from agritrace.modules.rules_flags import service
 from agritrace.worker import app, run_db_task
@@ -30,10 +32,24 @@ def _uuid(value: str | None) -> uuid.UUID | None:
     return uuid.UUID(value) if value else None
 
 
+# A database error (deadlock 40P01, serialization 40001, dropped connection: `DBAPIError`; connection refused
+#   or timed out at connect during a Postgres restart: plain `OSError`, which SQLAlchemy does not wrap) would
+#   otherwise lose a check for good (audit wave-7 #3): retry 3 times with jittered backoff. These tasks do no
+#   file or S3 I/O, so an `OSError` can only come from the database connection. Safe because a check is a full
+#   re-run that rolls back on error, and `store_flags` dedupes by `dedupe_key`, never reopening a reviewer's
+#   same-severity closure, so a second run changes nothing the first committed.
+RETRY = {
+    "autoretry_for": (DBAPIError, OSError),
+    "max_retries": 3,
+    "retry_backoff": True,
+    "retry_jitter": True,
+}
+
+
 # DECISION D-009: rule checks run as Celery tasks through `run_db_task`, after the entry is committed.
 #   ADV: a sync push or photo confirm answers at once; checks retry with the worker, not the phone.
 #   COMPROMISE: flags appear seconds later, and a task may run twice; `dedupe_key` makes that harmless.
-@app.task(name=task_names.RULES_CHECK_EVENT)  # type: ignore[untyped-decorator]  # celery ships no stubs
+@app.task(name=task_names.RULES_CHECK_EVENT, **RETRY)  # type: ignore[untyped-decorator]  # celery ships no stubs
 def check_event(
     event_id: str,
     version_id: str | None = None,
@@ -53,7 +69,7 @@ def check_event(
 
     Raises:
         ValueError: `event_id` is not a UUID.
-        sqlalchemy.exc.SQLAlchemyError: passed through (the task fails and is logged).
+        sqlalchemy.exc.SQLAlchemyError, OSError: passed through (`DBAPIError`, `OSError`: after `RETRY`).
 
     Side effects:
         Inserts, updates and closes flags; may set `lots.gi_eligible`.
@@ -61,7 +77,7 @@ def check_event(
     return run_db_task(service.check_event, uuid.UUID(event_id))
 
 
-@app.task(name=task_names.RULES_CHECK_PLOT)  # type: ignore[untyped-decorator]  # celery ships no stubs
+@app.task(name=task_names.RULES_CHECK_PLOT, **RETRY)  # type: ignore[untyped-decorator]  # celery ships no stubs
 def check_plot(plot_id: str) -> list[str]:
     """Run the plot review rules.
 
@@ -73,7 +89,7 @@ def check_plot(plot_id: str) -> list[str]:
 
     Raises:
         ValueError: `plot_id` is not a UUID.
-        sqlalchemy.exc.SQLAlchemyError: passed through.
+        sqlalchemy.exc.SQLAlchemyError, OSError: passed through (`DBAPIError`, `OSError`: after `RETRY`).
 
     Side effects:
         Inserts, updates and closes plot flags.
@@ -81,7 +97,7 @@ def check_plot(plot_id: str) -> list[str]:
     return run_db_task(service.check_plot, uuid.UUID(plot_id))
 
 
-@app.task(name=task_names.RULES_CHECK_LOT)  # type: ignore[untyped-decorator]  # celery ships no stubs
+@app.task(name=task_names.RULES_CHECK_LOT, **RETRY)  # type: ignore[untyped-decorator]  # celery ships no stubs
 def check_lot(
     lot_id: str | None = None,
     batch_id: str | None = None,
@@ -101,7 +117,7 @@ def check_lot(
 
     Raises:
         ValueError: an id is not a UUID.
-        sqlalchemy.exc.SQLAlchemyError: passed through.
+        sqlalchemy.exc.SQLAlchemyError, OSError: passed through (`DBAPIError`, `OSError`: after `RETRY`).
 
     Side effects:
         Inserts, updates and closes flags; may set `lots.gi_eligible` and `lots.practice_tags`.
