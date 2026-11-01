@@ -58,7 +58,7 @@ void main() {
   });
 
   testWidgets('a full phone at app start: the farmer home opens "Phone is full" with Send now', (tester) async {
-    final h = FlowHarness(overrides: [freeBytesProvider.overrideWithValue(() async => 50 * mib)]);
+    final h = FlowHarness(freeBytes: () async => 50 * mib);
     await h.start(tester);
     expect(find.text('Phone is full. Send your entries now?'), findsOneWidget);
     await tester.tap(find.text('Send now'));
