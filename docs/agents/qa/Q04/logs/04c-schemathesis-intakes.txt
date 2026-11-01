@@ -1,0 +1,78 @@
+ 1:32  up 2 days,  1:05, 1 user, load averages: 10.10 14.25 16.01
+Mon Nov  2 01:32:55 IST 2026
+$ PYTHONPATH=docs/agents/qa/Q04 SCHEMATHESIS_HOOKS=st_auth Q04_PHONE=+919000000003 uvx schemathesis run packages/openapi/openapi.json -u http://localhost:8000 --include-path /v1/intakes --checks all -n 200 --continue-on-failure --report junit,ndjson --report-dir <scratch>/st-04c-schemathesis-intakes
+Schemathesis v4.33.0
+━━━━━━━━━━━━━━━━━━━━
+
+ ✅  Loaded specification from packages/openapi/openapi.json (in 0.43s)
+
+     Base URL:         http://localhost:8000
+     Specification:    Open API 3.1.0
+     Operations:       1 selected / 95 total
+
+ ✅  API capabilities:
+
+     Supports NULL byte in headers:                            ✘
+     Accepts backslash and control characters in URL paths:    ✓
+
+ ⏭   Examples (in 0.01s)
+
+     ⏭  1 skipped
+
+ ❌  Coverage (in 1.63s)
+
+     ❌ 1 failed
+
+ ❌  Fuzzing (in 5.05s)
+
+     ❌ 1 failed
+
+=================================== FAILURES ===================================
+_______________________________ POST /v1/intakes _______________________________
+1. Test Case ID: goItU7
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[422] Unprocessable Content:
+
+    `{"error":{"code":"validation_error","message":"The request has invalid or implausible values.","details":[{"loc":["body","received","value"],"msg":"Input should be a valid decimal","type":"decimal_parsing"}]}}`
+
+Reproduce with:
+
+    curl -X POST -H 'x-request-id: 0000000000000000000000000000000000000000000000000000000000000000' -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"client_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "correction_reason": "000", "intake_moisture_reading_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "lot_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "price_per_kg": null, "processor_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "received": {"unit": "0", "value": ""}, "sale_date": "2000-01-01", "supersedes_intake_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd"}' http://localhost:8000/v1/intakes
+
+    st replay goItU7
+
+=================================== SUMMARY ====================================
+
+API Operations:
+  Selected: 1/95
+  Tested: 1
+
+Test Phases:
+  ⏭  Examples
+  ❌ Coverage
+  ❌ Fuzzing
+  ⏭  Stateful (not applicable)
+
+Failures:
+  ❌ ST202 Schema-valid request rejected: 1
+
+For more information, run `st explain ST202`.
+
+Test cases:
+  337 generated, 1 found 1 unique failure
+
+Reports:
+  - JUnit: /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q0304/st-04c-schemathesis-intakes/junit-20261102T013256Z.xml
+  - NDJSON: /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q0304/st-04c-schemathesis-intakes/ndjson-20261102T013256Z.ndjson
+
+Seed: 258892593694363652693129151222568552389
+
+============================== 1 failure in 6.85s ==============================
+exit=1
+ 1:33  up 2 days,  1:05, 1 user, load averages: 9.03 13.88 15.85
+Mon Nov  2 01:33:04 IST 2026

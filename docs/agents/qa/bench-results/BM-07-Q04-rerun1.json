@@ -1,0 +1,15 @@
+{
+ "id": "BM-07",
+ "metrics": {
+  "p95_ms": 2000,
+  "p50_ms": 430,
+  "p99_ms": 3700,
+  "rps": 25.71,
+  "failures": 0
+ },
+ "scope": "rerun 1, identical profile; 4618 requests, 0 failures",
+ "commit": "a51d071",
+ "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+ "recorded_at": "2026-11-01T19:53:25+00:00",
+ "evidence": "docs/agents/qa/Q04/logs/02b-locust-bm07-rerun1.txt, locust/bm07-rerun1_stats.csv, logs/03b-docker-stats-during-locust-rerun1.txt"
+}

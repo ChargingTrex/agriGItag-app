@@ -1,0 +1,30 @@
+$ uv run --with pyyaml python infra/scripts/benchmarks/collect.py --results-dir docs/agents/qa/bench-results --require BM-03 --require BM-07 --require BM-09 --require BM-16
+Benchmark  Metric                      Value  Threshold  Status 
+BM-01      p50_s                       -      <= 60      MISSING
+BM-01      p95_s                       -      <= 90      MISSING
+BM-02      entry_s                     -      <= 5       MISSING
+BM-02      photo_300kb_s               -      <= 10      MISSING
+BM-03      performance_score           98     >= 90      PASS   
+BM-03      lcp_s                       1.712  <= 2       PASS   
+BM-03      transfer_kb                 20.4   <= 500     PASS   
+BM-04      apk_arm64_mb                -      <= 100     MISSING
+BM-04      download_mb                 -      <= 30      MISSING
+BM-05      demo_completeness_pct       -      >= 100     MISSING
+BM-05      reference_problems_flagged  -      >= 9       MISSING
+BM-06      row_count_delta             -      == 0       MISSING
+BM-06      photo_checksum_changes      -      == 0       MISSING
+BM-07      p95_ms                      2000   <= 300     FAIL   
+BM-08      seed_rows_pass_pct          -      >= 100     MISSING
+BM-09      hits                        0      == 0       PASS   
+BM-10      coverage_pct                -      >= 100     MISSING
+BM-11      sent_s                      -      <= 5       MISSING
+BM-12      sent_s                      -      <= 20      MISSING
+BM-13      saved_offline               -      == True    MISSING
+BM-13      sent_without_user_action    -      == True    MISSING
+BM-14      server_entries              -      == 1       MISSING
+BM-14      server_photos               -      == 1       MISSING
+BM-15      server_records              -      == 1       MISSING
+BM-16      initial_kb                  20.4   < 100      PASS   
+BM-16      lcp_s                       0.535  < 2.5      PASS   
+collect: FAIL; merged into /Users/fi-it/Documents/projects/agriGitag/docs/agents/qa/benchmarks.json
+exit=1

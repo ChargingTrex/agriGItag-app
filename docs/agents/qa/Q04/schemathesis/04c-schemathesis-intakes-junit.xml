@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites errors="0" failures="1" skipped="0" tests="1" time="6.654318">
+  <testsuite name="schemathesis" hostname="Arun-MaAC.local" errors="0" failures="1" skipped="0" tests="1" time="6.654318">
+    <testcase name="POST /v1/intakes" time="6.654318">
+      <failure type="failure" message="ST202">1. Test Case ID: goItU7
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[422] Unprocessable Content:
+
+    `{"error":{"code":"validation_error","message":"The request has invalid or implausible values.","details":[{"loc":["body","received","value"],"msg":"Input should be a valid decimal","type":"decimal_parsing"}]}}`
+
+Reproduce with:
+
+    curl -X POST -H 'x-request-id: 0000000000000000000000000000000000000000000000000000000000000000' -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"client_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "correction_reason": "000", "intake_moisture_reading_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "lot_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "price_per_kg": null, "processor_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "received": {"unit": "0", "value": ""}, "sale_date": "2000-01-01", "supersedes_intake_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd"}' http://localhost:8000/v1/intakes</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

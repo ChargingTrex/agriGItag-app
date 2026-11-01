@@ -1,0 +1,15 @@
+{
+ "id": "BM-07",
+ "metrics": {
+  "p95_ms": 3100,
+  "p50_ms": 560,
+  "p99_ms": 6500,
+  "rps": 22.27,
+  "failures": 0
+ },
+ "scope": "locust 2.47.0, 50 users (30 farmer sync, 20 staff batch reads), spawn 5/s, 3 min; 4009 requests, 0 failures; api container CPU avg 117 % / max 181 % (single uvicorn process), worker avg 332 %, db avg 218 %",
+ "commit": "a51d071",
+ "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+ "recorded_at": "2026-11-01T19:49:25+00:00",
+ "evidence": "docs/agents/qa/Q04/logs/02-locust-bm07.txt, locust/bm07_stats.csv, logs/03-docker-stats-during-locust.txt"
+}

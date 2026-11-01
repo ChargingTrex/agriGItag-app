@@ -1,0 +1,109 @@
+ 1:02  up 2 days, 35 mins, 1 user, load averages: 8.19 11.86 18.51
+Mon Nov  2 01:02:39 IST 2026
+af67f30
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 27%]
+........................................................................ [ 36%]
+........................................................................ [ 46%]
+........................................................................ [ 55%]
+........................................................................ [ 64%]
+........................................................................ [ 73%]
+........................................................................ [ 82%]
+........................................................................ [ 92%]
+.............................................................            [100%]
+=============================== warnings summary ===============================
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/e2e/test_reference_batch.py: 1 warning
+tests/integration/test_b16.py: 3 warnings
+tests/integration/test_lots_batches.py: 6 warnings
+tests/integration/test_publishing.py: 9 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:967: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:124: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    staff = {roles[phone]: user for phone, user in rows.tuples()}
+
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:125: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    lots = dict((await s.execute(select(Lot.code, Lot.id).where(Lot.fpo_id == fpo))).tuples().all())
+
+tests/e2e/test_reference_batch.py: 3 warnings
+tests/integration/test_publishing.py: 10 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/publishing/builder.py:194: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    ).tuples()
+
+tests/integration/test_b16.py: 15 warnings
+tests/integration/test_lots_batches.py: 10 warnings
+tests/integration/test_publishing.py: 10 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:680: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    for event_type, payload in (await session.execute(query)).tuples():
+
+tests/integration/test_bundle_pull.py::test_photo_pending_after_24_hours_and_presigned_variants
+tests/integration/test_sync.py::test_undo_within_24_hours_marks_event_undone
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/events/service.py:1205: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_identity.py: 15 warnings
+tests/integration/test_registry_b14.py: 1 warning
+tests/integration/test_sync_b15.py: 9 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:149: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/integration/test_identity.py: 11 warnings
+tests/integration/test_registry_b14.py: 1 warning
+tests/integration/test_sync_b15.py: 9 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:370: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+tests/integration/test_quality.py::test_profile_versions_need_super_admin_and_allow_incomplete
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/quality/service.py:267: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_registry.py: 9 warnings
+tests/integration/test_registry_b14.py: 4 warnings
+tests/integration/test_sync_b15.py: 3 warnings
+  /Users/fi-it/.local/share/uv/python/cpython-3.12.13-macos-x86_64-none/lib/python3.12/concurrent/futures/thread.py:59: AlwaysEagerIgnored: task_always_eager has no effect on send_task
+    result = self.fn(*self.args, **self.kwargs)
+
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_stage_tiles
+tests/integration/test_reporting.py::test_flags_and_batches
+tests/integration/test_reporting.py::test_land_area
+tests/integration/test_reporting.py::test_finished_goods_and_scans
+tests/integration/test_reporting.py::test_sync_health
+tests/integration/test_reporting.py::test_100_scans_per_minute_then_429
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:600: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_stage_tiles
+tests/integration/test_reporting.py::test_flags_and_batches
+tests/integration/test_reporting.py::test_land_area
+tests/integration/test_reporting.py::test_finished_goods_and_scans
+tests/integration/test_reporting.py::test_sync_health
+tests/integration/test_reporting.py::test_100_scans_per_minute_then_429
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:609: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_reporting.py::test_csv_row_per_version_with_entered_by_and_assist_session
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:831: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    for v, subject, event_type, lot_code, name in rows.tuples().all():
+
+tests/integration/test_schema.py::test_live_enum_checks_match_the_strenums
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/integration/test_schema.py:191: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    live = dict((await conn.execute(query)).tuples().all())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+781 passed, 155 warnings in 267.21s (0:04:27)
+uv run pytest tests -q -p no:cacheprovider -rfE  159.68s user 14.97s system 64% cpu 4:31.97 total
+exit=0
+ 1:07  up 2 days, 39 mins, 1 user, load averages: 20.51 13.82 17.32

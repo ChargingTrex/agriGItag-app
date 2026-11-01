@@ -1,0 +1,40 @@
+# R1: app_version with a NUL byte and one metrics row, no entries (field officer)
+$ POST /v1/sync/push as +919000000002
+  body: {"device_id": "a213283a-e290-452f-ba6a-f94adf65b3bf", "app_version": "1.0.3\u0000", "device_time": "2026-11-01T20:00:21.872370+00:00", "entries": [], "metrics": [{"entry_client_id": "3b1f9e4f-c9d6-46e6-baf7-2b6aecf87729", "saved_at": "2026-11-01T20:00:21.872370+00:00"}]}
+-> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+# R2: same app_version, no metrics (control)
+$ POST /v1/sync/push as +919000000002
+  body: {"device_id": "20e87f34-b257-4913-98d0-17aeba516ca4", "app_version": "1.0.3\u0000", "device_time": "2026-11-01T20:00:21.872370+00:00", "entries": []}
+-> HTTP 200 {"server_time":"2026-11-01T20:00:21.965062Z","results":[]}
+# R3: farmer event whose payload description holds a NUL (jsonb)
+$ POST /v1/sync/push as +919000000091
+  body: {"device_id": "bac968ee-782a-454f-8bc4-6d14a3a687ec", "app_version": "1.0.3", "device_time": "2026-11-01T20:00:21.872370+00:00", "entries": [{"client_id": "01a198b2-dfe4-73f7-ad83-666a695e9e5f", "kind": "event_version", "data": {"event_id": "01a198b2-dfe4-731c-a1b8-895315a731b9", "version_no": 1, "subject_type": "lot", "lot_id": "45d6230a-20e8-4c1b-a578-c496127d802e", "plot_id": "4c50d79a-c871-4ded-8a27-17a65358c4cb", "event_type": "problem", "instance_no": 1, "occurred_on": "2026-11-02", "payload": {"problem_type": "pest", "description": "Q04 NUL\u0000probe"}, "clocks": {"device_time": "2026-11-01T20:00:21.872370+00:00"}, "gps": {"lat": 9.585, "lon": 78.105, "accuracy_m": 6}}}]}
+-> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+# R4: metrics row with network_type holding a NUL, clean app_version
+$ POST /v1/sync/push as +919000000002
+  body: {"device_id": "f7b11f52-2475-429a-9f23-82a079468149", "app_version": "1.0.3", "device_time": "2026-11-01T20:00:21.872370+00:00", "entries": [], "metrics": [{"entry_client_id": "4e8f9ac0-1e05-43db-aed5-ae59a9031c26", "saved_at": "2026-11-01T20:00:21.872370+00:00", "network_type": "wifi\u0000"}]}
+-> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+# R5 entries (event ids): ['01a198b3-630e-733d-a7a9-366679e698f4', '01a198b3-630e-7126-9a7a-cd41113cc757', '01a198b3-630e-7945-a38f-7af34dce0bc4']
+attempt 1 -> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+attempt 2 -> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+sql> select event_id, payload->>'description' from event_versions where event_id in ('01a198b3-630e-733d-a7a9-366679e698f4','01a198b3-630e-7126-9a7a-cd41113cc757','01a198b3-630e-7945-a38f-7af34dce0bc4') order by 1
+01a198b3-630e-733d-a7a9-366679e698f4|Q04 R5 first (clean)
+
+# R6 failures=3000000000
+$ POST /v1/sync/push as +919000000002
+  body: {"device_id": "c57cab7e-d5fd-4aec-83ff-9d67280f638e", "app_version": "1.0.3", "device_time": "2026-11-01T20:02:27.253187+00:00", "entries": [], "metrics": [{"entry_client_id": "e776f2e2-561e-49ff-a086-abdf7b2f13db", "saved_at": "2026-11-01T20:02:27.253187+00:00", "failures": 3000000000}]}
+-> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+# R7 photo_upload_ms=3000000000
+$ POST /v1/sync/push as +919000000002
+  body: {"device_id": "b2d0dfdf-870e-4eba-badc-14dd194d2e2a", "app_version": "1.0.3", "device_time": "2026-11-01T20:02:27.253187+00:00", "entries": [], "metrics": [{"entry_client_id": "c019b53b-2c28-45fb-995e-7e06ce04bd37", "saved_at": "2026-11-01T20:02:27.253187+00:00", "photo_upload_ms": 3000000000}]}
+-> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+# R8 control failures=2147483647
+$ POST /v1/sync/push as +919000000002
+  body: {"device_id": "87b39fd8-fdce-403c-a4df-ba3a69377396", "app_version": "1.0.3", "device_time": "2026-11-01T20:02:27.253187+00:00", "entries": [], "metrics": [{"entry_client_id": "c561da9a-02da-4a74-914f-b7858793ef1b", "saved_at": "2026-11-01T20:02:27.253187+00:00", "failures": 2147483647}]}
+-> HTTP 200 {"server_time":"2026-11-01T20:02:27.343246Z","results":[]}
+# R9 entries: [clean, instance_no=3000000000, clean] (event ids): ['01a198b5-0dce-7554-a107-7346a155500f', '01a198b5-0dce-7794-8613-33efa6ed7c8f', '01a198b5-0dcf-7227-846f-0948b147dc95']
+attempt 1 -> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+attempt 2 -> HTTP 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+sql> select event_id, payload->>'description' from event_versions where event_id in ('01a198b5-0dce-7554-a107-7346a155500f','01a198b5-0dce-7794-8613-33efa6ed7c8f','01a198b5-0dcf-7227-846f-0948b147dc95') order by 1
+01a198b5-0dce-7554-a107-7346a155500f|Q04 R9 first (clean)
+

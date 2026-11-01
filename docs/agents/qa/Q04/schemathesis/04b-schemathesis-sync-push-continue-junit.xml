@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites errors="0" failures="1" skipped="0" tests="1" time="25.177339">
+  <testsuite name="schemathesis" hostname="Arun-MaAC.local" errors="0" failures="1" skipped="0" tests="1" time="25.177339">
+    <testcase name="POST /v1/sync/push" time="25.177339">
+      <failure type="failure" message="ST202">1. Test Case ID: NQjnIk
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[422] Unprocessable Content:
+
+    `{"error":{"code":"validation_error","message":"The request has invalid or implausible values.","details":[{"loc":["header","x-assist-session"],"msg":"Input should be a valid UUID, invalid character: found `n` at 0","type":"uuid_parsing"}]}}`
+
+Reproduce with:
+
+    curl -X POST -H 'x-assist-session: [Filtered]' -H 'x-request-id: 0000000000000000000000000000000000000000000000000000000000000000' -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"app_version": "", "device_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "device_time": "2000-01-01T00:00:00Z", "entries": [], "metrics": []}' http://localhost:8000/v1/sync/push</failure>
+      <failure type="failure" message="ST101">1. Test Case ID: 9BZYIf
+
+- ST101 Server error
+
+[500] Internal Server Error:
+
+    `{"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}`
+
+Reproduce with:
+
+    curl -X POST -H 'x-request-id: null' -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"": {}, "app_version": "", "metrics": [{"\u00f6\u0014\u001d": false, "\uda43\udc9f7": true, "r\uda7b\udf83": {}, "\u0004": "\u00d4", "\udb65\udf28\u008c \u0003": [], "entry_client_id": "b16e3209-e83d-2a5f-a2c1-4388d27f5e50", "network_type": "H\u00ba\udb72\udf4f\u0002\u00f8\u0019B\ud921\ude67", "saved_at": "0080-06-06T14:10:02.739-08:17", "failures": 429024721500.0}, {"\u0080\u00f26": {"\u0010\u00d0": -2.00001}, "\ud985\udfa6\ud82b\udc5e5\u00b0&amp;": false, "": {"": [], "}`": {}, "Q04_TOKENS": ["[Filtered]"]}, "network_type": "", "saved_at": "0104-11-04T18:35:11Z", "acked_at": "5992-10-28T21:28:32.749809Z", "entry_client_id": "22a79e11-121d-2651-8960-247f82762f4a", "failures": 146602.0, "photo_upload_ms": 508.0}], "device_time": "2026-11-01T20:01:33.726476Z", "device_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "entries": [{"": 18910534038, "\u00b5l\udba9\udf9f\u001c": [], "\"\udb89\ude61": {}, "\u00dc\u00af\u001e@": [{"\u00f5": null, "lG": 10582, "": ""}], "\ud828\ude12\u00b1": {}, "client_id": "ac471ca9-5d16-33e8-825f-3987cac3e8b1", "kind": "quality_reading", "data": {"access_token": "[Filtered]", ",\u0087\u0092\u00d0\u00e0": {"\u009c\ud9ba\udd03\u00a6\ud830\uded2\u00e4j\u0094\u00a2O:": null}, "\u00a5\udb69\ude35\udaf8\udd92\b!'"'"'\u009f\udbb3\udf12`\ud96d\udc4f]^\udac3\udf6bC\u0005\u009d\udbf2\udd05\u00b1\u0091\u00ba\ud945\udda3": {"\u0287\u01dd\u026f\u0250 \u0287\u1d09s \u0279olop \u026fnsd\u1d09 \u026f\u01dd\u0279o\u02e5": null, "\udab2\udded\\\u00c0\uda7b\ude6eE\u008a\u00a7\u00e5k\u00ba": 43876635646476, "6\uda78\udfb5": -114}}}, {"\u00f6\u001cYz\u00e3\u0100\udb4c\udf46\u00f1": {}, "client_id": "a8668057-8cd5-3ddc-98fa-2719f7002c7e", "kind": "farmer", "data": {}}]}' http://localhost:8000/v1/sync/push</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,90 @@
+Mon Nov  2 01:09:42 IST 2026
+ 1:09  up 2 days, 42 mins, 1 user, load averages: 40.28 20.26 19.07
+a51d071
+#8 [api internal] load build context
+#8 transferring context: 298.15kB 0.1s done
+#8 CANCELED
+------
+ > [worker stage-0  1/13] FROM docker.io/library/python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159:
+------
+Dockerfile:6
+
+--------------------
+
+   4 |     #   `public-page` = apps/public-page, the page renderer B10 depends on by path). Plain docker build:
+
+   5 |     #   `docker build --build-context public-page=apps/public-page apps/api`.
+
+   6 | >>> FROM python:3.12-slim
+
+   7 |     
+
+   8 |     COPY --from=ghcr.io/astral-sh/uv:0.12.1 /uv /usr/local/bin/uv
+
+--------------------
+
+target api: failed to solve: lease "tvk2pwxcawh1330ryuzd5be0g": not found
+
+make: *** [up] Error 1
+exit=0
+{"db":"ok","redis":"ok","s3":"ok"}
+Mon Nov  2 01:09:49 IST 2026
+## retry 1
+Mon Nov  2 01:10:08 IST 2026
+ 1:10  up 2 days, 42 mins, 1 user, load averages: 30.84 19.74 18.92
+a51d071
+   4 |     #   `public-page` = apps/public-page, the page renderer B10 depends on by path). Plain docker build:
+
+   5 |     #   `docker build --build-context public-page=apps/public-page apps/api`.
+
+   6 | >>> FROM python:3.12-slim
+
+   7 |     
+
+   8 |     COPY --from=ghcr.io/astral-sh/uv:0.12.1 /uv /usr/local/bin/uv
+
+--------------------
+
+target api: failed to solve: lease "tvk2pwxcawh1330ryuzd5be0g": not found
+
+make: *** [up] Error 1
+make exit=2
+{"db":"ok","redis":"ok","s3":"ok"}
+dev ed2d0b72f773 2026-11-01 23:53:31 +0530 IST
+Mon Nov  2 01:10:10 IST 2026
+## retry 2 (after docker pull python:3.12-slim)
+Mon Nov  2 01:10:39 IST 2026
+a51d071
+   4 |     #   `public-page` = apps/public-page, the page renderer B10 depends on by path). Plain docker build:
+
+   5 |     #   `docker build --build-context public-page=apps/public-page apps/api`.
+
+   6 | >>> FROM python:3.12-slim
+
+   7 |     
+
+   8 |     COPY --from=ghcr.io/astral-sh/uv:0.12.1 /uv /usr/local/bin/uv
+
+--------------------
+
+target api: failed to solve: lease "tvk2pwxcawh1330ryuzd5be0g": not found
+
+make: *** [up] Error 1
+make exit=2
+{"db":"ok","redis":"ok","s3":"ok"}
+dev ed2d0b72f773 2026-11-01 23:53:31 +0530 IST
+Mon Nov  2 01:10:42 IST 2026
+## retry 3 (BUILDX_BUILDER=default, COMPOSE_BAKE=false)
+Mon Nov  2 01:10:49 IST 2026
+
+   8 |     COPY --from=ghcr.io/astral-sh/uv:0.12.1 /uv /usr/local/bin/uv
+
+--------------------
+
+target api: failed to solve: lease "tvk2pwxcawh1330ryuzd5be0g": not found
+
+make: *** [up] Error 1
+make exit=2
+{"db":"ok","redis":"ok","s3":"ok"}
+dev ed2d0b72f773 2026-11-01 23:53:31 +0530 IST
+Mon Nov  2 01:10:51 IST 2026

@@ -1,0 +1,324 @@
+{
+  "generated_at": "2026-11-01T20:04:25+00:00",
+  "benchmarks": {
+    "BM-01": {
+      "title": "Time to log an event (3-tap harvest x10, Go AVD)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "p50_s",
+          "value": null,
+          "threshold": "<= 60",
+          "status": "MISSING"
+        },
+        {
+          "metric": "p95_s",
+          "value": null,
+          "threshold": "<= 90",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-02": {
+      "title": "Entry and photo reach the server on 4G",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "entry_s",
+          "value": null,
+          "threshold": "<= 5",
+          "status": "MISSING"
+        },
+        {
+          "metric": "photo_300kb_s",
+          "value": null,
+          "threshold": "<= 10",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-03": {
+      "title": "Public page on Slow 3G (Lighthouse CI)",
+      "status": "PASS",
+      "result": {
+        "id": "BM-03",
+        "metrics": {
+          "performance_score": 98,
+          "lcp_s": 1.712,
+          "transfer_kb": 20.4
+        },
+        "scope": "Lighthouse 12.6.1 (lhci 0.15.1) median of 3 runs, repo lighthouserc.3g.yml (300 ms RTT, 700 kbit/s, 4x CPU, D-025) with url http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/index.html; runs 0.92/0.98/0.98, LCP 1921/1710/1712 ms, 20,386 B (1 request)",
+        "commit": "a51d071",
+        "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+        "recorded_at": "2026-11-01T19:44:10+00:00",
+        "evidence": "docs/agents/qa/Q03/logs/08-lhci-live-3g.txt, 09-lhci-metrics.txt, lhci/3g-manifest.json",
+        "source": "docs/agents/qa/bench-results/BM-03-Q03.json"
+      },
+      "checks": [
+        {
+          "metric": "performance_score",
+          "value": 98,
+          "threshold": ">= 90",
+          "status": "PASS"
+        },
+        {
+          "metric": "lcp_s",
+          "value": 1.712,
+          "threshold": "<= 2",
+          "status": "PASS"
+        },
+        {
+          "metric": "transfer_kb",
+          "value": 20.4,
+          "threshold": "<= 500",
+          "status": "PASS"
+        }
+      ]
+    },
+    "BM-04": {
+      "title": "App size",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "apk_arm64_mb",
+          "value": null,
+          "threshold": "<= 100",
+          "status": "MISSING"
+        },
+        {
+          "metric": "download_mb",
+          "value": null,
+          "threshold": "<= 30",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-05": {
+      "title": "Traceability completeness",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "demo_completeness_pct",
+          "value": null,
+          "threshold": ">= 100",
+          "status": "MISSING"
+        },
+        {
+          "metric": "reference_problems_flagged",
+          "value": null,
+          "threshold": ">= 9",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-06": {
+      "title": "Sync idempotency (same outbox replayed 3x)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "row_count_delta",
+          "value": null,
+          "threshold": "== 0",
+          "status": "MISSING"
+        },
+        {
+          "metric": "photo_checksum_changes",
+          "value": null,
+          "threshold": "== 0",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-07": {
+      "title": "API latency (locust, 50 users, sync + batch endpoints)",
+      "status": "FAIL",
+      "result": {
+        "id": "BM-07",
+        "metrics": {
+          "p95_ms": 2000,
+          "p50_ms": 430,
+          "p99_ms": 3700,
+          "rps": 25.71,
+          "failures": 0
+        },
+        "scope": "rerun 1, identical profile; 4618 requests, 0 failures",
+        "commit": "a51d071",
+        "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+        "recorded_at": "2026-11-01T19:53:25+00:00",
+        "evidence": "docs/agents/qa/Q04/logs/02b-locust-bm07-rerun1.txt, locust/bm07-rerun1_stats.csv, logs/03b-docker-stats-during-locust-rerun1.txt",
+        "source": "docs/agents/qa/bench-results/BM-07-Q04-rerun1.json"
+      },
+      "checks": [
+        {
+          "metric": "p95_ms",
+          "value": 2000,
+          "threshold": "<= 300",
+          "status": "FAIL"
+        }
+      ]
+    },
+    "BM-08": {
+      "title": "Grade engine correctness (PRD seed rows)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "seed_rows_pass_pct",
+          "value": null,
+          "threshold": ">= 100",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-09": {
+      "title": "Privacy lint over public pages and partner stub output",
+      "status": "PASS",
+      "result": {
+        "id": "BM-09",
+        "metrics": {
+          "hits": 0
+        },
+        "scope": "privacy-lint over every object in s3://public-pages (3 batches: 0598KCH0ZR3Y, GQ6QTKYZYVEP, QTC7PBGPAHGZ; 6 text files) with 22 DB canaries, before and after the Q03 rebuild; plus partner stub 501 and GET /v1/public/batches bodies (9 files): 0 hits. Negative control with an injected phone: 1 hit",
+        "commit": "a51d071",
+        "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+        "recorded_at": "2026-11-01T19:43:00+00:00",
+        "evidence": "docs/agents/qa/Q03/logs/03-bm09-privacy-lint-all-pages.txt, 06-bm09-privacy-lint-after-rebuild.txt, 07-bm09-partner-and-public-api.txt",
+        "source": "docs/agents/qa/bench-results/BM-09-Q03.json"
+      },
+      "checks": [
+        {
+          "metric": "hits",
+          "value": 0,
+          "threshold": "== 0",
+          "status": "PASS"
+        }
+      ]
+    },
+    "BM-10": {
+      "title": "Doc coverage (interrogate / dart doc / eslint-jsdoc)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "coverage_pct",
+          "value": null,
+          "threshold": ">= 100",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-11": {
+      "title": "Normal 4G entry + 1 photo",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "sent_s",
+          "value": null,
+          "threshold": "<= 5",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-12": {
+      "title": "Weak 4G entry + 1 photo",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "sent_s",
+          "value": null,
+          "threshold": "<= 20",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-13": {
+      "title": "Airplane mode save, then network restored",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "saved_offline",
+          "value": null,
+          "threshold": "== True",
+          "status": "MISSING"
+        },
+        {
+          "metric": "sent_without_user_action",
+          "value": null,
+          "threshold": "== True",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-14": {
+      "title": "Kill app mid-upload, relaunch",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "server_entries",
+          "value": null,
+          "threshold": "== 1",
+          "status": "MISSING"
+        },
+        {
+          "metric": "server_photos",
+          "value": null,
+          "threshold": "== 1",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-15": {
+      "title": "Same push replayed 5x",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "server_records",
+          "value": null,
+          "threshold": "== 1",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-16": {
+      "title": "Public page on the normal 4G profile",
+      "status": "PASS",
+      "result": {
+        "id": "BM-16",
+        "metrics": {
+          "initial_kb": 20.4,
+          "lcp_s": 0.535
+        },
+        "scope": "Lighthouse median of 3, repo lighthouserc.4g.yml (60 ms RTT, 10 Mbit/s, 4x CPU) on the same LocalStack URL; LCP 518/535/588 ms; one document 20,386 B (HTML with inline CSS, no JS file, uncompressed)",
+        "commit": "a51d071",
+        "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+        "recorded_at": "2026-11-01T19:44:50+00:00",
+        "evidence": "docs/agents/qa/Q03/logs/08-lhci-live-4g.txt, 09-lhci-metrics.txt, lhci/4g-manifest.json",
+        "source": "docs/agents/qa/bench-results/BM-16-Q03.json"
+      },
+      "checks": [
+        {
+          "metric": "initial_kb",
+          "value": 20.4,
+          "threshold": "< 100",
+          "status": "PASS"
+        },
+        {
+          "metric": "lcp_s",
+          "value": 0.535,
+          "threshold": "< 2.5",
+          "status": "PASS"
+        }
+      ]
+    }
+  }
+}
