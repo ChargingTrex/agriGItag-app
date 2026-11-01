@@ -79,7 +79,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 ## G5 Pilot candidate
 
 - [ ] B12 — Demo seed, e2e, client generation — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; e2e, make seed and integration tests deferred to the stack)
-- [ ] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: Opus (in progress 2026-10-31) — reviewer: — verifier:
+- [ ] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: MOB/SEC PASS r1 + 2 P2 micro-patches confirmed by Orchestrator — verifier: PENDING (merged 2026-11-01; 801 Flutter tests green on the branch; APK/AAB size not measured under host load → Verifier on an idle host or CI; device checks → Q01)
 - [ ] P07 — Playwright e2e chain + axe — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirmed by Orchestrator — verifier: PENDING (merged 2026-11-01; mock chain green twice, axe 0 serious on 20 screens, 120 Vitest green on the branch; live chain `E2E_LIVE=1` → Verifier)
 - [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q02 — Portal verification: Vitest ≥ 80 % in features, Playwright chain, axe — wave 7 — worker: — reviewer: — verifier:
