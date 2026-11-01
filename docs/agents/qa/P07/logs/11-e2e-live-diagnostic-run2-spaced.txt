@@ -1,0 +1,20 @@
+23:32  up 1 day, 23:04, 1 user, load averages: 7.44 12.85 18.07
+2026-11-01T18:02:23Z
+
+Running 1 test using 1 worker
+
+axe login: 0 serious/critical, 2 moderate/minor (landmark-one-main moderate, region moderate)
+axe dashboard: 0 serious/critical, 0 moderate/minor
+axe master data uploads (imported): 0 serious/critical, 0 moderate/minor
+axe members: 0 serious/critical, 0 moderate/minor
+axe flags: 0 serious/critical, 0 moderate/minor
+axe flag: 0 serious/critical, 0 moderate/minor
+axe ready lots: 0 serious/critical, 0 moderate/minor
+axe batches: 0 serious/critical, 0 moderate/minor
+axe batch (published): 0 serious/critical, 0 moderate/minor
+chain run 2 (live): 10.9 s
+  ✓  1 [chromium] › diag/chain.spec.ts:286:3 › chain run 2: login → approve → review flag → batch → approve → publish → labels (11.2s)
+
+  1 passed (13.7s)
+exit=0 wall=17 s
+23:32  up 1 day, 23:05, 1 user, load averages: 15.20 14.26 18.48

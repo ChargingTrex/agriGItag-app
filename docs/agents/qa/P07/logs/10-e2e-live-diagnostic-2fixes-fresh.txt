@@ -1,0 +1,55 @@
+23:30  up 1 day, 23:03, 1 user, load averages: 9.64 15.50 19.65
+2026-11-01T18:00:29Z
+
+Running 2 tests using 1 worker
+
+axe login: 0 serious/critical, 2 moderate/minor (landmark-one-main moderate, region moderate)
+axe dashboard: 0 serious/critical, 0 moderate/minor
+axe master data uploads (imported): 0 serious/critical, 0 moderate/minor
+axe members: 0 serious/critical, 0 moderate/minor
+axe flags: 0 serious/critical, 0 moderate/minor
+axe flag: 0 serious/critical, 0 moderate/minor
+axe ready lots: 0 serious/critical, 0 moderate/minor
+axe batches: 0 serious/critical, 0 moderate/minor
+axe batch (graded, awaiting approval): 0 serious/critical, 0 moderate/minor
+axe batch (published): 0 serious/critical, 0 moderate/minor
+chain run 1 (live): 14.1 s
+  ✓  1 [chromium] › diag/chain.spec.ts:286:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels (14.4s)
+  ✘  2 [chromium] › diag/chain.spec.ts:286:3 › chain run 2: login → approve → review flag → batch → approve → publish → labels (242ms)
+
+
+  1) [chromium] › diag/chain.spec.ts:286:3 › chain run 2: login → approve → review flag → batch → approve → publish → labels 
+
+    Error: {"error":{"code":"rate_limited","message":"Too many requests.","details":{"retry_after_s":46}}}
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      37 | ): Promise<Record<string, unknown>> {
+      38 |   const r = await response;
+    > 39 |   expect(r.ok(), await r.text()).toBe(true);
+         |                                  ^
+      40 |   // VERIFIER DIAGNOSTIC ONLY: tolerate 204 No Content (otp/request) to see the rest of the chain.
+      41 |   const text = await r.text();
+      42 |   return (text ? JSON.parse(text) : {}) as Record<string, unknown>;
+        at ok (/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/diag/chain.spec.ts:39:34)
+        at liveQcGrade (/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/diag/chain.spec.ts:56:3)
+        at /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/diag/chain.spec.ts:294:15
+
+    Error Context: out-diag2/chain-chain-run-2-login-→--0638b--approve-→-publish-→-labels-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    out-diag2/chain-chain-run-2-login-→--0638b--approve-→-publish-→-labels-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace out-diag2/chain-chain-run-2-login-→--0638b--approve-→-publish-→-labels-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › diag/chain.spec.ts:286:3 › chain run 2: login → approve → review flag → batch → approve → publish → labels 
+  1 passed (17.2s)
+exit=1 wall=19 s
+23:30  up 1 day, 23:03, 1 user, load averages: 9.12 15.00 19.37

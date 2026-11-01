@@ -1,0 +1,40 @@
+23:57  up 1 day, 23:29, 1 user, load averages: 11.63 13.59 17.77
+2026-11-01T18:27:01Z
+
+Running 1 test using 1 worker
+
+axe login: 0 serious/critical, 2 moderate/minor (landmark-one-main moderate, region moderate)
+axe dashboard: 0 serious/critical, 0 moderate/minor
+axe master data uploads (imported): 0 serious/critical, 0 moderate/minor
+axe members: 0 serious/critical, 0 moderate/minor
+axe flags: 0 serious/critical, 0 moderate/minor
+axe flag: 0 serious/critical, 0 moderate/minor
+axe ready lots: 0 serious/critical, 0 moderate/minor
+axe batches: 0 serious/critical, 0 moderate/minor
+axe batch (graded, awaiting approval): 0 serious/critical, 0 moderate/minor
+axe batch (published): 0 serious/critical, 0 moderate/minor
+chain run 1 (live): 13.7 s
+  ✓  1 [chromium] › diag/chain.spec.ts:286:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels (13.9s)
+
+  1 passed (15.6s)
+run 1 exit=0 wall=17 s
+23:58  up 1 day, 23:30, 1 user, load averages: 5.36 11.16 16.47
+2026-11-01T18:28:23Z
+
+Running 1 test using 1 worker
+
+axe login: 0 serious/critical, 2 moderate/minor (landmark-one-main moderate, region moderate)
+axe dashboard: 0 serious/critical, 0 moderate/minor
+axe master data uploads (imported): 0 serious/critical, 0 moderate/minor
+axe members: 0 serious/critical, 0 moderate/minor
+axe flags: 0 serious/critical, 0 moderate/minor
+axe flag: 0 serious/critical, 0 moderate/minor
+axe ready lots: 0 serious/critical, 0 moderate/minor
+axe batches: 0 serious/critical, 0 moderate/minor
+axe batch (published): 0 serious/critical, 0 moderate/minor
+chain run 2 (live): 7.6 s
+  ✓  1 [chromium] › diag/chain.spec.ts:286:3 › chain run 2: login → approve → review flag → batch → approve → publish → labels (7.8s)
+
+  1 passed (9.1s)
+run 2 exit=0 wall=11 s
+23:58  up 1 day, 23:31, 1 user, load averages: 5.54 11.00 16.35

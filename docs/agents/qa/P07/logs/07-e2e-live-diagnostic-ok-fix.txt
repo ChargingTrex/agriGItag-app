@@ -1,0 +1,58 @@
+23:28  up 1 day, 23:01, 1 user, load averages: 7.78 17.72 20.91
+2026-11-01T17:58:37Z
+
+Running 2 tests using 1 worker
+
+axe login: 0 serious/critical, 2 moderate/minor (landmark-one-main moderate, region moderate)
+axe dashboard: 0 serious/critical, 0 moderate/minor
+axe master data uploads (imported): 0 serious/critical, 0 moderate/minor
+axe members: 0 serious/critical, 0 moderate/minor
+axe flags: 0 serious/critical, 0 moderate/minor
+axe flag: 0 serious/critical, 0 moderate/minor
+axe ready lots: 0 serious/critical, 0 moderate/minor
+axe batches: 0 serious/critical, 0 moderate/minor
+axe batch (graded, awaiting approval): 0 serious/critical, 0 moderate/minor
+  ✘  1 [chromium] › diag/chain.spec.ts:285:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels (15.4s)
+  -  2 [chromium] › diag/chain.spec.ts:285:3 › chain run 2: login → approve → review flag → batch → approve → publish → labels
+
+
+  1) [chromium] › diag/chain.spec.ts:285:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: 'Publish', exact: true }).or(getByRole('button', { name: 'Download labels' }))
+    Expected: visible
+    Error: strict mode violation: getByRole('button', { name: 'Publish', exact: true }).or(getByRole('button', { name: 'Download labels' })) resolved to 2 elements:
+        1) <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary css-s1wldb-MuiButtonBase-root-MuiButton-root">Publish</button> aka getByRole('button', { name: 'Publish' })
+        2) <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary css-s1wldb-MuiButtonBase-root-MuiButton-root">Download labels</button> aka getByRole('button', { name: 'Download labels' })
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: 'Publish', exact: true }).or(getByRole('button', { name: 'Download labels' })) with timeout 15000ms
+      - waiting for getByRole('button', { name: 'Publish', exact: true }).or(getByRole('button', { name: 'Download labels' }))
+
+
+      269 |   const publish = page.getByRole('button', { name: 'Publish', exact: true });
+      270 |   const labels = page.getByRole('button', { name: 'Download labels' });
+    > 271 |   await expect(publish.or(labels)).toBeVisible();
+          |                                    ^
+      272 |   if (await publish.isVisible()) await publish.click();
+      273 |   // The worker builds the page (the MSW worker after one poll; Celery on the live stack).
+      274 |   await expect(page.getByRole('link', { name: new RegExp(`/b/${code}$`) })).toBeVisible({
+        at walkBatchGates (/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/diag/chain.spec.ts:271:36)
+        at /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/diag/chain.spec.ts:305:5
+
+    Error Context: out-diag/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    out-diag/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace out-diag/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › diag/chain.spec.ts:285:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels 
+  1 did not run
+exit=1 wall=21 s
+23:28  up 1 day, 23:01, 1 user, load averages: 8.24 17.17 20.64

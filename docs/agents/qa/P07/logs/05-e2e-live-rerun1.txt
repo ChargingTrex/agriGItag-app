@@ -1,0 +1,44 @@
+23:26  up 1 day, 22:58, 1 user, load averages: 24.99 25.06 23.69
+2026-11-01T17:56:12Z
+
+Running 2 tests using 1 worker
+
+  ✘  1 [chromium] › e2e/chain.spec.ts:283:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels (459ms)
+  -  2 [chromium] › e2e/chain.spec.ts:283:3 › chain run 2: login → approve → review flag → batch → approve → publish → labels
+
+
+  1) [chromium] › e2e/chain.spec.ts:283:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels 
+
+    Error: {"error":{"code":"rate_limited","message":"Too many requests.","details":{"retry_after_s":8}}}
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      37 | ): Promise<Record<string, unknown>> {
+      38 |   const r = await response;
+    > 39 |   expect(r.ok(), await r.text()).toBe(true);
+         |                                  ^
+      40 |   return (await r.json()) as Record<string, unknown>;
+      41 | }
+      42 |
+        at ok (/Users/fi-it/Documents/projects/agriGitag/apps/portal/e2e/chain.spec.ts:39:34)
+        at liveQcGrade (/Users/fi-it/Documents/projects/agriGitag/apps/portal/e2e/chain.spec.ts:54:3)
+        at /Users/fi-it/Documents/projects/agriGitag/apps/portal/e2e/chain.spec.ts:291:15
+
+    Error Context: test-results/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › e2e/chain.spec.ts:283:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels 
+  1 did not run
+exit=1 wall=4 s
+23:26  up 1 day, 22:58, 1 user, load averages: 23.47 24.75 23.59

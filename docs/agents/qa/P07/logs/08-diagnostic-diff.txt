@@ -1,0 +1,11 @@
+40c40,42
+<   return (await r.json()) as Record<string, unknown>;
+---
+>   // VERIFIER DIAGNOSTIC ONLY: tolerate 204 No Content (otp/request) to see the rest of the chain.
+>   const text = await r.text();
+>   return (text ? JSON.parse(text) : {}) as Record<string, unknown>;
+269c271,272
+<   await expect(publish.or(labels)).toBeVisible();
+---
+>   // VERIFIER DIAGNOSTIC ONLY: live mode shows both buttons before publishing (strict-mode violation).
+>   await expect(publish.or(labels).first()).toBeVisible();

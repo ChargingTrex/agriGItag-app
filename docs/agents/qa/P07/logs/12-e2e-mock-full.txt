@@ -1,0 +1,84 @@
+23:32  up 1 day, 23:05, 1 user, load averages: 13.76 13.98 18.31
+2026-11-01T18:02:51Z
+
+> @agritrace/portal@0.1.0 e2e
+> playwright test
+
+
+Running 6 tests using 4 workers
+
+  ✓  2 [chromium] › e2e/smoke.spec.ts:8:1 › a signed-out visit to a screen shows the sign-in page (14.6s)
+axe login: 0 serious/critical, 2 moderate/minor (landmark-one-main moderate, region moderate)
+axe login: 0 serious/critical, 2 moderate/minor (landmark-one-main moderate, region moderate)
+  ✓  3 [chromium] › e2e/members.spec.ts:19:1 › login → members → approve: the farmer becomes Active without a reload (19.0s)
+axe dashboard: 0 serious/critical, 0 moderate/minor
+axe dashboard: 0 serious/critical, 0 moderate/minor
+axe master data uploads (imported): 0 serious/critical, 0 moderate/minor
+axe members: 0 serious/critical, 0 moderate/minor
+axe farmer: 0 serious/critical, 0 moderate/minor
+axe members: 0 serious/critical, 0 moderate/minor
+axe flags: 0 serious/critical, 0 moderate/minor
+axe plot: 0 serious/critical, 0 moderate/minor
+axe flag: 0 serious/critical, 0 moderate/minor
+axe processors: 0 serious/critical, 0 moderate/minor
+axe flags: 0 serious/critical, 0 moderate/minor
+axe processors: 0 serious/critical, 0 moderate/minor
+axe flag: 0 serious/critical, 0 moderate/minor
+axe lot: 0 serious/critical, 0 moderate/minor
+  ✓  5 [chromium] › e2e/members.spec.ts:40:1 › plot page: the map chunk loads lazily and satellite tiles wait for the toggle (15.3s)
+axe ready lots: 0 serious/critical, 0 moderate/minor
+axe batches: 0 serious/critical, 0 moderate/minor
+axe ready lots (3 ticked): 0 serious/critical, 0 moderate/minor
+axe batch (created): 0 serious/critical, 0 moderate/minor
+axe batches: 0 serious/critical, 0 moderate/minor
+axe labels & exports (placeholder): 0 serious/critical, 0 moderate/minor
+axe batch (graded, awaiting approval): 0 serious/critical, 0 moderate/minor
+axe master data uploads: 0 serious/critical, 0 moderate/minor
+axe audit log: 0 serious/critical, 0 moderate/minor
+axe settings: 0 serious/critical, 0 moderate/minor
+  ✓  4 [chromium] › e2e/axe.spec.ts:32:1 › every routed screen has no serious or critical axe violation (39.5s)
+  ✘  1 [chromium] › e2e/chain.spec.ts:283:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels (41.6s)
+  -  6 [chromium] › e2e/chain.spec.ts:283:3 › chain run 2: login → approve → review flag → batch → approve → publish → labels
+
+
+  1) [chromium] › e2e/chain.spec.ts:283:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: 'Publish', exact: true }).or(getByRole('button', { name: 'Download labels' }))
+    Expected: visible
+    Error: strict mode violation: getByRole('button', { name: 'Publish', exact: true }).or(getByRole('button', { name: 'Download labels' })) resolved to 2 elements:
+        1) <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary css-s1wldb-MuiButtonBase-root-MuiButton-root">Publish</button> aka getByRole('button', { name: 'Publish' })
+        2) <button tabindex="0" type="button" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary css-s1wldb-MuiButtonBase-root-MuiButton-root">Download labels</button> aka getByRole('button', { name: 'Download labels' })
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: 'Publish', exact: true }).or(getByRole('button', { name: 'Download labels' })) with timeout 15000ms
+      - waiting for getByRole('button', { name: 'Publish', exact: true }).or(getByRole('button', { name: 'Download labels' }))
+
+
+      267 |   const publish = page.getByRole('button', { name: 'Publish', exact: true });
+      268 |   const labels = page.getByRole('button', { name: 'Download labels' });
+    > 269 |   await expect(publish.or(labels)).toBeVisible();
+          |                                    ^
+      270 |   if (await publish.isVisible()) await publish.click();
+      271 |   // The worker builds the page (the MSW worker after one poll; Celery on the live stack).
+      272 |   await expect(page.getByRole('link', { name: new RegExp(`/b/${code}$`) })).toBeVisible({
+        at walkBatchGates (/Users/fi-it/Documents/projects/agriGitag/apps/portal/e2e/chain.spec.ts:269:36)
+        at /Users/fi-it/Documents/projects/agriGitag/apps/portal/e2e/chain.spec.ts:303:5
+
+    Error Context: test-results/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/chain-chain-run-1-login-→--5ec34--approve-→-publish-→-labels-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › e2e/chain.spec.ts:283:3 › chain run 1: login → approve → review flag → batch → approve → publish → labels 
+  1 did not run
+  4 passed (51.7s)
+exit=1 wall=54 s
+23:33  up 1 day, 23:06, 1 user, load averages: 101.13 37.79 26.85
