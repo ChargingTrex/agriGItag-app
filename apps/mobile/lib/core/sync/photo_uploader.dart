@@ -38,7 +38,7 @@ Future<void> uploadPhotos(SyncContext c) async {
   var due = await c.db.mediaDao.pendingUploads(ownerUserId: c.userId, now: c.now());
   // `expires_at` is server time: compare it with the server's clock (phone clock minus the skew _recordSkew stored),
   // so a phone running fast does not see every fresh URL as stale.
-  final skew = Duration(milliseconds: int.tryParse(await c.db.syncStateDao.get(clockSkewKey) ?? '') ?? 0);
+  var skew = await _skew(c);
   bool usable(MediaUpload u) =>
       u.media.uploadUrl != null &&
       u.media.uploadUrlExpiresAt!.isAfter(c.now().subtract(skew).add(const Duration(minutes: 1)));
@@ -53,6 +53,7 @@ Future<void> uploadPhotos(SyncContext c) async {
       await Future.wait(stale.map((u) => _failed(c, u, e)));
     }
     due = await c.db.mediaDao.pendingUploads(ownerUserId: c.userId, now: c.now());
+    skew = await _skew(c); // the refresh's push recorded a fresh one (a clock jump since the last push)
   }
 
   final ready = due.where(usable).toList();
@@ -66,6 +67,11 @@ Future<void> uploadPhotos(SyncContext c) async {
   }
   await _confirm(c, msByEntry);
 }
+
+/// The phone-minus-server clock offset stored by the last push ([clockSkewKey]), zero when none.
+/// Returns it; throws only on database errors.
+Future<Duration> _skew(SyncContext c) async =>
+    Duration(milliseconds: int.tryParse(await c.db.syncStateDao.get(clockSkewKey) ?? '') ?? 0);
 
 /// 3 when the last measured PUT ran at ≥ [fastUploadKbps], else 1 (also before the first measurement).
 /// Returns the count; throws nothing.
