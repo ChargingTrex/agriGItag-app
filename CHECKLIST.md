@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 78 % (58/74 items)
+Completion: 80 % (59/74 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -88,7 +88,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [x] B12 — Demo seed, e2e, client generation — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PASS (docs/agents/qa/B12.md; e2e 2/2 with the ruling flag set, seed idempotent, both clients regenerate clean)
 - [x] B17 — First live-stack fixes (seed `gi_eligible`, B13 head assertion, B14 audit payload, stack fixture env leak + idempotent CreateBucket) — wave 7 hotfix — worker: Opus (1 round) — reviewer: Orchestrator (test-only + 1-line seed diff) — verifier: combined `pytest tests` 768/768 on the branch (merged 2026-11-01)
-- [ ] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: MOB/SEC PASS r1 + 2 P2 micro-patches confirmed by Orchestrator — verifier: PENDING (merged 2026-11-01; 803 Flutter tests green on main after merge, analyzer clean; APK/AAB size not measured under host load → Verifier on an idle host or CI; device checks → Q01)
+- [x] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: MOB/SEC PASS r1 + 2 P2 micro-patches confirmed by Orchestrator — verifier: size PASS 30.03 MiB arm64 APK (Orchestrator run 2026-11-02, docs/agents/qa/M13.md); AAB download unmeasured (no bundletool); device checks → Q01
 - [ ] P07 — Playwright e2e chain + axe — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirmed by Orchestrator — verifier: FAIL live + mock (docs/agents/qa/P07.md: P07-1 chain assertion, P07-2 live mode 204/OTP limit/no batch; CI portal job red → P10; axe 0 serious PASS)
 - [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q02 — Portal verification: Vitest ≥ 80 % in features, Playwright chain, axe — wave 7 — worker: — reviewer: — verifier:
