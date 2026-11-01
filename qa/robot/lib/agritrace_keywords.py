@@ -628,14 +628,16 @@ def push(phone: str, *entries: dict, expect: int | str = 200, headers: dict | No
     return r.json()["results"] if r.status_code == 200 else r.json()
 
 
-def received_lot(kg: str, plot: dict | None = None, reading: str = "10.0", stage: str = "drying_end") -> str:
-    """Open a lot, record its moisture, mark it ready and receive it at the processor (B09 path).
+def received_lot(kg: str, plot: dict | None = None, reading: str = "10.0", stage: str = "drying_end",
+                 lot_id: str | None = None) -> str:
+    """Open a lot (or take ``lot_id``), record its moisture, mark it ready and receive it at the processor (B09 path).
 
     Args:
         kg: intake kilograms.
         plot: PlotOut body; default the QA main plot.
         reading: moisture percent recorded before the ready gate.
         stage: stage of that reading.
+        lot_id: an open lot to use instead of a new one (e.g. one that already has events).
 
     Returns:
         The lot id.
@@ -646,7 +648,7 @@ def received_lot(kg: str, plot: dict | None = None, reading: str = "10.0", stage
     Side effects:
         Creates a lot, a reading and an intake.
     """
-    lot = new_lot(plot)
+    lot = lot_id or new_lot(plot)
     call_api("POST", "/quality-readings", ADMIN, 201, json=moisture(reading, stage, lot_id=lot))
     call_api("POST", f"/lots/{lot}/ready", ADMIN, 200)
     receive(lot, kg)
@@ -898,7 +900,7 @@ def s3_put(bucket: str, key: str, data: str | bytes) -> None:
 
 
 def decode_qr(png: bytes) -> list:
-    """Decode the QR codes in a PNG with zxing-cpp inside the api container (it ships zxing-cpp and Pillow).
+    """Decode the QR codes in a PNG with zxing-cpp (the decoder apps/api's tests use, B10).
 
     Args:
         png: PNG bytes.
@@ -907,11 +909,12 @@ def decode_qr(png: bytes) -> list:
         The decoded texts, one per QR code found.
 
     Raises:
-        AssertionError: the decoder failed to run.
+        ImportError: zxing-cpp or Pillow is not installed (qa/robot/requirements.txt).
+        PIL.UnidentifiedImageError: the bytes are not an image.
     """
-    code = ("import io,sys,zxingcpp;from PIL import Image;"
-            "[print(b.text) for b in zxingcpp.read_barcodes(Image.open(io.BytesIO(sys.stdin.buffer.read())))]")
-    done = _compose("exec", "-T", "api", "python", "-c", code, stdin=png)
-    if done.returncode:
-        raise AssertionError(done.stderr.decode()[-400:])
-    return done.stdout.decode().split()
+    import io
+
+    import zxingcpp
+    from PIL import Image
+
+    return [b.text for b in zxingcpp.read_barcodes(Image.open(io.BytesIO(png)))]
