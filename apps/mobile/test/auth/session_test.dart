@@ -198,6 +198,51 @@ void main() {
     });
   });
 
+  group('M14: refresh shared with the background isolate', () {
+    test('the keystore holds a token another isolate rotated → adopted, no refresh POST, still signed in', () async {
+      final db = memoryDb();
+      await _row(db);
+      final foreground = FakeApi();
+      final background = FakeApi({
+        refresh: [(200, sessionJson(nonce: 2))],
+      });
+      final a = authContainer(foreground, db: db, stored: _tokens(later));
+      final b = authContainer(background, db: db, stored: _tokens(later));
+      await a.read(sessionProvider.notifier).restore();
+      await b.read(sessionProvider.notifier).restore();
+      await b.read(sessionProvider.notifier).refreshAccessToken(); // r1 → r2 in the keystore
+
+      expect(await a.read(sessionProvider.notifier).refreshAccessToken(), fakeJwt(nonce: 2));
+      expect(foreground.to(refresh), isEmpty, reason: 'the stale r1 is never sent');
+      expect(a.read(sessionProvider).role, Role.farmer);
+    });
+
+    test('a 401 while another isolate rotated the token → re-read, adopted, not signed out', () async {
+      final db = memoryDb();
+      await _row(db);
+      final foreground = FakeApi({
+        refresh: [(401, apiError('unauthorized'))],
+      });
+      final background = FakeApi({
+        refresh: [(200, sessionJson(nonce: 2))],
+      });
+      final gate = Completer<void>();
+      foreground.gates[refresh] = gate.future;
+      final a = authContainer(foreground, db: db, stored: _tokens(earlier));
+      final b = authContainer(background, db: db, stored: _tokens(earlier));
+      final notifier = a.read(sessionProvider.notifier);
+      await notifier.restore(); // starts a refresh with r1, held at the gate
+      await b.read(sessionProvider.notifier).restore();
+      await pumpEventQueue();
+      expect(background.to(refresh), hasLength(1));
+
+      gate.complete();
+      expect(await notifier.refreshAccessToken(), fakeJwt(nonce: 2));
+      expect((a.read(sessionProvider).role, a.read(sessionProvider).sessionEnded), (Role.farmer, false));
+      expect((await storedValues())['refresh_token'], 'r2');
+    });
+  });
+
   group('sign-out', () {
     test('calls logout, clears tokens and row, keeps the device id and every outbox row', () async {
       final api = FakeApi({

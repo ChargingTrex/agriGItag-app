@@ -254,7 +254,12 @@ class SessionNotifier extends Notifier<Session> {
   Future<String?> refreshAccessToken() => _refreshing ??= _doRefresh().whenComplete(() => _refreshing = null);
 
   /// One refresh call; see [refreshAccessToken]. Returns the new access token or null; throws nothing.
+  ///
+  /// The keystore is read first and again after a 401: the background sync isolate (M02) refreshes too, and a
+  /// rotated-out token sent from memory would look like reuse and sign the phone out (audit waves 3–6 finding 2).
+  /// Two refreshes at the very same moment in two isolates can still collide.
   Future<String?> _doRefresh() async {
+    if (await _adoptStored() && _unexpiredAccess != null) return _unexpiredAccess;
     final token = _refresh;
     if (token == null) return null;
     try {
@@ -268,10 +273,34 @@ class SessionNotifier extends Notifier<Session> {
       await _storeTokens(response.data!);
       return _access;
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401 && _refresh == token) await _endLocally(sessionEnded: true);
+      if (e.response?.statusCode != 401 || _refresh != token) return null;
+      // Another isolate rotated the token while this call was in flight: keep its session instead of ending ours.
+      if (await _adoptStored()) return _unexpiredAccess;
+      await _endLocally(sessionEnded: true);
       return null;
     }
   }
+
+  /// Adopts the keystore's tokens (the single source of truth across isolates) when its refresh token differs from
+  /// the one in memory. Returns whether it did; throws nothing (a keystore failure keeps the memory copy). Never
+  /// signs in again after this isolate signed out.
+  Future<bool> _adoptStored() async {
+    final Map<String, String> stored;
+    try {
+      stored = await _storage.readAll();
+    } on PlatformException {
+      return false;
+    }
+    final refresh = stored[_kRefresh];
+    if (_refresh == null || refresh == null || refresh == _refresh) return false;
+    _access = stored[_kAccess];
+    _refresh = refresh;
+    _expiresAt = DateTime.tryParse(stored[_kExpires] ?? '');
+    return true;
+  }
+
+  /// The access token while it has not expired, else null. Throws nothing.
+  String? get _unexpiredAccess => (_expiresAt?.isAfter(DateTime.now()) ?? false) ? _access : null;
 
   /// Signs out: tells the API (`POST /v1/auth/logout`), then forgets the tokens and the Session row.
   ///
