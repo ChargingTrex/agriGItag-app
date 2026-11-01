@@ -55,6 +55,11 @@ class SyncContext {
   /// Jitter source for the backoff.
   final Random random;
 
+  /// Whether the Session row now names someone else than [userId] (or nobody): another user signed in on this shared
+  /// phone while the run was going. Phases check it before each authed call and stop, leaving the rows `waiting` for
+  /// their owner (D-029). Returns the answer; throws only on database errors.
+  Future<bool> userChanged() async => (await db.sessionDao.read())?.userId != userId;
+
   /// Options for calls to secured API operations: the M06 auth interceptor adds the bearer token (and refreshes it
   /// on a 401) only when `extra['secure']` names `AccessToken`, as the generated client marks its operations.
   static final authed = Options(

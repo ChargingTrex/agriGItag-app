@@ -121,7 +121,7 @@ class AuthInterceptor extends Interceptor {
   ///
   /// [err] is the failed request; [handler] receives the retried response or the original (or retry) error.
   /// If another request already rotated the token, the retry uses the current token without a second refresh
-  /// (the API treats two racing refreshes as reuse, D-024). Returns nothing; throws nothing (errors go to
+  /// (the API treats two racing refreshes as reuse, D-024), unless that token belongs to another user (D-029). Returns nothing; throws nothing (errors go to
   /// [handler]). Side effect: may call [refresh], which stores new tokens or signs the phone out.
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
@@ -131,6 +131,8 @@ class AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
     final current = accessToken();
+    // D-029: another user signed in on this shared phone meanwhile; their token never re-sends this user's request.
+    if (current != null && current != sent && jwtSub(current) != jwtSub(sent as String)) return handler.next(err);
     final token = current != null && current != sent ? current : await refresh();
     if (token == null) return handler.next(err);
     options

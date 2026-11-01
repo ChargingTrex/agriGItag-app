@@ -220,7 +220,7 @@ class SessionNotifier extends Notifier<Session> {
   /// Side effects: secure storage, Session row, state (the router redirects to the role's home).
   Future<void> openSession(SessionOut out) async {
     final role = Role.values.where((r) => out.roles.contains(r.wireName)).firstOrNull;
-    final userId = _subOf(out.accessToken) ?? (throw const FormatException('access token without a sub claim'));
+    final userId = jwtSub(out.accessToken) ?? (throw const FormatException('access token without a sub claim'));
     await _storeTokens(out);
     if (role == null) {
       await signOut();
@@ -291,8 +291,8 @@ class SessionNotifier extends Notifier<Session> {
     }
     final refresh = stored[_kRefresh];
     if (_refresh == null || refresh == null || refresh == _refresh) return false;
-    final mine = _subOf(_access);
-    if (mine != null && _subOf(stored[_kAccess]) != mine) {
+    final mine = jwtSub(_access);
+    if (mine != null && jwtSub(stored[_kAccess]) != mine) {
       // Another user signed in on this shared phone meanwhile (D-029): forget ours, never send with theirs.
       _access = _refresh = _expiresAt = null;
       return true;
@@ -301,16 +301,6 @@ class SessionNotifier extends Notifier<Session> {
     _refresh = refresh;
     _expiresAt = DateTime.tryParse(stored[_kExpires] ?? '');
     return true;
-  }
-
-  /// The `sub` claim (user id) of [jwt], or null when missing or malformed. Throws nothing.
-  static String? _subOf(String? jwt) {
-    try {
-      final claims = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(jwt!.split('.')[1]))));
-      return (claims as Map)['sub'] as String?;
-    } on Object {
-      return null;
-    }
   }
 
   /// The access token while it has not expired, else null. Throws nothing.
@@ -384,6 +374,17 @@ class SessionNotifier extends Notifier<Session> {
     }
     await ref.read(appDatabaseProvider).sessionDao.clear();
     state = Session(locale: locale ?? state.locale, sessionEnded: sessionEnded);
+  }
+}
+
+/// The `sub` claim (user id) of [jwt], or null when missing or malformed. Used by [SessionNotifier] and the API
+/// client's auth interceptor (D-029). Throws nothing.
+String? jwtSub(String? jwt) {
+  try {
+    final claims = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(jwt!.split('.')[1]))));
+    return (claims as Map)['sub'] as String?;
+  } on Object {
+    return null;
   }
 }
 

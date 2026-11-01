@@ -26,6 +26,9 @@ import 'sync_context.dart';
 /// The server's push body limit (backend-design.md §3, PLAN §13 A4).
 const maxPushBytes = 256 * 1024;
 
+/// SyncState key holding the phone-minus-server clock offset in ms (0 when under 10 min), written by every push.
+const clockSkewKey = 'clock_skew_ms';
+
 /// Payload keys that belong to the event version itself, not to its typed payload; lifted out of `payloadJson`
 /// when present (feature screens store them there because Entries has no column for them).
 const _versionKeys = ['occurred_on', 'occurred_end_on', 'batch_id', 'reason_text'];
@@ -41,12 +44,14 @@ const unknownEntryType = 'unknown_entry_type';
 /// server did not have yet (D-054).
 const _retriedOnce = {'stale_version', 'not_found', 'assist_session_invalid'};
 
-/// Pushes the signed-in user's due entries, batch after batch, until none is due or a request fails.
+/// Pushes the signed-in user's due entries, batch after batch, until none is due, a request fails or another user
+/// signed in (checked before every batch, D-029).
 ///
 /// [c] is the run. Returns when done; throws only on database errors. Side effects: outbox, entry, media and metric
 /// rows change; one or more HTTP requests.
 Future<void> pushEntries(SyncContext c) async {
   while (true) {
+    if (await c.userChanged()) return;
     final batch = await c.db.outboxDao.nextBatch(ownerUserId: c.userId, now: c.now());
     if (batch.isEmpty || !await _pushBatch(c, batch)) return;
   }
@@ -316,7 +321,7 @@ Future<void> _failed(SyncContext c, List<OutboxBatchItem> sent, Object error, Li
 Future<void> _recordSkew(SyncContext c, DateTime serverTime) async {
   final skew = c.now().difference(serverTime);
   final value = skew.abs() > const Duration(minutes: 10) ? skew.inMilliseconds : 0;
-  await c.db.syncStateDao.set('clock_skew_ms', '$value');
+  await c.db.syncStateDao.set(clockSkewKey, '$value');
 }
 
 /// [t] as ISO 8601 UTC with `Z` (the server refuses naive timestamps), or null. Throws nothing.
