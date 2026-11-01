@@ -523,17 +523,23 @@ async def run_gate_checks(
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        As `_check_lot` and `_check_batch`.
+        Locks the batch row, then each lot row in id order (`SELECT … FOR UPDATE`, until the caller's
+        transaction ends) before reading its facts; then as `_check_lot` and `_check_batch`.
     """
+    # Checks of one lot/batch run one at a time: `store_flags` closes what its run did not raise, so a run
+    #   that read the facts before another check committed a flag would close that flag (B16-1). After the
+    #   lock, READ COMMITTED reads see every check committed before it (`populate_existing`: cached rows too).
     subjects: set[uuid.UUID] = set()
     lot_ids = [lot_id] if lot_id else []
-    batch = await session.get(Batch, batch_id) if batch_id else None
+    batch = (
+        await session.get(Batch, batch_id, with_for_update=True, populate_existing=True) if batch_id else None
+    )
     if batch is not None:
         subjects |= await _check_batch(session, batch)
         query = select(BatchShare.lot_id).where(BatchShare.batch_id == batch.id)
         lot_ids += (await session.scalars(query)).all()
-    for lid in dict.fromkeys(lot_ids):
-        if (lot := await session.get(Lot, lid)) is not None:
+    for lid in sorted(set(lot_ids)):  # id order, as `create_batch` locks lots, so two checks cannot deadlock
+        if (lot := await session.get(Lot, lid, with_for_update=True, populate_existing=True)) is not None:
             subjects |= await _check_lot(session, lot)
     return await _active(session, subjects)
 

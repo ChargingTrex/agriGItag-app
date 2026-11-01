@@ -1,14 +1,17 @@
 """Integration tests of the server rules on PostGIS, the shared GI cases and flag resolution.
 
-Covers off-plot events, the reference lot's flag set, yield holds, and resolving over HTTP and sync push.
+Covers off-plot events, the reference lot's flag set, yield holds, a stale check racing an intake (B19), and
+resolving over HTTP and sync push.
 
 Serves: B15 acceptance (D-030 reference set, old flag closed); B08 acceptance (600 m off plot →
 `event_off_plot` warn, re-check no dup; 1,150/1,250/1,350 kg → none/warn/hold + `gi_eligible=false`),
 backend-design §5 expected flags (inline fixture until B12 seeds the reference batch), D-006 (`gi_check`
-cases of tests/fixtures/rule_cases.json through `locate_point`), FR70.
+cases of tests/fixtures/rule_cases.json through `locate_point`), FR70, B19 (QA issue B16-1).
 Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`).
 """
 
+import asyncio
+import contextlib
 import json
 import math
 import secrets
@@ -48,7 +51,7 @@ from agritrace.core.ids import batch_code, lot_code, uuid7
 from agritrace.core.schemas import GeoPoint
 from agritrace.modules.events.models import Event, EventVersion
 from agritrace.modules.identity.models import User
-from agritrace.modules.lots_batches.models import Batch, BatchShare, Lot
+from agritrace.modules.lots_batches.models import Batch, BatchShare, Lot, LotIntake
 from agritrace.modules.quality.profiles.loader import load_profile
 from agritrace.modules.registry import service as registry_service
 from agritrace.modules.registry.models import (
@@ -63,7 +66,7 @@ from agritrace.modules.registry.models import (
 )
 from agritrace.modules.rules_flags import service
 from agritrace.modules.rules_flags.models import Flag
-from agritrace.modules.rules_flags.rules.context import FlagCandidate
+from agritrace.modules.rules_flags.rules.context import FlagCandidate, LotContext
 from agritrace.modules.rules_flags.schemas import FlagResolveIn
 
 pytestmark = pytest.mark.integration
@@ -441,6 +444,71 @@ async def test_hold_comes_back_after_auto_close(world: World) -> None:
             await s.refresh(lot)
             assert (flag.status, flag.severity, lot.gi_eligible) == (status, Severity.HOLD, eligible)
         assert (flag.resolution_reason_code, lot.gi_hold_reason) == (None, "flags: yield_over_ceiling")
+
+
+async def test_stale_check_cannot_close_a_flag_committed_after_it_read(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B16-1: a lot check that read the facts before an intake committed leaves the intake's flag open.
+
+    Check A reads the lot (packed 100 kg, no intake) and waits up to 2 s for session B, which records a 130 kg
+    intake, runs the gate checks (`quantity_mismatch` warn) and commits; then A stores its flags. With the lot
+    lock B waits for A instead, so either way the flag must end open.
+
+    Args:
+        world: the seeded FPO.
+        monkeypatch: pytest fixture (pauses A after its first context read).
+    """
+    async with get_sessionmaker()() as s:
+        await _event(s, world, EventType.PACKING, "2026-03-10", {"quantity": {"value": 100, "unit": "kg"}})
+    read, committed = asyncio.Event(), asyncio.Event()
+    original = service._lot_context
+
+    async def paused_context(session: AsyncSession, lot: Lot) -> LotContext:
+        """Read the lot's facts; on the first call wait for B's commit (at most 2 s).
+
+        Args:
+            session: database session.
+            lot: the lot.
+
+        Returns:
+            The real context.
+        """
+        ctx = await original(session, lot)
+        if not read.is_set():
+            read.set()
+            with contextlib.suppress(TimeoutError):
+                await asyncio.wait_for(committed.wait(), 2)
+        return ctx
+
+    monkeypatch.setattr(service, "_lot_context", paused_context)
+
+    async def stale_check() -> None:
+        """Run check A in its own session (as the `rules.check_lot` task does)."""
+        async with get_sessionmaker()() as a:
+            await service.check_lot(a, world.lot)
+
+    task = asyncio.create_task(stale_check())
+    await read.wait()
+    async with get_sessionmaker()() as b:
+        intake = LotIntake(
+            id=uuid7(),
+            fpo_id=world.fpo,
+            lot_id=world.lot,
+            processor_id=world.processor,
+            sale_date=date(2026, 3, 12),
+            received_kg=Decimal(130),
+            accepted_by_user_id=world.admin,
+        )
+        b.add(intake)
+        await b.flush()
+        await service.run_gate_checks(b, lot_id=world.lot)
+        await b.commit()
+    committed.set()
+    await task
+    async with get_sessionmaker()() as s:
+        [flag] = await _flags(s, world.lot, "quantity_mismatch")
+        assert (flag.status, flag.resolution_reason_code) == (FlagStatus.OPEN, None)
 
 
 @pytest.mark.parametrize("case", CASES["gi_check"]["cases"], ids=lambda c: c["name"])
