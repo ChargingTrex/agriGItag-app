@@ -1,6 +1,6 @@
-"""Integration test: a presigned evidence PUT is accepted only with the promised SHA-256.
+"""Integration test: a presigned evidence PUT is accepted only with the promised SHA-256 and length.
 
-Serves: D-011 (single presigned PUT with checksum), D-008 (object-locked evidence bucket).
+Serves: D-011 (single presigned PUT with checksum), D-008 (object-locked evidence bucket), B18.
 Callers: pytest (`make test`); needs Docker.
 """
 
@@ -36,3 +36,20 @@ def test_presigned_put_checks_sha256(stack: None) -> None:
     meta = storage.head("t/photo.jpg")
     assert meta is not None and meta["ContentLength"] == len(body)
     assert storage.get_stream("t/photo.jpg").read() == body
+
+
+def test_presigned_put_checks_declared_length(stack: None) -> None:
+    """A PUT whose Content-Length differs from the signed `size_bytes` is refused (B18, audit waves 3-6 #4).
+
+    Args:
+        stack: the running containers (fixture).
+    """
+    body = b"\xff\xd8 fake jpeg"
+    digest = hashlib.sha256(body).digest()
+    headers = {"Content-Type": "image/jpeg", "x-amz-checksum-sha256": base64.b64encode(digest).decode()}
+    # The checksum matches, so only the signed length can refuse it.
+    lying = storage.presign_put("t/sized.jpg", "image/jpeg", digest.hex(), size_bytes=len(body) + 1)
+    assert httpx.put(lying, content=body, headers=headers).status_code == 403
+    assert storage.head("t/sized.jpg") is None
+    honest = storage.presign_put("t/sized.jpg", "image/jpeg", digest.hex(), size_bytes=len(body))
+    assert httpx.put(honest, content=body, headers=headers).status_code == 200

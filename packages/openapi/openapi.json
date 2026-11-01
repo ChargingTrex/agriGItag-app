@@ -7781,7 +7781,7 @@
           "size_bytes": {
             "description": "File size in bytes.",
             "exclusiveMinimum": 0.0,
-            "maximum": 5000000.0,
+            "maximum": 2097152.0,
             "title": "Size Bytes",
             "type": "integer"
           }

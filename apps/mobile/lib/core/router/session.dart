@@ -220,7 +220,7 @@ class SessionNotifier extends Notifier<Session> {
   /// Side effects: secure storage, Session row, state (the router redirects to the role's home).
   Future<void> openSession(SessionOut out) async {
     final role = Role.values.where((r) => out.roles.contains(r.wireName)).firstOrNull;
-    final claims = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(out.accessToken.split('.')[1]))));
+    final userId = jwtSub(out.accessToken) ?? (throw const FormatException('access token without a sub claim'));
     await _storeTokens(out);
     if (role == null) {
       await signOut();
@@ -230,7 +230,7 @@ class SessionNotifier extends Notifier<Session> {
         .read(appDatabaseProvider)
         .sessionDao
         .save(
-          userId: (claims as Map)['sub'] as String,
+          userId: userId,
           role: role,
           fpoId: out.fpoId,
           deviceId: await _ensureDeviceId(),
@@ -254,7 +254,12 @@ class SessionNotifier extends Notifier<Session> {
   Future<String?> refreshAccessToken() => _refreshing ??= _doRefresh().whenComplete(() => _refreshing = null);
 
   /// One refresh call; see [refreshAccessToken]. Returns the new access token or null; throws nothing.
+  ///
+  /// The keystore is read first: the background sync isolate (M02) refreshes too, and a
+  /// rotated-out token sent from memory would look like reuse and sign the phone out (audit waves 3–6 finding 2).
+  /// Two refreshes at the very same moment in two isolates can still collide.
   Future<String?> _doRefresh() async {
+    if (await _adoptStored() && _unexpiredAccess != null) return _unexpiredAccess;
     final token = _refresh;
     if (token == null) return null;
     try {
@@ -272,6 +277,34 @@ class SessionNotifier extends Notifier<Session> {
       return null;
     }
   }
+
+  /// Adopts the keystore's tokens (the single source of truth across isolates) when its refresh token differs from
+  /// the one in memory. Returns whether it did; throws nothing (a keystore failure keeps the memory copy). Never
+  /// signs in again after this isolate signed out. When the stored tokens belong to another user (a sign-in on a
+  /// shared phone meanwhile), this isolate's tokens are dropped instead, without signing out (D-029).
+  Future<bool> _adoptStored() async {
+    final Map<String, String> stored;
+    try {
+      stored = await _storage.readAll();
+    } on PlatformException {
+      return false;
+    }
+    final refresh = stored[_kRefresh];
+    if (_refresh == null || refresh == null || refresh == _refresh) return false;
+    final mine = jwtSub(_access);
+    if (mine != null && jwtSub(stored[_kAccess]) != mine) {
+      // Another user signed in on this shared phone meanwhile (D-029): forget ours, never send with theirs.
+      _access = _refresh = _expiresAt = null;
+      return true;
+    }
+    _access = stored[_kAccess];
+    _refresh = refresh;
+    _expiresAt = DateTime.tryParse(stored[_kExpires] ?? '');
+    return true;
+  }
+
+  /// The access token while it has not expired, else null. Throws nothing.
+  String? get _unexpiredAccess => (_expiresAt?.isAfter(DateTime.now()) ?? false) ? _access : null;
 
   /// Signs out: tells the API (`POST /v1/auth/logout`), then forgets the tokens and the Session row.
   ///
@@ -341,6 +374,17 @@ class SessionNotifier extends Notifier<Session> {
     }
     await ref.read(appDatabaseProvider).sessionDao.clear();
     state = Session(locale: locale ?? state.locale, sessionEnded: sessionEnded);
+  }
+}
+
+/// The `sub` claim (user id) of [jwt], or null when missing or malformed. Used by [SessionNotifier] and the API
+/// client's auth interceptor (D-029). Throws nothing.
+String? jwtSub(String? jwt) {
+  try {
+    final claims = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(jwt!.split('.')[1]))));
+    return (claims as Map)['sub'] as String?;
+  } on Object {
+    return null;
   }
 }
 

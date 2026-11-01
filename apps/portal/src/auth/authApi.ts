@@ -2,12 +2,14 @@
  * Sign-in calls of the final B02 contract: OTP request, OTP verify, the office PIN step, cookie refresh and
  * sign-out, all through the generated client.
  * Serves: FR14 role-based access, System Architecture "Login" (OTP, admins add a 4-digit PIN), D-024, D-022,
- * docs/api/conventions.md "Authentication" (web transport), plan §7.3 P01 (portal adapts to the B02 contract).
+ * docs/api/conventions.md "Authentication" (web transport), plan §7.3 P01 (portal adapts to the B02 contract),
+ * P09 (`device_in_use` on a shared PC).
  * Called by: src/auth/LoginPage.tsx (requestOtp, verifyOtp, verifyPin), src/auth/AuthProvider.tsx
  * (refreshSession, logout).
  */
 import createClient from 'openapi-fetch';
 import { unwrap } from '../api/client';
+import { ApiError } from '../api/errors';
 import type { components, paths } from '../api/generated/schema';
 
 /** A full session as the API returns it; `refresh_token` is always null for the portal (cookie transport). */
@@ -58,19 +60,38 @@ export async function requestOtp(phone: string): Promise<void> {
 
 /**
  * Trades the SMS code for a session (farmers) or a pin token (office roles and super-admins).
+ * On `device_in_use` (the browser's id is still bound to someone who closed it without signing out, e.g. a
+ * shared office PC) it drops the stored device id and tries once more with a fresh one.
  * @param phone The phone number the code was sent to (E.164).
  * @param code The 6-digit code the user typed.
  * @returns The `kind`-discriminated result: `session` or `pin_required` (with `pin_set`).
- * @throws {ApiError} `otp_invalid`/`otp_expired` (422), `otp_locked` or `device_in_use` (409).
+ * @throws {ApiError} `otp_invalid`/`otp_expired` (422), `otp_locked` (409), or `device_in_use` (409) when the
+ *   fresh id is refused too.
  * @throws {TypeError} When the network request fails.
  * @throws {DOMException} When localStorage is unavailable for the device id.
+ * Side effects: may replace this browser's device id in localStorage.
  */
 export async function verifyOtp(phone: string, code: string): Promise<SessionOut | PinRequiredOut> {
-  return unwrap(
-    authClient.POST('/v1/auth/otp/verify', {
-      body: { phone, code, device_id: deviceId(), platform: 'web' },
-    }),
-  );
+  /**
+   * Sends the verify request with the device id stored now.
+   * @returns The verify result.
+   * @throws {ApiError} Any refusal (see above).
+   * @throws {TypeError} When the network request fails.
+   */
+  const verify = () =>
+    unwrap(
+      authClient.POST('/v1/auth/otp/verify', {
+        body: { phone, code, device_id: deviceId(), platform: 'web' },
+      }),
+    );
+  try {
+    return await verify();
+  } catch (error) {
+    if (!(error instanceof ApiError && error.code === 'device_in_use')) throw error;
+    // A new id signs nobody out (the B02 rule holds), and the 409 comes before the OTP is spent.
+    localStorage.removeItem(DEVICE_ID_KEY);
+    return verify();
+  }
 }
 
 /**

@@ -233,6 +233,7 @@ class SyncService {
       if (photos) ('photos', uploadPhotos),
       ('bundles', fetchBundles),
     ]) {
+      if (await c.userChanged()) break; // D-029: the rest of this run belongs to a user who is gone
       try {
         await phase(c);
       } catch (e, s) {

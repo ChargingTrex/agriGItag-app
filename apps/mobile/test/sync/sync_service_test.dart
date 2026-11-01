@@ -175,6 +175,59 @@ void main() {
     expect(w.server.entries, hasLength(1));
   });
 
+  test('M14: after a failed push the queue retries in order; a row in backoff holds back every later row', () async {
+    final farmer = await w.saveEntry('farmer', {'name': 'Muthu'});
+    final consent = await w.saveEntry('consent', {'farmer_id': 'f-new'});
+    final plot = await w.saveEntry('plot', {'farmer_id': 'f-new'});
+    var fails = 1;
+    w.server.intercept = (r) => r.path == '/v1/sync/push' && fails-- > 0 ? error(500, 'internal_error') : null;
+    await w.sync.runOnce();
+    final waits = {
+      for (final id in [farmer, consent, plot]) (await w.outboxOf(id)).nextAttemptAt,
+    };
+    expect(waits, hasLength(1), reason: 'one backoff for the whole batch');
+
+    // Even when a later row is due before the farmer (the old per-row jitter), it must not overtake it.
+    await w.db.outboxDao.markWaiting((await w.outboxOf(consent)).seq, backoff: Duration.zero, now: w.clock);
+    await w.sync.runOnce();
+    expect(w.server.seen('POST', '/v1/sync/push'), hasLength(1));
+
+    w.advance(const Duration(seconds: 2));
+    await w.sync.runOnce();
+    expect(w.server.seen('POST', '/v1/sync/push'), hasLength(2));
+    expect(w.server.pushedIds.skip(3), [farmer, consent, plot], reason: 'one batch, in order');
+    expect(await w.pending(), 0);
+  });
+
+  test('M14: a missing-dependency rejection is retried once; a validation rejection is final', () async {
+    final consent = await w.saveEntry('consent', {'farmer_id': 'f-new'});
+    final plot = await w.saveEntry('plot', {'farmer_id': 'f-new'});
+    var first = true;
+    w.server.intercept = (r) {
+      if (r.path != '/v1/sync/push' || !first) return null;
+      first = false;
+      return json({
+        'server_time': w.clock.toIso8601String(),
+        'results': [
+          for (final (id, code) in [(consent, 'not_found'), (plot, 'validation_error')])
+            {
+              'client_id': id,
+              'status': 'rejected',
+              'error': {'code': code},
+            },
+        ],
+      });
+    };
+    await w.sync.runOnce();
+    expect((await w.outboxOf(consent)).status, OutboxStatus.waiting);
+    expect((await w.outboxOf(plot)).status, OutboxStatus.needsAttention);
+
+    w.advance(const Duration(seconds: 2));
+    await w.sync.runOnce();
+    expect((await w.entry(consent)).status, EntryStatus.confirmed);
+    expect(w.server.pushedIds, [consent, plot, consent], reason: 'the plot is never resent');
+  });
+
   test('429 honours Retry-After', () async {
     final id = await w.save();
     w.server.intercept = (r) =>

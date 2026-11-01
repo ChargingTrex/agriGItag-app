@@ -1,7 +1,10 @@
 // AuthInterceptor through the real SessionNotifier: bearer only on secured operations, 401 → one refresh → one retry,
-//   refresh shared by concurrent 401s, `refresh_reused` → signed out, no signal → stays signed in.
+//   refresh shared by concurrent 401s, `refresh_reused` → signed out, no signal → stays signed in, no retry with
+//   another user's token (M16, D-029).
 // Requirement: D-024 contract (docs/api/conventions.md "Authentication": rotation, `refresh_reused`, never two
 //   refreshes at once); UserFlows §Log in once. Callers: flutter test (CI mobile job).
+
+import 'dart:async';
 
 import 'package:agritrace/core/api/api_client.dart';
 import 'package:agritrace/core/db/providers.dart';
@@ -113,5 +116,24 @@ void main() {
 
     expect(container.read(sessionProvider).role, Role.farmer);
     expect((await storedValues())['refresh_token'], 'r1');
+  });
+
+  test('M16: a 401 after another user signed in is not re-sent with their token (D-029)', () async {
+    final api = FakeApi({
+      me: [(401, apiError('unauthorized'))],
+    });
+    final gate = Completer<void>();
+    api.gates[me] = gate.future;
+    final container = await signedIn('farmer', api: api);
+    final call = _me(container);
+    await pumpEventQueue();
+    final b = sessionOut(nonce: 7).rebuild((s) => s.accessToken = fakeJwt(sub: 'user-2', nonce: 7));
+    await container.read(appDatabaseProvider).sessionDao.clear(); // user-1 signed out (offline) …
+    await container.read(sessionProvider.notifier).openSession(b); // … and user-2 signs in while user-1's call is out
+    gate.complete();
+
+    await expectLater(call, throwsA(isA<DioException>()));
+    expect(api.to(me), hasLength(1), reason: 'never retried with user-2\'s token');
+    expect(api.to(refresh), isEmpty);
   });
 }

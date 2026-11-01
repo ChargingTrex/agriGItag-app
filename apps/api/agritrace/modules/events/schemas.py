@@ -35,7 +35,9 @@ from agritrace.modules.events.payloads.processing import FinalPackingPayload, Gr
 
 MAX_ENTRIES = 50
 MAX_PHOTOS_PER_ENTRY = 10
-MAX_PHOTO_BYTES = 5_000_000  # phones compress to <= 350 KB (M04); this only stops absurd declarations
+# Hard ceiling, about 6x the M04 photo (<= 350 KB) and a 30 s voice note: the PUT is signed for the declared
+# length and the bucket is object-locked, so this bounds what one phone can store and the verify task reads.
+MAX_PHOTO_BYTES = 2 * 1024 * 1024
 
 
 class PhotoIn(BaseModel):
