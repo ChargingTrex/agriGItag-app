@@ -32,6 +32,15 @@ ${DB_NAME}          %{DB_NAME=agritrace}
 ${DB_USER}          %{DB_USER=agritrace}
 ${DB_PASSWORD}      %{DB_PASSWORD=agritrace}
 ${OTP_DEV_CODE}     %{OTP_DEV_CODE=123456}
+# PIN the first office sign-in of a fresh seed sets (B02: pin_set false → the first PIN sent becomes the PIN).
+${OFFICE_PIN}       %{OFFICE_PIN=2468}
+# Docker compose command line of the stack under test; S3 objects, the worker's Celery calls, the QR decoder
+# and one-off api containers (B13 config lines) are reached through it. Default: the repo's compose file.
+${COMPOSE}          %{COMPOSE=docker compose -f ${CURDIR}/../../../infra/docker-compose.yml}
+# Seeded staff (B12 demo seed, apps/api/agritrace/seed/demo.py).
+${ADMIN}            +919000000001
+${OFFICER}          +919000000002
+${QC}               +919000000003
 ${REPO_ROOT}        ${CURDIR}/../../..
 
 
@@ -48,29 +57,41 @@ Stack Is Healthy
     END
     RETURN    ${body}
 
-Login As
-    [Documentation]    Placeholder until B02 merges: request an OTP for ${phone}, verify it with the dev
-    ...    bypass code ${OTP_DEV_CODE}, and return headers carrying the bearer token.
-    ...    TODO(B02): confirm the request/verify paths and field names.
-    ...    Args: ${phone} the user's phone number as seeded.
-    ...    Returns: a dictionary {"Authorization": "Bearer <access_token>"} for GET/POST headers=.
-    ...    Fails: either call returns a non-2xx status or no access_token comes back.
-    ...    Side effects: creates an OTP challenge and a session on the server.
-    [Arguments]    ${phone}
-    POST    ${API_BASE}/auth/otp/request    json=${{ {"phone": $phone} }}    expected_status=2xx
-    ${resp}=    POST    ${API_BASE}/auth/otp/verify
-    ...    json=${{ {"phone": $phone, "code": $OTP_DEV_CODE} }}    expected_status=2xx
-    ${token}=    Set Variable    ${resp.json()}[access_token]
-    RETURN    ${{ {"Authorization": "Bearer " + $token} }}
-
 Error Code Should Be
     [Documentation]    Assert ${response} carries the error envelope with error.code == ${code} (plan §7.1).
-    ...    Args: ${response} a RequestsLibrary response; ${code} the snake_case code from docs/api/error-codes.md.
+    ...    Args: ${response} a requests response (RequestsLibrary or `Call API`); ${code} the snake_case
+    ...    code from docs/api/error-codes.md.
     ...    Fails: the body is not JSON, has no "error" object, or the code differs.
     [Arguments]    ${response}    ${code}
     ${body}=    Set Variable    ${response.json()}
     Dictionary Should Contain Key    ${body}    error
     Should Be Equal As Strings    ${body}[error][code]    ${code}
+
+Gate Reasons Should Be
+    [Documentation]    Assert ${response} is 409 `gate_not_met` listing exactly the reason codes given, in order (B09).
+    ...    Args: ${response} a requests response; @{codes} the expected `details.reasons[].code` values.
+    ...    Fails: another status, another error code, or other reasons.
+    [Arguments]    ${response}    @{codes}
+    Should Be Equal As Integers    ${response.status_code}    409    msg=${response.text}
+    Error Code Should Be    ${response}    gate_not_met
+    ${got}=    Evaluate    [r["code"] for r in $response.json()["error"]["details"]["reasons"]]
+    Lists Should Be Equal    ${got}    ${codes}
+
+Second FPO Admin
+    [Documentation]    Create a second FPO and an FPO admin in it straight in the database (the demo seed has one
+    ...    FPO and no super-admin, and no API adds staff), so cross-FPO and per-tenant lines can be called
+    ...    over HTTP as that admin. Needs `Connect To AgriTrace Database` first.
+    ...    Returns: the new admin's phone (sign in with `Login As`; the first PIN verify sets ${OFFICE_PIN}).
+    ...    Side effects: inserts one fpos, one users and one memberships row (FPO code QA_ROBOT_FPO_<hex>,
+    ...    which has no tenant file, so it gets the default field config).
+    ${fpo}=    Evaluate    str(uuid.uuid4())
+    ${user}=    Evaluate    str(uuid.uuid4())
+    ${tag}=    Evaluate    uuid.uuid4().hex[:8].upper()
+    ${phone}=    New Phone
+    Execute Sql String    INSERT INTO fpos (id, code, name, kind, public_show_farmer_names) VALUES ('${fpo}', 'QA_ROBOT_FPO_${tag}', 'QA Robot FPO ${tag}', 'fpo', false)
+    Execute Sql String    INSERT INTO users (id, phone, name, lang, is_super_admin, status) VALUES ('${user}', '${phone}', 'QA Robot Admin B', 'en', false, 'active')
+    Execute Sql String    INSERT INTO memberships (id, fpo_id, user_id, role) VALUES (gen_random_uuid(), '${fpo}', '${user}', 'fpo_admin')
+    RETURN    ${phone}
 
 Connect To AgriTrace Database
     [Documentation]    Open a DatabaseLibrary connection to the stack's Postgres/PostGIS using pg8000.

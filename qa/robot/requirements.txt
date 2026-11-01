@@ -8,4 +8,7 @@ robotframework-databaselibrary==2.5.0
 # DatabaseLibrary driver for Postgres; pg8000 (BSD-3) instead of psycopg (LGPL-3.0), see D-018.
 pg8000==1.31.6
 pyyaml==6.0.3
+# QR decoding of the published page (qa/robot/api/publishing.robot, B10); same decoder as apps/api tests.
+zxing-cpp==3.1.1
+pillow==13.0.0
 pytest==9.2.0

@@ -1,0 +1,186 @@
+==============================================================================
+Api                                                                           
+==============================================================================
+Api.Batches :: Lots, intake, batches and gates (plan §7.1 B09), live. Serve...
+==============================================================================
+Lot Ready At 11.5 Percent Returns 409 And At 10.9 Percent Becomes ... | PASS |
+------------------------------------------------------------------------------
+Intake 100 kg Versus Packed 69 kg Raises Quantity Mismatch            | PASS |
+------------------------------------------------------------------------------
+Lots 100 200 20 kg Give Shares 31.250 62.500 6.250                    | PASS |
+------------------------------------------------------------------------------
+Ineligible Lot With GI Requested Gives GI Verified False With Reasons | PASS |
+------------------------------------------------------------------------------
+Approve On Declared Above Computed Returns 409                        | PASS |
+------------------------------------------------------------------------------
+Packing 25 kg On 20 kg Graded Returns 409                             | PASS |
+------------------------------------------------------------------------------
+Publish Before Approval Returns 409 Listing Reasons                   | PASS |
+------------------------------------------------------------------------------
+Publish After Gates Returns 202 And A Page Build Row                  | PASS |
+------------------------------------------------------------------------------
+Api.Batches :: Lots, intake, batches and gates (plan §7.1 B09), li... | PASS |
+8 tests, 8 passed, 0 failed
+==============================================================================
+Api.Healthz :: Stack health: the B00 acceptance line "docker compose up -> ...
+==============================================================================
+Healthz Reports Db Redis And S3 Ok :: GET /v1/healthz returns 200 ... | PASS |
+------------------------------------------------------------------------------
+Api.Healthz :: Stack health: the B00 acceptance line "docker compo... | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Api.Identity :: Identity: OTP login, roles, tenant scope, assist mode, cons...
+==============================================================================
+OTP Request Twice In 60 s Returns 429                                 | PASS |
+------------------------------------------------------------------------------
+Five Wrong OTP Codes Lock The Challenge With 409                      | PASS |
+------------------------------------------------------------------------------
+Farmer Calling GET Flags Gets 403                                     | PASS |
+------------------------------------------------------------------------------
+Assist Header Sets On Behalf Of Farmer                                | PASS |
+------------------------------------------------------------------------------
+Consent Writes Audit Row With Officer As Actor                        | PASS |
+------------------------------------------------------------------------------
+Logout Revokes Refresh Token And Refresh Returns 401                  | PASS |
+------------------------------------------------------------------------------
+Api.Identity :: Identity: OTP login, roles, tenant scope, assist m... | PASS |
+6 tests, 6 passed, 0 failed
+==============================================================================
+Api.Publishing :: Publishing the static batch page (plan §7.1 B10) and repo...
+==============================================================================
+Published Objects Exist With Matching Generation                      | PASS |
+------------------------------------------------------------------------------
+Page HTML Has No Phone Survey Number Or Temp Uploads                  | PASS |
+------------------------------------------------------------------------------
+Revoked Name Consent Shows Farmer 2                                   | PASS |
+------------------------------------------------------------------------------
+Correction Creates A New Build And Keeps Old Versions                 | PASS |
+------------------------------------------------------------------------------
+QR Decodes To The Public Batch URL                                    | PASS |
+------------------------------------------------------------------------------
+Events Are Listed In Ascending Date Order                             | PASS |
+------------------------------------------------------------------------------
+Completeness Equals Lots With All Mandatory Events Over Lots          | PASS |
+------------------------------------------------------------------------------
+100 Scans Per Minute Returns 429                                      | PASS |
+------------------------------------------------------------------------------
+Audit CSV Has A Row Per Version With Entered By And Assist Session    | PASS |
+------------------------------------------------------------------------------
+Partner API Returns 501 Not Implemented Pilot                         | PASS |
+------------------------------------------------------------------------------
+Api.Publishing :: Publishing the static batch page (plan §7.1 B10)... | PASS |
+10 tests, 10 passed, 0 failed
+==============================================================================
+Api.Quality :: Quality readings and the grade engine (plan §7.1 B05), throu...
+==============================================================================
+Moisture 9.8 Percent Grades Special                                   | PASS |
+------------------------------------------------------------------------------
+Moisture 10.5 Percent Grades Standard                                 | PASS |
+------------------------------------------------------------------------------
+Moisture 11.4 Percent Is Below Grade                                  | PASS |
+------------------------------------------------------------------------------
+Visual 9.8 Percent Is Capped At Standard                              | PASS |
+------------------------------------------------------------------------------
+Missing Required Reading Is Incomplete                                | PASS |
+------------------------------------------------------------------------------
+Moisture Minus 1 Returns 422                                          | PASS |
+------------------------------------------------------------------------------
+Expired Instrument Returns 422                                        | PASS |
+------------------------------------------------------------------------------
+Grading 12.0 After Intake 10.0 Needs A Reason And Raises A Flag       | PASS |
+------------------------------------------------------------------------------
+Declared Special Versus Computed Standard Raises Declared Above Co... | PASS |
+------------------------------------------------------------------------------
+Api.Quality :: Quality readings and the grade engine (plan §7.1 B0... | PASS |
+9 tests, 9 passed, 0 failed
+==============================================================================
+Api.Registry :: Registry and PostGIS geo (plan §7.1 B03) plus config-driven...
+==============================================================================
+Point 9.559806 78.133521 Is Inside The Fixture GI Region              | PASS |
+------------------------------------------------------------------------------
+Point 100 m Outside With 150 m Buffer Is Near Edge                    | PASS |
+------------------------------------------------------------------------------
+Madurai Point Is Outside                                              | PASS |
+------------------------------------------------------------------------------
+Map Pin Plot Needs Review                                             | PASS |
+------------------------------------------------------------------------------
+Plot Correction Without Reason Returns 422                            | PASS |
+------------------------------------------------------------------------------
+Cross FPO Plot Read Returns 404                                       | PASS |
+------------------------------------------------------------------------------
+FPO Admin Uploading GI Region Returns 403                             | PASS |
+------------------------------------------------------------------------------
+Disabling Soil Type In A Tenant File Hides The Field For That FPO ... | PASS |
+------------------------------------------------------------------------------
+ID Document Upload Endpoint Follows The Feature Flag                  | PASS |
+------------------------------------------------------------------------------
+Farmer CSV With 2 Bad Rows Accepts The Rest Without Partial Writes    | PASS |
+------------------------------------------------------------------------------
+Virudhunagar Region Build Covers The Reference Point With Provenance  | PASS |
+------------------------------------------------------------------------------
+Field YAML Failing Its Schema Stops The App With A Clear Message      | PASS |
+------------------------------------------------------------------------------
+Api.Registry :: Registry and PostGIS geo (plan §7.1 B03) plus conf... | PASS |
+12 tests, 12 passed, 0 failed
+==============================================================================
+Api.Rules :: Rules and flags (plan §7.1 B08) and notifications (B04), on th...
+==============================================================================
+Event 600 m Off Plot Raises Event Off Plot Once                       | PASS |
+------------------------------------------------------------------------------
+Inorganic Tag With Only Organic Inputs Raises Practice Tag Contrad... | PASS |
+------------------------------------------------------------------------------
+IPM Without A Pest Event Raises A Flag                                | PASS |
+------------------------------------------------------------------------------
+Nursery Before Ploughing Raises No Flag                               | PASS |
+------------------------------------------------------------------------------
+Sowing Before Nursery Raises A Flag                                   | PASS |
+------------------------------------------------------------------------------
+Yield 1150 1250 1350 kg On 1 Acre Gives None Warn Hold                | PASS |
+------------------------------------------------------------------------------
+Resolving A Flag Without Reason Returns 422                           | PASS |
+------------------------------------------------------------------------------
+Officer Resolving A Hold Returns 403                                  | PASS |
+------------------------------------------------------------------------------
+Eager Notification Send Writes A Sent Console Row                     | PASS |
+------------------------------------------------------------------------------
+Unknown Template Writes A Failed Row Without Raising                  | PASS |
+------------------------------------------------------------------------------
+Api.Rules :: Rules and flags (plan §7.1 B08) and notifications (B0... | PASS |
+10 tests, 10 passed, 0 failed
+==============================================================================
+Api.Sync :: Events, sync push, evidence (plan §7.1 B06) and reference bundl...
+==============================================================================
+Same Client Id Pushed Twice Stores One Row                            | PASS |
+------------------------------------------------------------------------------
+Foreign Owned Client Id Returns Client Id Conflict                    | PASS |
+------------------------------------------------------------------------------
+Push Of 51 Entries Returns 422                                        | PASS |
+------------------------------------------------------------------------------
+Mixed Batch Accepts 1 And 3 And Rejects 2                             | PASS |
+------------------------------------------------------------------------------
+Wrong Photo Checksum Returns Checksum Mismatch And A Flag             | PASS |
+------------------------------------------------------------------------------
+Undo After 24 h Returns 409                                           | PASS |
+------------------------------------------------------------------------------
+Farmer Correction Returns 403                                         | PASS |
+------------------------------------------------------------------------------
+Device Clock 3 Days Ahead Is Stored With A Clock Skew Flag            | PASS |
+------------------------------------------------------------------------------
+Matching If-None-Match On The Bundle Returns 304                      | PASS |
+------------------------------------------------------------------------------
+Standards Bundle Part Carries The Full Profile Rules Per Active Ve... | PASS |
+------------------------------------------------------------------------------
+Pull After A New Flag Returns Exactly That Flag                       | PASS |
+------------------------------------------------------------------------------
+Api.Sync :: Events, sync push, evidence (plan §7.1 B06) and refere... | PASS |
+11 tests, 11 passed, 0 failed
+==============================================================================
+Api                                                                   | PASS |
+67 tests, 67 passed, 0 failed
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ae3d63a3c11368ef8/qa/robot/results/G2/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ae3d63a3c11368ef8/qa/robot/results/G2/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ae3d63a3c11368ef8/qa/robot/results/G2/report.html
+real 180.17
+user 5.26
+sys 2.04

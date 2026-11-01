@@ -31,6 +31,26 @@ Environment (defaults in `resources/common.resource`, names as in B00's compose 
 (http://localhost:4566/public-pages), `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `OTP_DEV_CODE` (123456).
 Mobile suites also use `ANDROID_SERIAL` and `DRY_RUN` (see `qa/scripts/network.sh`).
 
+### API suites (gate G2, Q06)
+
+`api/*.robot` run against a live, freshly seeded stack (`make up`, `alembic upgrade head`, `make seed`) and need
+`docker` on the Robot host: S3 versions, the worker's Celery calls and one-off api containers (B13 config lines) go
+through `COMPOSE` (default `docker compose -f infra/docker-compose.yml`; set it with `-p <project>` and any `-f`
+override when the stack runs under another project name). Other variables: `OFFICE_PIN` (2468, set by the first PIN
+verify of a fresh seed), `FLAG_ON_PORT` (8098, host port of the throw-away api container with
+`id_document_capture` on). A stack on remapped ports, e.g.:
+
+```sh
+export API_BASE=http://localhost:8020/v1 PUBLIC_BASE_URL=http://localhost:4586/public-pages DB_PORT=5453 \
+       COMPOSE="docker compose -p agritrace-q06 -f infra/docker-compose.yml"
+qa/.venv/bin/robot --outputdir qa/robot/results/G2 --exclude not-ready qa/robot/api
+```
+
+The suites only add data: a QA farmer with a random `+9197…` phone, plots, lots and batches; the seeded batch
+`FGP8T4033HM7` is only read. The API allows 10 OTPs per phone per 24 h, so sessions are kept in
+`qa/robot/results/.api-sessions.json` and refreshed on reruns; the identity suite still spends one or two OTPs
+on seeded farmers `+919000000011..13` per run, so after about five runs a day reseed the stack.
+
 ## Tagging rules
 
 - Every test carries its work package `WP-<id>` (e.g. `WP-B02`) and at least one PRD requirement `FR-<n>`
@@ -61,5 +81,9 @@ Mobile suites also use `ANDROID_SERIAL` and `DRY_RUN` (see `qa/scripts/network.s
 | `e2e/reference_batch.robot` | B12 seeded batch `FGP8T4033HM7` | G5 |
 
 Keywords: `resources/common.resource`
-(`Stack Is Healthy`, `Login As`, `Error Code Should Be`, `Connect To AgriTrace Database`, `Not Ready`) and
-`lib/agritrace_keywords.py` (`Load Network Profiles`, `Set Emulator Network`, `Parse Flutter Results`).
+(`Stack Is Healthy`, `Error Code Should Be`, `Gate Reasons Should Be`, `Second FPO Admin`,
+`Connect To AgriTrace Database`, `Not Ready`) and `lib/agritrace_keywords.py` (`Load Network Profiles`,
+`Set Emulator Network`, `Parse Flutter Results`, `Read Public Page`; API: `Login As`, `Call API`, `QA World`,
+`New Farmer`, `New Plot`, `New Lot`, `New Instrument`, `Start Assist`, `New Consent`, `Moisture`, `Event`, `Push`,
+`Received Lot`, `Receive`, `New Batch`, `Packing`, `Flags Of`, `Wait For Flag`, `Wait For Build`, `Drain Pull`,
+`Compose`, `S3 Get`, `S3 Versions`, `S3 Put`, `Decode QR`, `Days Ago`, `New Phone`).

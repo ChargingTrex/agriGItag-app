@@ -1,0 +1,54 @@
+B00: 1 real Robot test(s)
+B01: 0 real Robot test(s)
+B02: 6 real Robot test(s)
+B03: 7 real Robot test(s)
+B04: 2 real Robot test(s)
+B05: 9 real Robot test(s)
+B06: 8 real Robot test(s)
+B07: 3 real Robot test(s)
+B08: 8 real Robot test(s)
+B13: 5 real Robot test(s)
+B14: 0 real Robot test(s)
+M00: 0 real Robot test(s)
+M01: 0 real Robot test(s)
+M02: 0 real Robot test(s)
+M03: 0 real Robot test(s)
+M04: 0 real Robot test(s)
+M05: 0 real Robot test(s)
+M06: 0 real Robot test(s)
+M07: 0 real Robot test(s)
+M14: 0 real Robot test(s)
+M16: 0 real Robot test(s)
+P00: 1 real Robot test(s)
+P01: 0 real Robot test(s)
+P02: 0 real Robot test(s)
+P03: 0 real Robot test(s)
+P04: 0 real Robot test(s)
+P09: 0 real Robot test(s)
+P10: 0 real Robot test(s)
+Q00: 3 real Robot test(s)
+W01: 5 real Robot test(s)
+W02: 6 real Robot test(s)
+NOT READY: 21 placeholder test(s) still tagged not-ready:
+  B06  qa/robot/mobile/network_profiles.robot  BM-15 Same Push Replayed 5 Times Leaves One Record
+  M02  qa/robot/mobile/network_profiles.robot  BM-11 Normal 4G Entry Plus One Photo Shows Sent Within 5 s
+  M02  qa/robot/mobile/network_profiles.robot  BM-12 Weak 4G Entry Plus One Photo Shows Sent Within 20 s
+  M02  qa/robot/mobile/network_profiles.robot  BM-13 Airplane Mode Saves Instantly And Sends Automatically On Restore
+  M02  qa/robot/mobile/network_profiles.robot  BM-14 Kill Mid Upload Then Relaunch Leaves One Entry And One Photo
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Edge
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Normal 4G
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Offline
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Reconnect After Offline
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Weak 4G
+  P01  qa/robot/portal/portal.robot  Approving A Member Makes It Active Without Reload
+  P01  qa/robot/portal/portal.robot  Phone Is Masked Except An Audited Reveal
+  P02  qa/robot/portal/portal.robot  Required Review Fields Block Submit
+  P02  qa/robot/portal/portal.robot  Reviewing A Held Lot Makes It Tickable In Create Batch
+  P03  qa/robot/portal/portal.robot  Batch Over Threshold Needs A Second Sign Off
+  P03  qa/robot/portal/portal.robot  Create Batch Returns An Id And A QR
+  P03  qa/robot/portal/portal.robot  Lots 100 200 20 kg Show Shares 31.25 62.5 6.25
+  P03  qa/robot/portal/portal.robot  Out Of GI Lot Is Greyed With A Tooltip
+  P04  qa/robot/portal/portal.robot  Declared Special Computed Standard Disables Approve With Reason
+  P04  qa/robot/portal/portal.robot  Happy Path Publishes And Shows The URL
+  P04  qa/robot/portal/portal.robot  Missing Reading Disables Approve
+gate-readiness G2: FAIL
