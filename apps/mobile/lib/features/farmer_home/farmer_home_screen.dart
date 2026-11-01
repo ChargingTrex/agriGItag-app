@@ -4,7 +4,8 @@
 // Requirement: UserFlows §Farmer home screen ("the card at the top always holds the single most useful next step, and
 //   the four buttons cover everything else"), §Design rules (one job, pictures + voice, "Works with no signal": cloud
 //   icon, "Help is a person"), §Field officer flows (assist bar "Logging for: [farmer name]"); FR7 (next event);
-//   CLAUDE.md §6 (assist mode always visible); D-032 (`POST /assist/end` at exit).
+//   CLAUDE.md §6 (assist mode always visible); D-032 (`POST /assist/end` at exit); PLAN §7.2 M13 (storage < 100 MB at
+//   app start → "Phone is full" prompt + purge of confirmed photos).
 // Callers: app_router.dart routes `/home` (the farmer role's home) and `/assist/:farmerId` (assist mode).
 
 import 'package:drift/drift.dart' show OrderingTerm;
@@ -13,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/capture/free_space.dart';
 import '../../core/db/database.dart';
 import '../../core/db/providers.dart';
 import '../../core/l10n/gen/app_localizations.dart';
@@ -26,6 +28,7 @@ import '../../core/widgets/voice_prompt_bar.dart';
 import '../event_log/choose_event_screen.dart';
 import '../event_log/event_log_controller.dart';
 import '../event_log/farm_event.dart';
+import '../event_log/farmer_sheet.dart';
 import '../officer_assist/assist_controller.dart';
 import '../officer_home/officer_button.dart';
 
@@ -56,14 +59,17 @@ class FarmerHomeScreen extends ConsumerWidget {
   const FarmerHomeScreen({super.key});
 
   /// Builds the app bar (cloud, settings), the task card and the buttons, plus Moisture and End assist in assist mode.
-  /// [context] supplies theme and strings; [ref] watches the task and the assist state. Returns the screen; throws
-  /// nothing.
+  /// [context] supplies theme and strings; [ref] watches the task and the assist state and runs the app-start
+  /// low-storage check (M13), whose "Phone is full" sheet opens here. Returns the screen; throws nothing.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final tokens = Theme.of(context).extension<FarmerTokens>()!;
     final assist = ref.watch(assistFarmerProvider);
     final gap = SizedBox(height: tokens.gap);
+    ref.listen(lowStorageAtStartProvider, (_, full) {
+      if (full.value ?? false) showPhoneFull(context, ref);
+    });
     FarmerButton button(IconData icon, String label, String promptId, String path) => FarmerButton(
       icon: icon,
       label: label,

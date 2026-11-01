@@ -2,7 +2,8 @@
 // progress indicator, refuses a dark or blurry photo, and waits for a good GPS fix with the ring and "Save anyway".
 // Requirement: UserFlows §Design rules "The photo is the proof" (camera opens by itself; location and time recorded
 //   silently; no gallery), §When things go wrong (photo too dark or blurry → "Photo is not clear. Take again?"; weak
-//   GPS → filling circle, "Save anyway" after 60 s, saved with its accuracy; phone full); FR3, FR26, FR61; Arch
+//   GPS → filling circle, "Save anyway" after 60 s, saved with its accuracy; phone full, also checked after each
+//   photo: PLAN §7.2 M13 storage < 100 MB); FR3, FR26, FR61; Arch
 //   §Offline-first ("Photos made light", "Three clocks"); D-011.
 // Callers: EventFlowScreen (event_flow_screen.dart) as the photo step of every event.
 
@@ -15,10 +16,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/capture/camera_capture.dart';
 import '../../core/capture/capture_constants.dart';
+import '../../core/capture/free_space.dart';
 import '../../core/capture/gps_fix.dart';
 import '../../core/capture/photo_compressor.dart';
 import '../../core/capture/photo_quality_check.dart';
 import '../../core/db/database.dart' show LocationStatus;
+import '../../core/db/providers.dart';
 import '../../core/l10n/gen/app_localizations.dart';
 import '../../core/theme/farmer_tokens.dart';
 import '../../core/voice/voice_player.dart';
@@ -108,8 +111,8 @@ class _CameraStepState extends ConsumerState<CameraStep> {
     if (_waitingGps && fix.accuracyM <= kGpsGoodAccuracyM) _accept(LocationStatus.ok);
   }
 
-  /// Takes, compresses and checks the photo; deletes the camera original (never kept); then accepts it or waits for
-  /// GPS. A dark/blurry photo or a full phone opens its one-button sheet.
+  /// Takes, compresses and checks the photo; deletes the camera original (never kept); runs the low-storage check
+  /// (M13); then accepts it or waits for GPS. A dark/blurry photo or a full phone opens its one-button sheet.
   /// Side effects: files in the media folder, the draft's photo. Throws nothing.
   Future<void> _shoot() async {
     final l10n = AppLocalizations.of(context);
@@ -136,13 +139,25 @@ class _CameraStepState extends ConsumerState<CameraStep> {
         return _notClear(l10n);
       }
       ref.read(eventLogProvider.notifier).setPhoto(photo, shot.clocks, shot.fix);
+      // M13: each new photo takes space; below 100 MB free, confirmed photos go and the farmer is asked to send.
+      final full = await purgeIfLow(
+        freeBytes: ref.read(freeBytesProvider),
+        db: ref.read(appDatabaseProvider),
+        now: DateTime.now().toUtc(),
+      );
+      if (full && mounted) {
+        // The photo is saved: stop the "saving" spinner (and its live-region announcement) behind the sheet.
+        setState(() => _busy = false);
+        await showPhoneFull(context, ref);
+      }
+      if (!mounted) return;
       if (_best != null && _best!.accuracyM <= kGpsGoodAccuracyM) {
         _accept(LocationStatus.ok);
       } else {
         setState(() => _waitingGps = true);
       }
     } on FileSystemException {
-      if (mounted) await _phoneFull(l10n);
+      if (mounted) await showPhoneFull(context, ref);
     } on FormatException {
       // The camera wrote something that is not a JPEG: to the farmer that is an unclear photo.
       if (mounted) await _notClear(l10n);
@@ -162,18 +177,6 @@ class _CameraStepState extends ConsumerState<CameraStep> {
     actionIcon: Icons.photo_camera,
     actionLabel: l10n.retake,
     actionPromptId: 'retake',
-  );
-
-  /// Shows "Phone is full. Send your entries now?"; the button starts a send ([l10n] strings). Returns when closed.
-  Future<void> _phoneFull(AppLocalizations l10n) => showFarmerSheet(
-    context,
-    icon: Icons.sd_card_alert,
-    sentence: l10n.phoneFull,
-    promptId: 'phoneFull',
-    actionIcon: Icons.cloud_upload,
-    actionLabel: l10n.sendNow,
-    actionPromptId: 'sendNow',
-    onAction: ref.read(afterSaveProvider),
   );
 
   /// Stores the best fix with [status] and opens the confirm screen. Side effect: draft location. Throws nothing.

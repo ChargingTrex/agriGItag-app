@@ -124,9 +124,11 @@ void main() {
       final stored = await storedValues();
       expect(body['device_id'], stored['device_id']);
       expect(stored['refresh_token'], 'r1');
-      final row = (await container.read(appDatabaseProvider).sessionDao.read())!;
+      final db = container.read(appDatabaseProvider);
+      final row = (await db.sessionDao.read())!;
       expect((row.userId, row.fpoId, row.deviceId), ('user-1', 'fpo-1', stored['device_id']));
-      expect((row.accessToken, row.refreshToken), ('', ''), reason: 'D-027: no tokens in SQLite');
+      final columns = await db.customSelect('PRAGMA table_info(session)').map((r) => r.read<String>('name')).get();
+      expect(columns.where((c) => c.contains('token')), isEmpty, reason: 'D-027: no tokens in SQLite');
     });
 
     test('officer OTP → PIN step; PIN verify sends the pin token and signs in as field officer', () async {

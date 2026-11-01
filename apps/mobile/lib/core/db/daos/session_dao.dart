@@ -27,8 +27,7 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
   /// DECISION D-027: tokens live in flutter_secure_storage (Keychain/Keystore), never in this SQLite row.
   ///   ADV: tokens never sit in plain SQLite on a shared family phone (a rooted phone or a backup cannot read them).
   ///   COMPROMISE: secure storage is per-install and gone after a reinstall (the desired behaviour: sign in again);
-  ///   one more plugin. The v1 schema still has NOT NULL token columns, so they are written empty until the next
-  ///   schema bump drops them.
+  ///   one more plugin.
   Future<void> save({
     required String userId,
     required Role role,
@@ -36,15 +35,7 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
     required String deviceId,
     required String locale,
   }) => into(sessionTable).insertOnConflictUpdate(
-    SessionTableCompanion.insert(
-      userId: userId,
-      role: role,
-      fpoId: fpoId,
-      deviceId: deviceId,
-      accessToken: '',
-      refreshToken: '',
-      locale: Value(locale),
-    ),
+    SessionTableCompanion.insert(userId: userId, role: role, fpoId: fpoId, deviceId: deviceId, locale: Value(locale)),
   );
 
   /// Changes the stored UI language to [locale] (`ta`/`en`); a no-op when signed out. Throws nothing.

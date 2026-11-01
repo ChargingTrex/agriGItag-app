@@ -80,8 +80,6 @@ Future<void> signIn(AppDatabase db, String userId, {bool wifiOnlyPhotos = false}
         role: Role.farmer,
         fpoId: 'fpo-1',
         deviceId: '0190f0c4-0000-7000-8000-000000000001',
-        accessToken: '',
-        refreshToken: '',
         wifiOnlyPhotos: Value(wifiOnlyPhotos),
       ),
     );

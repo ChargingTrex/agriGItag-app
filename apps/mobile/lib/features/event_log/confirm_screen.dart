@@ -69,23 +69,12 @@ class ConfirmScreen extends ConsumerWidget {
   /// Saves (idempotent, so a double tap writes one entry) and opens the saved screen; a storage failure opens the
   /// "Phone is full" sheet. [context] navigates; [ref] reads the notifier. Throws nothing.
   Future<void> _confirm(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context);
     try {
       await ref.read(eventLogProvider.notifier).save();
       if (context.mounted) context.go(farmerPath(ref, '/home/saved'));
     } on Exception {
       // SqliteException (disk full, I/O) or FileSystemException: nothing was written; the farmer can retry.
-      if (!context.mounted) return;
-      await showFarmerSheet(
-        context,
-        icon: Icons.sd_card_alert,
-        sentence: l10n.phoneFull,
-        promptId: 'phoneFull',
-        actionIcon: Icons.cloud_upload,
-        actionLabel: l10n.sendNow,
-        actionPromptId: 'sendNow',
-        onAction: ref.read(afterSaveProvider),
-      );
+      if (context.mounted) await showPhoneFull(context, ref);
     }
   }
 }

@@ -10,6 +10,7 @@ import 'dart:io';
 
 import 'package:agritrace/app.dart';
 import 'package:agritrace/core/capture/camera_capture.dart';
+import 'package:agritrace/core/capture/free_space.dart';
 import 'package:agritrace/core/capture/gps_fix.dart';
 import 'package:agritrace/core/capture/photo_compressor.dart';
 import 'package:agritrace/core/capture/photo_quality_check.dart';
@@ -146,12 +147,14 @@ LocationFix fixOf(double accuracyM) =>
 /// One app under test: database, fakes, container and the tap counter.
 class FlowHarness {
   /// Creates the harness: [verdicts] for the compressor, [fixes] the GPS stream (default one 8 m fix), [pending] the
-  /// cloud count (0 = all sent), [cameraDenied] refuses the camera, [overrides] are added last.
+  /// cloud count (0 = all sent), [cameraDenied] refuses the camera, [freeBytes] the phone's free space (default
+  /// unknown, so the M13 low-storage check is skipped), [overrides] are added last.
   FlowHarness({
     List<PhotoQuality> verdicts = const [PhotoQuality.ok],
     List<LocationFix>? fixes,
     this.pending = 0,
     bool cameraDenied = false,
+    Future<int?> Function()? freeBytes,
     List<Override> overrides = const [],
   }) : compressor = FakeCompressor(verdicts) {
     dir = Directory.systemTemp.createTempSync('m07_flow');
@@ -184,6 +187,8 @@ class FlowHarness {
         afterSaveProvider.overrideWithValue(() => kicks++),
         pendingSendCountProvider.overrideWith((ref) => Stream.value(pending)),
         fieldOfficerPhoneProvider.overrideWithValue('+919876543210'),
+        // The real storage channel never answers inside the fake-async widget zone, so the photo step would stay busy.
+        freeBytesProvider.overrideWithValue(freeBytes ?? () async => null),
         ...overrides,
       ],
     );
