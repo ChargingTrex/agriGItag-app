@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5 (Python 3.12.13 on darwin)" generated="2026-11-01T22:47:57.397204" rpa="false" schemaversion="5">
+<suite id="s1" name="Healthz" source="/Users/fi-it/Documents/projects/agriGitag/qa/robot/api/healthz.robot">
+<test id="s1-t1" name="Healthz Reports Db Redis And S3 Ok" line="9">
+<kw name="Stack Is Healthy" owner="common">
+<kw name="GET" owner="RequestsLibrary">
+<msg time="2026-11-01T22:47:59.178005" level="INFO">GET Request : url=http://localhost:8000/v1/healthz 
+ path_url=/v1/healthz 
+ headers={'User-Agent': 'python-requests/2.34.2', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive'} 
+ body=None 
+ </msg>
+<msg time="2026-11-01T22:47:59.178178" level="INFO">GET Response : url=http://localhost:8000/v1/healthz 
+ status=200, reason=OK 
+ headers={'date': 'Sun, 01 Nov 2026 17:17:58 GMT', 'server': 'uvicorn', 'content-length': '34', 'content-type': 'application/json'} 
+ body={"db":"ok","redis":"ok","s3":"ok"} 
+ </msg>
+<msg time="2026-11-01T22:47:59.178383" level="INFO">${resp} = &lt;Response [200]&gt;</msg>
+<var>${resp}</var>
+<arg>${API_BASE}/healthz</arg>
+<arg>expected_status=200</arg>
+<arg>timeout=10</arg>
+<doc>Sends a GET request.</doc>
+<status status="PASS" start="2026-11-01T22:47:59.139274" elapsed="0.039156"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-01T22:47:59.179391" level="INFO">${body} = {'db': 'ok', 'redis': 'ok', 's3': 'ok'}</msg>
+<var>${body}</var>
+<arg>${resp.json()}</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-01T22:47:59.178689" elapsed="0.000750"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Should Be Equal As Strings" owner="BuiltIn">
+<arg>${body}[${dependency}]</arg>
+<arg>ok</arg>
+<arg>msg=healthz reports ${dependency}=${body}[${dependency}]</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" start="2026-11-01T22:47:59.179953" elapsed="0.000777"/>
+</kw>
+<var name="${dependency}">db</var>
+<status status="PASS" start="2026-11-01T22:47:59.179750" elapsed="0.001102"/>
+</iter>
+<iter>
+<kw name="Should Be Equal As Strings" owner="BuiltIn">
+<arg>${body}[${dependency}]</arg>
+<arg>ok</arg>
+<arg>msg=healthz reports ${dependency}=${body}[${dependency}]</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" start="2026-11-01T22:47:59.181197" elapsed="0.000768"/>
+</kw>
+<var name="${dependency}">redis</var>
+<status status="PASS" start="2026-11-01T22:47:59.181022" elapsed="0.001029"/>
+</iter>
+<iter>
+<kw name="Should Be Equal As Strings" owner="BuiltIn">
+<arg>${body}[${dependency}]</arg>
+<arg>ok</arg>
+<arg>msg=healthz reports ${dependency}=${body}[${dependency}]</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" start="2026-11-01T22:47:59.182650" elapsed="0.000702"/>
+</kw>
+<var name="${dependency}">s3</var>
+<status status="PASS" start="2026-11-01T22:47:59.182218" elapsed="0.001210"/>
+</iter>
+<var>${dependency}</var>
+<value>db</value>
+<value>redis</value>
+<value>s3</value>
+<status status="PASS" start="2026-11-01T22:47:59.179553" elapsed="0.003926"/>
+</for>
+<return>
+<value>${body}</value>
+<status status="PASS" start="2026-11-01T22:47:59.183569" elapsed="0.000069"/>
+</return>
+<doc>GET http://localhost:8000/v1/healthz and assert db, redis and s3 each report "ok" (B00 acceptance).
+Returns: the decoded JSON body.
+Fails: API unreachable, status other than 200, or any dependency not "ok".</doc>
+<status status="PASS" start="2026-11-01T22:47:59.137916" elapsed="0.045871"/>
+</kw>
+<doc>GET /v1/healthz returns 200 with db, redis and s3 all "ok".</doc>
+<tag>api</tag>
+<tag>FR-33</tag>
+<tag>smoke</tag>
+<tag>WP-B00</tag>
+<status status="PASS" start="2026-11-01T22:47:59.136657" elapsed="0.047293"/>
+</test>
+<doc>Stack health: the B00 acceptance line "docker compose up -&gt; /healthz {db,redis,s3: ok}".
+Serves: plan §7.1 B00, gate G0. Run by: CI job robot-smoke, Verifiers.</doc>
+<status status="PASS" start="2026-11-01T22:47:57.399990" elapsed="1.784566"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="1" fail="0" skip="0">api</stat>
+<stat pass="1" fail="0" skip="0">FR-33</stat>
+<stat pass="1" fail="0" skip="0">smoke</stat>
+<stat pass="1" fail="0" skip="0">WP-B00</stat>
+</tag>
+<suite>
+<stat name="Healthz" id="s1" pass="1" fail="0" skip="0">Healthz</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

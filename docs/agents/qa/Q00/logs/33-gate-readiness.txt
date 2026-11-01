@@ -1,0 +1,39 @@
+# 2026-11-01T17:18:48Z
+$ qa/.venv/bin/python qa/scripts/gate-readiness.py G0
+B00: 1 real Robot test(s)
+B17: 0 real Robot test(s)
+Q00: 3 real Robot test(s)
+gate-readiness G0: PASS
+exit=0
+# 2026-11-01T17:18:49Z
+$ qa/.venv/bin/python qa/scripts/gate-readiness.py Q00
+Q00: 3 real Robot test(s)
+gate-readiness Q00: PASS
+exit=0
+# 2026-11-01T17:18:49Z
+$ qa/.venv/bin/python qa/scripts/gate-readiness.py G1
+B00: 1 real Robot test(s)
+B01: 0 real Robot test(s)
+B17: 0 real Robot test(s)
+M00: 0 real Robot test(s)
+P00: 1 real Robot test(s)
+Q00: 3 real Robot test(s)
+W01: 5 real Robot test(s)
+gate-readiness G1: PASS
+exit=0
+# 2026-11-01T17:19:12Z (remaining asserts of test_gate_readiness_reads_checklist_and_flags_placeholders)
+$ qa/.venv/bin/python qa/scripts/gate-readiness.py B02
+B02: 0 real Robot test(s)
+NOT READY: 6 placeholder test(s) still tagged not-ready:
+  B02  qa/robot/api/identity.robot  Assist Header Sets On Behalf Of Farmer
+  B02  qa/robot/api/identity.robot  Consent Writes Audit Row With Officer As Actor
+  B02  qa/robot/api/identity.robot  Farmer Calling GET Flags Gets 403
+  B02  qa/robot/api/identity.robot  Five Wrong OTP Codes Lock The Challenge With 409
+  B02  qa/robot/api/identity.robot  Logout Revokes Refresh Token And Refresh Returns 401
+  B02  qa/robot/api/identity.robot  OTP Request Twice In 60 s Returns 429
+gate-readiness B02: FAIL
+exit=1
+# 2026-11-01T17:19:12Z (remaining asserts of test_gate_readiness_reads_checklist_and_flags_placeholders)
+$ qa/.venv/bin/python qa/scripts/gate-readiness.py X99
+gate-readiness: unknown WP or gate 'X99'
+exit=2

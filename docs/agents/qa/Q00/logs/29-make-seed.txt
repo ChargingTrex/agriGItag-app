@@ -1,0 +1,5 @@
+# 2026-11-01T17:17:26Z git HEAD c0962da
+$ make seed
+docker compose -f infra/docker-compose.yml exec api sh -c "alembic upgrade head && python -m agritrace.seed.demo"
+seed: already present: VIRUDHAI_SCFC_VINOBA_BHAVA_FPO, batch FGP8T4033HM7
+exit=0

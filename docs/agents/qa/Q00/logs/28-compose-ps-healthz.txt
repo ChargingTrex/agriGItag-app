@@ -1,0 +1,24 @@
+# 2026-11-01 2026-11-01T17:17:00Z git HEAD c0962da
+$ docker compose -f infra/docker-compose.yml ps
+NAME                    IMAGE                          COMMAND                  SERVICE     CREATED             STATUS                       PORTS
+agritrace-api-1         agritrace-api:dev              "uvicorn agritrace.m…"   api         About an hour ago   Up About an hour (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+agritrace-db-1          postgis/postgis:16-3.4         "docker-entrypoint.s…"   db          About an hour ago   Up About an hour (healthy)   127.0.0.1:5433->5432/tcp
+agritrace-mosquitto-1   eclipse-mosquitto:2            "/docker-entrypoint.…"   mosquitto   3 hours ago         Up 3 hours                   127.0.0.1:1883->1883/tcp
+agritrace-s3-1          localstack/localstack:4.14.0   "docker-entrypoint.sh"   s3          3 hours ago         Up 3 hours (healthy)         0.0.0.0:4566->4566/tcp, [::]:4566->4566/tcp
+agritrace-valkey-1      valkey/valkey:8-alpine         "tini -- docker-entr…"   valkey      3 hours ago         Up 3 hours (healthy)         127.0.0.1:6379->6379/tcp
+agritrace-worker-1      agritrace-api:dev              "celery -A agritrace…"   worker      About an hour ago   Up About an hour             8000/tcp
+
+$ curl -s -w "
+HTTP %{http_code}
+" http://localhost:8000/v1/healthz
+{"db":"ok","redis":"ok","s3":"ok"}
+HTTP 200
+$ docker compose -f infra/docker-compose.yml ps -a --format "{{.Service}} {{.State}} {{.Status}}"
+api running Up About an hour (healthy)
+db running Up About an hour (healthy)
+mosquitto running Up 3 hours
+s3 running Up 3 hours (healthy)
+s3-init exited Exited (0) About an hour ago
+valkey running Up 3 hours (healthy)
+worker running Up About an hour
+# infra/.env (git-ignored) keys only: DB_PORT 

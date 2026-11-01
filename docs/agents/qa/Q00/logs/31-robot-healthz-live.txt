@@ -1,0 +1,14 @@
+# 2026-11-01T17:17:56Z CI step 'Robot smoke (api/healthz.robot)' (local re-enactment; outputdir ci -> Q00 as instructed)
+$ qa/.venv/bin/robot --outputdir qa/robot/results/Q00 --exclude not-ready qa/robot/api/healthz.robot
+==============================================================================
+Healthz :: Stack health: the B00 acceptance line "docker compose up -> /hea...
+==============================================================================
+Healthz Reports Db Redis And S3 Ok :: GET /v1/healthz returns 200 ... | PASS |
+------------------------------------------------------------------------------
+Healthz :: Stack health: the B00 acceptance line "docker compose u... | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/Q00/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/Q00/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/Q00/report.html
+exit=0

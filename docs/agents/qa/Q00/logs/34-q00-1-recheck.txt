@@ -1,0 +1,9 @@
+# 2026-11-01T17:18:57Z Q00-1 reproduction re-run on main c0962da (dirs under session scratchpad)
+$ python3 infra/scripts/privacy-lint.py <scratch>/v07/a   # <a href="https://www.openstreetmap.org/?mlat=9.559806&mlon=78.133521">map</a>
+<scratch>/v07/a/index.html:1:42: coordinate_precision: lat=9.559806
+privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=1
+$ python3 infra/scripts/privacy-lint.py <scratch>/v07/c   # <a href="https://www.openstreetmap.org/#map=17/9.559806/78.133521">map</a>
+<scratch>/v07/c/index.html:1:45: coordinate_precision: 17/9.559806/78.133521
+privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=1
