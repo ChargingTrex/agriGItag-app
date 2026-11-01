@@ -649,10 +649,42 @@ def received_lot(kg: str, plot: dict | None = None, reading: str = "10.0", stage
     lot = new_lot(plot)
     call_api("POST", "/quality-readings", ADMIN, 201, json=moisture(reading, stage, lot_id=lot))
     call_api("POST", f"/lots/{lot}/ready", ADMIN, 200)
-    call_api("POST", "/intakes", ADMIN, 201, json={"client_id": str(uuid.uuid4()), "lot_id": lot,
-                                                   "processor_id": qa_world()["processor"], "sale_date": days_ago(0),
-                                                   "received": {"value": str(kg), "unit": "kg"}})
+    receive(lot, kg)
     return lot
+
+
+def receive(lot_id: str, kg: str, sale_date: str | None = None) -> dict:
+    """Receive a ready lot at the QA processor (POST /v1/intakes as the FPO admin, 201).
+
+    Args:
+        lot_id: the lot.
+        kg: received kilograms.
+        sale_date: ISO date; default today.
+
+    Returns:
+        The intake body (``reconciliation``, ``flags``...).
+
+    Raises:
+        AssertionError: the intake was not created.
+
+    Side effects:
+        Creates an intake; the lot becomes `received`; reconciliation flags may be raised.
+    """
+    return call_api("POST", "/intakes", ADMIN, 201, json={
+        "client_id": str(uuid.uuid4()), "lot_id": lot_id, "processor_id": qa_world()["processor"],
+        "sale_date": sale_date or days_ago(0), "received": {"value": str(kg), "unit": "kg"}}).json()
+
+
+def packing(kg: int | str) -> dict:
+    """Build a final-packing body: ``kg`` packed today, best before in 365 days (B09).
+
+    Args:
+        kg: packed kilograms.
+
+    Returns:
+        The FinalPackingIn body.
+    """
+    return {"packed": {"value": int(kg), "unit": "kg"}, "pack_date": days_ago(0), "best_before_date": days_ago(-365)}
 
 
 def new_batch(lot_ids: list, gi: bool | str = False) -> dict:
