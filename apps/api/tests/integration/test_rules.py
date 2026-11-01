@@ -1,14 +1,17 @@
 """Integration tests of the server rules on PostGIS, the shared GI cases and flag resolution.
 
-Covers off-plot events, the reference lot's flag set, yield holds, and resolving over HTTP and sync push.
+Covers off-plot events, the reference lot's flag set, yield holds, checks racing an intake, a photo verdict
+and a reviewer (B19), and resolving over HTTP and sync push.
 
 Serves: B15 acceptance (D-030 reference set, old flag closed); B08 acceptance (600 m off plot →
 `event_off_plot` warn, re-check no dup; 1,150/1,250/1,350 kg → none/warn/hold + `gi_eligible=false`),
 backend-design §5 expected flags (inline fixture until B12 seeds the reference batch), D-006 (`gi_check`
-cases of tests/fixtures/rule_cases.json through `locate_point`), FR70.
+cases of tests/fixtures/rule_cases.json through `locate_point`), FR70, B19 (QA issue B16-1).
 Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`).
 """
 
+import asyncio
+import contextlib
 import json
 import math
 import secrets
@@ -40,15 +43,17 @@ from agritrace.core.enums import (
     InputCategory,
     LocationStatus,
     OrgKind,
+    PhotoStatus,
     PinMethod,
     Role,
     Severity,
 )
+from agritrace.core.errors import FlagNotOpenError
 from agritrace.core.ids import batch_code, lot_code, uuid7
 from agritrace.core.schemas import GeoPoint
-from agritrace.modules.events.models import Event, EventVersion
+from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto
 from agritrace.modules.identity.models import User
-from agritrace.modules.lots_batches.models import Batch, BatchShare, Lot
+from agritrace.modules.lots_batches.models import Batch, BatchShare, Lot, LotIntake
 from agritrace.modules.quality.profiles.loader import load_profile
 from agritrace.modules.registry import service as registry_service
 from agritrace.modules.registry.models import (
@@ -441,6 +446,181 @@ async def test_hold_comes_back_after_auto_close(world: World) -> None:
             await s.refresh(lot)
             assert (flag.status, flag.severity, lot.gi_eligible) == (status, Severity.HOLD, eligible)
         assert (flag.resolution_reason_code, lot.gi_hold_reason) == (None, "flags: yield_over_ceiling")
+
+
+def _pause_first(
+    monkeypatch: pytest.MonkeyPatch, name: str, seconds: float
+) -> tuple[asyncio.Event, asyncio.Event]:
+    """Make the first call of a service fact loader pause after it read, as a slow worker would.
+
+    Args:
+        monkeypatch: pytest fixture.
+        name: `_lot_context` or `_event_context` in the rules service.
+        seconds: longest pause; a run that holds the lock the other session waits for times out here.
+
+    Returns:
+        `(read, release)`: set when the first call has read its facts; set it to end the pause early.
+    """
+    read, release = asyncio.Event(), asyncio.Event()
+    original = getattr(service, name)
+
+    async def paused(*args: Any) -> Any:
+        """Call the real loader; on the first call wait for `release` (at most `seconds`).
+
+        Args:
+            *args: the loader's arguments.
+
+        Returns:
+            The real context.
+        """
+        ctx = await original(*args)
+        if not read.is_set():
+            read.set()
+            with contextlib.suppress(TimeoutError):
+                await asyncio.wait_for(release.wait(), seconds)
+        return ctx
+
+    monkeypatch.setattr(service, name, paused)
+    return read, release
+
+
+async def _check_lot_alone(lot_id: uuid.UUID) -> None:
+    """Run `rules.check_lot` in its own session, as the worker does.
+
+    Args:
+        lot_id: the lot.
+    """
+    async with get_sessionmaker()() as a:
+        await service.check_lot(a, lot_id)
+
+
+async def test_stale_check_cannot_close_a_flag_committed_after_it_read(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B16-1: a lot check that read the facts before an intake committed leaves the intake's flag open.
+
+    Check A reads the lot (packed 100 kg, no intake) and waits up to 2 s for session B, which records a 130 kg
+    intake, runs the gate checks (`quantity_mismatch` warn) and commits; then A stores its flags. With the lot
+    lock B waits for A instead, so either way the flag must end open.
+
+    Args:
+        world: the seeded FPO.
+        monkeypatch: pytest fixture (pauses A after its first context read).
+    """
+    async with get_sessionmaker()() as s:
+        await _event(s, world, EventType.PACKING, "2026-03-10", {"quantity": {"value": 100, "unit": "kg"}})
+    read, committed = _pause_first(monkeypatch, "_lot_context", 2)
+    task = asyncio.create_task(_check_lot_alone(world.lot))
+    await read.wait()
+    async with get_sessionmaker()() as b:
+        intake = LotIntake(
+            id=uuid7(),
+            fpo_id=world.fpo,
+            lot_id=world.lot,
+            processor_id=world.processor,
+            sale_date=date(2026, 3, 12),
+            received_kg=Decimal(130),
+            accepted_by_user_id=world.admin,
+        )
+        b.add(intake)
+        await b.flush()
+        await service.run_gate_checks(b, lot_id=world.lot)
+        await b.commit()
+    committed.set()
+    await task
+    async with get_sessionmaker()() as s:
+        [flag] = await _flags(s, world.lot, "quantity_mismatch")
+        assert (flag.status, flag.resolution_reason_code) == (FlagStatus.OPEN, None)
+
+
+async def test_reviewer_and_check_of_one_lot_do_not_deadlock(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B19-r1 P1-1: a reviewer resolving a lot hold while a check of the lot runs waits; no deadlock.
+
+    Hold at 1,350 kg, corrected to 1,150 kg; check A pauses after reading the lot (holding the lot lock) while
+    the admin resolves the hold `fixed` in another session. A closes the hold first (`rule_passed`), so the
+    reviewer gets 409 `flag_not_open` instead of a deadlock or an overwrite.
+
+    Args:
+        world: the seeded FPO.
+        monkeypatch: pytest fixture (pauses A after its first context read).
+    """
+    async with get_sessionmaker()() as s:
+        harvest = await _event(
+            s, world, EventType.HARVEST, "2026-02-14", {"quantity": {"value": 1350, "unit": "kg"}}
+        )
+        await service.check_lot(s, world.lot)
+        [hold] = await _flags(s, world.lot, "yield_over_ceiling")
+        await _correct(s, world, harvest, {"quantity": {"value": 1150, "unit": "kg"}})
+    read, _ = _pause_first(monkeypatch, "_lot_context", 0.5)
+    task = asyncio.create_task(_check_lot_alone(world.lot))
+    await read.wait()
+
+    async def review() -> None:
+        """Resolve the hold as the FPO admin in its own session and commit."""
+        async with get_sessionmaker()() as r:
+            admin = CurrentUser(world.admin, world.fpo, Role.FPO_ADMIN)
+            body = FlagResolveIn(resolution="fixed", reason_code="land_record_checked")
+            await service.resolve_flag(r, admin, hold.id, body)
+            await r.commit()
+
+    checked, reviewed = await asyncio.gather(task, review(), return_exceptions=True)
+    assert checked is None and isinstance(reviewed, FlagNotOpenError)
+    async with get_sessionmaker()() as s:
+        [flag] = await _flags(s, world.lot, "yield_over_ceiling")
+        assert (flag.status, flag.resolution_reason_code) == (FlagStatus.FIXED, "rule_passed")
+
+
+async def test_stale_event_check_cannot_close_a_fresh_photo_flag(
+    world: World, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B19-r1 P2-2: two `check_event` runs of one event (one per photo) cannot close each other's flag.
+
+    Run A reads the event while its photo is `uploaded` and pauses up to 2 s; session B marks the photo
+    `checksum_mismatch`, commits and runs `check_event` (`photo_checksum_mismatch` warn). With the event lock
+    B's run waits for A, so the flag must end open.
+
+    Args:
+        world: the seeded FPO.
+        monkeypatch: pytest fixture (pauses A after its first context read).
+    """
+    async with get_sessionmaker()() as s:
+        event_id = await _event(s, world, EventType.SOWING, "2025-10-20")
+        event = await s.get(Event, event_id)
+        assert event is not None
+        photo = EvidencePhoto(
+            id=uuid7(),
+            event_version_id=event.current_version_id,
+            bucket="evidence",
+            object_key=f"test/{uuid.uuid4()}.webp",
+            content_type="image/webp",
+            size_bytes=1000,
+            sha256_client="0" * 64,
+            status=PhotoStatus.UPLOADED,
+        )
+        s.add(photo)
+        await s.commit()
+    read, committed = _pause_first(monkeypatch, "_event_context", 2)
+
+    async def run_a() -> None:
+        """Run `rules.check_event` in its own session, as the worker does."""
+        async with get_sessionmaker()() as a:
+            await service.check_event(a, event_id)
+
+    task = asyncio.create_task(run_a())
+    await read.wait()
+    async with get_sessionmaker()() as b:
+        stored = await b.get(EvidencePhoto, photo.id)
+        assert stored is not None
+        stored.status = PhotoStatus.CHECKSUM_MISMATCH
+        await b.commit()
+        await service.check_event(b, event_id)
+    committed.set()
+    await task
+    async with get_sessionmaker()() as s:
+        [flag] = await _flags(s, event_id, "photo_checksum_mismatch")
+        assert (flag.status, flag.resolution_reason_code) == (FlagStatus.OPEN, None)
 
 
 @pytest.mark.parametrize("case", CASES["gi_check"]["cases"], ids=lambda c: c["name"])

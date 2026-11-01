@@ -327,6 +327,8 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B18-r1 P3-1 (open question, privacy/product): the privacy linter does not catch `S. No. 45` / `S.No. 45`, a common Tamil Nadu survey-number form. It also means "serial number" (tables, lists), so adding it to `agritrace_page/privacy_lint.py` `LABEL_RULES` risks false positives that now fail a page build. Decide whether to flag it, and in which contexts, then add a LEAKS row and a look-alike row in `qa/tests/test_privacy_lint.py`.
 - [ ] B18-r1 P3-2 → B13: the ID-document presign (`registry/service.py`, `storage.presign_put` into `S3_BUCKET_IDDOCS`) does not sign its length, because the request declares no size. Add a declared `size_bytes` with a ceiling and pass it as `size_bytes=` (as evidence photos do since B18).
 - [ ] B18-r1 P3-2 → B00/infra: `infra/scripts/privacy-lint.py` is a symlink to `apps/public-page/agritrace_page/privacy_lint.py`. A Windows checkout without `git config core.symlinks true` (and Developer Mode) gets a one-line text file instead, and CI/qa calls of that path fail. Document it in the README setup, or switch the callers to `python -m agritrace_page.privacy_lint` if a Windows developer joins.
+- [ ] B19: rerun `docs/agents/qa/B16/logs/live_b16_race.py` once on the rebuilt api/worker after merge (Orchestrator).
+- [ ] B19-r1 P3 (pre-existing): `publishing.build_page` holds the batch row lock while it writes the page to S3, so rules checks and gates of that batch wait for the upload; move the S3 writes out of the locked transaction if BM-07 or gate latency shows it.
 
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).

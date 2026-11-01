@@ -523,17 +523,30 @@ async def run_gate_checks(
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        As `_check_lot` and `_check_batch`.
+        Locks the batch row, then each lot row in id order (`FOR NO KEY UPDATE`, until the caller's
+        transaction ends) before reading its facts; then as `_check_lot` and `_check_batch`.
     """
+    # Checks of one lot/batch run one at a time: `store_flags` closes what its run did not raise, so a run
+    #   that read the facts before another check committed a flag would close that flag (B16-1). After the
+    #   lock, READ COMMITTED reads see every check committed before it (`populate_existing`: cached rows too).
+    #   `key_share` (FOR NO KEY UPDATE) still lets inserts that point at the row (events, intakes) through.
+    # Lock order: (event →) batch → lots by id → flags; anything that writes a flag then a lot must lock the
+    #   lot first (resolve_flag).
     subjects: set[uuid.UUID] = set()
     lot_ids = [lot_id] if lot_id else []
-    batch = await session.get(Batch, batch_id) if batch_id else None
+    batch = (
+        await session.get(Batch, batch_id, with_for_update={"key_share": True}, populate_existing=True)
+        if batch_id
+        else None
+    )
     if batch is not None:
         subjects |= await _check_batch(session, batch)
         query = select(BatchShare.lot_id).where(BatchShare.batch_id == batch.id)
         lot_ids += (await session.scalars(query)).all()
-    for lid in dict.fromkeys(lot_ids):
-        if (lot := await session.get(Lot, lid)) is not None:
+    for lid in sorted(set(lot_ids)):  # id order, as `create_batch` locks lots, so two checks cannot deadlock
+        if (
+            lot := await session.get(Lot, lid, with_for_update={"key_share": True}, populate_existing=True)
+        ) is not None:
             subjects |= await _check_lot(session, lot)
     return await _active(session, subjects)
 
@@ -583,9 +596,11 @@ async def check_event(session: AsyncSession, event_id: uuid.UUID) -> list[str]:
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Flags of the event (closed when the event was undone), then `run_gate_checks` on its lot/batch.
+        Locks the event row (`FOR NO KEY UPDATE`); flags of the event (closed when the event was undone),
+        then `run_gate_checks` on its lot/batch.
     """
-    event = await session.get(Event, event_id)
+    # Runs of one event (one per verified photo) wait for each other, as `run_gate_checks` does per lot.
+    event = await session.get(Event, event_id, with_for_update={"key_share": True})
     if event is None:
         log.warning("check_event: no event %s", event_id)
         return []
@@ -710,17 +725,25 @@ async def resolve_flag(
             `check_resolution`.
 
     Side effects:
-        Sets status, resolver, reason, note and time (audited); `escalated` reassigns to fpo_admin; a lot
-        flag re-syncs the lot's GI hold (`_sync_lot_hold`).
+        A lot flag first locks the lot row (`FOR NO KEY UPDATE`, until the transaction ends) and re-reads
+        the flag; sets status, resolver, reason, note and time (audited); `escalated` reassigns to fpo_admin;
+        a lot flag re-syncs the lot's GI hold (`_sync_lot_hold`).
     """
     flag = await _scoped_flag(session, user, flag_id)
+    # Lot row, then flag rows, as `run_gate_checks`: the reverse order deadlocks with a running check.
+    lot = None
+    if flag.subject_type == FlagSubject.LOT:
+        lot = await session.get(
+            Lot, flag.subject_id, with_for_update={"key_share": True}, populate_existing=True
+        )
+        await session.refresh(flag)  # a check may have closed it before we got the lock
     check_resolution(user.role, flag, body)
     flag.status = RESOLUTION_STATUS[body.resolution]
     flag.resolution_reason_code = (body.reason_code or "").strip()
     flag.resolution_note, flag.resolved_by, flag.resolved_at = body.note, user.user_id, utcnow()
     if flag.status == FlagStatus.ESCALATED:
         flag.assigned_role = Role.FPO_ADMIN
-    if flag.subject_type == FlagSubject.LOT and (lot := await session.get(Lot, flag.subject_id)) is not None:
+    if lot is not None:
         await _sync_lot_hold(session, lot)
     await session.flush()
     return flag
