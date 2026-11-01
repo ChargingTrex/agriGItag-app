@@ -236,6 +236,7 @@ ADMIN, OFFICER, QC = "+919000000001", "+919000000002", "+919000000003"
 SURVEY_REF = "QA-SURVEY-77/3B"  # land record on the QA plot: must never reach a public page (B10)
 ADDRESS = {"village": "QA Thottiyangulam", "block": "Tiruchuli", "district": "Virudhunagar",
            "state": "Tamil Nadu", "pin": "626129"}
+SESSION_FILE = QA_DIR / "robot" / "results" / ".api-sessions.json"
 _SESSIONS: dict[str, dict] = {}
 _WORLD: dict = {}
 _PLOTS = [0]  # plots created this run; spreads the pins on a grid
@@ -307,7 +308,10 @@ def _sign_in(phone: str) -> dict:
 
 
 def login_as(phone: str) -> dict:
-    """Return bearer headers for a user, signing in once per run and refreshing before the 15-min expiry.
+    """Return bearer headers for a user: a cached session, else a refreshed one, else a new OTP sign-in.
+
+    Sessions are kept in qa/robot/results/.api-sessions.json (an ignored folder, keyed by API base) so reruns
+    refresh instead of spending OTPs: the API allows 10 codes per phone per 24 h (B02).
 
     Args:
         phone: the user's phone, E.164.
@@ -319,16 +323,21 @@ def login_as(phone: str) -> dict:
         AssertionError: sign-in failed (see _sign_in).
 
     Side effects:
-        Caches the session in this library (GLOBAL scope) for the whole run.
+        May sign in or refresh (rotating the refresh token); rewrites the session file.
     """
-    s = _SESSIONS.get(phone)
-    if s and time.time() - s["at"] > 600:
-        r = _http().post(f"{_var('API_BASE', '')}/auth/refresh", json={"refresh_token": s["refresh_token"]},
-                         timeout=30)
+    api = _var("API_BASE", "http://localhost:8000/v1")
+    key = f"{api}|{phone}"
+    if not _SESSIONS and SESSION_FILE.exists():
+        _SESSIONS.update(json.loads(SESSION_FILE.read_text()))
+    s = _SESSIONS.get(key)
+    if s and time.time() - s["at"] > 600:  # access tokens live 900 s
+        r = _http().post(f"{api}/auth/refresh", json={"refresh_token": s["refresh_token"]}, timeout=30)
         s = {**s, **r.json(), "at": time.time()} if r.status_code == 200 else None
     if not s:
         s = _sign_in(phone)
-    _SESSIONS[phone] = s
+    _SESSIONS[key] = s
+    SESSION_FILE.parent.mkdir(parents=True, exist_ok=True)
+    SESSION_FILE.write_text(json.dumps(_SESSIONS))
     return {"Authorization": f"Bearer {s['access_token']}"}
 
 
@@ -351,9 +360,13 @@ def call_api(method: str, path: str, phone: str | None = None, expect: int | str
     Side effects:
         Whatever the endpoint does.
     """
-    headers = {**(login_as(phone) if phone else {}), **(kwargs.pop("headers", None) or {})}
-    r = _http().request(method, _var("API_BASE", "http://localhost:8000/v1") + path, headers=headers,
-                        timeout=120, **kwargs)
+    extra = kwargs.pop("headers", None) or {}
+    url = _var("API_BASE", "http://localhost:8000/v1") + path
+    r = _http().request(method, url, headers={**(login_as(phone) if phone else {}), **extra}, timeout=120, **kwargs)
+    if phone and r.status_code == 401:
+        # A cached session from before a stack reset: sign in again once.
+        _SESSIONS.pop(f"{_var('API_BASE', 'http://localhost:8000/v1')}|{phone}", None)
+        r = _http().request(method, url, headers={**login_as(phone), **extra}, timeout=120, **kwargs)
     if expect is not None and r.status_code != int(expect):
         raise AssertionError(f"{method} {path} -> HTTP {r.status_code}, expected {expect}: {r.text[:800]}")
     return r
