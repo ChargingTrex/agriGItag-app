@@ -5,23 +5,10 @@
  * FR8, FR28. Called by: `npm run e2e` (mock mode unless `E2E_LIVE=1`).
  * Against the live stack (`E2E_LIVE=1`) the mock ids and codes do not exist: e2e/chain.spec.ts (P07) covers it.
  */
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { signIn } from './support.ts';
 
 test.skip(process.env['E2E_LIVE'] === '1', 'mock-mode spec (MSW data and codes)');
-
-/**
- * Signs in as the mock FPO admin through the real login form.
- * @param page The Playwright page, already on a guarded route.
- * @returns Resolves when the PIN step is submitted.
- */
-async function signIn(page: Page): Promise<void> {
-  await page.getByLabel('Mobile number').fill('9876543210');
-  await page.getByRole('button', { name: 'Send code' }).click();
-  await page.getByLabel('SMS code').fill('123456');
-  await page.getByRole('button', { name: 'Verify code' }).click();
-  await page.getByLabel('PIN').fill('1234');
-  await page.getByRole('button', { name: 'Sign in' }).click();
-}
 
 // Tile servers are never contacted from tests (OSM tile policy, no network dependency); the `request`
 // event still fires for an aborted request, so "satellite tiles only after the click" stays checkable.

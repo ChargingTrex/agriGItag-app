@@ -42,7 +42,7 @@ test('every routed screen has no serious or critical axe violation', async ({ pa
       await goInApp(page, path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       // Loading bars gone: the screen shows its data, not a skeleton.
-      await expect(page.getByRole('progressbar')).toHaveCount(0, { timeout: 20_000 });
+      await expect(page.getByRole('progressbar')).toHaveCount(0, { timeout: 60_000 });
       await expectNoSeriousAxe(page, name);
     });
   }

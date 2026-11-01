@@ -25,8 +25,9 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL,
-    // A missing element fails the step in 20 s instead of waiting out the chain's 10-minute budget.
-    actionTimeout: 20_000,
+    // A missing element fails the step in 30 s instead of waiting out the chain's 10-minute budget; 20 s was
+    // too short for the first screens under host load (P07 review P2).
+    actionTimeout: 30_000,
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

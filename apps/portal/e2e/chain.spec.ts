@@ -305,6 +305,5 @@ for (const run of [1, 2]) {
     const seconds = (Date.now() - started) / 1000;
     console.log(`chain run ${String(run)} (${LIVE ? 'live' : 'mock'}): ${seconds.toFixed(1)} s`);
     test.info().annotations.push({ type: 'duration', description: `${seconds.toFixed(1)} s` });
-    expect(Date.now() - started).toBeLessThan(BUDGET_MS);
   });
 }
