@@ -31,7 +31,9 @@ ${DB_PORT}          %{DB_PORT=5432}
 ${DB_NAME}          %{DB_NAME=agritrace}
 ${DB_USER}          %{DB_USER=agritrace}
 ${DB_PASSWORD}      %{DB_PASSWORD=agritrace}
-${OTP_DEV_CODE}     %{OTP_DEV_CODE=123456}
+# No default: every sign-in keyword stops the run (Fatal Error) when it is unset, so a stack without the dev
+# OTP never texts a real phone (audit wave 7). The local compose stack's value is 123456.
+${OTP_DEV_CODE}     %{OTP_DEV_CODE=}
 # PIN the first office sign-in of a fresh seed sets (B02: pin_set false → the first PIN sent becomes the PIN).
 ${OFFICE_PIN}       %{OFFICE_PIN=2468}
 # Docker compose command line of the stack under test; S3 objects, the worker's Celery calls, the QR decoder

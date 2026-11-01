@@ -11,6 +11,7 @@ import importlib.util
 import json
 import os
 import pathlib
+import re
 import types
 
 import pytest
@@ -232,5 +233,7 @@ def test_export_unit_checks_and_template_csv(tmp_path: pathlib.Path) -> None:
         "quantities": ["received"], "unitless": ["share"], "rows": 2}
     page = {"lots": [{"q": {"value": 1, "unit": "kg"}}, {"q": {"value": 2}}], "n": 3}
     assert keywords.unitless_quantities(page) == [{"value": 2}]
+    # Test phones stay in the demo seed's +919000 block and never collide with the seeded +919000000xxx users.
+    assert all(re.fullmatch(r"\+919000[1-9]\d{5}", keywords.new_phone()) for _ in range(200))
     csv = keywords.template_csv("name, phone,village_lgd_code", {"name": "A", "village_lgd_code": "9"}, {"phone": "1"})
     assert csv == "name,phone,village_lgd_code\r\nA,,9\r\n,1,\r\n"

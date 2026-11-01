@@ -1,0 +1,84 @@
+B00: 1 real Robot test(s)
+B01: 0 real Robot test(s)
+B02: 6 real Robot test(s)
+B03: 7 real Robot test(s)
+B04: 2 real Robot test(s)
+B05: 9 real Robot test(s)
+B06: 8 real Robot test(s)
+B07: 3 real Robot test(s)
+B08: 8 real Robot test(s)
+B09: 8 real Robot test(s)
+B10: 6 real Robot test(s)
+B11: 4 real Robot test(s)
+B12: 6 real Robot test(s)
+B13: 5 real Robot test(s)
+B14: 0 real Robot test(s)
+B15: 0 real Robot test(s)
+B16: 0 real Robot test(s)
+B17: 0 real Robot test(s)
+B18: 0 real Robot test(s)
+B19: 0 real Robot test(s)
+B20: 0 real Robot test(s)
+B21: 0 real Robot test(s)
+M00: 0 real Robot test(s)
+M01: 0 real Robot test(s)
+M02: 0 real Robot test(s)
+M03: 0 real Robot test(s)
+M04: 0 real Robot test(s)
+M05: 0 real Robot test(s)
+M06: 0 real Robot test(s)
+M07: 0 real Robot test(s)
+M08: 0 real Robot test(s)
+M09: 0 real Robot test(s)
+M10: 0 real Robot test(s)
+M11: 0 real Robot test(s)
+M12: 0 real Robot test(s)
+M13: 0 real Robot test(s)
+M14: 0 real Robot test(s)
+M15: 0 real Robot test(s)
+M16: 0 real Robot test(s)
+P00: 1 real Robot test(s)
+P01: 2 real Robot test(s)
+P02: 2 real Robot test(s)
+P03: 4 real Robot test(s)
+P04: 3 real Robot test(s)
+P05: 2 real Robot test(s)
+P06: 5 real Robot test(s)
+P07: 2 real Robot test(s)
+P08: 3 real Robot test(s)
+P09: 0 real Robot test(s)
+P10: 0 real Robot test(s)
+P11: 0 real Robot test(s)
+Q00: 3 real Robot test(s)
+Q01: 0 real Robot test(s)
+Q02: 0 real Robot test(s)
+Q03: 2 real Robot test(s)
+Q04: 0 real Robot test(s)
+Q05: 0 real Robot test(s)
+Q06: 0 real Robot test(s)
+Q07: 0 real Robot test(s)
+W01: 5 real Robot test(s)
+W02: 6 real Robot test(s)
+W03: 2 real Robot test(s)
+NOT READY: 20 placeholder test(s) still tagged not-ready:
+  B06  qa/robot/mobile/network_profiles.robot  BM-15 Same Push Replayed 5 Times Leaves One Record
+  M02  qa/robot/mobile/network_profiles.robot  BM-11 Normal 4G Entry Plus One Photo Shows Sent Within 5 s
+  M02  qa/robot/mobile/network_profiles.robot  BM-12 Weak 4G Entry Plus One Photo Shows Sent Within 20 s
+  M02  qa/robot/mobile/network_profiles.robot  BM-13 Airplane Mode Saves Instantly And Sends Automatically On Restore
+  M02  qa/robot/mobile/network_profiles.robot  BM-14 Kill Mid Upload Then Relaunch Leaves One Entry And One Photo
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Edge
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Normal 4G
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Offline
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Reconnect After Offline
+  M02  qa/robot/mobile/offline_matrix.robot  Matrix On Weak 4G
+  Q01  qa/robot/mobile/network_profiles.robot  BM-11 Normal 4G Entry Plus One Photo Shows Sent Within 5 s
+  Q01  qa/robot/mobile/network_profiles.robot  BM-12 Weak 4G Entry Plus One Photo Shows Sent Within 20 s
+  Q01  qa/robot/mobile/network_profiles.robot  BM-13 Airplane Mode Saves Instantly And Sends Automatically On Restore
+  Q01  qa/robot/mobile/network_profiles.robot  BM-14 Kill Mid Upload Then Relaunch Leaves One Entry And One Photo
+  Q01  qa/robot/mobile/network_profiles.robot  BM-15 Same Push Replayed 5 Times Leaves One Record
+  Q01  qa/robot/mobile/offline_matrix.robot  Matrix On Edge
+  Q01  qa/robot/mobile/offline_matrix.robot  Matrix On Normal 4G
+  Q01  qa/robot/mobile/offline_matrix.robot  Matrix On Offline
+  Q01  qa/robot/mobile/offline_matrix.robot  Matrix On Reconnect After Offline
+  Q01  qa/robot/mobile/offline_matrix.robot  Matrix On Weak 4G
+gate-readiness G5: FAIL

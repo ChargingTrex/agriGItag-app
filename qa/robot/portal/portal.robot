@@ -448,6 +448,7 @@ Portal As Admin
         Switch Page    ${known}    context=ALL    browser=ALL
         RETURN
     END
+    Require Dev OTP
     Set Suite Variable    ${ADMIN_PAGE}    failed
     New Browser    chromium    headless=True
     New Context    viewport={'width': 1280, 'height': 800}

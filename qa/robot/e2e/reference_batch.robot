@@ -85,14 +85,23 @@ Dart And TS Clients Compile
     Should Be Equal As Integers    ${ts.rc}    0    msg=${ts.stdout}[-2000:]
     ${tsc}=    Run Process    npx    --no-install    tsc    -b    cwd=${REPO_ROOT}/apps/portal    stderr=STDOUT    timeout=10 min
     Should Be Equal As Integers    ${tsc.rc}    0    msg=${tsc.stdout}[-2000:]
-    ${gen}=    Run Process    bash    tool/gen_api.sh    cwd=${REPO_ROOT}/apps/mobile    stderr=STDOUT    timeout=20 min
-    Should Be Equal As Integers    ${gen.rc}    0    msg=${gen.stdout}[-2000:]
-    ${diff}=    Run Process    git    status    --porcelain    --untracked-files\=no    --    apps/mobile/packages/agritrace_api
-    ...    cwd=${REPO_ROOT}    stderr=STDOUT
-    Should Be Empty    ${diff.stdout}    msg=the regenerated Dart client differs from the committed one
-    ${dart}=    Run Process    dart    analyze    --no-fatal-warnings    --no-fatal-infos
-    ...    cwd=${REPO_ROOT}/apps/mobile/packages/agritrace_api    stderr=STDOUT    timeout=10 min
-    Should Be Equal As Integers    ${dart.rc}    0    msg=${dart.stdout}[-2000:]
+    # gen_api.sh deletes and rewrites its package, so it runs on a copy (same relative layout) and the result is
+    # compared with the committed client; the repository is never touched.
+    ${copy}=    Set Variable    ${OUTPUT DIR}/clients
+    Remove Directory    ${copy}    recursive=True
+    Copy Directory    ${REPO_ROOT}/apps/mobile/tool    ${copy}/apps/mobile/tool
+    Copy File    ${REPO_ROOT}/packages/openapi/openapi.json    ${copy}/packages/openapi/openapi.json
+    # The generator logs thousands of lines: write them to a file (a pipe would fill and hang the process).
+    ${gen}=    Run Process    bash    tool/gen_api.sh    cwd=${copy}/apps/mobile    stdout=${OUTPUT DIR}/gen_api.log
+    ...    stderr=STDOUT    timeout=20 min
+    Should Be Equal As Integers    ${gen.rc}    0    msg=see ${OUTPUT DIR}/gen_api.log: ${gen.stdout}[-1500:]
+    ${new}=    Set Variable    ${copy}/apps/mobile/packages/agritrace_api
+    ${diff}=    Run Process    diff    -rq    -x    .dart_tool    -x    pubspec.lock    -x    build
+    ...    ${REPO_ROOT}/apps/mobile/packages/agritrace_api    ${new}    stderr=STDOUT
+    Should Be Equal As Integers    ${diff.rc}    0    msg=the regenerated Dart client differs: ${diff.stdout}[-1500:]
+    ${dart}=    Run Process    dart    analyze    --no-fatal-warnings    cwd=${new}
+    ...    stdout=${OUTPUT DIR}/dart_analyze.log    stderr=STDOUT    timeout=10 min
+    Should Be Equal As Integers    ${dart.rc}    0    msg=${dart.stdout}[-1500:]
 
 
 *** Keywords ***

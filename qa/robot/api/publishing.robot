@@ -26,11 +26,13 @@ Published Objects Exist With Matching Generation
 
 Page HTML Has No Phone Survey Number Or Temp Uploads
     [Tags]    WP-B10    FR-16
-    ${w}=    QA World
-    ${phones}=    Query    SELECT phone FROM users
-    ${leaks}=    Evaluate    [$w["farmer"]["phone"], $w["farmer"]["phone"][-10:], "QA-SURVEY", "77/3B", "Survey", "temp_uploads", "626129"] + [p for (p,) in $phones] + [p[-10:] for (p,) in $phones]
+    # Every user's phone (the QA farmer's included) is compared inside one keyword that returns only a count, so
+    # no number reaches the Robot log or report (audit wave 7, finding 1; CLAUDE.md §6).
+    @{leaks}=    Create List    QA-SURVEY    77/3B    Survey    temp_uploads    626129
     FOR    ${name}    IN    index.html    data.json
         ${r}=    Page Object    ${name}
+        ${phones}=    Page Leaks Any User Phone    ${r.text}
+        Should Be Equal As Integers    ${phones}    0    msg=${name} leaks ${phones} user phone numbers
         ${hits}=    Evaluate    [x for x in $leaks if x in $r.text]
         Should Be Empty    ${hits}    msg=${name} leaks ${hits}
     END

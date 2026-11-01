@@ -285,11 +285,13 @@ def _sign_in(phone: str) -> dict:
 
     Raises:
         AssertionError: OTP verify or PIN verify did not give a session.
+        robot.api.exceptions.FatalError: ``OTP_DEV_CODE`` is not set (see require_dev_otp); nothing is sent.
 
     Side effects:
         Creates an OTP challenge (one per phone per 60 s, 10 a day) and a device row; on a fresh seed the
         first PIN verify sets the office user's PIN to ``${OFFICE_PIN}``.
     """
+    code = require_dev_otp()
     http, api, device = _http(), _var("API_BASE", "http://localhost:8000/v1"), str(uuid.uuid4())
     r = http.post(f"{api}/auth/otp/request", json={"phone": phone}, timeout=30)
     wait = ((r.json().get("error") or {}).get("details") or {}).get("retry_after_s", 0) if r.status_code == 429 else 0
@@ -297,7 +299,7 @@ def _sign_in(phone: str) -> dict:
         time.sleep(wait + 1)
         http.post(f"{api}/auth/otp/request", json={"phone": phone}, timeout=30)
     r = http.post(f"{api}/auth/otp/verify", timeout=30, json={
-        "phone": phone, "code": _var("OTP_DEV_CODE", "123456"), "device_id": device, "platform": "android"})
+        "phone": phone, "code": code, "device_id": device, "platform": "android"})
     body = r.json()
     if body.get("kind") == "pin_required":
         r = http.post(f"{api}/auth/pin/verify", json={"pin": _var("OFFICE_PIN", "2468")}, timeout=30,
@@ -357,10 +359,13 @@ def call_api(method: str, path: str, phone: str | None = None, expect: int | str
 
     Raises:
         AssertionError: the status differs from ``expect``.
+        robot.api.exceptions.FatalError: an ``/auth/otp`` call while ``OTP_DEV_CODE`` is unset (require_dev_otp).
 
     Side effects:
         Whatever the endpoint does.
     """
+    if path.startswith("/auth/otp"):
+        require_dev_otp()  # a code request on a stack without the dev OTP texts a real phone
     extra = kwargs.pop("headers", None) or {}
     url = _var("API_BASE", "http://localhost:8000/v1") + path
     r = _http().request(method, url, headers={**(login_as(phone) if phone else {}), **extra}, timeout=120, **kwargs)
@@ -386,12 +391,61 @@ def days_ago(days: int | str) -> str:
 
 
 def new_phone() -> str:
-    """Return a random Indian mobile number nobody in the seed uses (+9197 + 8 digits).
+    """Return a random number from the demo seed's own ``+919000…`` block that no seeded user has.
+
+    Seed users are ``+919000000001..`` (``+919000`` + ``0000xx``); these are ``+919000`` + 100000..999999. A random
+    real-format number could belong to a stranger: it would sit in committed Robot reports and, on a stack without
+    the dev OTP, get a real SMS (audit wave 7, findings 1 and 5).
 
     Returns:
         An E.164 phone string.
     """
-    return f"+9197{random.randrange(10**8):08d}"
+    return f"+919000{random.randrange(100000, 1000000)}"
+
+
+def require_dev_otp() -> str:
+    """Stop the whole Robot run unless ``OTP_DEV_CODE`` is set, before any OTP is requested.
+
+    Without the dev code the target stack sends real SMS for every sign-in (audit wave 7, finding 5).
+
+    Returns:
+        The dev OTP.
+
+    Raises:
+        robot.api.exceptions.FatalError: ``OTP_DEV_CODE`` is unset or empty (via BuiltIn ``Fatal Error``).
+    """
+    code = _var("OTP_DEV_CODE", "")
+    if not code:
+        BuiltIn().fatal_error("OTP_DEV_CODE is not set: the suites sign in only on stacks with the dev OTP "
+                              "(export OTP_DEV_CODE=123456 for the local compose stack); no code was requested.")
+    return code
+
+
+def page_leaks_any_user_phone(text: str) -> int:
+    """Count the stack's user phone numbers (E.164 or 10-digit form) that appear in a text (B10, FR-16).
+
+    The numbers are read straight from the database here and never returned or logged, so a Robot report holds
+    only the count (audit wave 7, finding 1; CLAUDE.md §6).
+
+    Args:
+        text: e.g. a public page's HTML or data.json.
+
+    Returns:
+        How many users' numbers occur in ``text``.
+
+    Raises:
+        pg8000.exceptions.InterfaceError: the database (``DB_HOST``/``DB_PORT``...) is unreachable.
+    """
+    import pg8000.native
+
+    con = pg8000.native.Connection(user=_var("DB_USER", "agritrace"), password=_var("DB_PASSWORD", "agritrace"),
+                                   host=_var("DB_HOST", "localhost"), port=int(_var("DB_PORT", "5432")),
+                                   database=_var("DB_NAME", "agritrace"))
+    try:
+        phones = [row[0] for row in con.run("SELECT phone FROM users") if row[0]]
+    finally:
+        con.close()
+    return sum(1 for p in phones if p in text or p[-10:] in text)
 
 
 def new_farmer(name: str = "QA Robot Farmer", phone: str | None = None, approve: bool | str = True,

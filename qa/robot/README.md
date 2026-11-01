@@ -28,7 +28,11 @@ $R --dryrun --outputdir /tmp/robot-dryrun qa/robot                              
 Environment (defaults in `resources/common.resource`, names as in B00's compose file): `API_BASE`
 (http://localhost:8000/v1), `PORTAL_BASE` (http://localhost:5173), `S3_ENDPOINT` (LocalStack, http://localhost:4566),
 `S3_REGION` (ap-south-1), `S3_ACCESS_KEY` / `S3_SECRET_KEY` (test/test), `PUBLIC_BASE_URL`
-(http://localhost:4566/public-pages), `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `OTP_DEV_CODE` (123456).
+(http://localhost:4566/public-pages), `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `OTP_DEV_CODE` (no default: set it to the stack's dev code, 123456 for the local
+compose stack; any sign-in with it unset stops the run with a Fatal Error before a code is requested, so a stack
+without the dev OTP never texts a real phone). Test phones come from the seed's `+919000…` block (`New Phone`),
+and user phone numbers are compared inside `Page Leaks Any User Phone`, which returns only a count: no phone number
+reaches a Robot log or report (CLAUDE.md §6).
 Mobile suites also use `ANDROID_SERIAL` and `DRY_RUN` (see `qa/scripts/network.sh`).
 
 ### API suites (gate G2, Q06)
