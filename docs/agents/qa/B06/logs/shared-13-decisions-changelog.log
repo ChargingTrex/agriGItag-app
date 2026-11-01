@@ -1,0 +1,34 @@
+$ for each WP: D-xxx ids named in its report or acceptance file -> grep DECISIONS.md and docs/adr/; CHANGELOG lines
+== B06 claims: D-004 D-005 D-009 D-011 D-014 D-017 D-020
+  D-004: index row + docs/adr/D-004.md present
+  D-005: index row + docs/adr/D-005.md present
+  D-009: index row + docs/adr/D-009.md present
+  D-011: index row + docs/adr/D-011.md present
+  D-014: index row + docs/adr/D-014.md present
+  D-017: index row + docs/adr/D-017.md present
+  D-020: index row + docs/adr/D-020.md present
+  CHANGELOG lines naming B06: 1; first: - WP-B06 — Events + sync push + evidence (11 typed event payloads as a discriminated union, `POST /v1/sync/p
+== B13 claims: D-004 D-012 D-017 D-019
+  D-004: index row + docs/adr/D-004.md present
+  D-012: index row + docs/adr/D-012.md present
+  D-017: index row + docs/adr/D-017.md present
+  D-019: index row + docs/adr/D-019.md present
+  CHANGELOG lines naming B13: 2; first: - WP-B13 — Config-driven fields/features + masters + bulk import (YAML field/feature config with tenant over
+== B14 claims: D-017 D-020 D-024
+  D-017: index row + docs/adr/D-017.md present
+  D-020: index row + docs/adr/D-020.md present
+  D-024: index row + docs/adr/D-024.md present
+  CHANGELOG lines naming B14: 4; first: - WP-B14 — Registry API gaps for the portal (`FarmerOut.phone_masked` + audited FPO-admin `GET /v1/farmers/{
+== B07 claims: D-004 D-006 D-016 D-017
+  D-004: index row + docs/adr/D-004.md present
+  D-006: index row + docs/adr/D-006.md present
+  D-016: index row + docs/adr/D-016.md present
+  D-017: index row + docs/adr/D-017.md present
+  CHANGELOG lines naming B07: 2; first: - WP-B07 — Reference bundle + sync pull (`GET /v1/sync/bundle` manifest, `/sync/bundle/{part}` with strong E
+== B08 claims: D-004 D-006 D-009 D-015 D-017
+  D-004: index row + docs/adr/D-004.md present
+  D-006: index row + docs/adr/D-006.md present
+  D-009: index row + docs/adr/D-009.md present
+  D-015: index row + docs/adr/D-015.md present
+  D-017: index row + docs/adr/D-017.md present
+  CHANGELOG lines naming B08: 2; first: - WP-B08 — Rules & flags (11 pure rule modules: event_location, gps_quality, clock_skew, photo_evidence, eve

@@ -1,0 +1,14 @@
+$ psql: variants of the BM-06 photo (cross-package expectation from W01)
+                  id                  |  status  |                                                                                         jsonb_pretty                                                                                         
+--------------------------------------+----------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 01a197e9-cd75-76cd-bea9-8b3a882d6c4c | verified | {                                                                                                                                                                                           +
+                                      |          |     "width": 480,                                                                                                                                                                           +
+                                      |          |     "height": 360,                                                                                                                                                                          +
+                                      |          |     "jpeg_url": "http://localhost:4566/evidence/evidence/01a197e0-9a48-7db7-b773-fa2ebdcb4597/2026/01a197e9-cd78-7301-810e-b9f480eb02cd/01a197e9-cd75-76cd-bea9-8b3a882d6c4c.jpg",          +
+                                      |          |     "thumb_url": "http://localhost:4566/evidence/evidence/01a197e0-9a48-7db7-b773-fa2ebdcb4597/2026/01a197e9-cd78-7301-810e-b9f480eb02cd/01a197e9-cd75-76cd-bea9-8b3a882d6c4c.thumb.webp",  +
+                                      |          |     "medium_url": "http://localhost:4566/evidence/evidence/01a197e0-9a48-7db7-b773-fa2ebdcb4597/2026/01a197e9-cd78-7301-810e-b9f480eb02cd/01a197e9-cd75-76cd-bea9-8b3a882d6c4c.medium.webp",+
+                                      |          |     "medium_width": 1280,                                                                                                                                                                   +
+                                      |          |     "medium_height": 960                                                                                                                                                                    +
+                                      |          | }
+(1 row)
+

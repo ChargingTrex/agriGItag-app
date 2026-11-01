@@ -1,0 +1,10 @@
+{
+  "id": "BM-06",
+  "metrics": {
+    "row_count_delta": 0,
+    "photo_checksum_changes": 0
+  },
+  "commit": "321b852",
+  "env": "compose stack (Docker Desktop 29.3.1), live API + Celery worker; docs/agents/qa/B06/logs/03-live-b06.log",
+  "recorded_at": "2026-11-01T16:21:32+00:00"
+}

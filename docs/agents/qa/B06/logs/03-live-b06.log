@@ -1,0 +1,185 @@
+21:50  up 1 day, 21:23, 1 user, load averages: 5.49 6.79 31.60
+$ cd apps/api && uv run python ../../docs/agents/qa/B06/logs/live_b06.py
+# sign-in +919000000091 on device f42cc6cb-da6b-4a43-8fc8-de239a0f3bac
+$ POST http://localhost:8000/v1/auth/otp/request
+  body: {"phone":"+919000000091"}
+-> HTTP 204  etag=None
+  
+$ POST http://localhost:8000/v1/auth/otp/verify
+  body: {"phone":"+919000000091","code":"123456","device_id":"f42cc6cb-da6b-4a43-8fc8-de239a0f3bac","platform":"android"}
+-> HTTP 200  etag=None
+  {"kind": "session", "access_token": "<redacted>", "refresh_token": "<redacted>", "expires_in": 900, "roles": ["farmer"], "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597"}
+
+== 1. same client_id 2x -> 1 row, 2nd duplicate
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:43.905577+00:00","entries":[{"client_id":"01a197e9-cb02-7a45-ac06-7eb2ae5715db","kind":"event_version","data":{"event_id":"01a197e9-cb01-79eb-b0ec-b84e4e1084a3","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:43.905524+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:43.988193Z", "results": [{"client_id": "01a197e9-cb02-7a45-ac06-7eb2ae5715db", "status": "accepted", "server_id": "01a197e9-cb02-7a45-ac06-7eb2ae5715db", "photo_uploads": [], "error": null}]}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:43.991143+00:00","entries":[{"client_id":"01a197e9-cb02-7a45-ac06-7eb2ae5715db","kind":"event_version","data":{"event_id":"01a197e9-cb01-79eb-b0ec-b84e4e1084a3","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:43.905524+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:44.030176Z", "results": [{"client_id": "01a197e9-cb02-7a45-ac06-7eb2ae5715db", "status": "duplicate", "server_id": "01a197e9-cb02-7a45-ac06-7eb2ae5715db", "photo_uploads": [], "error": null}]}
+  sql> select count(*) from event_versions where id='01a197e9-cb02-7a45-ac06-7eb2ae5715db'
+  =>  '1'
+RESULT line1: first=accepted second=duplicate rows=1 server_ids_equal=True
+
+== BM-15: the same push replayed 5x -> exactly one record
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:44.118464+00:00","entries":[{"client_id":"01a197e9-cbd7-760d-83dd-f546f34aca3e","kind":"event_version","data":{"event_id":"01a197e9-cbd6-7048-8853-39c0235e75eb","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.118398+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:44.170535Z", "results": [{"client_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "status": "accepted", "server_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "photo_uploads": [], "error": null}]}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:44.174172+00:00","entries":[{"client_id":"01a197e9-cbd7-760d-83dd-f546f34aca3e","kind":"event_version","data":{"event_id":"01a197e9-cbd6-7048-8853-39c0235e75eb","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.118398+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:44.198141Z", "results": [{"client_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "status": "duplicate", "server_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "photo_uploads": [], "error": null}]}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:44.202197+00:00","entries":[{"client_id":"01a197e9-cbd7-760d-83dd-f546f34aca3e","kind":"event_version","data":{"event_id":"01a197e9-cbd6-7048-8853-39c0235e75eb","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.118398+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:44.229494Z", "results": [{"client_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "status": "duplicate", "server_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "photo_uploads": [], "error": null}]}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:44.233541+00:00","entries":[{"client_id":"01a197e9-cbd7-760d-83dd-f546f34aca3e","kind":"event_version","data":{"event_id":"01a197e9-cbd6-7048-8853-39c0235e75eb","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.118398+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:44.259786Z", "results": [{"client_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "status": "duplicate", "server_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "photo_uploads": [], "error": null}]}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:44.262993+00:00","entries":[{"client_id":"01a197e9-cbd7-760d-83dd-f546f34aca3e","kind":"event_version","data":{"event_id":"01a197e9-cbd6-7048-8853-39c0235e75eb","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.118398+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:44.288372Z", "results": [{"client_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "status": "duplicate", "server_id": "01a197e9-cbd7-760d-83dd-f546f34aca3e", "photo_uploads": [], "error": null}]}
+  sql> select count(*) from event_versions where id='01a197e9-cbd7-760d-83dd-f546f34aca3e'
+  =>  '1'
+  sql> select count(*) from events where id='01a197e9-cbd6-7048-8853-39c0235e75eb'
+  =>  '1'
+RESULT BM-15: statuses=['accepted', 'duplicate', 'duplicate', 'duplicate', 'duplicate'] event_versions=1 events=1
+
+== BM-06: an outbox of 3 entries (one with a photo) sent once, then replayed 3x
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:44.534221+00:00","entries":[{"client_id":"01a197e9-cd77-7b23-9c07-415f61298f36","kind":"event_version","data":{"event_id":"01a197e9-cd76-704c-a1b8-1bf381cbb220","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.533963+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:44.731989Z", "results": [{"client_id": "01a197e9-cd77-7b23-9c07-415f61298f36", "status": "accepted", "server_id": "01a197e9-cd77-7b23-9c07-415f61298f36", "photo_uploads": [], "error": null}, {"client_id": "01a197e9-cd79-7ef6-9850-648173eec8bf", "status": "accepted", "server_id": "01a197e9-cd79-7ef6-9850-648173eec8bf", "photo_uploads": [{"photo_client_id": "01a197e9-cd75-76cd-bea9-8b3a882d6c4c", "method": "PUT", "url": "http://localhost:4566/evidence/evidence/01a197e0-9a48-7db7-b773-fa2ebdcb4597/2026/01a197e9-cd78-7301-810e-b9f480eb02cd/01a197e9-cd75-76cd-bea9-8b3a882d6c4c.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=test%2F20261101%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T162044Z&X-Amz-Expires=900&X-Amz-SignedHeaders=content-type%3Bhost%3Bx-amz-checksum-sha256&X-Amz-Signature=765b8011945782f864ef41ab49edca9af332e1c417c42a30764e7346eed1c867", "headers": {"Content-Type": "image/jpeg", "x-amz-checksum-sha256": "bN4dElDIrrgppRx9Af8yxggSzUXMrnp5kaHB0XvTAVg="}, "expires_at": "2026-11-01T16:35:44.579296Z"}], "error": null}, {"client_id": "01a197e9-cd7b-7512-8538-32a841a1ec8f", "status": "accepted", "server_id": "01a197e9-cd7b-7512-8538-32a841a1ec8f", "photo_uploads": [], "error": null}]}
+$ PUT <presigned evidence URL> -> HTTP 200
+$ POST http://localhost:8000/v1/sync/photos/confirm
+  body: {"photos":[{"client_id":"01a197e9-cd75-76cd-bea9-8b3a882d6c4c"}]}
+-> HTTP 200  etag=None
+  [{"client_id": "01a197e9-cd75-76cd-bea9-8b3a882d6c4c", "status": "received"}]
+  sql (after 3s)> select status from evidence_photos where id='01a197e9-cd75-76cd-bea9-8b3a882d6c4c'
+  =>  'verified'
+  sql> select count(*) from event_versions ev join events e on e.id=ev.event_id where e.lot_id in ('45d6230a-20e8-4c1b-a578-c496127d802e','f8004b84-2cf3-45f8-918d-343def8588e6','8d9f4a1e-0ccc-4b0f-90a0-c75caa0a683a')
+  =>  '5'
+  sql> select sha256_client||'|'||coalesce(sha256_server,'') from evidence_photos where id='01a197e9-cd75-76cd-bea9-8b3a882d6c4c'
+  =>  '6cde1d1250c8aeb829a51c7d01ff32c60812cd45ccae7a7991a1c1d17bd30158|6cde1d1250c8aeb829a51c7d01ff32c60812cd45ccae7a7991a1c1d17bd30158'
+  sql> select count(*) from evidence_photos where id='01a197e9-cd75-76cd-bea9-8b3a882d6c4c'
+  =>  '1'
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:49.787002+00:00","entries":[{"client_id":"01a197e9-cd77-7b23-9c07-415f61298f36","kind":"event_version","data":{"event_id":"01a197e9-cd76-704c-a1b8-1bf381cbb220","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.533963+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:49.813524Z", "results": [{"client_id": "01a197e9-cd77-7b23-9c07-415f61298f36", "status": "duplicate", "server_id": "01a197e9-cd77-7b23-9c07-415f61298f36", "photo_uploads": [], "error": null}, {"client_id": "01a197e9-cd79-7ef6-9850-648173eec8bf", "status": "duplicate", "server_id": "01a197e9-cd79-7ef6-9850-648173eec8bf", "photo_uploads": [], "error": null}, {"client_id": "01a197e9-cd7b-7512-8538-32a841a1ec8f", "status": "duplicate", "server_id": "01a197e9-cd7b-7512-8538-32a841a1ec8f", "photo_uploads": [], "error": null}]}
+  replay 1: ['duplicate', 'duplicate', 'duplicate']; photo_uploads on replay: [0, 0, 0]
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:49.816657+00:00","entries":[{"client_id":"01a197e9-cd77-7b23-9c07-415f61298f36","kind":"event_version","data":{"event_id":"01a197e9-cd76-704c-a1b8-1bf381cbb220","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.533963+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:49.850999Z", "results": [{"client_id": "01a197e9-cd77-7b23-9c07-415f61298f36", "status": "duplicate", "server_id": "01a197e9-cd77-7b23-9c07-415f61298f36", "photo_uploads": [], "error": null}, {"client_id": "01a197e9-cd79-7ef6-9850-648173eec8bf", "status": "duplicate", "server_id": "01a197e9-cd79-7ef6-9850-648173eec8bf", "photo_uploads": [], "error": null}, {"client_id": "01a197e9-cd7b-7512-8538-32a841a1ec8f", "status": "duplicate", "server_id": "01a197e9-cd7b-7512-8538-32a841a1ec8f", "photo_uploads": [], "error": null}]}
+  replay 2: ['duplicate', 'duplicate', 'duplicate']; photo_uploads on replay: [0, 0, 0]
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:49.853943+00:00","entries":[{"client_id":"01a197e9-cd77-7b23-9c07-415f61298f36","kind":"event_version","data":{"event_id":"01a197e9-cd76-704c-a1b8-1bf381cbb220","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:44.533963+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:49.900105Z", "results": [{"client_id": "01a197e9-cd77-7b23-9c07-415f61298f36", "status": "duplicate", "server_id": "01a197e9-cd77-7b23-9c07-415f61298f36", "photo_uploads": [], "error": null}, {"client_id": "01a197e9-cd79-7ef6-9850-648173eec8bf", "status": "duplicate", "server_id": "01a197e9-cd79-7ef6-9850-648173eec8bf", "photo_uploads": [], "error": null}, {"client_id": "01a197e9-cd7b-7512-8538-32a841a1ec8f", "status": "duplicate", "server_id": "01a197e9-cd7b-7512-8538-32a841a1ec8f", "photo_uploads": [], "error": null}]}
+  replay 3: ['duplicate', 'duplicate', 'duplicate']; photo_uploads on replay: [0, 0, 0]
+  sql> select count(*) from event_versions ev join events e on e.id=ev.event_id where e.lot_id in ('45d6230a-20e8-4c1b-a578-c496127d802e','f8004b84-2cf3-45f8-918d-343def8588e6','8d9f4a1e-0ccc-4b0f-90a0-c75caa0a683a')
+  =>  '5'
+  sql> select sha256_client||'|'||coalesce(sha256_server,'') from evidence_photos where id='01a197e9-cd75-76cd-bea9-8b3a882d6c4c'
+  =>  '6cde1d1250c8aeb829a51c7d01ff32c60812cd45ccae7a7991a1c1d17bd30158|6cde1d1250c8aeb829a51c7d01ff32c60812cd45ccae7a7991a1c1d17bd30158'
+  sql> select count(*) from evidence_photos where id='01a197e9-cd75-76cd-bea9-8b3a882d6c4c'
+  =>  '1'
+RESULT BM-06: version rows before=5 after=5; photo rows 1->1; checksum before=6cde1d1250c8aeb829a51c7d01ff32c60812cd45ccae7a7991a1c1d17bd30158|6cde1d1250c8aeb829a51c7d01ff32c60812cd45ccae7a7991a1c1d17bd30158 after=6cde1d1250c8aeb829a51c7d01ff32c60812cd45ccae7a7991a1c1d17bd30158|6cde1d1250c8aeb829a51c7d01ff32c60812cd45ccae7a7991a1c1d17bd30158
+  sql> select status, variants is not null from evidence_photos where id='01a197e9-cd75-76cd-bea9-8b3a882d6c4c'
+  =>  'verified|t'
+
+== 2. foreign-owned id -> client_id_conflict (field officer resends the farmer's client_id)
+# sign-in +919000000002 on device 5921c5cc-1640-409f-aa1c-2df84607be94
+$ POST http://localhost:8000/v1/auth/otp/request
+  body: {"phone":"+919000000002"}
+-> HTTP 204  etag=None
+  
+$ POST http://localhost:8000/v1/auth/otp/verify
+  body: {"phone":"+919000000002","code":"123456","device_id":"5921c5cc-1640-409f-aa1c-2df84607be94","platform":"android"}
+-> HTTP 200  etag=None
+  {"kind": "pin_required", "pin_token": "<redacted>", "expires_in": 300, "pin_set": false}
+$ POST http://localhost:8000/v1/auth/pin/verify
+  body: {"pin":"2468"}
+-> HTTP 200  etag=None
+  {"kind": "session", "access_token": "<redacted>", "refresh_token": "<redacted>", "expires_in": 900, "roles": ["field_officer"], "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:50.470058+00:00","entries":[{"client_id":"01a197e9-cb02-7a45-ac06-7eb2ae5715db","kind":"event_version","data":{"event_id":"01a197e9-cb01-79eb-b0ec-b84e4e1084a3","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:43.905524+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:50.486569Z", "results": [{"client_id": "01a197e9-cb02-7a45-ac06-7eb2ae5715db", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "client_id_conflict", "message": "This id is already used by another record.", "details": {"reason": "client id owned by another user"}}}]}
+RESULT line2: status=rejected code=client_id_conflict
+
+== 3. 51 entries -> 422
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:50.492710+00:00","entries":[{"client_id":"01a197e9-e4ba-7e7e-8e1c-8694e0f366bf","kind":"event_version","data":{"event_id":"01a197e9-e4b9-707a-a414-f0a31808ac9a","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:50.489578+00:00"},"gps":{"lat":9. ...
+-> HTTP 422  etag=None
+  {"error": {"code": "validation_error", "message": "The request has invalid or implausible values.", "details": [{"loc": ["body", "entries"], "msg": "List should have at most 50 items after validation, not 51", "type": "too_long"}]}}
+RESULT line3: HTTP 422 code=validation_error
+
+== 4. mixed batch: #1,#3 accepted, #2 rejected (#2 names plot 2 on lot 1: not the lot's plot)
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:50.511761+00:00","entries":[{"client_id":"01a197e9-e522-71c0-86d6-55a679357561","kind":"event_version","data":{"event_id":"01a197e9-e521-7cb0-a3a8-ddc1db74476f","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:50.511706+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:50.592240Z", "results": [{"client_id": "01a197e9-e522-71c0-86d6-55a679357561", "status": "accepted", "server_id": "01a197e9-e522-71c0-86d6-55a679357561", "photo_uploads": [], "error": null}, {"client_id": "01a197e9-e520-7e77-9cb2-86a46626fe3d", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "validation_error", "message": "plot_id must be the lot's plot.", "details": {"plot_id": "72b065f5-3555-4486-82bf-ae7e862ac49a"}}}, {"client_id": "01a197e9-e524-7004-bc79-c12923d5045c", "status": "accepted", "server_id": "01a197e9-e524-7004-bc79-c12923d5045c", "photo_uploads": [], "error": null}]}
+RESULT line4: [('accepted', None), ('rejected', 'validation_error'), ('accepted', None)]
+  sql> select count(*) from event_versions where id='01a197e9-e520-7e77-9cb2-86a46626fe3d'
+  =>  '0'
+
+== 5. wrong checksum -> checksum_mismatch + flag (object written around the presigned URL)
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:50.700766+00:00","entries":[{"client_id":"01a197e9-e58e-747e-8bd9-897cd4e0c55b","kind":"event_version","data":{"event_id":"01a197e9-e58d-7385-a275-60615dc61611","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:50.700715+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:50.768596Z", "results": [{"client_id": "01a197e9-e58e-747e-8bd9-897cd4e0c55b", "status": "accepted", "server_id": "01a197e9-e58e-747e-8bd9-897cd4e0c55b", "photo_uploads": [{"photo_client_id": "01a197e9-e58c-725e-a923-35c6e088fc40", "method": "PUT", "url": "http://localhost:4566/evidence/evidence/01a197e0-9a48-7db7-b773-fa2ebdcb4597/2026/01a197e9-e58d-7385-a275-60615dc61611/01a197e9-e58c-725e-a923-35c6e088fc40.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=test%2F20261101%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T162050Z&X-Amz-Expires=900&X-Amz-SignedHeaders=content-type%3Bhost%3Bx-amz-checksum-sha256&X-Amz-Signature=59180a133f44680ce1614d10a0808fb9265b07ecb3b91ff5bece7ee1e0119101", "headers": {"Content-Type": "image/jpeg", "x-amz-checksum-sha256": "HgIiFDxvf28u2PkjJea2FOciOmqyXt8DYSCW5LCpL2E="}, "expires_at": "2026-11-01T16:35:50.719284Z"}], "error": null}]}
+  sql> select object_key from evidence_photos where id='01a197e9-e58c-725e-a923-35c6e088fc40'
+  =>  'evidence/01a197e0-9a48-7db7-b773-fa2ebdcb4597/2026/01a197e9-e58d-7385-a275-60615dc61611/01a197e9-e58c-725e-a923-35c6e088fc40.jpg'
+$ s3 put_object evidence/evidence/01a197e0-9a48-7db7-b773-fa2ebdcb4597/2026/01a197e9-e58d-7385-a275-60615dc61611/01a197e9-e58c-725e-a923-35c6e088fc40.jpg (8 bytes 'tampered')
+$ POST http://localhost:8000/v1/sync/photos/confirm
+  body: {"photos":[{"client_id":"01a197e9-e58c-725e-a923-35c6e088fc40"}]}
+-> HTTP 200  etag=None
+  [{"client_id": "01a197e9-e58c-725e-a923-35c6e088fc40", "status": "received"}]
+  sql (after 0s)> select status from evidence_photos where id='01a197e9-e58c-725e-a923-35c6e088fc40'
+  =>  'checksum_mismatch'
+  sql (after 3s)> select rule_code||'|'||severity||'|'||status from flags where subject_id='01a197e9-e58d-7385-a275-60615dc61611' or details::text like '%01a197e9-e58c-725e-a923-35c6e088fc40%' order by 1
+  =>  'event_out_of_order|warn|open\nphoto_checksum_mismatch|warn|open'
+RESULT line5: photo status=checksum_mismatch; flags='event_out_of_order|warn|open\nphoto_checksum_mismatch|warn|open'
+
+== 6. undo after 24 h -> 409 (own entry captured 25 h ago)
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:54.549258+00:00","entries":[{"client_id":"01a197e9-f496-7837-b8b7-3d0d239ad15c","kind":"event_version","data":{"event_id":"01a197e9-f495-70ba-a0f1-1cd4adbcdfb3","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-10-31T15:20:54.548999+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:54.593571Z", "results": [{"client_id": "01a197e9-f496-7837-b8b7-3d0d239ad15c", "status": "accepted", "server_id": "01a197e9-f496-7837-b8b7-3d0d239ad15c", "photo_uploads": [], "error": null}]}
+$ POST http://localhost:8000/v1/events/01a197e9-f495-70ba-a0f1-1cd4adbcdfb3/undo
+  body: {"client_id":"01a197e9-f4c5-7393-99b8-9a73056b412d","version_no":2}
+-> HTTP 409  etag=None
+  {"error": {"code": "undo_window_closed", "message": "Entries can be undone only within 24 hours.", "details": {"window_hours": 24}}}
+RESULT line6: HTTP 409 code=undo_window_closed
+
+== 7. farmer correction -> 403
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:54.647722+00:00","entries":[{"client_id":"01a197e9-f4f8-7aba-8caf-c3ab3a0afb1a","kind":"event_version","data":{"event_id":"01a197e9-f4f7-742a-8fd1-f0cc0af3e938","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-01T16:20:54.647691+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:54.703507Z", "results": [{"client_id": "01a197e9-f4f8-7aba-8caf-c3ab3a0afb1a", "status": "accepted", "server_id": "01a197e9-f4f8-7aba-8caf-c3ab3a0afb1a", "photo_uploads": [], "error": null}]}
+$ POST http://localhost:8000/v1/events/01a197e9-f4f7-742a-8fd1-f0cc0af3e938/versions
+  body: {"client_id":"01a197e9-f533-7233-a9fb-0faf0f83b8a1","data":{"event_id":"01a197e9-f4f7-742a-8fd1-f0cc0af3e938","version_no":2,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":185,"unit":"kg"}},"clocks":{"device_time":"2026-11-01T16:20:54.647691+00:00"},"gps":{"lat":9.585,"lon":78.105,"accuracy_m":6.2},"change_kind":"correct","reason_code":"wrong_quantity"}}
+-> HTTP 403  etag=None
+  {"error": {"code": "forbidden", "message": "Your role does not allow this action.", "details": {"required_roles": ["field_officer", "fpo_admin"]}}}
+RESULT line7: HTTP 403 code=forbidden
+
+== 8. device clock +3 d -> stored + clock_skew flag (rules run by the real worker)
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a62b6650-d632-4f06-a9a1-a2c750bfdfb2","app_version":"1.0.3","device_time":"2026-11-01T16:20:54.719483+00:00","entries":[{"client_id":"01a197e9-f540-7f5f-83e9-8f0af705df84","kind":"event_version","data":{"event_id":"01a197e9-f53f-7c1b-a25e-282dbaa03866","version_no":1,"subject_type":"lot","lot_id":"45d6230a-20e8-4c1b-a578-c496127d802e","plot_id":"4c50d79a-c871-4ded-8a27-17a65358c4cb","event_type":"harvest","instance_no":1,"occurred_on":"2026-11-01","payload":{"quantity":{"value":195,"unit":"kg"},"bags":13},"clocks":{"device_time":"2026-11-04T16:20:54.719363+00:00"},"gps":{"lat":9. ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T16:20:54.767095Z", "results": [{"client_id": "01a197e9-f540-7f5f-83e9-8f0af705df84", "status": "accepted", "server_id": "01a197e9-f540-7f5f-83e9-8f0af705df84", "photo_uploads": [], "error": null}]}
+  sql> select device_time - server_received_at from event_versions where id='01a197e9-f540-7f5f-83e9-8f0af705df84'
+  =>  '2 days 23:59:59.983953'
+  sql (after 3s)> select rule_code||'|'||severity||'|'||status from flags where subject_id in ('01a197e9-f53f-7c1b-a25e-282dbaa03866','01a197e9-f540-7f5f-83e9-8f0af705df84') order by 1
+  =>  'clock_skew|info|open\nevent_out_of_order|warn|open'
+RESULT line8: push=accepted flags='clock_skew|info|open\nevent_out_of_order|warn|open'
+
+bench: {'BM-15': {'server_records': 1}, 'BM-06': {'row_count_delta': 0, 'photo_checksum_changes': 0}}
+exit=0
+21:50  up 1 day, 21:23, 1 user, load averages: 5.11 6.63 31.11

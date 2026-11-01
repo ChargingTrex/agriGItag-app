@@ -1,0 +1,14 @@
+$ cd apps/api && uv run lint-imports
+
+---------
+Contracts
+---------
+
+Analyzed 104 files, 402 dependencies.
+-------------------------------------
+
+D-004 modules import other modules only via models and service KEPT (87 ignored imports)
+D-004 core never imports modules KEPT
+
+Contracts: 2 kept, 0 broken.
+exit=0 (rerun for the exit code)

@@ -1,0 +1,41 @@
+21:46  up 1 day, 21:19, 1 user, load averages: 4.50 8.56 39.93
+$ cd apps/api && uv run pytest tests/integration/test_sync.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 17 items
+
+tests/integration/test_sync.py::test_same_client_id_twice_is_one_row_and_duplicate PASSED [  5%]
+tests/integration/test_sync.py::test_foreign_client_id_is_a_conflict PASSED [ 11%]
+tests/integration/test_sync.py::test_mixed_batch_rejects_only_the_bad_entry PASSED [ 17%]
+tests/integration/test_sync.py::test_photo_upload_confirm_verify_and_variants PASSED [ 23%]
+tests/integration/test_sync.py::test_wrong_checksum_is_flagged PASSED    [ 29%]
+tests/integration/test_sync.py::test_confirm_without_upload_is_missing PASSED [ 35%]
+tests/integration/test_sync.py::test_undo_after_24_hours_is_409 PASSED   [ 41%]
+tests/integration/test_sync.py::test_undo_within_24_hours_marks_event_undone PASSED [ 47%]
+tests/integration/test_sync.py::test_farmer_correction_is_403_and_officer_correction_works PASSED [ 52%]
+tests/integration/test_sync.py::test_device_clock_three_days_ahead_is_stored_with_hint PASSED [ 58%]
+tests/integration/test_sync.py::test_sync_writes_have_audit_rows PASSED  [ 64%]
+tests/integration/test_sync.py::test_append_only_violation_is_mapped PASSED [ 70%]
+tests/integration/test_sync.py::test_plot_must_be_the_lots_plot PASSED   [ 76%]
+tests/integration/test_sync.py::test_farmer_cannot_write_on_another_farmers_lot PASSED [ 82%]
+tests/integration/test_sync.py::test_voice_note_gets_its_own_key_and_type PASSED [ 88%]
+tests/integration/test_sync.py::test_only_the_uploader_confirms PASSED   [ 94%]
+tests/integration/test_sync.py::test_declared_exif_is_kept_in_the_audit_row PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_sync.py::test_same_client_id_twice_is_one_row_and_duplicate
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_sync.py::test_undo_within_24_hours_marks_event_undone
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/events/service.py:1199: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 17 passed, 2 warnings in 36.49s ========================
+exit=0
+21:47  up 1 day, 21:19, 1 user, load averages: 7.95 8.88 38.60
