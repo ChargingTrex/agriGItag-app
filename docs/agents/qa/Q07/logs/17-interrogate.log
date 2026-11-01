@@ -1,0 +1,62 @@
+= Coverage for /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/ =
+------------------------------ Detailed Coverage -------------------------------
+| Name                                                  |               Status |
+|-------------------------------------------------------|----------------------|
+| robot/lib/agritrace_keywords.py (module)              |              COVERED |
+| load_network_profiles (L41)                           |              COVERED |
+| set_emulator_network (L60)                            |              COVERED |
+| parse_flutter_results (L88)                           |              COVERED |
+| _PageFacts (L147)                                     |              COVERED |
+| _PageFacts.__init__ (L150)                            |              COVERED |
+| _PageFacts.handle_starttag (L157)                     |              COVERED |
+| _PageFacts.handle_endtag (L185)                       |              COVERED |
+| _PageFacts.handle_data (L198)                         |              COVERED |
+| read_public_page (L211)                               |              COVERED |
+| _var (L246)                                           |              COVERED |
+| _http (L263)                                          |              COVERED |
+| _sign_in (L277)                                       |              COVERED |
+| login_as (L311)                                       |              COVERED |
+| call_api (L345)                                       |              COVERED |
+| days_ago (L376)                                       |              COVERED |
+| new_phone (L388)                                      |              COVERED |
+| new_farmer (L397)                                     |              COVERED |
+| start_assist (L424)                                   |              COVERED |
+| new_consent (L443)                                    |              COVERED |
+| new_plot (L468)                                       |              COVERED |
+| new_lot (L499)                                        |              COVERED |
+| new_instrument (L521)                                 |              COVERED |
+| qa_world (L541)                                       |              COVERED |
+| moisture (L565)                                       |              COVERED |
+| event (L586)                                          |              COVERED |
+| push (L611)                                           |              COVERED |
+| received_lot (L635)                                   |              COVERED |
+| receive (L662)                                        |              COVERED |
+| packed_lot (L684)                                     |              COVERED |
+| grade_batch (L718)                                    |              COVERED |
+| packing (L740)                                        |              COVERED |
+| new_batch (L752)                                      |              COVERED |
+| flags_of (L773)                                       |              COVERED |
+| wait_for_flag (L791)                                  |              COVERED |
+| wait_for_build (L815)                                 |              COVERED |
+| drain_pull (L839)                                     |              COVERED |
+| _compose (L861)                                       |              COVERED |
+| compose (L878)                                        |              COVERED |
+| s3_get (L898)                                         |              COVERED |
+| s3_versions (L920)                                    |              COVERED |
+| s3_put (L940)                                         |              COVERED |
+| decode_qr (L962)                                      |              COVERED |
+|-------------------------------------------------------|----------------------|
+| scripts/gate-readiness.py (module)                    |              COVERED |
+| checklist_gates (L27)                                 |              COVERED |
+| resolve (L45)                                         |              COVERED |
+| main (L72)                                            |              COVERED |
+|-------------------------------------------------------|----------------------|
+
+----------------------------------- Summary ------------------------------------
+| Name                                 |   Total |   Miss |   Cover |   Cover% |
+|--------------------------------------|---------|--------|---------|----------|
+| robot/lib/agritrace_keywords.py      |      43 |      0 |      43 |     100% |
+| scripts/gate-readiness.py            |       4 |      0 |       4 |     100% |
+|--------------------------------------|---------|--------|---------|----------|
+| TOTAL                                |      47 |      0 |      47 |   100.0% |
+--------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------

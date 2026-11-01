@@ -51,6 +51,26 @@ The suites only add data: a QA farmer with a random `+9197…` phone, plots, lot
 `qa/robot/results/.api-sessions.json` and refreshed on reruns; the identity suite still spends one or two OTPs
 on seeded farmers `+919000000011..13` per run, so after about five runs a day reseed the stack.
 
+### Portal suite (gate G4, Q07)
+
+`portal/portal.robot` drives the real portal in headless Chromium. Serve it in live mode (no `VITE_MSW`) against
+the stack under test; the dev server proxies `/v1` to `API_URL`, and `VITE_PUBLIC_BASE_URL` must equal the API's
+`PUBLIC_BASE_URL` (the published link and the QR are compared with `PUBLIC_BASE_URL`):
+
+```sh
+cd apps/portal && API_URL=http://localhost:8044 VITE_PUBLIC_BASE_URL=http://localhost:4596/public-pages \
+  npx vite --port 5183 --strictPort
+export API_BASE=http://localhost:8044/v1 PORTAL_BASE=http://localhost:5183 \
+       PUBLIC_BASE_URL=http://localhost:4596/public-pages OFFICE_PIN=1234
+qa/.venv/bin/robot --outputdir qa/robot/results/G4 --exclude not-ready qa/robot/portal/
+```
+
+The FPO admin signs in once per run through the login form (on a fresh seed the form chooses `OFFICE_PIN`); the
+farmers, plots, packed lots and QC gradings each line needs are made over the API with the keywords below. With
+`rfbrowser init --skip-browsers`, set `PLAYWRIGHT_BROWSERS_PATH` to a Playwright cache that holds the Browser
+library's Chromium revision (e.g. `~/Library/Caches/ms-playwright`). "Happy Path Publishes And Shows The URL" uses
+the batch that "Create Batch Returns An Id And A QR" makes, so run them together.
+
 ## Tagging rules
 
 - Every test carries its work package `WP-<id>` (e.g. `WP-B02`) and at least one PRD requirement `FR-<n>`
@@ -76,7 +96,7 @@ on seeded farmers `+919000000011..13` per run, so after about five runs a day re
 | `api/publishing.robot` | B10, B11 | G2/G4 |
 | `mobile/offline_matrix.robot` | Q01 9 actions × 5 network states; real smoke parses a Flutter `--machine` log | G3 |
 | `mobile/network_profiles.robot` | BM-11..BM-16; real smoke checks profiles.yaml and network.sh (DRY_RUN) | G3 |
-| `portal/portal.robot` | P01-P08 and the P07 chain | G4 |
+| `portal/portal.robot` | P00 smoke, P01-P04 (real, Q07); P05-P08 and the P07 chain (placeholders) | G4 |
 | `public/page.robot` | W01-W03, Q03; real smoke runs privacy-lint on the fixtures | G4 |
 | `e2e/reference_batch.robot` | B12 seeded batch `FGP8T4033HM7` | G5 |
 
@@ -85,5 +105,5 @@ Keywords: `resources/common.resource`
 `Connect To AgriTrace Database`, `Not Ready`) and `lib/agritrace_keywords.py` (`Load Network Profiles`,
 `Set Emulator Network`, `Parse Flutter Results`, `Read Public Page`; API: `Login As`, `Call API`, `QA World`,
 `New Farmer`, `New Plot`, `New Lot`, `New Instrument`, `Start Assist`, `New Consent`, `Moisture`, `Event`, `Push`,
-`Received Lot`, `Receive`, `New Batch`, `Packing`, `Flags Of`, `Wait For Flag`, `Wait For Build`, `Drain Pull`,
+`Received Lot`, `Receive`, `Packed Lot`, `Grade Batch`, `New Batch`, `Packing`, `Flags Of`, `Wait For Flag`, `Wait For Build`, `Drain Pull`,
 `Compose`, `S3 Get`, `S3 Versions`, `S3 Put`, `Decode QR`, `Days Ago`, `New Phone`).

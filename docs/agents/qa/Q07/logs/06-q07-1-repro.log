@@ -1,0 +1,15 @@
+==============================================================================
+Repro :: Q07-1 repro (scratch): a reload while the portal restores its sess...
+==============================================================================
+Reload During Session Restore                                         round 0: signed in
+| FAIL |
+TimeoutError: locator.waitFor: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator('role=navigation[name="Main"]').first() to be visible
+------------------------------------------------------------------------------
+Repro :: Q07-1 repro (scratch): a reload while the portal restores... | FAIL |
+1 test, 0 passed, 1 failed
+==============================================================================
+Output:  /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/repro-out/output.xml
+Log:     /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/repro-out/log.html
+Report:  /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q07/repro-out/report.html

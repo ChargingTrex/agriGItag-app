@@ -1,0 +1,55 @@
+ 2:02  up 2 days,  1:34, 1 user, load averages: 7.64 14.54 16.62
+2026-11-01T20:32:11Z
+==============================================================================
+Portal                                                                        
+==============================================================================
+Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) and the P0...
+==============================================================================
+Portal Loads In A Headless Browser                                    | PASS |
+------------------------------------------------------------------------------
+Approving A Member Makes It Active Without Reload                     | FAIL |
+TimeoutError: locator.fill: Timeout 20000ms exceeded.
+Call log:
+  - waiting for getByLabel('SMS code', { exact: true })
+------------------------------------------------------------------------------
+Phone Is Masked Except An Audited Reveal                              | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Reviewing A Held Lot Makes It Tickable In Create Batch                | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Required Review Fields Block Submit                                   | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Lots 100 200 20 kg Show Shares 31.25 62.5 6.25                        | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Out Of GI Lot Is Greyed With A Tooltip                                | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Create Batch Returns An Id And A QR                                   | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Batch Over Threshold Needs A Second Sign Off                          | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Declared Special Computed Standard Disables Approve With Reason       | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Missing Reading Disables Approve                                      | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Happy Path Publishes And Shows The URL                                | FAIL |
+The portal sign-in failed in an earlier test; see that test.
+------------------------------------------------------------------------------
+Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) a... | FAIL |
+12 tests, 1 passed, 11 failed
+==============================================================================
+Portal                                                                | FAIL |
+12 tests, 1 passed, 11 failed
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4-rerun/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4-rerun/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4-rerun/report.html
+robot exit=11 wall=28 s
+ 2:02  up 2 days,  1:35, 1 user, load averages: 6.78 13.67 16.23
