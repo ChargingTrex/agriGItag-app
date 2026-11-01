@@ -1,0 +1,283 @@
+{
+  "generated_at": "2026-11-01T17:33:02+00:00",
+  "benchmarks": {
+    "BM-01": {
+      "title": "Time to log an event (3-tap harvest x10, Go AVD)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "p50_s",
+          "value": null,
+          "threshold": "<= 60",
+          "status": "MISSING"
+        },
+        {
+          "metric": "p95_s",
+          "value": null,
+          "threshold": "<= 90",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-02": {
+      "title": "Entry and photo reach the server on 4G",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "entry_s",
+          "value": null,
+          "threshold": "<= 5",
+          "status": "MISSING"
+        },
+        {
+          "metric": "photo_300kb_s",
+          "value": null,
+          "threshold": "<= 10",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-03": {
+      "title": "Public page on Slow 3G (Lighthouse CI)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "performance_score",
+          "value": null,
+          "threshold": ">= 90",
+          "status": "MISSING"
+        },
+        {
+          "metric": "lcp_s",
+          "value": null,
+          "threshold": "<= 2",
+          "status": "MISSING"
+        },
+        {
+          "metric": "transfer_kb",
+          "value": null,
+          "threshold": "<= 500",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-04": {
+      "title": "App size",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "apk_arm64_mb",
+          "value": null,
+          "threshold": "<= 100",
+          "status": "MISSING"
+        },
+        {
+          "metric": "download_mb",
+          "value": null,
+          "threshold": "<= 30",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-05": {
+      "title": "Traceability completeness",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "demo_completeness_pct",
+          "value": null,
+          "threshold": ">= 100",
+          "status": "MISSING"
+        },
+        {
+          "metric": "reference_problems_flagged",
+          "value": null,
+          "threshold": ">= 9",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-06": {
+      "title": "Sync idempotency (same outbox replayed 3x)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "row_count_delta",
+          "value": null,
+          "threshold": "== 0",
+          "status": "MISSING"
+        },
+        {
+          "metric": "photo_checksum_changes",
+          "value": null,
+          "threshold": "== 0",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-07": {
+      "title": "API latency (locust, 50 users, sync + batch endpoints)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "p95_ms",
+          "value": null,
+          "threshold": "<= 300",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-08": {
+      "title": "Grade engine correctness (PRD seed rows)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "seed_rows_pass_pct",
+          "value": null,
+          "threshold": ">= 100",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-09": {
+      "title": "Privacy lint over public pages and partner stub output",
+      "status": "PASS",
+      "result": {
+        "id": "BM-09",
+        "metrics": {
+          "hits": 0
+        },
+        "scope": "privacy-lint over public-pages/batches/GQ6QTKYZYVEP/{index.html,data.json} (build 3, LocalStack) with 6 canaries; partner/storage stub 501 bodies: 0 hits (B11 log 02)",
+        "commit": "c0962da",
+        "env": "compose stack, LocalStack 4.14.0",
+        "recorded_at": "2026-11-01T17:33:01.681617+00:00",
+        "source": "docs/agents/qa/B10/bench/BM-09-B10.json"
+      },
+      "checks": [
+        {
+          "metric": "hits",
+          "value": 0,
+          "threshold": "== 0",
+          "status": "PASS"
+        }
+      ]
+    },
+    "BM-10": {
+      "title": "Doc coverage (interrogate / dart doc / eslint-jsdoc)",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "coverage_pct",
+          "value": null,
+          "threshold": ">= 100",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-11": {
+      "title": "Normal 4G entry + 1 photo",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "sent_s",
+          "value": null,
+          "threshold": "<= 5",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-12": {
+      "title": "Weak 4G entry + 1 photo",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "sent_s",
+          "value": null,
+          "threshold": "<= 20",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-13": {
+      "title": "Airplane mode save, then network restored",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "saved_offline",
+          "value": null,
+          "threshold": "== True",
+          "status": "MISSING"
+        },
+        {
+          "metric": "sent_without_user_action",
+          "value": null,
+          "threshold": "== True",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-14": {
+      "title": "Kill app mid-upload, relaunch",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "server_entries",
+          "value": null,
+          "threshold": "== 1",
+          "status": "MISSING"
+        },
+        {
+          "metric": "server_photos",
+          "value": null,
+          "threshold": "== 1",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-15": {
+      "title": "Same push replayed 5x",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "server_records",
+          "value": null,
+          "threshold": "== 1",
+          "status": "MISSING"
+        }
+      ]
+    },
+    "BM-16": {
+      "title": "Public page on the normal 4G profile",
+      "status": "MISSING",
+      "result": null,
+      "checks": [
+        {
+          "metric": "initial_kb",
+          "value": null,
+          "threshold": "< 100",
+          "status": "MISSING"
+        },
+        {
+          "metric": "lcp_s",
+          "value": null,
+          "threshold": "< 2.5",
+          "status": "MISSING"
+        }
+      ]
+    }
+  }
+}

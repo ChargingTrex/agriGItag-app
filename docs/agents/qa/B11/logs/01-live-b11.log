@@ -1,0 +1,111 @@
+$ cd apps/api && QA_WORLD=... QA_TOKEN_CACHE=... QA_STUBS=<scratchpad>/stubs QA_BENCH=docs/agents/qa/B11/bench uv run python ../../docs/agents/qa/B11/logs/live_b11.py
+# 2026-11-01T17:32:35Z
+  sql> select id from fpos where code='VIRUDHAI_SCFC_VINOBA_BHAVA_FPO'
+  =>  '01a197e0-9a48-7db7-b773-fa2ebdcb4597'
+
+## 1 completeness = lots with all mandatory events / lots
+$ GET http://localhost:8000/v1/dashboard/fpo/01a197e0-9a48-7db7-b773-fa2ebdcb4597
+-> HTTP 200  etag=None
+  {"fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "completeness": {"lots": 35, "complete_lots": 3, "complete": {"value": "8.6", "unit": "%"}}, "stages": [{"stage": "land_preparation", "done": 6, "in_progress": 1, "not_started": 28}, {"stage": "nursery", "done": 5, "in_progress": 0, "not_started": 30}, {"stage": "sowing", "done": 4, "in_progress": 1, "not_started": 30}, {"stage": "input_application", "done": 3, "in_progress": 1, "not_started": 31}, {"stage": "harvest", "done": 6, "in_progress": 4, "not_started": 25}, {"stage": "drying", "done": 4, "in_progress": 0, "not_started": 31}, {"stage": "packing", "done": 11, "in_progress": 0, "not_started": 24}], "flags": {"info": 24, "warn": 48, "hold": 4}, "batches": {"created": 3, "graded": 0, "packed": 0, "published": 2}, "land_area": {"total": {"plots": 18, "declared_area": {"value": "19.000", "unit": "acre"}, "walked_plots": 0, "walked_area": {"value": "0", "unit": "acre"}, "walked_declared_area": {"value": "0", "unit": "acre"}, "gi_confirmed_area": {"value": "18.000", "unit": "acre"}, "gi_confirmed_share": {"value": "94.7", "unit": "%"}}, "by_block": [{"plots": 18, "declared_area": {"value": "19.000", "unit": "acre"}, "walked_plots": 0, "walked_area": {"value": "0", "unit": "acre"}, "walked_declared_area": {"value": "0", "unit": "acre"}, "gi_confirmed_area": {"value": "18.000", "unit": "acre"}, "gi_confirmed_share": {"value": "94.7", "unit": "%"}, "block": null}], "by_village": [{"plots": 18, "declared_area": {"value": "19.000", "unit": "acre"}, "walked_plots": 0, "walked_area": {"value": "0", "unit": "acre"}, "walked_declared_area": {"value": "0", "unit": "acre"}, "gi_confirmed_area": {"value": "18.000", "unit": "acre"}, "gi_confirmed_share": {"value": "94.7", "unit": "%"}, "village_id": null, "village": null, "block": null}]}, "finished_goods": {"batches": 2, "packed": {"value": "115.000", "unit": "kg"}, "items": [{"batch_id": "01a19828-2d5c-7677-ac34-cb999eed0821", "code": "7TEPK2S83C58", "status": "published", "packed": {"value": "95.000", "unit": "kg"}, "remaining": {"value": "95.000", "unit": "kg"}, "pack_date": "2026-11-01", "scans": 0}, {"batch_id": "01a19822-94cf-7100-bedc-ecf49185f598", "code": "GQ6QTKYZYVEP", "status": "published", "packed": {"value": "20.000", "unit": "kg"}, "remaining": {"value": "20.000", "unit": "kg"}, "pack_date": "2026-11-01", "scans": 0}]}, "scans": {"total": 0, "last_7_days": 0}, "sync_health": []}
+  dashboard completeness: {'lots': 35, 'complete_lots': 3, 'complete': {'value': '8.6', 'unit': '%'}}
+  sql> select count(*) filter (where not exists (select 1 from jsonb_array_elements_text(c.event_schema->'mandatory') m(t) where not exists (select 1 from events e where e.lot_id=l.id and e.event_type=m.t and e.status not in ('undone','superseded')))), count(*) from lots l join crops c on c.id=l.crop_id where l.fpo_id='01a197e0-9a48-7db7-b773-fa2ebdcb4597'
+  =>  '3|35'
+  SQL: 3 complete of 35 lots
+  CHECK PASS: dashboard numerator/denominator equal the SQL count
+
+## 2 100 scans/min -> 429 (105 scans from one address in one minute window)
+  first 429 at scan #101: {"error":{"code":"rate_limited","message":"Too many requests.","details":{"retry_after_s":19}}}
+  status counts: {204: 100, 429: 5}
+  CHECK PASS: scans 1-100 -> 204, scan 101 onward -> 429 rate_limited
+  sql> select count(*) from scan_events where batch_code='GQ6QTKYZYVEP'
+  =>  '100'
+
+## 3 CSV row per version with entered_by, assist_session_id (batch Z: an assisted, a plain and a corrected event)
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a1982b-acf5-78ed-853a-4a927f3f58e3","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B11 CSV"}
+-> HTTP 201  etag=None
+  {"id": "01a1982b-acf5-78ed-853a-4a927f3f58e3", "code": "LOTF0DCB655", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B11 CSV", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"1ed69b54-28f2-47f1-9cca-535765a621eb","app_version":"1.0.3","device_time":"2026-11-01T17:32:41.610763+00:00","entries":[{"client_id":"01a1982b-ad0a-77ac-9e43-ba64370d0353","kind":"assist_session","data":{"farmer_id":"56a622ff-6789-4ae0-9a65-775491f5d2cf","started_at":"2026-11-01T17:32:41.610657+00:00","started_gps":null}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:32:41.627221Z", "results": [{"client_id": "01a1982b-ad0a-77ac-9e43-ba64370d0353", "status": "accepted", "server_id": "01a1982b-ad0a-77ac-9e43-ba64370d0353", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"4575bc24-129d-4c91-82d6-039476e23d65","app_version":"1.0.3","device_time":"2026-11-01T17:32:41.630706+00:00","entries":[{"client_id":"01a1982b-ad1f-73eb-ad67-465d25e28b3f","kind":"event_version","data":{"event_id":"01a1982b-ad1e-729a-803d-583fb119fadd","version_no":1,"subject_type":"lot","lot_id":"01a1982b-acf5-78ed-853a-4a927f3f58e3","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"land_preparation","instance_no":1,"occurred_on":"2026-07-24","payload":{},"clocks":{"device_time":"2026-11-01T17:32:41.630592+00:00"},"gps":{"lat":9.586,"lon":78.112,"accuracy_m":6.2}}," ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:32:41.696266Z", "results": [{"client_id": "01a1982b-ad1f-73eb-ad67-465d25e28b3f", "status": "accepted", "server_id": "01a1982b-ad1f-73eb-ad67-465d25e28b3f", "photo_uploads": [], "error": null}, {"client_id": "01a1982b-ad21-72cb-88de-51fecaa613bc", "status": "accepted", "server_id": "01a1982b-ad21-72cb-88de-51fecaa613bc", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted']
+  CHECK PASS: assisted + plain event accepted
+$ POST http://localhost:8000/v1/events/01a1982b-ad20-7c84-9262-5a22f82916ca/versions
+  body: {"client_id":"01a1982b-ad64-7f57-b8b0-076fbe504397","data":{"event_id":"01a1982b-ad20-7c84-9262-5a22f82916ca","version_no":2,"subject_type":"lot","lot_id":"01a1982b-acf5-78ed-853a-4a927f3f58e3","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"harvest","instance_no":1,"occurred_on":"2026-10-12","payload":{"quantity":{"value":50,"unit":"kg"},"bags":2},"clocks":{"device_time":"2026-11-01T17:32:41.630665+00:00"},"change_kind":"correct","reason_code":"entered_by_mistake"}}
+-> HTTP 200  etag=None
+  {"client_id": "01a1982b-ad64-7f57-b8b0-076fbe504397", "status": "accepted", "server_id": "01a1982b-ad64-7f57-b8b0-076fbe504397", "photo_uploads": [], "error": null}
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a1982b-ad86-7996-ad60-79a872689df8","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:32:41.734555+00:00","lot_id":"01a1982b-acf5-78ed-853a-4a927f3f58e3"}
+-> HTTP 201  etag=None
+  {"id": "01a1982b-ad86-7996-ad60-79a872689df8", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a1982b-acf5-78ed-853a-4a927f3f58e3", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:32:41.734555Z", "server_received_at": "2026-11-01T17:32:41.749249Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a4c8fcc2-d54b-4168-85ca-115dd2843a54","app_version":"1.0.3","device_time":"2026-11-01T17:32:41.764734+00:00","entries":[{"client_id":"01a1982b-ada4-7da6-b927-b7a6c1f93635","kind":"lot_intake","data":{"lot_id":"01a1982b-acf5-78ed-853a-4a927f3f58e3","sale_date":"2026-11-01","received":{"value":"50","unit":"kg"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:32:41.843780Z", "results": [{"client_id": "01a1982b-ada4-7da6-b927-b7a6c1f93635", "status": "accepted", "server_id": "01a1982b-ada4-7da6-b927-b7a6c1f93635", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/batches
+  body: {"client_id":"01a1982b-adf7-7ebc-a024-42753e84e0aa","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","gi_label_requested":false,"lot_ids":["01a1982b-acf5-78ed-853a-4a927f3f58e3"]}
+-> HTTP 201  etag=None
+  {"id": "01a1982b-adf7-7ebc-a024-42753e84e0aa", "code": "VDJ5MY9G175C", "superlot_code": "COMBO_LOT_0F98C0D5", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": false, "gi_verified": false, "gi_block_reasons": [], "total_received": {"value": "50.000", "unit": "kg"}, "graded": null, "packed": null, "c ...
+$ GET /v1/batches/01a1982b-adf7-7ebc-a024-42753e84e0aa/audit-export.csv -> HTTP 200 text/csv; charset=utf-8 attachment; filename="audit-VDJ5MY9G175C.csv"
+subject_type,subject_code,event_id,event_type,version_id,version_no,change_kind,occurred_on,occurred_end_on,device_time,server_received_at,entered_by,entered_by_name,on_behalf_of_farmer_id,assist_session_id,entered_remotely,is_system_generated,reason_code,reason_text,quantity,unit,payload
+lot,LOTF0DCB655,01a1982b-ad1e-729a-803d-583fb119fadd,land_preparation,01a1982b-ad1f-73eb-ad67-465d25e28b3f,1,create,2026-07-24,,2026-11-01T17:32:41.630592+00:00,2026-11-01T17:32:41.639323+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,56a622ff-6789-4ae0-9a65-775491f5d2cf,01a1982b-ad0a-77ac-9e43-ba64370d0353,False,False,,,,,{}
+lot,LOTF0DCB655,01a1982b-ad20-7c84-9262-5a22f82916ca,harvest,01a1982b-ad21-72cb-88de-51fecaa613bc,1,create,2026-10-12,,2026-11-01T17:32:41.630665+00:00,2026-11-01T17:32:41.669971+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,,,False,False,,,52,kg,"{""bags"": 2, ""quantity"": {""unit"": ""kg"", ""value"": ""52""}}"
+lot,LOTF0DCB655,01a1982b-ad20-7c84-9262-5a22f82916ca,harvest,01a1982b-ad64-7f57-b8b0-076fbe504397,2,correct,2026-10-12,,2026-11-01T17:32:41.630665+00:00,2026-11-01T17:32:41.710092+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,,,False,False,entered_by_mistake,,50,kg,"{""bags"": 2, ""quantity"": {""unit"": ""kg"", ""value"": ""50""}}"
+
+  sql> select count(*) from event_versions v join events e on e.id=v.event_id join batch_shares s on s.lot_id=e.lot_id where s.batch_id='01a1982b-adf7-7ebc-a024-42753e84e0aa'
+  =>  '3'
+  batch Z: 3 CSV rows, 3 event_versions; columns: ['subject_type', 'subject_code', 'event_id', 'event_type', 'version_id', 'version_no', 'change_kind', 'occurred_on', 'occurred_end_on', 'device_time', 'server_received_at', 'entered_by', 'entered_by_name', 'on_behalf_of_farmer_id', 'assist_session_id', 'entered_remotely', 'is_system_generated', 'reason_code', 'reason_text', 'quantity', 'unit', 'payload']
+  assisted row: [{'subject_type': 'lot', 'subject_code': 'LOTF0DCB655', 'event_id': '01a1982b-ad1e-729a-803d-583fb119fadd', 'event_type': 'land_preparation', 'version_id': '01a1982b-ad1f-73eb-ad67-465d25e28b3f', 'version_no': '1', 'change_kind': 'create', 'occurred_on': '2026-07-24', 'occurred_end_on': '', 'device_time': '2026-11-01T17:32:41.630592+00:00', 'server_received_at': '2026-11-01T17:32:41.639323+00:00', 'entered_by': '01a197e0-9a3f-7678-b124-874b1d704f23', 'entered_by_name': 'Demo Field Officer', 'on_behalf_of_farmer_id': '56a622ff-6789-4ae0-9a65-775491f5d2cf', 'assist_session_id': '01a1982b-ad0a-77ac-9e43-ba64370d0353', 'entered_remotely': 'False', 'is_system_generated': 'False', 'reason_code': '', 'reason_text': '', 'quantity': '', 'unit': '', 'payload': '{}'}]
+  CHECK PASS: batch Z: one row per event version, entered_by and assist_session_id columns (S3 on the assisted row only)
+$ GET /v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/audit-export.csv -> HTTP 200 text/csv; charset=utf-8 attachment; filename="audit-GQ6QTKYZYVEP.csv"
+subject_type,subject_code,event_id,event_type,version_id,version_no,change_kind,occurred_on,occurred_end_on,device_time,server_received_at,entered_by,entered_by_name,on_behalf_of_farmer_id,assist_session_id,entered_remotely,is_system_generated,reason_code,reason_text,quantity,unit,payload
+lot,LOT11F54FA0,01a19822-9221-73e5-aeb5-1c44a0b6c337,land_preparation,01a19822-9222-70cb-8e21-64e338709306,1,create,2026-04-15,,2026-11-01T17:22:44.896257+00:00,2026-11-01T17:22:44.961488+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,,,False,False,,,,,{}
+lot,LOT11F54FA0,01a19822-9225-7d31-82e8-716ef19a3765,sowing,01a19822-9226-761c-94fb-212a380e76ba,1,create,2026-06-04,,2026-11-01T17:22:44.896421+00:00,2026-11-01T17:22:45.053256+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,,,False,False,,,,,{}
+lot,LOT11F54FA0,01a19822-9223-742c-8c34-10160824e76c,harvest,01a19822-9224-7bdb-bed2-9ff3b3ed4759,1,create,2026-09-02,,2026-11-01T17:22:44.896364+00:00,2026-11-01T17:22:45.013440+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,,,False,False,,,110,kg,"{""bags"": 5, ""quantity"": {""unit"": ""kg"", ""value"": ""110""}}"
+lot,LOT11F54FA0,01a19822-9223-742c-8c34-10160824e76c,harvest,01a19824-a516-7945-9cd3-1430ea32621b,2,correct,2026-09-02,,2026-11-01T17:25:00+00:00,2026-11-01T17:25:00.836134+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,,,False,False,entered_by_mistake,,112,kg,"{""bags"": 5, ""quantity"": {""unit"": ""kg"", ""value"": ""112""}}"
+lot,LOT11F54FA0,01a19822-9227-79cd-b64c-060dc5c69758,drying,01a19822-9228-74be-9bf1-ac0227747984,1,create,2026-09-12,,2026-11-01T17:22:44.896473+00:00,2026-11-01T17:22:45.085689+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,,,False,False,,,,,{}
+lot,LOT11F54FA0,01a19822-921f-7bbc-95a1-87c620f46fc3,packing,01a19822-9220-77db-b25f-1c6fb7931c1a,1,create,2026-09-22,,2026-11-01T17:22:44.896090+00:00,2026-11-01T17:22:44.912647+00:00,01a197e0-9a3f-7678-b124-874b1d704f23,Demo Field Officer,,,False,False,,,100,kg,"{""bags"": 4, ""quantity"": {""unit"": ""kg"", ""value"": ""100""}}"
+
+  sql> select count(*) from event_versions v join events e on e.id=v.event_id join batch_shares s on s.lot_id=e.lot_id where s.batch_id='01a19822-94cf-7100-bedc-ecf49185f598'
+  =>  '6'
+  batch X: 6 CSV rows, 6 event_versions; columns: ['subject_type', 'subject_code', 'event_id', 'event_type', 'version_id', 'version_no', 'change_kind', 'occurred_on', 'occurred_end_on', 'device_time', 'server_received_at', 'entered_by', 'entered_by_name', 'on_behalf_of_farmer_id', 'assist_session_id', 'entered_remotely', 'is_system_generated', 'reason_code', 'reason_text', 'quantity', 'unit', 'payload']
+  CHECK PASS: batch X: one row per event version, entered_by and assist_session_id columns
+
+## 4 partner -> 501 (and the storage-monitoring stubs)
+$ GET http://localhost:8000/v1/partner/batches/GQ6QTKYZYVEP
+-> HTTP 501  etag=None
+  {"error": {"code": "not_implemented_pilot", "message": "This feature is not available in the pilot.", "details": null}}
+  CHECK PASS: GET /partner/batches/GQ6QTKYZYVEP -> 501 not_implemented_pilot
+$ POST http://localhost:8000/v1/partner/benefits
+  body: {}
+-> HTTP 501  etag=None
+  {"error": {"code": "not_implemented_pilot", "message": "This feature is not available in the pilot.", "details": null}}
+  CHECK PASS: POST /partner/benefits -> 501 not_implemented_pilot
+$ POST http://localhost:8000/v1/probes
+  body: {}
+-> HTTP 501  etag=None
+  {"error": {"code": "not_implemented_pilot", "message": "This feature is not available in the pilot.", "details": null}}
+  CHECK PASS: POST /probes -> 501 not_implemented_pilot
+$ POST http://localhost:8000/v1/probe-readings
+  body: {}
+-> HTTP 501  etag=None
+  {"error": {"code": "not_implemented_pilot", "message": "This feature is not available in the pilot.", "details": null}}
+  CHECK PASS: POST /probe-readings -> 501 not_implemented_pilot
+
+## 5 BM-05: completeness of the demo (reference) batch's lots and its flags by name
+  sql> select string_agg(lot_id::text, ',') from batch_shares where batch_id='01900000-0000-7000-8000-0000000b12aa'
+  =>  '01a197e0-9ac1-7750-a9c6-e3a544813caf,01a197e0-9b9f-7b97-b26d-754167c1fc63,01a197e0-9c36-753c-9657-4e77ace61db8'
+  sql> select count(*) filter (where not exists (select 1 from jsonb_array_elements_text(c.event_schema->'mandatory') m(t) where not exists (select 1 from events e where e.lot_id=l.id and e.event_type=m.t and e.status not in ('undone','superseded')))), count(*) from lots l join crops c on c.id=l.crop_id where l.id in ('01a197e0-9ac1-7750-a9c6-e3a544813caf','01a197e0-9b9f-7b97-b26d-754167c1fc63','01a197e0-9c36-753c-9657-4e77ace61db8')
+  =>  '3|3'
+  sql> select rule_code, count(*) from flags where status in ('open','escalated') and (subject_id='01900000-0000-7000-8000-0000000b12aa' or subject_id in ('01a197e0-9ac1-7750-a9c6-e3a544813caf','01a197e0-9b9f-7b97-b26d-754167c1fc63','01a197e0-9c36-753c-9657-4e77ace61db8')) group by rule_code order by rule_code
+  =>  'grading_loss_high|1\nipm_without_pest_event|3\npractice_tag_contradiction|3\nquantity_mismatch|3\nyield_check_unavailable|3'
+  demo batch lots complete: 3/3 = 100.0 %; flags by name: {'grading_loss_high': '1', 'ipm_without_pest_event': '3', 'practice_tag_contradiction': '3', 'quantity_mismatch': '3', 'yield_check_unavailable': '3'}; reference problems flagged: 9
+  CHECK PASS: BM-05: completeness 100 % and >= 9 reference problems flagged
+# exit: 0

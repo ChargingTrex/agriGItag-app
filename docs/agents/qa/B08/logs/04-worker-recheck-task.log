@@ -1,0 +1,3 @@
+$ docker logs agritrace-worker-1 2>&1 | grep 332e25d1-3cf0-46a8-94e9-cef9b3d0e61b   (proof the line-1 re-check task ran)
+[2026-11-01 17:30:02,959: INFO/MainProcess] Task rules.check_event[332e25d1-3cf0-46a8-94e9-cef9b3d0e61b] received
+[2026-11-01 17:30:03,127: INFO/ForkPoolWorker-8] Task rules.check_event[332e25d1-3cf0-46a8-94e9-cef9b3d0e61b] succeeded in 0.16568934699989768s: ['event_off_plot', 'yield_check_unavailable']

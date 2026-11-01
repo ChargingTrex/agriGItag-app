@@ -1,0 +1,41 @@
+# uptime start: 22:47  up 1 day, 22:19, 1 user, load averages: 10.66 147.04 134.25
+$ cd apps/api && uv run pytest tests/integration/test_lots_batches.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 8 items
+
+tests/integration/test_lots_batches.py::test_ready_gate_on_moisture PASSED [ 12%]
+tests/integration/test_lots_batches.py::test_intake_above_packed_raises_quantity_mismatch PASSED [ 25%]
+tests/integration/test_lots_batches.py::test_reference_batch_shares PASSED [ 37%]
+tests/integration/test_lots_batches.py::test_ineligible_lot_blocks_gi PASSED [ 50%]
+tests/integration/test_lots_batches.py::test_intake_correction_before_batching PASSED [ 62%]
+tests/integration/test_lots_batches.py::test_approve_refused_on_declared_above_computed PASSED [ 75%]
+tests/integration/test_lots_batches.py::test_packing_capped_by_graded_then_publish PASSED [ 87%]
+tests/integration/test_lots_batches.py::test_large_batch_needs_a_second_admin PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_lots_batches.py::test_ready_gate_on_moisture
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_lots_batches.py: 10 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:680: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    for event_type, payload in (await session.execute(query)).tuples():
+
+tests/integration/test_lots_batches.py::test_reference_batch_shares
+tests/integration/test_lots_batches.py::test_ineligible_lot_blocks_gi
+tests/integration/test_lots_batches.py::test_intake_correction_before_batching
+tests/integration/test_lots_batches.py::test_approve_refused_on_declared_above_computed
+tests/integration/test_lots_batches.py::test_packing_capped_by_graded_then_publish
+tests/integration/test_lots_batches.py::test_large_batch_needs_a_second_admin
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:967: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 8 passed, 17 warnings in 31.23s ========================
+# exit: 0
+# uptime end: 22:47  up 1 day, 22:20, 1 user, load averages: 9.35 131.60 129.14

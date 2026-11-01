@@ -1,0 +1,3 @@
+$ cd apps/api && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py --check
+docs/api/error-codes.md is current (49 codes)
+exit=0

@@ -1,0 +1,12 @@
+# row counts (fpos, farmers, lots, batches, batch_shares, events, event_versions, flags, inputs_master) before:
+1|8|36|6|11|69|71|81|8
+$ make seed   # run 1
+docker compose -f infra/docker-compose.yml exec api sh -c "alembic upgrade head && python -m agritrace.seed.demo"
+seed: already present: VIRUDHAI_SCFC_VINOBA_BHAVA_FPO, batch FGP8T4033HM7
+exit=0
+$ make seed   # run 2
+docker compose -f infra/docker-compose.yml exec api sh -c "alembic upgrade head && python -m agritrace.seed.demo"
+seed: already present: VIRUDHAI_SCFC_VINOBA_BHAVA_FPO, batch FGP8T4033HM7
+exit=0
+# row counts after:
+1|8|36|6|11|69|71|81|8

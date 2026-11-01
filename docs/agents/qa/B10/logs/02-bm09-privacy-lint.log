@@ -1,0 +1,8 @@
+$ python3 infra/scripts/privacy-lint.py docs/agents/qa/B10/page --canary +919000000091 --canary 9000000091 --canary QA-SURVEY-77/3B --canary 77/3B --canary temp_uploads --canary 626129   # files = latest build (3) of batch GQ6QTKYZYVEP downloaded from LocalStack public-pages/batches/GQ6QTKYZYVEP/
+privacy-lint: 0 hit(s) in 2 file(s) scanned, 1 non-text skipped
+exit=0
+
+# control: the same linter on a copy with the farmer phone injected must FAIL (proves the scan reads these files)
+/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/ctl/index.html:245:11: phone: <redacted>
+privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=1

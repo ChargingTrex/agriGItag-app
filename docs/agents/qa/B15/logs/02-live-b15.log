@@ -1,0 +1,135 @@
+$ cd apps/api && QA_WORLD=... QA_TOKEN_CACHE=... uv run python ../../docs/agents/qa/B15/logs/live_b15.py
+# 2026-11-01T17:26:13Z
+  sql> select id from users where phone='+919000000002'
+  =>  '01a197e0-9a3f-7678-b124-874b1d704f23'
+
+## 1 G5: officer push, no header: [farmer F, assist_session S(F), consent(F,S), plot(F,S)] -> 4 x accepted
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"9e523ef3-cc14-42c9-826e-0974b6198628","app_version":"1.0.3","device_time":"2026-11-01T17:26:14.727330+00:00","entries":[{"client_id":"01a19825-c5c6-7054-b51f-c377aaebbf9c","kind":"farmer","data":{"name":"QA Onboard Farmer","phone":"+919000000151","lang":"ta"}},{"client_id":"01a19825-c5c7-7011-bae8-a51a35f7c2a4","kind":"assist_session","data":{"farmer_id":"01a19825-c5c6-7054-b51f-c377aaebbf9c","started_at":"2026-11-01T17:26:14.726123+00:00","started_gps":null}},{"client_id":"01a19825-c5c8-7bf8-8eab-b2d0c3262f4d","kind":"consent","assist_session_id":"01a19825-c5c7-7011-bae8-a51a35f ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:14.822950Z", "results": [{"client_id": "01a19825-c5c6-7054-b51f-c377aaebbf9c", "status": "accepted", "server_id": "01a19825-c5c6-7054-b51f-c377aaebbf9c", "photo_uploads": [], "error": null}, {"client_id": "01a19825-c5c7-7011-bae8-a51a35f7c2a4", "status": "accepted", "server_id": "01a19825-c5c7-7011-bae8-a51a35f7c2a4", "photo_uploads": [], "error": null}, {"client_id": "01a19825-c5c8-7bf8-8eab-b2d0c3262f4d", "status": "accepted", "server_id": "01a19825-c5c8-7bf8-8eab-b2d0c3262f4d", "photo_uploads": [], "error": null}, {"client_id": "01a19825-c5c9-750c-b952-1b7a035e8ade", "status": "accepted", "server_id": "01a19825-c5c9-750c-b952-1b7a035e8ade", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted', 'accepted', 'accepted']
+  CHECK PASS: 4 x accepted
+  sql> select status, fpo_id from farmers where id='01a19825-c5c6-7054-b51f-c377aaebbf9c'
+  =>  'pending|01a197e0-9a48-7db7-b773-fa2ebdcb4597'
+  CHECK PASS: farmers.id == F, status pending
+  sql> select count(*) from users where phone='+919000000151'
+  =>  '1'
+  sql> select count(*) from memberships m join users u on u.id=m.user_id where u.phone='+919000000151'
+  =>  '1'
+  CHECK PASS: one users row and one memberships row for the phone
+  sql> select witnessed_by_user_id from consent_records where id='01a19825-c5c8-7bf8-8eab-b2d0c3262f4d'
+  =>  '01a197e0-9a3f-7678-b124-874b1d704f23'
+  CHECK PASS: consent witnessed_by_user_id = officer
+  sql> select actor_user_id, coalesce(assist_session_id::text,'-'), coalesce(on_behalf_of_farmer_id::text,'-') from audit_log where entity_type='consent_records' and entity_id='01a19825-c5c8-7bf8-8eab-b2d0c3262f4d' and action='create'
+  =>  '01a197e0-9a3f-7678-b124-874b1d704f23|01a19825-c5c7-7011-bae8-a51a35f7c2a4|01a19825-c5c6-7054-b51f-c377aaebbf9c'
+  CHECK PASS: consent_records audit row carries S and F
+  sql> select actor_user_id, coalesce(assist_session_id::text,'-'), coalesce(on_behalf_of_farmer_id::text,'-') from audit_log where entity_type='plots' and entity_id='01a19825-c5c9-750c-b952-1b7a035e8ade' and action='create'
+  =>  '01a197e0-9a3f-7678-b124-874b1d704f23|01a19825-c5c7-7011-bae8-a51a35f7c2a4|01a19825-c5c6-7054-b51f-c377aaebbf9c'
+  CHECK PASS: plots audit row carries S and F
+  sql> select actor_user_id, coalesce(assist_session_id::text,'-'), coalesce(on_behalf_of_farmer_id::text,'-') from audit_log where entity_type='farmers' and entity_id='01a19825-c5c6-7054-b51f-c377aaebbf9c' and action='create'
+  =>  '01a197e0-9a3f-7678-b124-874b1d704f23|-|-'
+  CHECK PASS: farmer's audit row carries neither
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"1cfd8009-0afb-43b3-a26b-689f37b52d89","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.330941+00:00","entries":[{"client_id":"01a19825-c5c6-7054-b51f-c377aaebbf9c","kind":"farmer","data":{"name":"QA Onboard Farmer","phone":"+919000000151","lang":"ta"}},{"client_id":"01a19825-c5c7-7011-bae8-a51a35f7c2a4","kind":"assist_session","data":{"farmer_id":"01a19825-c5c6-7054-b51f-c377aaebbf9c","started_at":"2026-11-01T17:26:14.726123+00:00","started_gps":null}},{"client_id":"01a19825-c5c8-7bf8-8eab-b2d0c3262f4d","kind":"consent","assist_session_id":"01a19825-c5c7-7011-bae8-a51a35f ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:15.359330Z", "results": [{"client_id": "01a19825-c5c6-7054-b51f-c377aaebbf9c", "status": "duplicate", "server_id": "01a19825-c5c6-7054-b51f-c377aaebbf9c", "photo_uploads": [], "error": null}, {"client_id": "01a19825-c5c7-7011-bae8-a51a35f7c2a4", "status": "duplicate", "server_id": "01a19825-c5c7-7011-bae8-a51a35f7c2a4", "photo_uploads": [], "error": null}, {"client_id": "01a19825-c5c8-7bf8-8eab-b2d0c3262f4d", "status": "duplicate", "server_id": "01a19825-c5c8-7bf8-8eab-b2d0c3262f4d", "photo_uploads": [], "error": null}, {"client_id": "01a19825-c5c9-750c-b952-1b7a035e8ade", "status": "duplicate", "server_id": "01a19825-c5c9-750c-b952-1b7a035e8ade", "photo_uploads": [], "error": null}]}
+  statuses: ['duplicate', 'duplicate', 'duplicate', 'duplicate']
+  CHECK PASS: replay -> 4 x duplicate
+  sql> select (select count(*) from farmers where id='01a19825-c5c6-7054-b51f-c377aaebbf9c'), (select count(*) from users where phone='+919000000151'), (select count(*) from memberships m join users u on u.id=m.user_id where u.phone='+919000000151'), (select count(*) from consent_records where farmer_id='01a19825-c5c6-7054-b51f-c377aaebbf9c'), (select count(*) from plots where farmer_id='01a19825-c5c6-7054-b51f-c377aaebbf9c')
+  =>  '1|1|1|1|1'
+  CHECK PASS: still one farmer, user, membership, consent, plot
+
+## 2 G5: online timeout then sync -> one farmer (POST /v1/farmers client_id G, then kind=farmer G)
+$ POST http://localhost:8000/v1/farmers
+  body: {"name":"QA Timeout Farmer","phone":"+919000000152","lang":"ta","client_id":"01a19825-c888-79cf-819a-3b57495b7b74"}
+-> HTTP 201  etag=None
+  {"id": "01a19825-c888-79cf-819a-3b57495b7b74", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": "01a19825-c895-745a-9e3d-8f9687f9ae8c", "code": "F764211", "name": "QA Timeout Farmer", "name_local": null, "photo_key": null, "address": null, "village_id": null, "gi_authorised_user_no": null, "status": "pending", "approved_by": null, "approved_at": null, "no_smartphone": false, "phone_masked": "XXXXXX0152", "address_line": ""}
+  CHECK PASS: POST /farmers with client_id G -> 201, id == G
+$ POST http://localhost:8000/v1/farmers
+  body: {"name":"QA Timeout Farmer","phone":"+919000000152","lang":"ta","client_id":"01a19825-c888-79cf-819a-3b57495b7b74"}
+-> HTTP 201  etag=None
+  {"id": "01a19825-c888-79cf-819a-3b57495b7b74", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": "01a19825-c895-745a-9e3d-8f9687f9ae8c", "code": "F764211", "name": "QA Timeout Farmer", "name_local": null, "photo_key": null, "address": null, "village_id": null, "gi_authorised_user_no": null, "status": "pending", "approved_by": null, "approved_at": null, "no_smartphone": false, "phone_masked": "XXXXXX0152", "address_line": ""}
+  repeat POST status: 201
+  CHECK PASS: repeat POST /farmers G -> 200 or 201 with the stored farmer
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"af20f94d-e206-4e78-a0b3-c04017fc4697","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.484834+00:00","entries":[{"client_id":"01a19825-c888-79cf-819a-3b57495b7b74","kind":"farmer","data":{"name":"QA Timeout Farmer","phone":"+919000000152","lang":"ta"}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:15.498175Z", "results": [{"client_id": "01a19825-c888-79cf-819a-3b57495b7b74", "status": "duplicate", "server_id": "01a19825-c888-79cf-819a-3b57495b7b74", "photo_uploads": [], "error": null}]}
+  statuses: ['duplicate']
+  CHECK PASS: kind=farmer G -> duplicate (not farmer_phone_taken)
+  sql> select (select count(*) from farmers where id='01a19825-c888-79cf-819a-3b57495b7b74'), (select count(*) from users where phone='+919000000152')
+  =>  '1|1'
+  CHECK PASS: one farmer, one user
+
+## 3 kind=farmer by a farmer token -> forbidden; taken phone -> farmer_phone_taken and the next plot rejected
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"c93779cb-873f-455f-8c1d-6beb9da6d6ed","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.565916+00:00","entries":[{"client_id":"01a19825-c90d-7e9d-985c-f8b274c64b0c","kind":"farmer","data":{"name":"QA Onboard Farmer","phone":"+919000000153","lang":"ta"}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:15.575556Z", "results": [{"client_id": "01a19825-c90d-7e9d-985c-f8b274c64b0c", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "Your role does not allow this action.", "details": {"reason": "farmers are onboarded by a field officer or FPO admin"}}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: farmer token -> rejected forbidden
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"6eb572c8-52b1-44c0-bf8d-aef11927f1f1","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.580652+00:00","entries":[{"client_id":"01a19825-c91c-7cab-a0d4-70647298644f","kind":"farmer","data":{"name":"QA Same Phone","phone":"+919000000151","lang":"ta"}},{"client_id":"01a19825-c91d-77ea-95e1-3aa6d859550b","kind":"plot","assist_session_id":null,"data":{"farmer_id":"01a19825-c91c-7cab-a0d4-70647298644f","pin":{"lat":9.5598,"lon":78.1335,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:26:15.580613+00:00","declared_area":{"value":1.5,"unit":"acre"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:15.621577Z", "results": [{"client_id": "01a19825-c91c-7cab-a0d4-70647298644f", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "farmer_phone_taken", "message": "Another farmer in this FPO already has this phone number.", "details": {"phone": "already used by a farmer of this FPO"}}}, {"client_id": "01a19825-c91d-77ea-95e1-3aa6d859550b", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "not_found", "message": "Not found.", "details": {"farmer_id": "01a19825-c91c-7cab-a0d4-70647298644f"}}}]}
+  statuses: ['rejected:farmer_phone_taken', 'rejected:not_found']
+  CHECK PASS: phone of farmer F under a new id -> farmer_phone_taken; its plot -> rejected
+  plot rejection: {'code': 'not_found', 'message': 'Not found.', 'details': {'farmer_id': '01a19825-c91c-7cab-a0d4-70647298644f'}}
+
+## 4 unknown session -> assist_session_invalid, next entry still processed; S for F on another farmer -> forbidden
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"91a50142-5f67-4afe-bde3-b388d9fe5f0d","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.626528+00:00","entries":[{"client_id":"01a19825-c94b-7bc1-af4a-3971dcd75c05","kind":"consent","assist_session_id":"01a19825-c94a-7c0e-a8de-f18d83c40652","data":{"farmer_id":"01a19825-c5c6-7054-b51f-c377aaebbf9c","consent_type":"data_collection","consent_version":"v1-ta","given_at":"2026-11-01T17:26:15.626465+00:00"}},{"client_id":"01a19825-c94c-75e6-b62f-534845dc01e9","kind":"plot","assist_session_id":"01a19825-c5c7-7011-bae8-a51a35f7c2a4","data":{"farmer_id":"01a19825-c5c6-7054-b51f-c3 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:15.655760Z", "results": [{"client_id": "01a19825-c94b-7bc1-af4a-3971dcd75c05", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "assist_session_invalid", "message": "The assist session is not open for you.", "details": {"assist_session_id": "01a19825-c94a-7c0e-a8de-f18d83c40652"}}}, {"client_id": "01a19825-c94c-75e6-b62f-534845dc01e9", "status": "accepted", "server_id": "01a19825-c94c-75e6-b62f-534845dc01e9", "photo_uploads": [], "error": null}]}
+  statuses: ['rejected:assist_session_invalid', 'accepted']
+  CHECK PASS: [consent(F, unknown S), plot(F, S)] -> [rejected assist_session_invalid, accepted]
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"dabba311-ddc0-4d3a-a154-43d21fe0dfa9","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.662680+00:00","entries":[{"client_id":"01a19825-c96e-7d0c-9cac-f5d7c8e841d7","kind":"plot","assist_session_id":"01a19825-c5c7-7011-bae8-a51a35f7c2a4","data":{"farmer_id":"56a622ff-6789-4ae0-9a65-775491f5d2cf","pin":{"lat":9.5598,"lon":78.1335,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:26:15.662646+00:00","declared_area":{"value":1.5,"unit":"acre"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:15.672278Z", "results": [{"client_id": "01a19825-c96e-7d0c-9cac-f5d7c8e841d7", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "The assist session is for another farmer.", "details": null}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: plot for the QA farmer with F's session S -> rejected forbidden
+
+## 5 ended session: per-entry accepted with assist recorded; X-Assist-Session with it -> 403
+$ POST http://localhost:8000/v1/assist/end
+  body: {"assist_session_id":"01a19825-c5c7-7011-bae8-a51a35f7c2a4"}
+-> HTTP 200  etag=None
+  {"id": "01a19825-c5c7-7011-bae8-a51a35f7c2a4", "officer_user_id": "01a197e0-9a3f-7678-b124-874b1d704f23", "farmer_id": "01a19825-c5c6-7054-b51f-c377aaebbf9c", "started_at": "2026-11-01T17:26:14.726123Z", "ended_at": "2026-11-01T17:26:15.681788Z"}
+  sql> select ended_at from assist_sessions where id='01a19825-c5c7-7011-bae8-a51a35f7c2a4'
+  =>  '2026-11-01 17:26:15.681788+00'
+  ended_at: 2026-11-01 17:26:15.681788+00
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"85bc7183-9e1a-4b63-a2e0-04361b96c806","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.761985+00:00","entries":[{"client_id":"01a19825-c9d1-7d2a-9f0b-3dd477621618","kind":"plot","assist_session_id":"01a19825-c5c7-7011-bae8-a51a35f7c2a4","data":{"farmer_id":"01a19825-c5c6-7054-b51f-c377aaebbf9c","pin":{"lat":9.560799999999999,"lon":78.1335,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:26:15.761913+00:00","declared_area":{"value":1.5,"unit":"acre"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:15.786011Z", "results": [{"client_id": "01a19825-c9d1-7d2a-9f0b-3dd477621618", "status": "accepted", "server_id": "01a19825-c9d1-7d2a-9f0b-3dd477621618", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  CHECK PASS: entry carrying ended S -> accepted
+  sql> select actor_user_id, coalesce(assist_session_id::text,'-'), coalesce(on_behalf_of_farmer_id::text,'-') from audit_log where entity_type='plots' and entity_id='01a19825-c9d1-7d2a-9f0b-3dd477621618' and action='create'
+  =>  '01a197e0-9a3f-7678-b124-874b1d704f23|01a19825-c5c7-7011-bae8-a51a35f7c2a4|01a19825-c5c6-7054-b51f-c377aaebbf9c'
+  CHECK PASS: its audit row carries S and F
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"01a19825-ca38-7591-9551-073d46e3f1e7","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.864754+00:00","entries":[{"client_id":"01a19825-ca39-7cce-967c-f629a1737bbd","kind":"plot","assist_session_id":null,"data":{"farmer_id":"01a19825-c5c6-7054-b51f-c377aaebbf9c","pin":{"lat":9.5598,"lon":78.1335,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:26:15.864809+00:00","declared_area":{"value":1.5,"unit":"acre"}}}]}
+-> HTTP 403  etag=None
+  {"error": {"code": "assist_session_invalid", "message": "The assist session is not open for you.", "details": {"assist_session_id": "01a19825-c5c7-7011-bae8-a51a35f7c2a4"}}}
+  CHECK PASS: X-Assist-Session ended S -> 403 assist_session_invalid
+
+## 6 assist_session with an id used by another officer -> conflict; by a farmer token -> forbidden
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"9837532d-968b-44df-99d5-ca6134c28c0d","app_version":"1.0.3","device_time":"2026-11-01T17:26:15.876048+00:00","entries":[{"client_id":"01a19825-ca43-726b-96a1-8b5db79d117a","kind":"assist_session","data":{"farmer_id":"56a622ff-6789-4ae0-9a65-775491f5d2cf","started_at":"2026-11-01T17:26:15.876009+00:00","started_gps":null}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:26:15.883547Z", "results": [{"client_id": "01a19825-ca43-726b-96a1-8b5db79d117a", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "Your role does not allow this action.", "details": {"reason": "assist sessions are started by a field officer"}}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: assist_session by a farmer token -> rejected forbidden
+
+## 7 /v1/config/features carries grading_loss_warn_pct
+$ GET http://localhost:8000/v1/config/features
+-> HTTP 200  etag="35775ef05cbe5ebd"
+  {"id_document_capture": false, "farmer_pin_login": false, "producer_groups": false, "boundary_walk": true, "second_signoff_threshold_kg": 1000, "wifi_only_photos_default": false, "sync_push_max_entries": 50, "sync_push_max_bytes": 262144, "otp_daily_cap": 10, "grading_loss_warn_pct": 15}
+  CHECK PASS: grading_loss_warn_pct present (15)
+
+## 8 D-030 on the seeded reference batch: grading_loss_high open, no batch_quantity_unattributed
+  sql> select rule_code, severity, status from flags where subject_id='01900000-0000-7000-8000-0000000b12aa' order by rule_code
+  =>  'grading_loss_high|warn|open'
+grading_loss_high|warn|open
+# exit: 0

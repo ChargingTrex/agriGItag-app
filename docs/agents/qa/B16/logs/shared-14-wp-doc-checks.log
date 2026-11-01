@@ -1,0 +1,64 @@
+$ grep -rn 'DECISION D-0(30|31|32|40|41|42)' apps/api/agritrace
+apps/api/agritrace/core/auth.py:295:    # DECISION D-032: an ended session is accepted here (never on the header path, `_assist_farmer`).
+apps/api/agritrace/modules/quality/service.py:771:    # DECISION D-042: a reading in assist mode is attributed to the session's farmer, so it must be on that
+apps/api/agritrace/modules/rules_flags/rules/quantity_reconciliation.py:76:    # DECISION D-030: attribution (shares vs received) and grading loss (output vs received) are two warns.
+apps/api/agritrace/modules/registry/service.py:741:    # DECISION D-031: the phone's UUIDv7 is the farmer id, checked before anything else (like plots, D-005).
+apps/api/agritrace/modules/lots_batches/service.py:99:# DECISION D-041: in a batch without the GI label these two hold codes do not block approve, final packing
+apps/api/agritrace/modules/lots_batches/service.py:740:        # DECISION D-040: an intake without `processor_id` goes to the FPO's only own processor.
+apps/api/agritrace/modules/lots_batches/service.py:774:        # DECISION D-040: the first intake of an open or drying lot runs the ready gate here.
+apps/api/agritrace/modules/events/service.py:797:    # DECISION D-031: offline onboarding is a push kind idempotent on the phone's farmer id, like plots.
+apps/api/agritrace/modules/events/service.py:866:    # DECISION D-040: the QC phone receives a lot through a push kind backed by the intake service.
+apps/api/agritrace/modules/events/service.py:926:    # DECISION D-042: these kinds are the officer's own task (D-031 for `farmer`): assist context is dropped
+apps/api/agritrace/modules/events/service.py:988:    # DECISION D-032: assist context travels with each entry (`assist_session_id`), not with the request.
+
+$ ADR index rows + files for D-030..D-032, D-040..D-043, D-007, D-033, D-034, D-037, D-038, D-039, D-048
+  D-030: DECISIONS.md mentions=1 adr_file=1
+  D-031: DECISIONS.md mentions=1 adr_file=1
+  D-032: DECISIONS.md mentions=1 adr_file=1
+  D-040: DECISIONS.md mentions=1 adr_file=1
+  D-041: DECISIONS.md mentions=1 adr_file=1
+  D-042: DECISIONS.md mentions=1 adr_file=1
+  D-043: DECISIONS.md mentions=1 adr_file=1
+  D-007: DECISIONS.md mentions=1 adr_file=1
+  D-033: DECISIONS.md mentions=1 adr_file=1
+  D-034: DECISIONS.md mentions=1 adr_file=1
+  D-037: DECISIONS.md mentions=1 adr_file=1
+  D-038: DECISIONS.md mentions=1 adr_file=1
+  D-039: DECISIONS.md mentions=1 adr_file=1
+  D-048: DECISIONS.md mentions=1 adr_file=1
+
+$ CHANGELOG lines per WP
+  B09: 1 -> - WP-B09 — Lots, intake, batches, gates: `POST/GET /v1/lots`, `POST /v1/lots/{id}/ready` (moisture `lot_gates`), `POST /v1/intakes` (recon
+  B10: 3 -> - WP-B10 — Publishing: `publishing.build_page` task (snapshot `builder.py` → `agritrace_page.render` → `public-pages/batches/<code>/{i
+  B11: 3 -> - WP-B11 — Reporting + stubs: `GET /v1/dashboard/fpo/{id}` (completeness = lots with every mandatory live event ÷ lots, stage tiles done/
+  B12: 2 -> - WP-B12 — Demo seed, e2e, client generation: `agritrace/seed/demo.py` (`make seed`, idempotent; FPO VIRUDHAI_SCFC_VINOBA_BHAVA_FPO, GI 88
+  B15: 1 -> - WP-B15 — Backend gaps from B08 review and M09 (D-030 `batch_quantity_unattributed` = shares vs received kg + new `grading_loss_high` wit
+  B16: 1 -> - WP-B16 — QC intake via sync, non-GI holds, assist_session_id per kind (D-040 push kind `lot_intake` → `create_intake_from_sync`, `POST
+
+$ docs/api/conventions.md §Sync kinds
+40:  foreign or ended session → 403 `assist_session_invalid`) and `X-Request-Id` (≤ 64 chars, copied to audit
+58:  idempotent by `client_id`) and `POST /v1/assist/end {assist_session_id}`.
+137:  `{client_id, kind, data, assist_session_id?}` with kind `event_version`, `quality_reading`, `plot`,
+138:  `consent`, `flag_resolution`, `farmer`, `assist_session` or `lot_intake`; the entry's `client_id` becomes the
+140:  `farmer` (D-031): `data` = `FarmerIn`, field officer or FPO admin only, stored `pending`; a farmer id this
+143:  `assist_session` (D-032): `data` = `{farmer_id, started_at?, started_gps?}`, field officer only, same
+145:  `assist_session_id` (on the entry, never inside `data`) records assist mode for that entry only: it must
+146:  be one of your sessions, open or ended (else `assist_session_invalid`), and the entry's farmer must be the
+148:  with a session → `forbidden`; `farmer`, `flag_resolution`, `assist_session` and `lot_intake` ignore it (no
+150:  `lot_intake` (D-040): `data` = `IntakeIn` without `client_id` (the entry's `client_id` is the intake id),
+
+$ create_intake Raises section
+    Raises:
+        ForbiddenError: `forbidden` (403): the caller is not a QC officer or FPO admin, or a QC officer sends
+            a correction.
+        FieldRequiredError: `field_required` (422, `details.field` = `processor_id`): no `processor_id` and
+            the FPO has zero or several own processors.
+        ClientIdConflictError: the id belongs to another FPO's intake or to an intake of another lot (409).
+        NotFoundError: lot (also on a resend: the lot is locked first), processor, superseded intake or intake
+            moisture reading (parameter `moisture`, stage `intake`, on this lot) not found (404).
+        GateNotMetError: `gate_not_met` (409): `moisture_gate_failed` (first intake of an open/drying lot
+            whose latest drying-end moisture is missing or above the limit), `lot_not_ready` (first intake of
+            a lot in any other state but `ready_for_sale`), `lot_already_batched` (correction after batching),
+            `intake_not_current` (the intake to correct was already corrected, or the lot is not `received`).
+
+    Side effects:

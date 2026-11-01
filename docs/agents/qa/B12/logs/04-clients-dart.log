@@ -1,0 +1,60 @@
+# 2026-11-01T17:38:51Z 23:08  up 1 day, 22:41, 1 user, load averages: 6.11 8.96 34.84
+$ cd apps/mobile && JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" tool/gen_api.sh
+  14s compiling builders/aot
+  15s compiling builders/aot
+  16s compiling builders/aot
+  17s compiling builders/aot
+  18s compiling builders/aot
+  19s compiling builders/aot
+  20s compiling builders/aot
+  21s compiling builders/aot
+  22s compiling builders/aot
+  24s compiling builders/aot
+  25s compiling builders/aot
+  26s compiling builders/aot
+  27s compiling builders/aot
+  28s compiling builders/aot
+  29s compiling builders/aot
+  30s compiling builders/aot
+  31s compiling builders/aot
+  32s compiling builders/aot
+  33s compiling builders/aot
+  34s compiling builders/aot
+  35s compiling builders/aot
+  36s compiling builders/aot
+  37s compiling builders/aot
+  38s compiling builders/aot
+  39s compiling builders/aot
+  40s compiling builders/aot
+  42s compiling builders/aot
+  43s compiling builders/aot
+  44s compiling builders/aot
+  45s compiling builders/aot
+  46s compiling builders/aot
+  0s built_value_generator:built_value on 238 inputs; lib/agritrace_api.dart
+  2s built_value_generator:built_value on 238 inputs: 22 not triggered, 1 output; spent 2s sdk; lib/src/model/area_by_block.dart
+  3s built_value_generator:built_value on 238 inputs: 23 not triggered, 123 output; spent 2s sdk; lib/src/model/page_farmer_row.dart
+  4s built_value_generator:built_value on 238 inputs: 23 not triggered, 215 output; spent 2s sdk
+  0s source_gen:combining_builder on 238 inputs; lib/agritrace_api.dart
+  0s source_gen:combining_builder on 238 inputs: 198 output, 23 no-op; lib/src/model/sync_push_in.dart
+  0s source_gen:combining_builder on 238 inputs: 215 output, 23 no-op
+  Built with build_runner/aot in 52s; wrote 430 outputs.
+gen_api.sh: client written to /Users/fi-it/Documents/projects/agriGitag/apps/mobile/packages/agritrace_api
+exit=
+$ git status --short packages/ apps/mobile/packages/
+(empty = generated Dart client is byte-identical)
+$ cd apps/mobile/packages/agritrace_api && dart analyze   # compile check of the generated client
+warning - lib/src/model/value1.dart:40:14 - A value for optional parameter 'specifiedType' isn't ever given. Try removing the unused parameter. - unused_element_parameter
+warning - lib/src/model/warn_margin_pct.dart:43:14 - A value for optional parameter 'specifiedType' isn't ever given. Try removing the unused parameter. - unused_element_parameter
+warning - lib/src/serializers.dart:557:34 - The generic type 'BuiltList<dynamic>' should have explicit type arguments but doesn't. Use explicit type arguments for 'BuiltList<dynamic>'. - strict_raw_type
+
+47 issues found.
+# end 2026-11-01T17:40:12Z 23:10  up 1 day, 22:42, 1 user, load averages: 5.95 8.21 32.22
+
+# NOTE (Verifier): 'exit=' is empty because PIPESTATUS was read outside the subshell; the script printed its final line 'gen_api.sh: client written to ...' (set -euo pipefail exits before it on any error).
+$ cd apps/mobile/packages/agritrace_api && dart analyze | awk "{print \$1}" | sort | uniq -c
+   2 
+   1 47
+   1 Analyzing
+  47 warning
+(47 warnings, 0 errors: lints on generated code; the client compiles)

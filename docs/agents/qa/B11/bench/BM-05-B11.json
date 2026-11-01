@@ -1,0 +1,17 @@
+{
+ "id": "BM-05",
+ "metrics": {
+  "demo_completeness_pct": 100.0,
+  "reference_problems_flagged": 9
+ },
+ "flags_by_name": {
+  "grading_loss_high": "1",
+  "ipm_without_pest_event": "3",
+  "practice_tag_contradiction": "3",
+  "quantity_mismatch": "3",
+  "yield_check_unavailable": "3"
+ },
+ "commit": "c0962da",
+ "env": "compose stack, live DB",
+ "recorded_at": "2026-11-01T17:32:42.346379+00:00"
+}

@@ -1,0 +1,125 @@
+$ cd apps/api && QA_WORLD=<scratchpad>/world2.json uv run python ../../docs/agents/qa/B08/logs/live_b08.py
+== A. flags on the seeded reference batch FGP8T4033HM7 (left by `make seed`), via GET /v1/flags
+  sql> select string_agg(l.id||':'||l.code, ',') from lots l join batch_shares bs on bs.lot_id=l.id join batches b on b.id=bs.batch_id where b.code='FGP8T4033HM7'
+  =>  '01a197e0-9ac1-7750-a9c6-e3a544813caf:LOTD02DADB6,01a197e0-9b9f-7b97-b26d-754167c1fc63:LOT3072CB6A,01a197e0-9c36-753c-9657-4e77ace61db8:LOT0EF81415'
+  sql> select id from batches where code='FGP8T4033HM7'
+  =>  '01900000-0000-7000-8000-0000000b12aa'
+  GET /v1/flags (admin, all pages): 55 flags in the FPO
+RESULT A lot LOTD02DADB6: [('ipm_without_pest_event', 'warn', 'open'), ('practice_tag_contradiction', 'warn', 'open'), ('quantity_mismatch', 'warn', 'open'), ('yield_check_unavailable', 'info', 'open')]
+RESULT A lot LOT3072CB6A: [('ipm_without_pest_event', 'warn', 'open'), ('practice_tag_contradiction', 'warn', 'open'), ('quantity_mismatch', 'warn', 'open'), ('yield_check_unavailable', 'info', 'open')]
+RESULT A lot LOT0EF81415: [('ipm_without_pest_event', 'warn', 'open'), ('practice_tag_contradiction', 'warn', 'open'), ('quantity_mismatch', 'warn', 'open'), ('yield_check_unavailable', 'info', 'open')]
+RESULT A batch: [('grading_loss_high', 'warn', 'open')]
+  sql> select l.code, e.event_type, ev.occurred_on from events e join event_versions ev on ev.id=e.current_version_id join lots l on l.id=e.lot_id where l.code='LOTD02DADB6' order by ev.occurred_on
+  =>  'LOTD02DADB6|land_preparation|2025-08-24\nLOTD02DADB6|nursery|2025-09-19\nLOTD02DADB6|sowing|2025-11-11\nLOTD02DADB6|input_application|2025-12-05\nLOTD02DADB6|harvest|2026-02-14\nLOTD02DADB6|drying|2026-02-15\nLOTD02DADB6|packing|2026-03-12'
+  sql> select count(*) from flags f join events e on e.id=f.subject_id join lots l on l.id=e.lot_id join batch_shares bs on bs.lot_id=l.id join batches b on b.id=bs.batch_id where b.code='FGP8T4033HM7' and f.rule_code='event_out_of_order'
+  =>  '0'
+  sql> select code, gi_eligible, gi_hold_reason from lots where id in (select lot_id from batch_shares bs join batches b on b.id=bs.batch_id where b.code='FGP8T4033HM7') order by code
+  =>  'LOT0EF81415|t|\nLOT3072CB6A|t|\nLOTD02DADB6|t|'
+
+== B0. two more QA plots and lots with declared practice tags (inorganic + ipm)
+$ POST http://localhost:8000/v1/plots
+  body: {"client_id":"06bdcd4d-0a92-4c63-b76d-cf05e6841609","farmer_id":"37477c74-80df-4727-b497-63ba80ec023a","pin":{"lat":9.555,"lon":78.105,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:29:56.433541+00:00","declared_area":{"value":"1","unit":"acre"},"code":"QA2-P5"}
+-> HTTP 201  etag=None
+  {"id": "06bdcd4d-0a92-4c63-b76d-cf05e6841609", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "farmer_id": "37477c74-80df-4727-b497-63ba80ec023a", "code": "QA2-P5", "gi_tag_id": null, "pin": {"lat" ...
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"70a7daa3-cf8b-4844-9cb0-2079b5cfb2ac","plot_id":"06bdcd4d-0a92-4c63-b76d-cf05e6841609","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA 2026","practice_tags_declared":["inorganic","ipm"]}
+-> HTTP 201  etag=None
+  {"id": "70a7daa3-cf8b-4844-9cb0-2079b5cfb2ac", "code": "LOT954E04FE", "farmer_id": "37477c74-80df-4727-b497-63ba80ec023a", "plot_id": "06bdcd4d-0a92-4c63-b76d-cf05e6841609", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA 2026", "status": "open", "practice_tags": {"declared":  ...
+$ POST http://localhost:8000/v1/plots
+  body: {"client_id":"6d59010e-df2c-4d3c-bfc0-51360beb8b7a","farmer_id":"37477c74-80df-4727-b497-63ba80ec023a","pin":{"lat":9.555,"lon":78.125,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:29:56.520996+00:00","declared_area":{"value":"1","unit":"acre"},"code":"QA2-P6"}
+-> HTTP 201  etag=None
+  {"id": "6d59010e-df2c-4d3c-bfc0-51360beb8b7a", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "farmer_id": "37477c74-80df-4727-b497-63ba80ec023a", "code": "QA2-P6", "gi_tag_id": null, "pin": {"lat" ...
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"38ea127a-6dbc-497f-a48b-e572000acaf9","plot_id":"6d59010e-df2c-4d3c-bfc0-51360beb8b7a","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA 2026","practice_tags_declared":["inorganic","ipm"]}
+-> HTTP 201  etag=None
+  {"id": "38ea127a-6dbc-497f-a48b-e572000acaf9", "code": "LOTE257A8D8", "farmer_id": "37477c74-80df-4727-b497-63ba80ec023a", "plot_id": "6d59010e-df2c-4d3c-bfc0-51360beb8b7a", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA 2026", "status": "open", "practice_tags": {"declared":  ...
+
+== 1. 600 m off plot -> event_off_plot warn; re-check -> no duplicate
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"8b407ed8-8f6c-406f-b499-9bac3de5b2be","app_version":"1.0.3","device_time":"2026-11-01T17:29:56.591110+00:00","entries":[{"client_id":"01a19829-286e-7090-8756-ece3ca4dad68","kind":"event_version","data":{"event_id":"01a19829-286f-7807-b0a5-97c52f50e442","version_no":1,"subject_type":"lot","lot_id":"d1a06745-d039-4ae5-b33e-9355470942ff","plot_id":"2dafb070-2023-46dc-9c22-8344fcdab2bb","event_type":"land_preparation","instance_no":1,"occurred_on":"2026-07-01","payload":{},"clocks":{"device_time":"2026-11-01T17:29:56.591054+00:00"},"gps":{"lat":9.5704,"lon":78.115,"accuracy_m":5.0}}} ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:29:56.638363Z", "results": [{"client_id": "01a19829-286e-7090-8756-ece3ca4dad68", "status": "accepted", "server_id": "01a19829-286e-7090-8756-ece3ca4dad68", "photo_uploads": [], "error": null}]}
+  push statuses: [('accepted', None)]
+  sql (after 3s)> select string_agg(rule_code||'|'||severity||'|'||status, ', ' order by rule_code) from flags where subject_id='01a19829-286f-7807-b0a5-97c52f50e442'
+  =>  'event_off_plot|warn|open'
+  sql> select details from flags where subject_id='01a19829-286f-7807-b0a5-97c52f50e442' and rule_code='event_off_plot'
+  =>  '{"buffer_m": 50.0, "pin_radius_m": 200.0}'
+$ docker exec agritrace-worker-1 celery -A agritrace.worker call rules.check_event --kwargs '{"event_id": "01a19829-286f-7807-b0a5-97c52f50e442"}'
+  -> task id 332e25d1-3cf0-46a8-94e9-cef9b3d0e61b 
+  sql> select count(*) from flags where subject_id='01a19829-286f-7807-b0a5-97c52f50e442' and rule_code='event_off_plot'
+  =>  '1'
+RESULT line1: flags 'event_off_plot|warn|open'; event_off_plot rows after re-check: 1
+
+== 2+3+4. lot A (declared inorganic+ipm): nursery 07-01 before ploughing 07-10, organic input only, no pest event
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"dd55cad1-ed0f-4170-a44b-b7d59e736271","app_version":"1.0.3","device_time":"2026-11-01T17:30:18.525475+00:00","entries":[{"client_id":"01a19829-7e1d-7d9e-95b9-ae12845daa44","kind":"event_version","data":{"event_id":"01a19829-7e1e-778e-a869-d348cca79d7c","version_no":1,"subject_type":"lot","lot_id":"70a7daa3-cf8b-4844-9cb0-2079b5cfb2ac","plot_id":"06bdcd4d-0a92-4c63-b76d-cf05e6841609","event_type":"nursery","instance_no":1,"occurred_on":"2026-07-01","payload":{},"clocks":{"device_time":"2026-11-01T17:30:18.525326+00:00"},"gps":{"lat":9.555,"lon":78.105,"accuracy_m":5.0}}},{"client_ ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:30:18.628559Z", "results": [{"client_id": "01a19829-7e1d-7d9e-95b9-ae12845daa44", "status": "accepted", "server_id": "01a19829-7e1d-7d9e-95b9-ae12845daa44", "photo_uploads": [], "error": null}, {"client_id": "01a19829-7e1f-7dc7-977d-249ce410db3b", "status": "accepted", "server_id": "01a19829-7e1f-7dc7-977d-249ce410db3b", "photo_uploads": [], "error": null}, {"client_ ...
+  push statuses: [('accepted', None), ('accepted', None), ('accepted', None)]
+  sql (after 3s)> select string_agg(rule_code||'|'||severity||'|'||status, ', ' order by rule_code) from flags where subject_id='70a7daa3-cf8b-4844-9cb0-2079b5cfb2ac'
+  =>  'ipm_without_pest_event|warn|open, practice_tag_contradiction|warn|open, yield_check_unavailable|info|open'
+RESULT line2/3 lot A flags: 'ipm_without_pest_event|warn|open, practice_tag_contradiction|warn|open, yield_check_unavailable|info|open'
+  sql> select practice_tags from lots where id='70a7daa3-cf8b-4844-9cb0-2079b5cfb2ac'
+  =>  '{"derived": ["organic"], "declared": ["inorganic", "ipm"], "contradiction": true}'
+RESULT line4 nursery flags: ''; ploughing flags: '' (expect no event_out_of_order)
+
+== 5. lot B: ploughing 07-01, sowing 07-05, nursery 07-10 (sowing before nursery) -> flag on the sowing
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"af057254-ccb6-4e0b-a666-a44fb44ec7f1","app_version":"1.0.3","device_time":"2026-11-01T17:30:27.061054+00:00","entries":[{"client_id":"01a19829-9f74-70cb-8dd4-1150c39fb0c7","kind":"event_version","data":{"event_id":"01a19829-9f75-77ca-9577-922c5ae9757f","version_no":1,"subject_type":"lot","lot_id":"38ea127a-6dbc-497f-a48b-e572000acaf9","plot_id":"6d59010e-df2c-4d3c-bfc0-51360beb8b7a","event_type":"land_preparation","instance_no":1,"occurred_on":"2026-07-01","payload":{},"clocks":{"device_time":"2026-11-01T17:30:27.060903+00:00"},"gps":{"lat":9.555,"lon":78.125,"accuracy_m":5.0}}}, ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:30:27.149765Z", "results": [{"client_id": "01a19829-9f74-70cb-8dd4-1150c39fb0c7", "status": "accepted", "server_id": "01a19829-9f74-70cb-8dd4-1150c39fb0c7", "photo_uploads": [], "error": null}, {"client_id": "01a19829-9f76-73c7-850c-b90d332510b5", "status": "accepted", "server_id": "01a19829-9f76-73c7-850c-b90d332510b5", "photo_uploads": [], "error": null}, {"client_ ...
+  push statuses: [('accepted', None), ('accepted', None), ('accepted', None)]
+  sql (after 3s)> select string_agg(rule_code||'|'||severity||'|'||status, ', ' order by rule_code) from flags where subject_id='01a19829-9f77-76af-9976-9a99cebe1087'
+  =>  'event_out_of_order|warn|open'
+  sql> select details from flags where subject_id='01a19829-9f77-76af-9976-9a99cebe1087' and rule_code='event_out_of_order'
+  =>  '{"missing": ["nursery"], "event_type": "sowing", "occurred_on": "2026-07-05"}'
+RESULT line5 sowing flags: 'event_out_of_order|warn|open'; ploughing: ''; nursery: ''
+
+== 6. 1,150 / 1,250 / 1,350 kg harvested on 1 acre -> none / warn / hold + gi_eligible=false
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"ed6df7b2-fab5-4fdb-bd48-6a4d7f7405e8","app_version":"1.0.3","device_time":"2026-11-01T17:30:30.530727+00:00","entries":[{"client_id":"01a19829-ad02-792e-acf4-b1a52ddca01e","kind":"event_version","data":{"event_id":"01a19829-ad03-76b6-a87f-941d8c2c5a61","version_no":1,"subject_type":"lot","lot_id":"c147bc72-992e-46bb-bf79-5a866ece5c23","plot_id":"d682f54a-db70-479a-ad36-42f81f8dc8a7","event_type":"harvest","instance_no":1,"occurred_on":"2026-10-20","payload":{"quantity":{"value":1150,"unit":"kg"}},"clocks":{"device_time":"2026-11-01T17:30:30.530592+00:00"},"gps":{"lat":9.575,"lon" ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:30:30.617698Z", "results": [{"client_id": "01a19829-ad02-792e-acf4-b1a52ddca01e", "status": "accepted", "server_id": "01a19829-ad02-792e-acf4-b1a52ddca01e", "photo_uploads": [], "error": null}, {"client_id": "01a19829-ad04-79c0-b805-a37ffdfb18fe", "status": "accepted", "server_id": "01a19829-ad04-79c0-b805-a37ffdfb18fe", "photo_uploads": [], "error": null}, {"client_ ...
+  push statuses: [('accepted', None), ('accepted', None), ('accepted', None)]
+  sql (after 0s)> select string_agg(rule_code||'|'||severity||'|'||status, ', ' order by rule_code) from flags where subject_id='c147bc72-992e-46bb-bf79-5a866ece5c23'
+  =>  ''
+RESULT line6 1150 kg: yield_over_ceiling=none; lot gi_eligible|reason=true|
+  sql (after 0s)> select string_agg(rule_code||'|'||severity||'|'||status, ', ' order by rule_code) from flags where subject_id='befb2098-5cd5-4e95-a80a-8297b47faf81'
+  =>  'yield_over_ceiling|warn|open'
+RESULT line6 1250 kg: yield_over_ceiling=['yield_over_ceiling|warn|open']; lot gi_eligible|reason=true|
+  sql (after 0s)> select string_agg(rule_code||'|'||severity||'|'||status, ', ' order by rule_code) from flags where subject_id='dde6a35c-ab6d-40a2-956d-7e3b101e2451'
+  =>  'yield_over_ceiling|hold|open'
+RESULT line6 1350 kg: yield_over_ceiling=['yield_over_ceiling|hold|open']; lot gi_eligible|reason=false|flags: yield_over_ceiling
+  sql> select id from flags where subject_id='dde6a35c-ab6d-40a2-956d-7e3b101e2451' and rule_code='yield_over_ceiling'
+  =>  '01a19829-ae72-7e5c-b4f5-cc6f97949d99'
+  sql> select id from flags where subject_id='befb2098-5cd5-4e95-a80a-8297b47faf81' and rule_code='yield_over_ceiling'
+  =>  '01a19829-adde-795f-b6cf-006f8093e566'
+
+== 7. resolve without reason -> 422
+$ POST http://localhost:8000/v1/flags/01a19829-adde-795f-b6cf-006f8093e566/resolve
+  body: {"resolution":"looks_fine"}
+-> HTTP 422  etag=None
+  {"error": {"code": "reason_required", "message": "A reason is required for this correction.", "details": {"field": "reason_code"}}}
+RESULT line7 (admin, warn flag, no reason_code): HTTP 422 reason_required
+$ POST http://localhost:8000/v1/flags/01a19829-adde-795f-b6cf-006f8093e566/resolve
+  body: {"resolution":"looks_fine"}
+-> HTTP 422  etag=None
+  {"error": {"code": "reason_required", "message": "A reason is required for this correction.", "details": {"field": "reason_code"}}}
+  same as field officer: HTTP 422 reason_required
+
+== 8. officer resolving hold -> 403 (then the admin resolves it: gi_eligible back to true)
+$ POST http://localhost:8000/v1/flags/01a19829-ae72-7e5c-b4f5-cc6f97949d99/resolve
+  body: {"resolution":"looks_fine","reason_code":"land_record_checked"}
+-> HTTP 403  etag=None
+  {"error": {"code": "resolution_forbidden", "message": "Only an FPO admin can resolve this flag.", "details": {"severity": "hold", "status": "open"}}}
+RESULT line8 officer on hold: HTTP 403 resolution_forbidden
+  sql> select status from flags where id='01a19829-ae72-7e5c-b4f5-cc6f97949d99'
+  =>  'open'
+$ POST http://localhost:8000/v1/flags/01a19829-ae72-7e5c-b4f5-cc6f97949d99/resolve
+  body: {"resolution":"looks_fine","reason_code":"land_record_checked"}
+-> HTTP 200  etag=None
+  {"id": "01a19829-ae72-7e5c-b4f5-cc6f97949d99", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "subject_type": "lot", "subject_id": "dde6a35c-ab6d-40a2-956d-7e3b101e2451", "rule_code": "yield_over_ceiling", "severity": "hold", "details": {"harvested_kg": "1350", "declared_acres": "1.000", "hold_margin_pct": "30.0", "warn_margin_pct": "20.0", "ceiling_kg_per_acre": "1000.0"}, "status": "cleared", "assigned_role": "fpo_admin", "raised_at": "2026-11-01T17:30:30.760601Z", "resolved_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "resolution_reason_code": "land_record_checked", "resolution_note": null, "resolved_at": "2026-11-01T17:30:51.502916Z"}
+  admin on hold: HTTP 200 status=cleared
+  sql> select gi_eligible||'|'||coalesce(gi_hold_reason,'') from lots where id='dde6a35c-ab6d-40a2-956d-7e3b101e2451'
+  =>  'true|'
+exit=0
