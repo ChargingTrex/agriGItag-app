@@ -1,0 +1,34 @@
+22:57  up 1 day, 22:29, 1 user, load averages: 10.01 24.79 68.15
+$ cd apps/api && uv run pytest tests/integration/test_rules.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 14 items
+
+tests/integration/test_rules.py::test_event_600_m_off_plot_is_a_warn_and_recheck_does_not_duplicate PASSED [  7%]
+tests/integration/test_rules.py::test_reference_lot_flag_set PASSED      [ 14%]
+tests/integration/test_rules.py::test_yield_on_one_acre_and_hold_clears_gi[1150-None] PASSED [ 21%]
+tests/integration/test_rules.py::test_yield_on_one_acre_and_hold_clears_gi[1250-warn] PASSED [ 28%]
+tests/integration/test_rules.py::test_yield_on_one_acre_and_hold_clears_gi[1350-hold] PASSED [ 35%]
+tests/integration/test_rules.py::test_hold_comes_back_after_auto_close PASSED [ 42%]
+tests/integration/test_rules.py::test_gi_check_shared_case[pin inside the region is inside] PASSED [ 50%]
+tests/integration/test_rules.py::test_gi_check_shared_case[10 m outside with a 50 m buffer is near_edge] PASSED [ 57%]
+tests/integration/test_rules.py::test_gi_check_shared_case[500 m outside is outside] PASSED [ 64%]
+tests/integration/test_rules.py::test_gi_check_shared_case[Madurai (9.9252, 78.1198) is outside, far] PASSED [ 71%]
+tests/integration/test_rules.py::test_gi_check_shared_case[the fixture's own 150 m buffer: about 100 m outside is near_edge] PASSED [ 78%]
+tests/integration/test_rules.py::test_gi_check_shared_case[a point on the outline counts as inside (ST_Covers)] PASSED [ 85%]
+tests/integration/test_rules.py::test_gi_check_shared_case[a hole is outside] PASSED [ 92%]
+tests/integration/test_rules.py::test_resolve_over_http_and_sync PASSED  [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_rules.py::test_event_600_m_off_plot_is_a_warn_and_recheck_does_not_duplicate
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 14 passed, 1 warning in 30.77s ========================
+exit=0
+22:58  up 1 day, 22:30, 1 user, load averages: 13.41 23.87 65.83

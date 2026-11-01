@@ -1,4 +1,4 @@
-// Widget tests of each QC screen state: scan (unknown code, ready-lot fallback, empty list), code lookup, intake
+// Widget tests of each QC screen state: scan (unknown code, pick-lot fallback with open/drying lots, empty list), code lookup, intake
 //   (exact 5 % stays green, moisture within the limit, field config hides and requires, no meter, implausible value),
 //   grading (missing → grey, visual moisture refused, out of range, no standard, Bluetooth row disabled), batch list
 //   (no signal → sentence + Try again, empty), packing (graded weight unknown, required by config).
@@ -55,6 +55,28 @@ void main() {
       await tapOn(tester, find.text('Murugan'));
       expect(find.byType(IntakeScreen), findsOneWidget);
       expect(find.text('200 kg'), findsOneWidget);
+    });
+
+    testWidgets('"Pick lot" also lists open and drying lots (the QC phone never sees ready_for_sale)', (tester) async {
+      final f = await pumpQc(tester, const ScanScreen());
+      await (f.db.update(f.db.lots)).write(const LotsCompanion(status: Value('open')));
+      await f.db
+          .into(f.db.lots)
+          .insert(
+            LotsCompanion.insert(
+              lotId: 'lot-2',
+              plotId: 'plot-1',
+              farmerId: farmerId,
+              cropId: cropId,
+              season: '2026-rabi',
+              status: 'drying',
+              kgPacked: const Value(150),
+              updatedAt: DateTime.utc(2026, 10, 31),
+            ),
+          );
+      await tapOn(tester, button('Pick lot'));
+      expect(find.text('Packed: 150 kg'), findsOneWidget);
+      expect(find.text('Packed: 200 kg'), findsOneWidget);
     });
 
     testWidgets('no ready lot → one sentence', (tester) async {

@@ -1,0 +1,8 @@
+$ cd apps/api && JWT_SECRET=x uv run python -m agritrace.export_openapi && git status --short packages/openapi
+/Users/fi-it/Documents/projects/agriGitag/packages/openapi/openapi.json
+exit=0
+(empty status = committed spec is current)
+SyncEntry.kind enum: ['event_version', 'quality_reading', 'plot', 'consent', 'flag_resolution', 'farmer', 'assist_session', 'lot_intake']
+IntakeIn.required: ['client_id', 'lot_id', 'sale_date', 'received']
+SyncEntry.assist_session_id documented: True
+Features.grading_loss_warn_pct: True

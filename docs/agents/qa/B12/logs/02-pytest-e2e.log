@@ -1,0 +1,32 @@
+# uptime start: 23:04  up 1 day, 22:37, 1 user, load averages: 9.28 12.61 44.05
+$ cd apps/api && uv run pytest tests/e2e -q -p no:cacheprovider -rfE
+..                                                                       [100%]
+=============================== warnings summary ===============================
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:967: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:124: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    staff = {roles[phone]: user for phone, user in rows.tuples()}
+
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:125: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    lots = dict((await s.execute(select(Lot.code, Lot.id).where(Lot.fpo_id == fpo))).tuples().all())
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/publishing/builder.py:192: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    ).tuples()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+2 passed, 9 warnings in 29.87s
+# exit: 0
+# uptime end: 23:05  up 1 day, 22:38, 1 user, load averages: 7.94 11.92 42.53

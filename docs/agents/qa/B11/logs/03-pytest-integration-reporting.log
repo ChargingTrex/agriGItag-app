@@ -1,0 +1,57 @@
+# uptime start: 23:04  up 1 day, 22:36, 1 user, load averages: 6.99 12.96 46.27
+$ cd apps/api && uv run pytest tests/integration/test_reporting.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 11 items
+
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots PASSED [  9%]
+tests/integration/test_reporting.py::test_stage_tiles PASSED             [ 18%]
+tests/integration/test_reporting.py::test_flags_and_batches PASSED       [ 27%]
+tests/integration/test_reporting.py::test_land_area PASSED               [ 36%]
+tests/integration/test_reporting.py::test_finished_goods_and_scans PASSED [ 45%]
+tests/integration/test_reporting.py::test_sync_health PASSED             [ 54%]
+tests/integration/test_reporting.py::test_farmer_table_pages_and_fields PASSED [ 63%]
+tests/integration/test_reporting.py::test_audit_log_search_is_fpo_scoped PASSED [ 72%]
+tests/integration/test_reporting.py::test_csv_row_per_version_with_entered_by_and_assist_session PASSED [ 81%]
+tests/integration/test_reporting.py::test_100_scans_per_minute_then_429 PASSED [ 90%]
+tests/integration/test_reporting.py::test_partner_returns_501 PASSED     [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_stage_tiles
+tests/integration/test_reporting.py::test_flags_and_batches
+tests/integration/test_reporting.py::test_land_area
+tests/integration/test_reporting.py::test_finished_goods_and_scans
+tests/integration/test_reporting.py::test_sync_health
+tests/integration/test_reporting.py::test_100_scans_per_minute_then_429
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:600: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_stage_tiles
+tests/integration/test_reporting.py::test_flags_and_batches
+tests/integration/test_reporting.py::test_land_area
+tests/integration/test_reporting.py::test_finished_goods_and_scans
+tests/integration/test_reporting.py::test_sync_health
+tests/integration/test_reporting.py::test_100_scans_per_minute_then_429
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:609: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_reporting.py::test_csv_row_per_version_with_entered_by_and_assist_session
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:831: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    for v, subject, event_type, lot_code, name in rows.tuples().all():
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 11 passed, 18 warnings in 37.64s =======================
+# exit: 0
+# uptime end: 23:04  up 1 day, 22:37, 1 user, load averages: 9.89 12.84 44.50

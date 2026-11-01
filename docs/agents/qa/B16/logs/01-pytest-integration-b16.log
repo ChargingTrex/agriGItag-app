@@ -1,0 +1,40 @@
+# uptime start: 22:48  up 1 day, 22:21, 1 user, load averages: 10.42 107.94 120.42
+$ cd apps/api && uv run pytest tests/integration/test_b16.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 10 items
+
+tests/integration/test_b16.py::test_qc_push_receives_lot_idempotently PASSED [ 10%]
+tests/integration/test_b16.py::test_processor_default_and_scope PASSED   [ 20%]
+tests/integration/test_b16.py::test_concurrent_identical_lot_intakes PASSED [ 30%]
+tests/integration/test_b16.py::test_open_lot_passes_the_ready_gate_at_intake PASSED [ 40%]
+tests/integration/test_b16.py::test_lot_intake_roles_and_corrections PASSED [ 50%]
+tests/integration/test_b16.py::test_rest_intake_open_to_qc_officer PASSED [ 60%]
+tests/integration/test_b16.py::test_non_gi_batch_publishes_over_gi_only_holds PASSED [ 70%]
+tests/integration/test_b16.py::test_gi_batch_still_blocked_by_gi_only_holds PASSED [ 80%]
+tests/integration/test_b16.py::test_assist_session_checked_on_lot_readings_refused_on_batches PASSED [ 90%]
+tests/integration/test_b16.py::test_flag_resolution_ignores_assist_session PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_b16.py::test_qc_push_receives_lot_idempotently
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_b16.py: 15 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:680: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    for event_type, payload in (await session.execute(query)).tuples():
+
+tests/integration/test_b16.py::test_non_gi_batch_publishes_over_gi_only_holds
+tests/integration/test_b16.py::test_gi_batch_still_blocked_by_gi_only_holds
+tests/integration/test_b16.py::test_assist_session_checked_on_lot_readings_refused_on_batches
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:967: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 10 passed, 19 warnings in 35.72s =======================
+# exit: 0
+# uptime end: 22:49  up 1 day, 22:21, 1 user, load averages: 7.60 95.02 115.11

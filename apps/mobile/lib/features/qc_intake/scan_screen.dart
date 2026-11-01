@@ -1,5 +1,5 @@
 // Q-scan: the QC officer scans the lot QR the farmer shows; the code is looked up on the phone and the intake check
-//   opens with the lot card. Fallback when the camera cannot read it: pick the lot from the lots ready to sell.
+//   opens with the lot card. Fallback when the camera cannot read it: pick the lot from the lots not yet received.
 // Requirement: UserFlows §Selling to the FPO step 2 ("scans the QR with the QC app. The lot, farmer and packed
 //   quantity appear"), §Design rules ("Tap, never type", "Works with no signal"), PLAN §7.2 M11 ("scan → lot"; M08's
 //   QR is `{lotId, farmerId, packedKg, sig}`), D-036.
@@ -35,12 +35,15 @@ final qrScannerProvider = Provider<QrScannerBuilder>(
       ),
 );
 
-/// Lots on this phone that are ready to sell, newest first, as lot cards. Throws what Drift throws.
+/// Lots on this phone not yet received (`open`, `drying`, `ready_for_sale`), newest first, as lot cards. Throws what
+/// Drift throws.
 final readyLotsProvider = FutureProvider.autoDispose<List<QcLot>>((ref) async {
   final db = ref.read(appDatabaseProvider);
   final lots =
       await (db.select(db.lots)
-            ..where((l) => l.status.equals('ready_for_sale'))
+            // The server never marks a lot `ready_for_sale` on the QC phone (intake runs the ready gate, D-040, and
+            // refuses a wet lot with `moisture_gate_failed`), so unreceived lots are listed, not only ready ones.
+            ..where((l) => l.status.isIn(const ['open', 'drying', 'ready_for_sale']))
             ..orderBy([(l) => OrderingTerm.desc(l.updatedAt)]))
           .get();
   return [for (final l in lots) await _cardOf(db, l.lotId, l.farmerId, l.kgPacked, l.cropId)];
@@ -124,7 +127,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   Future<void> _open(QcLot lot) =>
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => IntakeScreen(lot: lot)));
 
-  /// Builds the camera (or the ready-lot list) with its prompt. [context] supplies tokens and strings. Returns the
+  /// Builds the camera (or the pick-lot list) with its prompt. [context] supplies tokens and strings. Returns the
   /// screen; throws nothing.
   @override
   Widget build(BuildContext context) {
@@ -165,7 +168,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
               ),
             ),
             gap,
-            // DECISION D-036: the fallback is a list of the lots ready to sell, not a typed lot code.
+            // DECISION D-036: the fallback is a list of the lots to receive, not a typed lot code.
             //   ADV: no typing; works offline; the local Lots table has no lot-code column to match a typed code.
             //   COMPROMISE: a lot not pulled to this phone yet cannot be picked (its QR still works).
             FarmerButton(
@@ -181,7 +184,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   }
 }
 
-/// The ready-to-sell lots as tappable cards.
+/// The lots not yet received as tappable cards.
 class _ReadyLots extends ConsumerWidget {
   /// Creates the list; [onPick] opens the intake check for the tapped lot. Throws nothing.
   const _ReadyLots({required this.onPick});

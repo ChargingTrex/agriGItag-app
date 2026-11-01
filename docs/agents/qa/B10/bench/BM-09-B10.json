@@ -1,0 +1,10 @@
+{
+ "id": "BM-09",
+ "metrics": {
+  "hits": 0
+ },
+ "scope": "privacy-lint over public-pages/batches/GQ6QTKYZYVEP/{index.html,data.json} (build 3, LocalStack) with 6 canaries; partner/storage stub 501 bodies: 0 hits (B11 log 02)",
+ "commit": "c0962da",
+ "env": "compose stack, LocalStack 4.14.0",
+ "recorded_at": "2026-11-01T17:33:01.681617+00:00"
+}

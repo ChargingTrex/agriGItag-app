@@ -1,0 +1,4 @@
+$ cd apps/api && uv run ruff check . && uv run ruff format --check .
+All checks passed!
+173 files already formatted
+exit=0

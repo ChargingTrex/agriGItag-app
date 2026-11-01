@@ -1,0 +1,16 @@
+$ psql: assignee per rule (r1 P2-3 fix: practice_tag_contradiction -> fpo_admin; hold -> fpo_admin) on the seeded batch lots and the B08 QA lots
+     lot     |         rule_code          | severity | assigned_role | status  
+-------------+----------------------------+----------+---------------+---------
+ LOT0EF81415 | ipm_without_pest_event     | warn     | field_officer | open
+ LOT0EF81415 | practice_tag_contradiction | warn     | fpo_admin     | open
+ LOT187FDCD0 | yield_over_ceiling         | hold     | fpo_admin     | cleared
+ LOT3072CB6A | ipm_without_pest_event     | warn     | field_officer | open
+ LOT3072CB6A | practice_tag_contradiction | warn     | fpo_admin     | open
+ LOT4D80E68F | yield_over_ceiling         | warn     | field_officer | open
+ LOT954E04FE | ipm_without_pest_event     | warn     | field_officer | open
+ LOT954E04FE | practice_tag_contradiction | warn     | fpo_admin     | open
+ LOTD02DADB6 | ipm_without_pest_event     | warn     | field_officer | open
+ LOTD02DADB6 | practice_tag_contradiction | warn     | fpo_admin     | open
+ LOTE257A8D8 | ipm_without_pest_event     | warn     | field_officer | open
+(11 rows)
+

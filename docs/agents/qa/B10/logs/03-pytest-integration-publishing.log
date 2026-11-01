@@ -1,0 +1,63 @@
+# uptime start: 23:03  up 1 day, 22:35, 1 user, load averages: 9.61 14.57 49.23
+$ cd apps/api && uv run pytest tests/integration/test_publishing.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 8 items
+
+tests/integration/test_publishing.py::test_publish_writes_objects_with_matching_generation PASSED [ 12%]
+tests/integration/test_publishing.py::test_html_has_no_phone_survey_or_temp_path PASSED [ 25%]
+tests/integration/test_publishing.py::test_revoked_name_consent_shows_farmer_2 PASSED [ 37%]
+tests/integration/test_publishing.py::test_correction_rebuild_keeps_old_versions PASSED [ 50%]
+tests/integration/test_publishing.py::test_qr_decodes_to_public_url PASSED [ 62%]
+tests/integration/test_publishing.py::test_events_ascending PASSED       [ 75%]
+tests/integration/test_publishing.py::test_rebuild_needs_a_published_batch PASSED [ 87%]
+tests/integration/test_publishing.py::test_older_build_never_overwrites_a_newer_page PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_publishing.py::test_publish_writes_objects_with_matching_generation
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_publishing.py::test_publish_writes_objects_with_matching_generation
+tests/integration/test_publishing.py::test_html_has_no_phone_survey_or_temp_path
+tests/integration/test_publishing.py::test_revoked_name_consent_shows_farmer_2
+tests/integration/test_publishing.py::test_revoked_name_consent_shows_farmer_2
+tests/integration/test_publishing.py::test_correction_rebuild_keeps_old_versions
+tests/integration/test_publishing.py::test_qr_decodes_to_public_url
+tests/integration/test_publishing.py::test_events_ascending
+tests/integration/test_publishing.py::test_rebuild_needs_a_published_batch
+tests/integration/test_publishing.py::test_older_build_never_overwrites_a_newer_page
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:680: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    for event_type, payload in (await session.execute(query)).tuples():
+
+tests/integration/test_publishing.py::test_publish_writes_objects_with_matching_generation
+tests/integration/test_publishing.py::test_html_has_no_phone_survey_or_temp_path
+tests/integration/test_publishing.py::test_revoked_name_consent_shows_farmer_2
+tests/integration/test_publishing.py::test_correction_rebuild_keeps_old_versions
+tests/integration/test_publishing.py::test_qr_decodes_to_public_url
+tests/integration/test_publishing.py::test_events_ascending
+tests/integration/test_publishing.py::test_rebuild_needs_a_published_batch
+tests/integration/test_publishing.py::test_older_build_never_overwrites_a_newer_page
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:967: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_publishing.py::test_publish_writes_objects_with_matching_generation
+tests/integration/test_publishing.py::test_html_has_no_phone_survey_or_temp_path
+tests/integration/test_publishing.py::test_revoked_name_consent_shows_farmer_2
+tests/integration/test_publishing.py::test_revoked_name_consent_shows_farmer_2
+tests/integration/test_publishing.py::test_correction_rebuild_keeps_old_versions
+tests/integration/test_publishing.py::test_correction_rebuild_keeps_old_versions
+tests/integration/test_publishing.py::test_qr_decodes_to_public_url
+tests/integration/test_publishing.py::test_events_ascending
+tests/integration/test_publishing.py::test_older_build_never_overwrites_a_newer_page
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/publishing/builder.py:192: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    ).tuples()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 8 passed, 27 warnings in 45.44s ========================
+# exit: 0
+# uptime end: 23:03  up 1 day, 22:36, 1 user, load averages: 7.46 13.25 46.76
