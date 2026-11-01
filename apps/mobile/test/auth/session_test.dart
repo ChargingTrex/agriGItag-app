@@ -9,6 +9,7 @@ import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/db/providers.dart';
 import 'package:agritrace/core/router/session.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../db/db_fixtures.dart';
@@ -217,29 +218,21 @@ void main() {
       expect(a.read(sessionProvider).role, Role.farmer);
     });
 
-    test('a 401 while another isolate rotated the token → re-read, adopted, not signed out', () async {
+    test('the keystore holds another user\'s tokens (shared phone, D-029) → not adopted, no POST, kept', () async {
       final db = memoryDb();
       await _row(db);
-      final foreground = FakeApi({
-        refresh: [(401, apiError('unauthorized'))],
-      });
-      final background = FakeApi({
-        refresh: [(200, sessionJson(nonce: 2))],
-      });
-      final gate = Completer<void>();
-      foreground.gates[refresh] = gate.future;
-      final a = authContainer(foreground, db: db, stored: _tokens(earlier));
-      final b = authContainer(background, db: db, stored: _tokens(earlier));
-      final notifier = a.read(sessionProvider.notifier);
-      await notifier.restore(); // starts a refresh with r1, held at the gate
-      await b.read(sessionProvider.notifier).restore();
-      await pumpEventQueue();
-      expect(background.to(refresh), hasLength(1));
+      final foreground = FakeApi();
+      final a = authContainer(foreground, db: db, stored: _tokens(later));
+      await a.read(sessionProvider.notifier).restore(); // A's background run: user-1's r1 in memory
+      final b = {..._tokens(later), 'access_token': fakeJwt(sub: 'user-2', nonce: 9), 'refresh_token': 'r9'};
+      for (final e in b.entries) {
+        await const FlutterSecureStorage().write(key: e.key, value: e.value); // B signed in in the foreground
+      }
 
-      gate.complete();
-      expect(await notifier.refreshAccessToken(), fakeJwt(nonce: 2));
-      expect((a.read(sessionProvider).role, a.read(sessionProvider).sessionEnded), (Role.farmer, false));
-      expect((await storedValues())['refresh_token'], 'r2');
+      expect(await a.read(sessionProvider.notifier).refreshAccessToken(), isNull);
+      expect(a.read(sessionProvider.notifier).accessToken, isNull, reason: 'A never sends with B\'s token');
+      expect(foreground.to(refresh), isEmpty);
+      expect((await storedValues())['refresh_token'], 'r9');
     });
   });
 

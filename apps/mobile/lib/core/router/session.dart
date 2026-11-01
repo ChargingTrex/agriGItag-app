@@ -220,7 +220,7 @@ class SessionNotifier extends Notifier<Session> {
   /// Side effects: secure storage, Session row, state (the router redirects to the role's home).
   Future<void> openSession(SessionOut out) async {
     final role = Role.values.where((r) => out.roles.contains(r.wireName)).firstOrNull;
-    final claims = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(out.accessToken.split('.')[1]))));
+    final userId = _subOf(out.accessToken) ?? (throw const FormatException('access token without a sub claim'));
     await _storeTokens(out);
     if (role == null) {
       await signOut();
@@ -230,7 +230,7 @@ class SessionNotifier extends Notifier<Session> {
         .read(appDatabaseProvider)
         .sessionDao
         .save(
-          userId: (claims as Map)['sub'] as String,
+          userId: userId,
           role: role,
           fpoId: out.fpoId,
           deviceId: await _ensureDeviceId(),
@@ -255,7 +255,7 @@ class SessionNotifier extends Notifier<Session> {
 
   /// One refresh call; see [refreshAccessToken]. Returns the new access token or null; throws nothing.
   ///
-  /// The keystore is read first and again after a 401: the background sync isolate (M02) refreshes too, and a
+  /// The keystore is read first: the background sync isolate (M02) refreshes too, and a
   /// rotated-out token sent from memory would look like reuse and sign the phone out (audit waves 3–6 finding 2).
   /// Two refreshes at the very same moment in two isolates can still collide.
   Future<String?> _doRefresh() async {
@@ -273,17 +273,15 @@ class SessionNotifier extends Notifier<Session> {
       await _storeTokens(response.data!);
       return _access;
     } on DioException catch (e) {
-      if (e.response?.statusCode != 401 || _refresh != token) return null;
-      // Another isolate rotated the token while this call was in flight: keep its session instead of ending ours.
-      if (await _adoptStored()) return _unexpiredAccess;
-      await _endLocally(sessionEnded: true);
+      if (e.response?.statusCode == 401 && _refresh == token) await _endLocally(sessionEnded: true);
       return null;
     }
   }
 
   /// Adopts the keystore's tokens (the single source of truth across isolates) when its refresh token differs from
   /// the one in memory. Returns whether it did; throws nothing (a keystore failure keeps the memory copy). Never
-  /// signs in again after this isolate signed out.
+  /// signs in again after this isolate signed out. When the stored tokens belong to another user (a sign-in on a
+  /// shared phone meanwhile), this isolate's tokens are dropped instead, without signing out (D-029).
   Future<bool> _adoptStored() async {
     final Map<String, String> stored;
     try {
@@ -293,10 +291,26 @@ class SessionNotifier extends Notifier<Session> {
     }
     final refresh = stored[_kRefresh];
     if (_refresh == null || refresh == null || refresh == _refresh) return false;
+    final mine = _subOf(_access);
+    if (mine != null && _subOf(stored[_kAccess]) != mine) {
+      // Another user signed in on this shared phone meanwhile (D-029): forget ours, never send with theirs.
+      _access = _refresh = _expiresAt = null;
+      return true;
+    }
     _access = stored[_kAccess];
     _refresh = refresh;
     _expiresAt = DateTime.tryParse(stored[_kExpires] ?? '');
     return true;
+  }
+
+  /// The `sub` claim (user id) of [jwt], or null when missing or malformed. Throws nothing.
+  static String? _subOf(String? jwt) {
+    try {
+      final claims = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(jwt!.split('.')[1]))));
+      return (claims as Map)['sub'] as String?;
+    } on Object {
+      return null;
+    }
   }
 
   /// The access token while it has not expired, else null. Throws nothing.

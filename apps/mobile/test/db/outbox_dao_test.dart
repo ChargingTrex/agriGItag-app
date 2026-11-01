@@ -6,6 +6,7 @@
 import 'dart:async';
 
 import 'package:agritrace/core/db/database.dart';
+import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'db_fixtures.dart';
@@ -91,6 +92,15 @@ void main() {
     expect(await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: t0.add(const Duration(seconds: 7))), isEmpty);
     final due = await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: t0.add(const Duration(seconds: 8)));
     expect((due.single.row.seq, due.single.row.attempts, due.single.row.lastError), (rows[0].seq, 1, 'timeout'));
+  });
+
+  test('nextBatch is strict FIFO: an older row still sending holds back the later ones (D-054)', () async {
+    await db.entriesDao.save(entryAt(at: t0), const []);
+    await db.entriesDao.save(entryAt(at: t0.add(const Duration(seconds: 1))), const []);
+    final rows = await (db.select(db.outbox)..orderBy([(o) => OrderingTerm.asc(o.seq)])).get();
+    await db.outboxDao.markSending([rows[0].seq], t0);
+
+    expect(await db.outboxDao.nextBatch(ownerUserId: 'user-1', now: t0.add(const Duration(minutes: 1))), isEmpty);
   });
 
   test('resetStaleSending puts rows sending for more than 5 min back to waiting', () async {
