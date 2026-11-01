@@ -1,0 +1,26 @@
+# 2026-11-01T16:08:29Z 21:38  up 1 day, 21:11, 1 user, load averages: 10.20 15.52 65.56
+$ (cd apps/api) uv run pytest tests/integration/test_registry.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 6 items
+
+tests/integration/test_registry.py::test_region_upload_check_and_bundle_size PASSED [ 16%]
+tests/integration/test_registry.py::test_plot_region_statuses PASSED     [ 33%]
+tests/integration/test_registry.py::test_plot_idempotency_lock_walked_gap_and_reference_bump PASSED [ 50%]
+tests/integration/test_registry.py::test_plot_correction_needs_reason_and_keeps_revision PASSED [ 66%]
+tests/integration/test_registry.py::test_farmers_scope_users_row_and_approval PASSED [ 83%]
+tests/integration/test_registry.py::test_masters_fpos_processors_inputs_villages_crops PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_registry.py::test_region_upload_check_and_bundle_size
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 6 passed, 1 warning in 40.38s =========================
+exit=0
+# 2026-11-01T16:09:15Z 21:39  up 1 day, 21:11, 1 user, load averages: 10.85 14.94 62.77

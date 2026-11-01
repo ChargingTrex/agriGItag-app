@@ -1,0 +1,37 @@
+# 2026-11-01T16:08:17Z 21:38  up 1 day, 21:10, 1 user, load averages: 11.27 15.98 66.61
+$ (cd apps/api) uv run pytest tests/unit/test_geo.py tests/unit/test_registry_service.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 23 items
+
+tests/unit/test_geo.py::test_walked_area_of_100m_square_is_about_2_47_acres PASSED [  4%]
+tests/unit/test_geo.py::test_multipolygon_validation_rejects_bad_outlines[geojson0-expected MultiPolygon] PASSED [  8%]
+tests/unit/test_geo.py::test_multipolygon_validation_rejects_bad_outlines[geojson1-Self-intersection] PASSED [ 13%]
+tests/unit/test_geo.py::test_multipolygon_validation_rejects_bad_outlines[geojson2-WGS84] PASSED [ 17%]
+tests/unit/test_geo.py::test_multipolygon_validation_rejects_bad_outlines[geojson3-] PASSED [ 21%]
+tests/unit/test_geo.py::test_valid_outlines_parse PASSED                 [ 26%]
+tests/unit/test_geo.py::test_fixture_is_labelled_small_and_places_the_acceptance_points PASSED [ 30%]
+tests/unit/test_registry_service.py::test_area_gap_flags_more_than_20_percent[1.000-None-None-False] PASSED [ 34%]
+tests/unit/test_registry_service.py::test_area_gap_flags_more_than_20_percent[1.000-1.200-20.0-False] PASSED [ 39%]
+tests/unit/test_registry_service.py::test_area_gap_flags_more_than_20_percent[1.000-1.201-20.1-True] PASSED [ 43%]
+tests/unit/test_registry_service.py::test_area_gap_flags_more_than_20_percent[2.000-1.500--25.0-True] PASSED [ 47%]
+tests/unit/test_registry_service.py::test_area_gap_flags_more_than_20_percent[2.000-1.900--5.0-False] PASSED [ 52%]
+tests/unit/test_registry_service.py::test_to_acres_accepts_acres_and_cents_only PASSED [ 56%]
+tests/unit/test_registry_service.py::test_location_status_mapping PASSED [ 60%]
+tests/unit/test_registry_service.py::test_review_method_and_outcome_come_together PASSED [ 65%]
+tests/unit/test_registry_service.py::test_region_version_requires_taluks_confidence_and_attribution PASSED [ 69%]
+tests/unit/test_registry_service.py::test_address_line_has_no_repeated_segment PASSED [ 73%]
+tests/unit/test_registry_service.py::test_cursor_round_trip_and_paging PASSED [ 78%]
+tests/unit/test_registry_service.py::test_every_registry_field_and_parameter_is_described PASSED [ 82%]
+tests/unit/test_registry_service.py::test_correction_without_reason_is_422_reason_required PASSED [ 86%]
+tests/unit/test_registry_service.py::test_field_officer_cannot_correct_a_plot PASSED [ 91%]
+tests/unit/test_registry_service.py::test_fpo_admin_uploading_a_region_is_403 PASSED [ 95%]
+tests/unit/test_registry_service.py::test_field_officer_cannot_add_an_input PASSED [100%]
+
+============================== 23 passed in 8.74s ==============================
+exit=0
+# 2026-11-01T16:08:29Z 21:38  up 1 day, 21:11, 1 user, load averages: 10.20 15.52 65.56

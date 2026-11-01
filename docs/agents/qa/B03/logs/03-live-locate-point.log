@@ -1,0 +1,8 @@
+# 2026-11-01T16:09:44Z 21:39  up 1 day, 21:12, 1 user, load averages: 8.85 14.08 60.80
+$ (cd apps/api) JWT_SECRET=x uv run python ../../docs/agents/qa/B03/logs/live_geo.py
+region: (UUID('01a19782-bd8e-7715-81ee-c8e5cc9a72cb'), 'Virudhunagar Samba Vathal', 1, Decimal('150.000'), 'NON-OFFICIAL TEST FIXTURE - not the GI 883 production area. Hand-drawn octagon around Tiruchuli / Aruppukottai for tests and the demo seed only (B03, B12). Real outlines come from infra/scripts/gi_boundary/build_virudhunagar.py (D-019).')
+reference (9.559806, 78.133521): lat=9.559806 lon=78.133521 -> status=inside distance_m=0.0
+100 m outside the seeded outline, toward Madurai: lat=9.650904 lon=78.119800 -> status=near_edge distance_m=99.6
+Madurai (9.9252, 78.1198): lat=9.925200 lon=78.119800 -> status=outside distance_m=30438.5
+exit=0
+# 2026-11-01T16:09:48Z 21:39  up 1 day, 21:12, 1 user, load averages: 8.78 13.98 60.49
