@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 88 % (69/78 items)
+Completion: 86 % (69/80 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -98,7 +98,9 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] Q04 — Backend verification: full pytest incl. e2e reference batch, locust p95, Schemathesis fuzz — wave 7 — worker: Opus Verifier — reviewer: — verifier: FAIL → CONDITIONAL 2026-11-02 after B21 (docs/agents/qa/Q04.md: pytest 781/781; fuzz 1,004 cases 0 × 5xx, probes 11/11, Q04-1/2 closed; BM-07 p95 230 ms PASS on run 3 only — flaky P2 Q04-3: rules.check_event backlog → B22)
 - [x] B21 — Sync push hardening + API latency (NUL/int32 validation at the push boundary, per-entry DB-error rejection, telemetry 422 not 500; BM-07: uvicorn workers / pool / profile) — wave 7 hotfix (Q04-1/2/3) — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS r1 + micro-patch confirmed by Orchestrator — verifier: unit 631, test_sync 21 on the branch; BM-07 p95 1900 → 280/270 ms at 50 users on an isolated stack (docs/agents/qa/B21/); Q05 reruns locust + fuzz on the rebuilt shared stack (merged 2026-11-02)
 - [ ] B22 — `rules.check_event` incremental (re-reads the whole lot per event, ~3 s at 1,000 events; backlog makes BM-07 flaky, Q04-3) — wave 7 hotfix — worker: Opus (in progress 2026-11-02) — reviewer: — verifier: BM-07 rerun with a rules backlog
+- [ ] B23 — Refresh-token absolute lifetime (`session_max_days`, 401 `session_expired`) + `POST /v1/devices/{id}/revoke` (SEC ASVS L1 P1-1) — wave 7 hotfix — worker: Opus (in progress 2026-11-02) — reviewer: — verifier:
+- [ ] D01 — G5 docs: DPDP data-subject runbook (SEC P1-2), deployment checklist from the SEC PARTIALs, README 5-minute-start fixes R1–R8 (DOCS-g5) — wave 7 — worker: Opus (in progress 2026-11-02) — reviewer: Orchestrator — verifier: —
 - [ ] Q05 — Release gate: benchmark sweep → `docs/agents/qa/benchmarks.json`, rubric, G5 report — wave 7 — worker: Opus Verifier — reviewer: — verifier: CONDITIONAL 2026-11-02 (docs/agents/qa/Q05.md, docs/agents/gates/G5-report.md, benchmarks.json: 9 PASS, BM-04 AAB unmeasured (human), 6 NOT RUN → Q01; G5 extras owed: wave-7 audit, SEC ASVS L1 pass, DOCS clean-clone check)
-- [ ] **Gate G5 signed** (docs/agents/gates/G5.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [ ] **Gate G5 signed** — extras 2026-11-02: audit wave-7 filed (no P1, 1 P2 → Q07 r2); SEC ASVS L1 pass `docs/agents/reviews/SEC-asvs-l1.md` (2 P1 → B23, D01; 16 PARTIAL → deployment checklist); DOCS `DOCS-g5.md` (coverage PASS, README fixes → D01); Q05 report `docs/agents/gates/G5-report.md`; Q01 open → CONDITIONAL at best (docs/agents/gates/G5.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 - [x] **G5 condition (rulings 2026-10-31 §4) — met live 2026-11-01 (docs/agents/qa/B15.md):** B15, M02 r2 and M09 r2 all merged before any field device runs onboarding or assist mode; offline onboarding push `[farmer, assist_session, consent, plot]` → 4 × accepted, replay → 4 × duplicate, online timeout then sync → one farmer
 - [x] **G5 condition (rulings 2026-10-31b §1) — met live 2026-11-01 (docs/agents/qa/B16.md; P04 live-API run → WEB Verifier):** B16 and M11 r2 both merged before any field device runs QC intake; P04 live-API run needs B16
