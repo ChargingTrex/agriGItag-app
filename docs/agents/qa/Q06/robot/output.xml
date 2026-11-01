@@ -1800,7 +1800,7 @@ assist_session_id, action), oldest first.</doc>
 <status status="PASS" start="2026-11-02T01:08:09.283454" elapsed="0.020515"/>
 </kw>
 <kw name="Create Dictionary" owner="BuiltIn">
-<msg time="2026-11-02T01:08:09.305083" level="INFO">${bearer} = {'Authorization': 'Bearer <redacted></msg>
+<msg time="2026-11-02T01:08:09.305083" level="INFO">${bearer} = {'Authorization': 'Bearer &lt;redacted&gt;</msg>
 <var>${bearer}</var>
 <arg>Authorization=Bearer ${s.json()}[access_token]</arg>
 <doc>Creates and returns a dictionary based on the given `items`.</doc>
@@ -2467,13 +2467,16 @@ Returns: the response (200).</doc>
  headers={'Server': 'TwistedWeb/25.5.0', 'Date': 'Sun, 01 Nov 2026 19:38:12 GMT', 'Content-Type': 'image/png', 'accept-ranges': 'bytes', 'Last-Modified': 'Sun, 01 Nov 2026 19:38:10 GMT', 'Content-Length': '882', 'ETag': '"e8973c0e15d540f116476d5885c46374"', 'x-amz-version-id': 'AaGYnovDC4YHdvXYVFLwNjjgo4g3X3nv', 'Cache-Control': 'public, max-age=31536000, immutable', 'x-amz-server-side-encryption': 'AES256', 'x-amz-request-id': '2101e164-4fae-4f9e-bcd3-7dc79af26829', 'x-amz-id-2': 's9lzHYrFp76ZVxRcpX9+5cjAnEH2ROuNkd2BHfIa6UkFVdtjf5mKR3/eTPFvsiP/XV/VLi31234=', 'x-localstack': 'true'} 
  body=�PNG
 
-IHDR��}��9IDATx��Mn�8F�7$���9
+
+IHDR��}��9IDATx��Mn�8F�7$���9
 u���G�HG���j$m�1��;=��*�Y)�L�|U��_���~��r�!�r�9!�+֛�rDS��M���]�sh(���
 �%&gt;c�i"���}��3ϡ����&amp;�ٜ#0|HS�~��A�7kr�w���e�`@&gt;˴���2ϡ�C�
 -qx-��
 ������CB�GT��I���E#�n��_�CZ$I#@~1�};��&amp;@[-5�e�C{����~ȠP�����9t'HSnzD-AE������ᠡ��,��}7�L0��\�:Ԣ��j�,`(Q `Ê�PZ�]|M}�i�C��}���{�`�����&amp;���̲U�4oY�l�6�-o�=�x�59�����#Yw�
-fk0����G&lt;;�A��z�(�Sb5t���&amp;��.᳏hǢ��'�類Y�#DK*��c-�Lf�Q���KfyBɶh5�4PZ�hˈ��E��n�C�C=j�P=zZ����-��&lt;t�G@�#�&lt;ф�K��5�n&lt;�MRyM%�"����@�,]')�q���\FrU���c�C{g����A01�[�e
-E���}��@���Ҹ�N�L����������AY�����|�&amp;6u���9�t��*J}�]�H3�|*J��9�;TOD�Ŗ�=yĖ��;]��.�ïɡ�@-7����ҹ�PEA,bx�ב���s�nP��zyi��c����y�A�M�j�!ه�����&amp;��z˯�� ��α杻����P���L@��^���v�h\�~~��v�z;a�~"����3?_���r�!�r�!���)����IEND�B`� 
+fk0����G&lt;;�A��z�(�Sb5t���&amp;��.᳏hǢ��'�類Y�#DK*��c
+-�Lf�Q���KfyBɶh5�4PZ�hˈ��E��n�C�C=j�P=zZ����-��&lt;t�G@�#�&lt;ф�K��5�n&lt;�MRyM%�"����@�,]')�q���\FrU���c�C{g����A01�[�e
+E���}��@���Ҹ�N�L����������AY�����|�&amp;6u���9�t��*J}�]�H3�|*J��9�;TOD�Ŗ�=yĖ��;]��.�ïɡ�@-7����ҹ�PEA,bx�ב���s�nP��zyi��c����y�A�M�j�!ه�����&amp;��z˯�� ��α杻����P���L@��^���v�h\�~~��v
+�z;a�~"����3?_���r�!�r�!���)����IEND�B`� 
  </msg>
 <msg time="2026-11-02T01:08:12.798385" level="INFO">${r} = &lt;Response [200]&gt;</msg>
 <var>${r}</var>
@@ -2543,8 +2546,8 @@ usually they are tuples or tuple-like objects.</doc>
 <kw name="Query" owner="DatabaseLibrary">
 <msg time="2026-11-02T01:08:12.830008" level="INFO" html="true">Executing sql:&lt;br&gt;&lt;code style="font-weight: bold;"&gt;SELECT phone FROM users&lt;/code&gt;</msg>
 <msg time="2026-11-02T01:08:12.833484" level="INFO">Commit the transaction</msg>
-<msg time="2026-11-02T01:08:12.837557" level="INFO" html="true">&lt;div style="max-width: 100%; overflow-x: auto; max-height: 500px; overflow-y: auto;"&gt;&lt;table style="width: auto; border-collapse: collapse; border: 2px solid rgb(140 140 140)"&gt;&lt;caption style="text-align: left; font-weight: bold; padding: 5px;"&gt;Query returned 7 rows&lt;/caption&gt;&lt;tr&gt;&lt;th scope="col" style="position: sticky; top: 0; color:black; background-color: #d6ecd4; border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;Row&lt;/th&gt;&lt;th scope="col" style="position: sticky; top: 0; background-color: #505050; color: #fff;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;phone&lt;/th&gt;&lt;/tr&gt;&lt;tr style="background-color: var(--secondary-color, #eee)"&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;0&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000003&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;1&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000011&lt;/td&gt;&lt;/tr&gt;&lt;tr style="background-color: var(--secondary-color, #eee)"&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;2&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000012&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;3&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000013&lt;/td&gt;&lt;/tr&gt;&lt;tr style="background-color: var(--secondary-color, #eee)"&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;4&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000001&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;5&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919740728655&lt;/td&gt;&lt;/tr&gt;&lt;tr style="background-color: var(--secondary-color, #eee)"&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;6&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000002&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;</msg>
-<msg time="2026-11-02T01:08:12.837891" level="INFO">${phones} = (['+919000000003'], ['+919000000011'], ['+919000000012'], ['+919000000013'], ['+919000000001'], ['+919740728655'], ['+919000000002'])</msg>
+<msg time="2026-11-02T01:08:12.837557" level="INFO" html="true">&lt;div style="max-width: 100%; overflow-x: auto; max-height: 500px; overflow-y: auto;"&gt;&lt;table style="width: auto; border-collapse: collapse; border: 2px solid rgb(140 140 140)"&gt;&lt;caption style="text-align: left; font-weight: bold; padding: 5px;"&gt;Query returned 7 rows&lt;/caption&gt;&lt;tr&gt;&lt;th scope="col" style="position: sticky; top: 0; color:black; background-color: #d6ecd4; border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;Row&lt;/th&gt;&lt;th scope="col" style="position: sticky; top: 0; background-color: #505050; color: #fff;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;phone&lt;/th&gt;&lt;/tr&gt;&lt;tr style="background-color: var(--secondary-color, #eee)"&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;0&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000003&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;1&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000011&lt;/td&gt;&lt;/tr&gt;&lt;tr style="background-color: var(--secondary-color, #eee)"&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;2&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000012&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;3&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000013&lt;/td&gt;&lt;/tr&gt;&lt;tr style="background-color: var(--secondary-color, #eee)"&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;4&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000001&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;5&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+91XXXXXXXXXX&lt;/td&gt;&lt;/tr&gt;&lt;tr style="background-color: var(--secondary-color, #eee)"&gt;&lt;th scope="row" style="color:black; background-color: #d6ecd4;border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;6&lt;/th&gt;&lt;td style="border: 1px solid rgb(160 160 160);padding: 8px 10px;text-align: center;"&gt;+919000000002&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;</msg>
+<msg time="2026-11-02T01:08:12.837891" level="INFO">${phones} = (['+919000000003'], ['+919000000011'], ['+919000000012'], ['+919000000013'], ['+919000000001'], ['+91XXXXXXXXXX'], ['+919000000002'])</msg>
 <var>${phones}</var>
 <arg>SELECT phone FROM users</arg>
 <doc>Runs a query with the ``select_statement`` and returns the result as list of rows.
@@ -2553,7 +2556,7 @@ usually they are tuples or tuple-like objects.</doc>
 <status status="PASS" start="2026-11-02T01:08:12.829874" elapsed="0.008118"/>
 </kw>
 <kw name="Evaluate" owner="BuiltIn">
-<msg time="2026-11-02T01:08:12.839103" level="INFO">${leaks} = ['+919740728655', '9740728655', 'QA-SURVEY', '77/3B', 'Survey', 'temp_uploads', '626129', '+919000000003', '+919000000011', '+919000000012', '+919000000013', '+919000000001', '+919740728655', '+919000...</msg>
+<msg time="2026-11-02T01:08:12.839103" level="INFO">${leaks} = ['+91XXXXXXXXXX', 'XXXXXXXXXX', 'QA-SURVEY', '77/3B', 'Survey', 'temp_uploads', '626129', '+919000000003', '+919000000011', '+919000000012', '+919000000013', '+919000000001', '+91XXXXXXXXXX', '+919000...</msg>
 <var>${leaks}</var>
 <arg>[$w["farmer"]["phone"], $w["farmer"]["phone"][-10:], "QA-SURVEY", "77/3B", "Survey", "temp_uploads", "626129"] + [p for (p,) in $phones] + [p[-10:] for (p,) in $phones]</arg>
 <doc>Evaluates the given expression in Python and returns the result.</doc>
@@ -2817,7 +2820,7 @@ Returns: the response (200).</doc>
 <status status="PASS" start="2026-11-02T01:08:12.861143" elapsed="0.000456"/>
 </kw>
 <kw name="New Farmer" owner="agritrace_keywords">
-<msg time="2026-11-02T01:08:12.939806" level="INFO">${farmer} = {'id': 'b755c3f4-9d00-4643-8df3-2a92db28b9ef', 'user_id': '01a1989e-9806-7559-b303-270071ba688d', 'phone': '+919790650166', 'name': 'QA Robot Kannan a9a638'}</msg>
+<msg time="2026-11-02T01:08:12.939806" level="INFO">${farmer} = {'id': 'b755c3f4-9d00-4643-8df3-2a92db28b9ef', 'user_id': '01a1989e-9806-7559-b303-270071ba688d', 'phone': '+91XXXXXXXXXX', 'name': 'QA Robot Kannan a9a638'}</msg>
 <var>${farmer}</var>
 <arg>${name}</arg>
 <doc>Onboard, approve and record data consent for a farmer in the demo FPO (as the FPO admin).</doc>
@@ -3358,13 +3361,16 @@ Returns: the response (200).</doc>
  headers={'Server': 'TwistedWeb/25.5.0', 'Date': 'Sun, 01 Nov 2026 19:38:29 GMT', 'Content-Type': 'image/png', 'accept-ranges': 'bytes', 'Last-Modified': 'Sun, 01 Nov 2026 19:38:19 GMT', 'Content-Length': '882', 'ETag': '"e8973c0e15d540f116476d5885c46374"', 'x-amz-version-id': 'AaGYnovJcQzWZYTr4toh3WNMCEZbExPC', 'Cache-Control': 'public, max-age=31536000, immutable', 'x-amz-server-side-encryption': 'AES256', 'x-amz-request-id': 'c0851284-867f-417e-99d0-63b974a831f5', 'x-amz-id-2': 's9lzHYrFp76ZVxRcpX9+5cjAnEH2ROuNkd2BHfIa6UkFVdtjf5mKR3/eTPFvsiP/XV/VLi31234=', 'x-localstack': 'true'} 
  body=�PNG
 
-IHDR��}��9IDATx��Mn�8F�7$���9
+
+IHDR��}��9IDATx��Mn�8F�7$���9
 u���G�HG���j$m�1��;=��*�Y)�L�|U��_���~��r�!�r�9!�+֛�rDS��M���]�sh(���
 �%&gt;c�i"���}��3ϡ����&amp;�ٜ#0|HS�~��A�7kr�w���e�`@&gt;˴���2ϡ�C�
 -qx-��
 ������CB�GT��I���E#�n��_�CZ$I#@~1�};��&amp;@[-5�e�C{����~ȠP�����9t'HSnzD-AE������ᠡ��,��}7�L0��\�:Ԣ��j�,`(Q `Ê�PZ�]|M}�i�C��}���{�`�����&amp;���̲U�4oY�l�6�-o�=�x�59�����#Yw�
-fk0����G&lt;;�A��z�(�Sb5t���&amp;��.᳏hǢ��'�類Y�#DK*��c-�Lf�Q���KfyBɶh5�4PZ�hˈ��E��n�C�C=j�P=zZ����-��&lt;t�G@�#�&lt;ф�K��5�n&lt;�MRyM%�"����@�,]')�q���\FrU���c�C{g����A01�[�e
-E���}��@���Ҹ�N�L����������AY�����|�&amp;6u���9�t��*J}�]�H3�|*J��9�;TOD�Ŗ�=yĖ��;]��.�ïɡ�@-7����ҹ�PEA,bx�ב���s�nP��zyi��c����y�A�M�j�!ه�����&amp;��z˯�� ��α杻����P���L@��^���v�h\�~~��v�z;a�~"����3?_���r�!�r�!���)����IEND�B`� 
+fk0����G&lt;;�A��z�(�Sb5t���&amp;��.᳏hǢ��'�類Y�#DK*��c
+-�Lf�Q���KfyBɶh5�4PZ�hˈ��E��n�C�C=j�P=zZ����-��&lt;t�G@�#�&lt;ф�K��5�n&lt;�MRyM%�"����@�,]')�q���\FrU���c�C{g����A01�[�e
+E���}��@���Ҹ�N�L����������AY�����|�&amp;6u���9�t��*J}�]�H3�|*J��9�;TOD�Ŗ�=yĖ��;]��.�ïɡ�@-7����ҹ�PEA,bx�ב���s�nP��zyi��c����y�A�M�j�!ه�����&amp;��z˯�� ��α杻����P���L@��^���v�h\�~~��v
+�z;a�~"����3?_���r�!�r�!���)����IEND�B`� 
  </msg>
 <msg time="2026-11-02T01:08:29.175686" level="INFO">${r} = &lt;Response [200]&gt;</msg>
 <var>${r}</var>
@@ -3412,7 +3418,8 @@ Returns: the response (200).</doc>
 </kw>
 <var name="${png}">PNG
 
-IHDR}¸Î9IDATxíMnã8Fß7$¥ø9
+
+IHDR}¸Î9IDATxíMnã8Fß7$¥ø9
 u©ÑGêHGñËj$m§1À ;=²Ç*­Y)Lý|U_¾¿~rÈ!rè9!µ+ÖrDSMûÓ]Ìsh(Ù
 %&gt;ci"}ö3Ï¡ý¡Ü&amp;Ù#0|HSî~ãâAþ7krèw øóeÀ`@...</var>
 <status status="PASS" start="2026-11-02T01:08:29.224772" elapsed="0.086638"/>
@@ -3433,7 +3440,8 @@ u©ÑGêHGñËj$m§1À ;=²Ç*­Y)Lý|U_¾¿~rÈ!rè9!µ+Ö
 </kw>
 <var name="${png}">PNG
 
-IHDR}¸Î9IDATxíMnã8Fß7$¥ø9
+
+IHDR}¸Î9IDATxíMnã8Fß7$¥ø9
 u©ÑGêHGñËj$m§1À ;=²Ç*­Y)Lý|U_¾¿~rÈ!rè9!µ+ÖrDSMûÓ]Ìsh(Ù
 %&gt;ci"}ö3Ï¡ý¡Ü&amp;Ù#0|HSî~ãâAþ7krèw øóeÀ`@...</var>
 <status status="PASS" start="2026-11-02T01:08:29.311564" elapsed="0.006174"/>
@@ -7133,7 +7141,7 @@ Fails: the body is not JSON, has no "error" object, or the code differs.</doc>
 <status status="PASS" start="2026-11-02T01:08:38.035613" elapsed="0.000784"/>
 </kw>
 <kw name="New Phone" owner="agritrace_keywords">
-<msg time="2026-11-02T01:08:38.036749" level="INFO">${phone} = +919738893602</msg>
+<msg time="2026-11-02T01:08:38.036749" level="INFO">${phone} = +91XXXXXXXXXX</msg>
 <var>${phone}</var>
 <doc>Return a random Indian mobile number nobody in the seed uses (+9197 + 8 digits).</doc>
 <status status="PASS" start="2026-11-02T01:08:38.036560" elapsed="0.000222"/>
@@ -7146,7 +7154,7 @@ Fails: the body is not JSON, has no "error" object, or the code differs.</doc>
 <status status="PASS" start="2026-11-02T01:08:38.036970" elapsed="0.015656"/>
 </kw>
 <kw name="Execute Sql String" owner="DatabaseLibrary">
-<msg time="2026-11-02T01:08:38.053317" level="INFO" html="true">Executing sql:&lt;br&gt;&lt;code style="font-weight: bold;"&gt;INSERT INTO users (id, phone, name, lang, is_super_admin, status) VALUES ('e05ef0e0-34a1-43d4-9303-d5ba628577be', '+919738893602', 'QA Robot Admin B', 'en', false, 'active')&lt;/code&gt;</msg>
+<msg time="2026-11-02T01:08:38.053317" level="INFO" html="true">Executing sql:&lt;br&gt;&lt;code style="font-weight: bold;"&gt;INSERT INTO users (id, phone, name, lang, is_super_admin, status) VALUES ('e05ef0e0-34a1-43d4-9303-d5ba628577be', '+91XXXXXXXXXX', 'QA Robot Admin B', 'en', false, 'active')&lt;/code&gt;</msg>
 <msg time="2026-11-02T01:08:38.057578" level="INFO">Commit the transaction</msg>
 <arg>INSERT INTO users (id, phone, name, lang, is_super_admin, status) VALUES ('${user}', '${phone}', 'QA Robot Admin B', 'en', false, 'active')</arg>
 <doc>Executes the ``sql_string`` - as a single SQL command (default) or as separate statements.</doc>
@@ -7163,7 +7171,7 @@ Fails: the body is not JSON, has no "error" object, or the code differs.</doc>
 <value>${phone}</value>
 <status status="PASS" start="2026-11-02T01:08:38.083089" elapsed="0.000080"/>
 </return>
-<msg time="2026-11-02T01:08:38.083453" level="INFO">${other} = +919738893602</msg>
+<msg time="2026-11-02T01:08:38.083453" level="INFO">${other} = +91XXXXXXXXXX</msg>
 <var>${other}</var>
 <doc>Create a second FPO and an FPO admin in it straight in the database (the demo seed has one
 FPO and no super-admin, and no API adds staff), so cross-FPO and per-tenant lines can be called
@@ -7344,7 +7352,7 @@ Args: ${phone} the caller. Returns: the list of field names.</doc>
 <status status="PASS" start="2026-11-02T01:08:38.548930" elapsed="0.000886"/>
 </kw>
 <kw name="New Phone" owner="agritrace_keywords">
-<msg time="2026-11-02T01:08:38.550351" level="INFO">${phone} = +919747769702</msg>
+<msg time="2026-11-02T01:08:38.550351" level="INFO">${phone} = +91XXXXXXXXXX</msg>
 <var>${phone}</var>
 <doc>Return a random Indian mobile number nobody in the seed uses (+9197 + 8 digits).</doc>
 <status status="PASS" start="2026-11-02T01:08:38.550062" elapsed="0.000371"/>
@@ -7357,7 +7365,7 @@ Args: ${phone} the caller. Returns: the list of field names.</doc>
 <status status="PASS" start="2026-11-02T01:08:38.550770" elapsed="0.011186"/>
 </kw>
 <kw name="Execute Sql String" owner="DatabaseLibrary">
-<msg time="2026-11-02T01:08:38.562652" level="INFO" html="true">Executing sql:&lt;br&gt;&lt;code style="font-weight: bold;"&gt;INSERT INTO users (id, phone, name, lang, is_super_admin, status) VALUES ('fba34d83-5ef6-4c15-a6d6-2a5ef3c329ee', '+919747769702', 'QA Robot Admin B', 'en', false, 'active')&lt;/code&gt;</msg>
+<msg time="2026-11-02T01:08:38.562652" level="INFO" html="true">Executing sql:&lt;br&gt;&lt;code style="font-weight: bold;"&gt;INSERT INTO users (id, phone, name, lang, is_super_admin, status) VALUES ('fba34d83-5ef6-4c15-a6d6-2a5ef3c329ee', '+91XXXXXXXXXX', 'QA Robot Admin B', 'en', false, 'active')&lt;/code&gt;</msg>
 <msg time="2026-11-02T01:08:38.566172" level="INFO">Commit the transaction</msg>
 <arg>INSERT INTO users (id, phone, name, lang, is_super_admin, status) VALUES ('${user}', '${phone}', 'QA Robot Admin B', 'en', false, 'active')</arg>
 <doc>Executes the ``sql_string`` - as a single SQL command (default) or as separate statements.</doc>
@@ -7374,7 +7382,7 @@ Args: ${phone} the caller. Returns: the list of field names.</doc>
 <value>${phone}</value>
 <status status="PASS" start="2026-11-02T01:08:38.585098" elapsed="0.000056"/>
 </return>
-<msg time="2026-11-02T01:08:38.585352" level="INFO">${other} = +919747769702</msg>
+<msg time="2026-11-02T01:08:38.585352" level="INFO">${other} = +91XXXXXXXXXX</msg>
 <var>${other}</var>
 <doc>Create a second FPO and an FPO admin in it straight in the database (the demo seed has one
 FPO and no super-admin, and no API adds staff), so cross-FPO and per-tenant lines can be called
@@ -7653,7 +7661,7 @@ Returns: the folder path, to mount at /app/config. Fails: ${old} is not in the t
 <status status="PASS" start="2026-11-02T01:08:40.508025" elapsed="9.963681"/>
 </kw>
 <kw name="Login As" owner="agritrace_keywords">
-<msg time="2026-11-02T01:08:50.472891" level="INFO">${h} = {'Authorization': 'Bearer <redacted></msg>
+<msg time="2026-11-02T01:08:50.472891" level="INFO">${h} = {'Authorization': 'Bearer &lt;redacted&gt;</msg>
 <var>${h}</var>
 <arg>${ADMIN}</arg>
 <doc>Return bearer headers for a user: a cached session, else a refreshed one, else a new OTP sign-in.</doc>
@@ -7662,7 +7670,7 @@ Returns: the folder path, to mount at /app/config. Fails: ${old} is not in the t
 <kw name="GET" owner="RequestsLibrary">
 <msg time="2026-11-02T01:08:50.634940" level="INFO">GET Request : url=http://localhost:8098/v1/config/features 
  path_url=/v1/config/features 
- headers={'User-Agent': 'python-requests/2.34.2', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive', 'Authorization': 'Bearer <redacted-jwt>'} 
+ headers={'User-Agent': 'python-requests/2.34.2', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive', 'Authorization': 'Bearer &lt;redacted-jwt&gt;'} 
  body=None 
  </msg>
 <msg time="2026-11-02T01:08:50.635118" level="INFO">GET Response : url=http://localhost:8098/v1/config/features 
@@ -7687,7 +7695,7 @@ Returns: the folder path, to mount at /app/config. Fails: ${old} is not in the t
 <kw name="POST" owner="RequestsLibrary">
 <msg time="2026-11-02T01:08:51.366718" level="INFO">POST Request : url=http://localhost:8098/v1/farmers/1eba89cc-e10e-4d98-864b-eee1dd6637be/id-documents 
  path_url=/v1/farmers/1eba89cc-e10e-4d98-864b-eee1dd6637be/id-documents 
- headers={'User-Agent': 'python-requests/2.34.2', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive', 'Authorization': 'Bearer <redacted-jwt>', 'Content-Length': '131', 'Content-Type': 'application/json'} 
+ headers={'User-Agent': 'python-requests/2.34.2', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive', 'Authorization': 'Bearer &lt;redacted-jwt&gt;', 'Content-Length': '131', 'Content-Type': 'application/json'} 
  body=b'{"doc_type": "aadhaar", "content_type": "image/jpeg", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"}' 
  </msg>
 <msg time="2026-11-02T01:08:51.366827" level="INFO">POST Response : url=http://localhost:8098/v1/farmers/1eba89cc-e10e-4d98-864b-eee1dd6637be/id-documents 
@@ -7765,34 +7773,34 @@ docker rm -f 91b4a441feba7152a821566b6bf24a3e42f93d64cb38f53817a9a909a767ecee</m
 <status status="PASS" start="2026-11-02T01:08:51.776281" elapsed="0.002024"/>
 </kw>
 <kw name="New Phone" owner="agritrace_keywords">
-<msg time="2026-11-02T01:08:51.778752" level="INFO">${p1} = +919780886586</msg>
+<msg time="2026-11-02T01:08:51.778752" level="INFO">${p1} = +91XXXXXXXXXX</msg>
 <var>${p1}</var>
 <doc>Return a random Indian mobile number nobody in the seed uses (+9197 + 8 digits).</doc>
 <status status="PASS" start="2026-11-02T01:08:51.778504" elapsed="0.000311"/>
 </kw>
 <kw name="New Phone" owner="agritrace_keywords">
-<msg time="2026-11-02T01:08:51.779291" level="INFO">${p3} = +919788064094</msg>
+<msg time="2026-11-02T01:08:51.779291" level="INFO">${p3} = +91XXXXXXXXXX</msg>
 <var>${p3}</var>
 <doc>Return a random Indian mobile number nobody in the seed uses (+9197 + 8 digits).</doc>
 <status status="PASS" start="2026-11-02T01:08:51.779086" elapsed="0.000237"/>
 </kw>
 <kw name="New Phone" owner="agritrace_keywords">
-<msg time="2026-11-02T01:08:51.779709" level="INFO">${p5} = +919763221211</msg>
+<msg time="2026-11-02T01:08:51.779709" level="INFO">${p5} = +91XXXXXXXXXX</msg>
 <var>${p5}</var>
 <doc>Return a random Indian mobile number nobody in the seed uses (+9197 + 8 digits).</doc>
 <status status="PASS" start="2026-11-02T01:08:51.779455" elapsed="0.000293"/>
 </kw>
 <kw name="New Phone" owner="agritrace_keywords">
-<msg time="2026-11-02T01:08:51.780141" level="INFO">${p2} = +919734048144</msg>
+<msg time="2026-11-02T01:08:51.780141" level="INFO">${p2} = +91XXXXXXXXXX</msg>
 <var>${p2}</var>
 <doc>Return a random Indian mobile number nobody in the seed uses (+9197 + 8 digits).</doc>
 <status status="PASS" start="2026-11-02T01:08:51.779900" elapsed="0.000301"/>
 </kw>
 <kw name="Catenate" owner="BuiltIn">
 <msg time="2026-11-02T01:08:51.781448" level="INFO">${csv} = name,name_local,phone,lang,gi_authorised_user_no,no_smartphone,village_lgd_code
-QA CSV ab3a19 One,,+919780886586,ta,,false,
-,,+919734048144,ta,,false,
-QA CSV ab3a19 Three,,+919788064094,en,,false,
+QA CSV ab3a19 One,,+91XXXXXXXXXX,ta,,false,
+,,+91XXXXXXXXXX,ta,,false,
+QA CSV ab3a19 Three,,+91XXXXXXXXXX,en,,false,
 QA ...</msg>
 <var>${csv}</var>
 <arg>SEPARATOR=\n</arg>
@@ -9982,7 +9990,7 @@ Side effects: one open connection for the suite; close it with Disconnect From D
 <status status="PASS" start="2026-11-02T01:09:48.988895" elapsed="0.000340"/>
 </kw>
 <kw name="New Farmer" owner="agritrace_keywords">
-<msg time="2026-11-02T01:09:49.120316" level="INFO">${pull} = {'id': '4ff67945-4348-48b2-8a84-0f364f43117a', 'user_id': '01a198a0-0f8c-7c2f-a796-7425583129fe', 'phone': '+919772854015', 'name': 'QA Robot Pull Farmer'}</msg>
+<msg time="2026-11-02T01:09:49.120316" level="INFO">${pull} = {'id': '4ff67945-4348-48b2-8a84-0f364f43117a', 'user_id': '01a198a0-0f8c-7c2f-a796-7425583129fe', 'phone': '+91XXXXXXXXXX', 'name': 'QA Robot Pull Farmer'}</msg>
 <var>${pull}</var>
 <arg>QA Robot Pull Farmer</arg>
 <doc>Onboard, approve and record data consent for a farmer in the demo FPO (as the FPO admin).</doc>
@@ -10015,7 +10023,7 @@ Side effects: one open connection for the suite; close it with Disconnect From D
 <status status="PASS" start="2026-11-02T01:09:49.212270" elapsed="0.001223"/>
 </kw>
 <kw name="Set Suite Variable" owner="BuiltIn">
-<msg time="2026-11-02T01:09:49.214440" level="INFO">${PULL_FARMER} = {'id': '4ff67945-4348-48b2-8a84-0f364f43117a', 'user_id': '01a198a0-0f8c-7c2f-a796-7425583129fe', 'phone': '+919772854015', 'name': 'QA Robot Pull Farmer'}</msg>
+<msg time="2026-11-02T01:09:49.214440" level="INFO">${PULL_FARMER} = {'id': '4ff67945-4348-48b2-8a84-0f364f43117a', 'user_id': '01a198a0-0f8c-7c2f-a796-7425583129fe', 'phone': '+91XXXXXXXXXX', 'name': 'QA Robot Pull Farmer'}</msg>
 <arg>${PULL_FARMER}</arg>
 <arg>${pull}</arg>
 <doc>Makes the variable available everywhere within the scope of the current suite.</doc>
@@ -10029,7 +10037,7 @@ Side effects: one open connection for the suite; close it with Disconnect From D
 <status status="PASS" start="2026-11-02T01:09:49.214745" elapsed="0.000490"/>
 </kw>
 <kw name="Set Suite Variable" owner="BuiltIn">
-<msg time="2026-11-02T01:09:49.216232" level="INFO">${FARMER} = +919740728655</msg>
+<msg time="2026-11-02T01:09:49.216232" level="INFO">${FARMER} = +91XXXXXXXXXX</msg>
 <arg>${FARMER}</arg>
 <arg>${w}[farmer][phone]</arg>
 <doc>Makes the variable available everywhere within the scope of the current suite.</doc>

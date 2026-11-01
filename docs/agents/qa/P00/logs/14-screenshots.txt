@@ -10,7 +10,7 @@ await page.goto('http://localhost:5199/batches');
 await page.getByRole('heading', { name: 'Sign in to AgriTrace' }).waitFor();
 console.log('URL after guard redirect:', page.url());
 await page.screenshot({ path: '/Users/fi-it/Documents/projects/agriGitag/docs/agents/qa/P00/shots/login-guard-redirect_en.png', fullPage: true });
-await page.getByLabel('Mobile number').fill('9876543210');
+await page.getByLabel('Mobile number').fill('XXXXXXXXXX');
 await page.getByRole('button', { name: 'Send code' }).click();
 await page.getByLabel('SMS code').fill('123456');
 await page.getByRole('button', { name: 'Verify code' }).click();
@@ -35,12 +35,12 @@ log: Worker scope: http://localhost:5199/
 log: Client ID: %s (%s) 3db32bdb-7bdd-46e3-8719-dc2f600b54c0 top-level
 endGroup: console.groupEnd
 startGroupCollapsed: [MSW] 23:19:38 POST /v1/auth/otp/request (%c200 OK%c) color:#69AB32 color:inherit
-log: Request {url: URL, method: POST, headers: Object, body: {"phone":"+919876543210"}}
+log: Request {url: URL, method: POST, headers: Object, body: {"phone":"+91XXXXXXXXXX"}}
 log: Handler: HttpHandler
 log: Response {status: 200, statusText: OK, headers: Object, body: {"expires_in_s":300}}
 endGroup: console.groupEnd
 startGroupCollapsed: [MSW] 23:19:38 POST /v1/auth/otp/verify (%c200 OK%c) color:#69AB32 color:inherit
-log: Request {url: URL, method: POST, headers: Object, body: {"phone":"+919876543210","code":"123456"}}
+log: Request {url: URL, method: POST, headers: Object, body: {"phone":"+91XXXXXXXXXX","code":"123456"}}
 log: Handler: HttpHandler
 log: Response {status: 200, statusText: OK, headers: Object, body: {"access_token":"mock-otp-token","refresh_token":"…o_admin","fpo_id":"mock-fpo","pin_required":true}}
 endGroup: console.groupEnd

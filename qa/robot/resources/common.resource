@@ -31,7 +31,9 @@ ${DB_PORT}          %{DB_PORT=5432}
 ${DB_NAME}          %{DB_NAME=agritrace}
 ${DB_USER}          %{DB_USER=agritrace}
 ${DB_PASSWORD}      %{DB_PASSWORD=agritrace}
-${OTP_DEV_CODE}     %{OTP_DEV_CODE=123456}
+# No default: every sign-in keyword stops the run (Fatal Error) when it is unset, so a stack without the dev
+# OTP never texts a real phone (audit wave 7). The local compose stack's value is 123456.
+${OTP_DEV_CODE}     %{OTP_DEV_CODE=}
 # PIN the first office sign-in of a fresh seed sets (B02: pin_set false → the first PIN sent becomes the PIN).
 ${OFFICE_PIN}       %{OFFICE_PIN=2468}
 # Docker compose command line of the stack under test; S3 objects, the worker's Celery calls, the QR decoder
@@ -92,6 +94,21 @@ Second FPO Admin
     Execute Sql String    INSERT INTO users (id, phone, name, lang, is_super_admin, status) VALUES ('${user}', '${phone}', 'QA Robot Admin B', 'en', false, 'active')
     Execute Sql String    INSERT INTO memberships (id, fpo_id, user_id, role) VALUES (gen_random_uuid(), '${fpo}', '${user}', 'fpo_admin')
     RETURN    ${phone}
+
+Publish Batch
+    [Documentation]    Batch the received lots (B10, Q03), grade Standard (10.5 %), approve and pack 20 kg, publish, and wait
+    ...    for the worker to build the page. Returns: the batch body. Fails: the build is not `built`.
+    [Arguments]    ${lots}
+    ${batch}=    New Batch    ${lots}
+    ${reading}=    Moisture    10.5    grading    batch_id=${batch}[id]
+    Call API    POST    /batches/${batch}[id]/grading    ${ADMIN}    expect=201    json=${{ {"declared_grade": "Standard", "readings": [$reading]} }}
+    Call API    POST    /batches/${batch}[id]/grading/approve    ${ADMIN}    expect=200    json=${{ {"graded": {"value": 20, "unit": "kg"}} }}
+    ${pack}=    Packing    20
+    Call API    POST    /batches/${batch}[id]/final-packing    ${ADMIN}    expect=200    json=${pack}
+    Call API    POST    /batches/${batch}[id]/publish    ${ADMIN}    expect=202
+    ${build}=    Wait For Build    ${batch}[id]    1
+    Should Be Equal    ${build}[status]    built    msg=${build}
+    RETURN    ${batch}
 
 Connect To AgriTrace Database
     [Documentation]    Open a DatabaseLibrary connection to the stack's Postgres/PostGIS using pg8000.

@@ -7,7 +7,7 @@ plugins: asyncio-1.4.1, anyio-4.15.1
 asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
 collecting ... collected 27 items
 
-tests/unit/test_registry_b14_logic.py::test_mask_phone[+919876543210-XXXXXX3210] PASSED [  3%]
+tests/unit/test_registry_b14_logic.py::test_mask_phone[+91XXXXXXXXXX-XXXXXX3210] PASSED [  3%]
 tests/unit/test_registry_b14_logic.py::test_mask_phone[None-None] PASSED [  7%]
 tests/unit/test_registry_b14_logic.py::test_mask_phone[-None] PASSED     [ 11%]
 tests/unit/test_registry_b14_logic.py::test_farmer_out_never_carries_the_full_phone PASSED [ 14%]

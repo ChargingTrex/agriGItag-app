@@ -1,0 +1,137 @@
+ 3:07  up 2 days,  2:39, 1 user, load averages: 4.55 7.59 9.65
+2026-11-01T21:37:08Z
+==============================================================================
+Portal & Public & E2E                                                         
+==============================================================================
+Portal & Public & E2E.Portal                                                  
+==============================================================================
+Portal & Public & E2E.Portal.Portal :: FPO admin portal acceptance (plan §7...
+==============================================================================
+Portal Loads In A Headless Browser                                    | PASS |
+------------------------------------------------------------------------------
+Stage Tiles Match Seed Counts :: Runs before this suite adds any l... [ WARN ] The FPO has 16 lots (not a fresh seed): the literal seed counts were not checked.
+| PASS |
+------------------------------------------------------------------------------
+Approving A Member Makes It Active Without Reload                     | PASS |
+------------------------------------------------------------------------------
+Phone Is Masked Except An Audited Reveal                              | PASS |
+------------------------------------------------------------------------------
+Reviewing A Held Lot Makes It Tickable In Create Batch                | PASS |
+------------------------------------------------------------------------------
+Required Review Fields Block Submit                                   | PASS |
+------------------------------------------------------------------------------
+Lots 100 200 20 kg Show Shares 31.25 62.5 6.25                        | PASS |
+------------------------------------------------------------------------------
+Out Of GI Lot Is Greyed With A Tooltip                                | PASS |
+------------------------------------------------------------------------------
+Create Batch Returns An Id And A QR                                   | PASS |
+------------------------------------------------------------------------------
+Batch Over Threshold Needs A Second Sign Off                          | PASS |
+------------------------------------------------------------------------------
+Declared Special Computed Standard Disables Approve With Reason       | PASS |
+------------------------------------------------------------------------------
+Missing Reading Disables Approve                                      | PASS |
+------------------------------------------------------------------------------
+Happy Path Publishes And Shows The URL                                | PASS |
+------------------------------------------------------------------------------
+Labels PDF Is Named Labels Batch Id                                   | PASS |
+------------------------------------------------------------------------------
+CSV Export Has A Unit On Every Quantity                               | PASS |
+------------------------------------------------------------------------------
+Upload With 2 Bad Rows Previews 2 Red Rows With Codes                 | PASS |
+------------------------------------------------------------------------------
+Confirm Creates Only The Valid Rows                                   | PASS |
+------------------------------------------------------------------------------
+Template Matches Config Fields                                        | PASS |
+------------------------------------------------------------------------------
+Village Filter Updates Tiles And Table                                | PASS |
+------------------------------------------------------------------------------
+Column Toggle Persists                                                | PASS |
+------------------------------------------------------------------------------
+Audit Search Shows The Seeded Correction With Actor And Reason :: ... | PASS |
+------------------------------------------------------------------------------
+Name Opt Out Is Reflected In The Preview                              | PASS |
+------------------------------------------------------------------------------
+Full Chain Login To Labels Is Green Under 10 Minutes Twice :: P07'... | PASS |
+------------------------------------------------------------------------------
+No Serious Axe Violations :: P07's axe check (e2e/axe.spec.ts) ove... | PASS |
+------------------------------------------------------------------------------
+Portal & Public & E2E.Portal.Portal :: FPO admin portal acceptance... | PASS |
+24 tests, 24 passed, 0 failed
+==============================================================================
+Portal & Public & E2E.Portal                                          | PASS |
+24 tests, 24 passed, 0 failed
+==============================================================================
+Portal & Public & E2E.Public                                                  
+==============================================================================
+Portal & Public & E2E.Public.Page :: Public batch page: render, privacy lin...
+==============================================================================
+Privacy Lint Passes The Clean Fixture And Catches The Dirty One ::... | PASS |
+------------------------------------------------------------------------------
+Fixture Renders Valid HTML :: html-validate (.htmlvalidate.mjs: st... | PASS |
+------------------------------------------------------------------------------
+Crop Name Is Bilingual :: The heading shows the fixture's Tamil cr... | PASS |
+------------------------------------------------------------------------------
+Every Quantity Carries A Unit :: Every <data class="q"> reads "<nu... | PASS |
+------------------------------------------------------------------------------
+Events Are In Date Order :: In every timeline (each lot, processin... | PASS |
+------------------------------------------------------------------------------
+No Temp Uploads Or Non Evidence Paths :: No temporary path anywher... | PASS |
+------------------------------------------------------------------------------
+Built Fixture Passes Privacy Lint With Canaries :: tools/check_out... | PASS |
+------------------------------------------------------------------------------
+Injected Phone Number Fails Privacy Lint :: A copy of the build wi... | PASS |
+------------------------------------------------------------------------------
+Initial HTML CSS And JS Are Under 100 KB :: `python -m agritrace_p... | PASS |
+------------------------------------------------------------------------------
+Lighthouse 3G Performance Is At Least 90 With LCP At Most 2 s :: l... | PASS |
+------------------------------------------------------------------------------
+Lighthouse Normal 4G Transfers Under 100 KB With LCP At Most 2.5 s... | PASS |
+------------------------------------------------------------------------------
+OG Tags Pass The Privacy Lint :: The share tags (og:*, description... | PASS |
+------------------------------------------------------------------------------
+Tamil Renders With The System Font :: At a 390 px phone width the ... | PASS |
+------------------------------------------------------------------------------
+Page Is Served From Object Storage With The Backend Down :: Live s... | PASS |
+------------------------------------------------------------------------------
+Old Page Version Is Retrievable :: Live stack: a rebuild writes a ... | PASS |
+------------------------------------------------------------------------------
+Portal & Public & E2E.Public.Page :: Public batch page: render, pr... | PASS |
+15 tests, 15 passed, 0 failed
+==============================================================================
+Portal & Public & E2E.Public                                          | PASS |
+15 tests, 15 passed, 0 failed
+==============================================================================
+Portal & Public & E2E.E2E                                                     
+==============================================================================
+Portal & Public & E2E.E2E.Reference Batch :: Seeded reference batch FGP8T40...
+==============================================================================
+Demo Seed Is Idempotent                                               | PASS |
+------------------------------------------------------------------------------
+Reference Batch Raises Exactly The Expected Flag Set                  | SKIP |
+FGP8T4033HM7 is published, not as seeded: needs a fresh seed (make seed on an empty DB)
+------------------------------------------------------------------------------
+Grade A Returns 422 Unknown Grade For Profile                         | PASS |
+------------------------------------------------------------------------------
+Approve And Publish Return 409 Before Fixes                           | SKIP |
+FGP8T4033HM7 is published, not as seeded: needs a fresh seed (make seed on an empty DB)
+------------------------------------------------------------------------------
+After Fixes Publish Succeeds With GI Verified And Shares 31.25 62.... | SKIP |
+FGP8T4033HM7 is published, not as seeded: needs a fresh seed (make seed on an empty DB)
+------------------------------------------------------------------------------
+Dart And TS Clients Compile                                           | PASS |
+------------------------------------------------------------------------------
+Portal & Public & E2E.E2E.Reference Batch :: Seeded reference batc... | PASS |
+6 tests, 3 passed, 0 failed, 3 skipped
+==============================================================================
+Portal & Public & E2E.E2E                                             | PASS |
+6 tests, 3 passed, 0 failed, 3 skipped
+==============================================================================
+Portal & Public & E2E                                                 | PASS |
+45 tests, 42 passed, 0 failed, 3 skipped
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4G5-rerun/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4G5-rerun/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4G5-rerun/report.html
+robot exit=0 wall=489 s
+ 3:15  up 2 days,  2:47, 1 user, load averages: 6.32 6.92 8.42
