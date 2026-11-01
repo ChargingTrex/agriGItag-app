@@ -25,8 +25,13 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   /// Creates the DAO on [db]; use `db.outboxDao` instead of calling this.
   OutboxDao(super.db);
 
-  /// The next entries of user [ownerUserId] to push at [now]: `waiting` entry rows due at or before [now], oldest
-  /// first. Other users' rows are never returned (D-029).
+  /// The next entries of user [ownerUserId] to push at [now]: `waiting` entry rows in queue order (`seq`), up to
+  /// but not including the first one not yet due at [now]. Other users' rows are never returned (D-029).
+  ///
+  /// The queue is strictly first in, first out: a row in backoff holds back every later row, because the server
+  /// needs a farmer before its consent and plot, an assist session before its entries and version 1 before an undo
+  /// (D-031). An older row still `sending` (in flight in another isolate, or left by a kill until
+  /// [resetStaleSending]) blocks too; `needs_attention` rows never block (D-054).
   ///
   /// Media rows are not returned: photos go through `MediaDao.pendingUploads`, which waits for the entry's
   /// confirmation (the presigned URL comes with it). Takes at most [limit] rows and stops before the row that would
@@ -42,8 +47,7 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
       ..where(
         outbox.kind.equalsValue(OutboxKind.entry) &
             outbox.ownerUserId.equals(ownerUserId) &
-            outbox.status.equalsValue(OutboxStatus.waiting) &
-            outbox.nextAttemptAt.isSmallerOrEqualValue(now),
+            outbox.status.isInValues([OutboxStatus.waiting, OutboxStatus.sending]),
       )
       ..orderBy([OrderingTerm.asc(outbox.seq)])
       ..limit(limit);
@@ -51,6 +55,7 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
     var total = 0;
     for (final r in await query.get()) {
       final item = (row: r.readTable(outbox), entry: r.readTable(entries));
+      if (item.row.status != OutboxStatus.waiting || item.row.nextAttemptAt.isAfter(now)) break;
       total += utf8.encode(item.entry.payloadJson).length;
       if (batch.isNotEmpty && total > maxBytes) break;
       batch.add(item);

@@ -9,6 +9,7 @@ import 'package:agritrace/core/db/database.dart';
 import 'package:agritrace/core/db/providers.dart';
 import 'package:agritrace/core/router/session.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../db/db_fixtures.dart';
@@ -195,6 +196,43 @@ void main() {
       expect(AuthFailure.from(envelope).details, {'attempts_left': 2});
       expect(AuthFailure.from(DioException.connectionError(requestOptions: options, reason: 'x')).code, 'network');
       expect(AuthFailure.from(StateError('x')).code, 'unknown');
+    });
+  });
+
+  group('M14: refresh shared with the background isolate', () {
+    test('the keystore holds a token another isolate rotated → adopted, no refresh POST, still signed in', () async {
+      final db = memoryDb();
+      await _row(db);
+      final foreground = FakeApi();
+      final background = FakeApi({
+        refresh: [(200, sessionJson(nonce: 2))],
+      });
+      final a = authContainer(foreground, db: db, stored: _tokens(later));
+      final b = authContainer(background, db: db, stored: _tokens(later));
+      await a.read(sessionProvider.notifier).restore();
+      await b.read(sessionProvider.notifier).restore();
+      await b.read(sessionProvider.notifier).refreshAccessToken(); // r1 → r2 in the keystore
+
+      expect(await a.read(sessionProvider.notifier).refreshAccessToken(), fakeJwt(nonce: 2));
+      expect(foreground.to(refresh), isEmpty, reason: 'the stale r1 is never sent');
+      expect(a.read(sessionProvider).role, Role.farmer);
+    });
+
+    test('the keystore holds another user\'s tokens (shared phone, D-029) → not adopted, no POST, kept', () async {
+      final db = memoryDb();
+      await _row(db);
+      final foreground = FakeApi();
+      final a = authContainer(foreground, db: db, stored: _tokens(later));
+      await a.read(sessionProvider.notifier).restore(); // A's background run: user-1's r1 in memory
+      final b = {..._tokens(later), 'access_token': fakeJwt(sub: 'user-2', nonce: 9), 'refresh_token': 'r9'};
+      for (final e in b.entries) {
+        await const FlutterSecureStorage().write(key: e.key, value: e.value); // B signed in in the foreground
+      }
+
+      expect(await a.read(sessionProvider.notifier).refreshAccessToken(), isNull);
+      expect(a.read(sessionProvider.notifier).accessToken, isNull, reason: 'A never sends with B\'s token');
+      expect(foreground.to(refresh), isEmpty);
+      expect((await storedValues())['refresh_token'], 'r9');
     });
   });
 

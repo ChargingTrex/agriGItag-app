@@ -1,9 +1,10 @@
 // Tests for the engine's robustness rules: backoff never overflows, a user switch resets the per-user sync state, a
 // killed row is retried on the next run, a failed probe is retried once, sign-in starts a sync, a refused envelope
 // does not poison later pushes with its metrics, the two isolates do not mark a confirmed photo missing, the 256 KB
-// trim on the real body, and the `secure` marker on every sync call.
+// trim on the real body, the `secure` marker on every sync call, a sign-in during a run (M16) and a fast phone clock
+// against presigned URL expiry (M16).
 // Requirement: PLAN §13 A1, A4, A6, F1; mobile-design.md §3; D-029; review M02-r1 P1-1, P1-3, P2-1, P2-3..P2-6,
-//   P3-10, P3-11.
+//   P3-10, P3-11; audit wave 0–2 findings 2 and 3 (WP-M16).
 // Callers: `flutter test test/sync`.
 
 import 'dart:async';
@@ -342,5 +343,34 @@ void main() {
     final before = w.server.requests.length;
     expect(await isReachable(w.sync.api), isTrue);
     expect(w.server.requests.skip(before).single.secure, isFalse, reason: 'healthz is public');
+  });
+
+  test(
+    'M16: another user signs in during a run → the run stops before the next batch; A\'s rows keep waiting',
+    () async {
+      final ids = [for (var i = 0; i < 51; i++) await w.save()]; // two batches (50 + 1)
+      w.server.intercept = (r) async {
+        if (r.path == '/v1/sync/push') await signIn(w.db, 'user-2'); // B signs in while A's first batch is in flight
+        return null;
+      };
+      await w.sync.runOnce();
+
+      expect(
+        w.server.seen('POST', '/v1/sync/push'),
+        hasLength(1),
+        reason: 'A\'s second batch never goes with B\'s token',
+      );
+      final last = await w.outboxOf(ids.last);
+      expect((last.status, last.ownerUserId), (OutboxStatus.waiting, 'user-1'));
+    },
+  );
+
+  test('M16: a phone clock 20 min fast still uploads a photo whose URL was issued now', () async {
+    w.server.clock = () => w.clock.subtract(const Duration(minutes: 20));
+    final id = await w.save(photos: 1);
+    await w.sync.runOnce();
+
+    expect(w.server.seen('PUT', 's3.test'), hasLength(1));
+    expect((await w.mediaOf(id)).single.uploadStatus, UploadStatus.done);
   });
 }
