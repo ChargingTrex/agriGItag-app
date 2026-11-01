@@ -1435,6 +1435,26 @@
         "title": "DeviceOut",
         "type": "object"
       },
+      "DeviceRevokeIn": {
+        "description": "Sign a lost or stolen device out (B23); the body may be omitted.",
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the device is signed out (e.g. `phone lost`); audited.",
+            "title": "Reason"
+          }
+        },
+        "title": "DeviceRevokeIn",
+        "type": "object"
+      },
       "DryingPayload": {
         "additionalProperties": false,
         "description": "Stage 5 drying on the farm; several drying runs allowed.\n\n`start` is recorded when drying begins, `end` when it ends; one entry may carry the whole span\n(`occurred_on` = start, `occurred_end_on` = end). The end-of-drying moisture is a quality reading.",
@@ -12277,7 +12297,7 @@
     },
     "/v1/auth/refresh": {
       "post": {
-        "description": "Rotate the refresh token and get a new 15-minute access token.\n\nMobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie.\nA token read from the cookie is always answered through the cookie. Presenting the token rotated out\nlast signs the device out (`refresh_reused`).\n\nArgs:\n    body: the refresh token (mobile) or nothing (web).\n    request: the incoming request (cookie and `X-Client`).\n    response: the outgoing response (new cookie for web).\n    session: database session.\n\nReturns:\n    A new session; the old refresh token is now invalid.\n\nRaises:\n    UnauthorizedError: no or unknown token, signed-out device.\n    RefreshReusedError: reuse of a rotated token.",
+        "description": "Rotate the refresh token and get a new 15-minute access token.\n\nMobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie.\nA token read from the cookie is always answered through the cookie. Presenting the token rotated out\nlast signs the device out (`refresh_reused`).\n\nArgs:\n    body: the refresh token (mobile) or nothing (web).\n    request: the incoming request (cookie and `X-Client`).\n    response: the outgoing response (new cookie for web).\n    session: database session.\n\nReturns:\n    A new session; the old refresh token is now invalid.\n\nRaises:\n    UnauthorizedError: no or unknown token, signed-out device.\n    RefreshReusedError: reuse of a rotated token.\n    SessionExpiredError: the device's sign-in is older than `SESSION_MAX_DAYS` (device signed out).",
         "operationId": "refresh_v1_auth_refresh_post",
         "requestBody": {
           "content": {
@@ -12301,7 +12321,7 @@
             "description": "Successful Response"
           },
           "401": {
-            "description": "`unauthorized` (signed out) or `refresh_reused` (device revoked)."
+            "description": "`unauthorized` (signed out), `refresh_reused` (device revoked) or `session_expired` (sign-in older than `SESSION_MAX_DAYS`, device revoked)."
           },
           "default": {
             "content": {
@@ -14974,6 +14994,109 @@
         "summary": "Per-farmer dashboard table",
         "tags": [
           "reporting"
+        ]
+      }
+    },
+    "/v1/devices/{device_id}/revoke": {
+      "post": {
+        "description": "Sign a lost or stolen device out: the user's own device, or (FPO admin) any member's device.\n\nAfterwards its access tokens and its refresh token answer 401. Revoking a signed-out device again is\na no-op that is still audited.\n\nArgs:\n    device_id: the device.\n    user: the caller (the device's user, or an FPO admin of the device user's FPO).\n    session: database session.\n    body: optional reason, kept in the audit trail.\n\nRaises:\n    UnauthorizedError: not signed in.\n    ForbiddenError: another member's device and the caller is not an FPO admin.\n    NotFoundError: unknown device, or outside the caller's FPO.\n\nSide effects:\n    Revokes the device; writes the `device.revoke` audit row.",
+        "operationId": "device_revoke_v1_devices__device_id__revoke_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Device Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/DeviceRevokeIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "403": {
+            "description": "`forbidden`: another member's device and the caller is not an FPO admin."
+          },
+          "404": {
+            "description": "`not_found`: unknown device, or its user is outside the caller's FPO."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Device Revoke",
+        "tags": [
+          "identity"
         ]
       }
     },
