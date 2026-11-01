@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 78 % (57/73 items)
+Completion: 80 % (59/74 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -26,7 +26,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M00 — Skeleton: flavors, M3 theme + tokens, go_router role redirect, l10n en/ta, generated Dart  — wave 1 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 — verifier: PASS (docs/agents/qa/M00.md)
 - [x] P00 — Skeleton, auth guard, generated client, MSW from spec, lint/test/e2e config — wave 1 — worker: Opus — reviewer: WEB PASS r1 — verifier: PASS (docs/agents/qa/P00.md) + Robot headless-browser test PASS 1/1 live 2026-11-01 (G1 blocker cleared)
 - [x] W01 — `render(public_batch) -> (html, json)`, Jinja2 `batch.html.j2`, inline CSS < 12 KB, JS < 4 — wave 1 — worker: Opus (2 rounds) — reviewer: WEB r1 FAIL, r2 PASS — verifier: PASS (docs/agents/qa/W01.md)
-- [ ] **Gate G1 signed** — blocker cleared 2026-11-01 (P00 Robot PASS); Architect-Gate signing (docs/agents/gates/G1.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [x] **Gate G1 signed** 2026-11-02 by the Architect-Gate (docs/agents/gates/G1.md; P00 Robot headless-browser test PASS; spec validates, clients byte-identical, D-001…D-012 accepted) (docs/agents/gates/G1.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G2 Core backend
 
@@ -55,7 +55,8 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: suite PASS (605) on the merged branch; device checks (< 20 s log, camera, GPS) → Q01
 - [x] P02 — Flags & plot review — wave 4 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirm — verifier: PASS 2/2 live (docs/agents/qa/P02.md, 2026-11-01)
 - [x] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PASS 4/4 live incl. D-041 non-GI line (docs/agents/qa/P04.md)
-- [ ] **Gate G2 signed** (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [ ] Q06 — Robot API suites implemented and green (48 placeholders in qa/robot/api → real tests on an isolated stack; G2 blocker) — wave 7 — worker: Opus QA Lead (in progress 2026-11-02) — reviewer: — verifier: robot run in docs/agents/qa/Q06/robot/
+- [ ] **Gate G2 signed** — readiness filed BLOCKED 2026-11-02 (Robot API placeholders → Q06; P01 live line → P10; B08-2 → B20; mobile/portal Robot placeholders belong to G3/G4 scope) (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G3 Mobile core
 
@@ -87,7 +88,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [x] B12 — Demo seed, e2e, client generation — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PASS (docs/agents/qa/B12.md; e2e 2/2 with the ruling flag set, seed idempotent, both clients regenerate clean)
 - [x] B17 — First live-stack fixes (seed `gi_eligible`, B13 head assertion, B14 audit payload, stack fixture env leak + idempotent CreateBucket) — wave 7 hotfix — worker: Opus (1 round) — reviewer: Orchestrator (test-only + 1-line seed diff) — verifier: combined `pytest tests` 768/768 on the branch (merged 2026-11-01)
-- [ ] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: MOB/SEC PASS r1 + 2 P2 micro-patches confirmed by Orchestrator — verifier: PENDING (merged 2026-11-01; 803 Flutter tests green on main after merge, analyzer clean; APK/AAB size not measured under host load → Verifier on an idle host or CI; device checks → Q01)
+- [x] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: MOB/SEC PASS r1 + 2 P2 micro-patches confirmed by Orchestrator — verifier: size PASS 30.03 MiB arm64 APK (Orchestrator run 2026-11-02, docs/agents/qa/M13.md); AAB download unmeasured (no bundletool); device checks → Q01
 - [ ] P07 — Playwright e2e chain + axe — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirmed by Orchestrator — verifier: FAIL live + mock (docs/agents/qa/P07.md: P07-1 chain assertion, P07-2 live mode 204/OTP limit/no batch; CI portal job red → P10; axe 0 serious PASS)
 - [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q02 — Portal verification: Vitest ≥ 80 % in features, Playwright chain, axe — wave 7 — worker: — reviewer: — verifier:

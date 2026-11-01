@@ -1,0 +1,34 @@
+/dev/disk1s7s1   466Gi    10Gi   9.3Gi    54%    427k   97M    0%   /
+ 0:22  up 1 day, 23:54, 1 user, load averages: 3.72 4.15 6.31
+bundletool not found
+1.11.4
+1.13.2
+  url_launcher_android 6.3.30 (6.3.33 available)
+  vector_math 2.2.0 (2.4.4 available)
+  web 1.1.1 (1.1.2 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+64 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleRelease'...                        
+Expected to find fonts for (MaterialIcons, packages/cupertino_icons/CupertinoIcons), but found (MaterialIcons). This usually means you are referring to font families in an IconData class but not including them in the assets section of your pubspec.yaml, are missing the package that would include them, or are missing "uses-material-design: true".
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 13436 bytes (99.2% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: /Users/fi-it/.pub-cache/hosted/pub.dev/geolocator_android-5.2.1/android/src/main/java/com/baseflow/geolocator/location/LocationMapper.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+Running Gradle task 'assembleRelease'...                          918.0s
+✓ Built build/app/outputs/flutter-apk/app-arm64-v8a-release.apk (31.5MB)
+dartvm(96441) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+dartvm(96445) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+dartvm(96446) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+dartvm(96447) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+size_check: arm64-v8a release APK = 30.03 MiB (31483764 bytes); fail > 100 MiB, warn > 40 MiB
+size_check: AAB download size unmeasured (bundletool not on PATH; target 30 MiB, plan §13 D1).
+size_check: OK
+exit=0
+/dev/disk1s7s1   466Gi    10Gi   5.8Gi    65%    427k   60M    1%   /
+
+[exited with code 0]
