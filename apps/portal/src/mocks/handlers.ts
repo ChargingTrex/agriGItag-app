@@ -1,7 +1,7 @@
 /**
  * MSW request handlers: a mock of the API for tests, `npm run dev:mock` and the Playwright mock-mode specs.
  * Serves: plan §7.3 P00 (MSW from spec; login passes with MSW), P01 (identity + registry handlers for the
- * Members screens, Stage 0 approval) and P02 (flags list/detail/resolve, lot events with evidence photos,
+ * Members screens, Stage 0 approval; P10: masked phone and the audited reveal) and P02 (flags list/detail/resolve, lot events with evidence photos,
  * farmer plots, plot correction; FR70, Dataflow "Review & flags"), P03 (lots, batch create with shares and
  * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60), P04 (batch list, readings, grade,
  * instruments, standards profile, grading approve, final packing, publish, builds with a simulated worker, rebuild,
@@ -314,6 +314,7 @@ function mockImport(kind: string, text: string, dryRun: boolean): ImportReport {
           code: `VSV-${String(n).padStart(4, '0')}`,
           name: cells['name'] ?? '',
           name_local: null,
+          phone_masked: null,
         });
       }
     }
@@ -356,6 +357,8 @@ function seedFarmers(): FarmerOut[] {
       approved_by: status === 'pending' ? null : MOCK_FPO_ID,
       approved_at: status === 'pending' ? null : '2026-10-01T09:30:00Z',
       no_smartphone: n % 7 === 0,
+      // Full number in the reveal handler: `+91987650` + these 4 digits.
+      phone_masked: `XXXXXX${String(n).padStart(4, '0')}`,
     };
   });
 }
@@ -725,6 +728,18 @@ export const handlers = [
     if (!authed(request)) return fail(401, 'unauthorized');
     const farmer = mockState.farmers.find((item) => item.id === params['farmerId']);
     return farmer ? HttpResponse.json(farmer) : fail(404, 'not_found');
+  }),
+  // Audited reveal (B14): FPO admin only; the server writes the audit row, the mock only answers.
+  http.get('/v1/farmers/:farmerId/phone', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const farmer = mockState.farmers.find((item) => item.id === params['farmerId']);
+    if (!farmer?.phone_masked) return fail(404, 'not_found');
+    const out: Schemas['FarmerPhoneOut'] = {
+      farmer_id: farmer.id,
+      phone: `+91987650${farmer.phone_masked.slice(-4)}`,
+    };
+    return HttpResponse.json(out);
   }),
   http.post('/v1/farmers/:farmerId/approve', ({ request, params }) => {
     if (!authed(request)) return fail(401, 'unauthorized');

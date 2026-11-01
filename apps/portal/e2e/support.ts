@@ -13,23 +13,33 @@ export const LIVE = process.env['E2E_LIVE'] === '1';
 
 /** The dev OTP: MSW's `MOCK_OTP`, and `OTP_DEV_CODE` in infra/docker-compose.yml for the live stack. */
 export const OTP = '123456';
-/** The office PIN: MSW's `MOCK_PIN`; on the live stack the first run chooses it, later runs type it. */
-export const PIN = '1234';
+/**
+ * The office PIN: MSW's `MOCK_PIN`; live, `E2E_STAFF_PIN` (default 1234) — the first sign-in of a staff
+ * account chooses it, later ones type it (the shared stack's staff PIN is 2468).
+ */
+export const PIN = LIVE ? (process.env['E2E_STAFF_PIN'] ?? '1234') : '1234';
 /** Ten-digit mobile of the FPO admin: any number in MSW, the seeded admin (+91 90000 00001) when live. */
 export const ADMIN_PHONE = LIVE ? '9000000001' : '9876543210';
 
 const AXE_PATH = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
+/** When this worker last asked for a sign-in code; the live API sends one per phone per 60 s. */
+let lastCodeAt = 0;
 
 /**
  * Signs in through the login form: mobile number, SMS code, then the PIN step. A first live sign-in has no
- * PIN yet, so the PIN is chosen and typed twice (LoginPage "Choose a 4-digit PIN").
+ * PIN yet, so the PIN is chosen and typed twice (LoginPage "Choose a 4-digit PIN"). Live, a second sign-in in
+ * the same worker first waits out the API's one-code-per-60 s limit (`OTP_RESEND_AFTER`), so chain run 2
+ * signs in through the real form instead of getting `429 rate_limited`.
  * @param page The page, already showing the sign-in form (any guarded route redirects there).
  * @param phone Ten-digit mobile number without +91.
  * @returns Resolves when the PIN is accepted and the portal shell is visible.
  * @throws {Error} When a step is not reached in time (assertion failure).
+ * Side effects: live, may wait up to 61 s.
  */
 export async function signIn(page: Page, phone = ADMIN_PHONE): Promise<void> {
   await page.getByLabel('Mobile number').fill(phone);
+  if (LIVE) await page.waitForTimeout(Math.max(0, lastCodeAt + 61_000 - Date.now()));
+  lastCodeAt = Date.now();
   await page.getByRole('button', { name: 'Send code' }).click();
   await page.getByLabel('SMS code').fill(OTP);
   await page.getByRole('button', { name: 'Verify code' }).click();

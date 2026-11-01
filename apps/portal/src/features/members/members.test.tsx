@@ -1,19 +1,25 @@
 /**
  * Tests the Members feature against the MSW mock API: approve without reload, roster cursor paging and
- * search, farmer detail, plot detail (map mocked: jsdom has no WebGL), processors create, and `bbox`.
+ * search, farmer detail with the masked phone and its audited reveal (dropped on leaving or switching
+ * farmer), plot detail (map mocked: jsdom has no WebGL), processors create, and `bbox`.
  * Serves: plan §7.3 P01 acceptance "approve → active without reload", FR8, FR28, FR70, gap analysis
- * "Processor management". Called by: Vitest (`npm test`).
+ * "Processor management", P01 "phone masked except audited reveal" (P10). Called by: Vitest (`npm test`).
  */
-import { screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
+import { Link, MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
+import { AppProviders } from '../../AppProviders';
+import { AppRoutes } from '../../AppRoutes';
 import {
   MOCK_ACTIVE_FARMER_ID,
   MOCK_FARMER_COUNT,
   MOCK_PENDING_FARMER_ID,
   MOCK_PLOT_ID,
+  mockState,
 } from '../../mocks/handlers';
+import { createQueryClient } from '../../queryClient';
 import { renderApp } from '../../test/render';
 import { server } from '../../test/setup';
 import { bbox, plotArea } from './geo';
@@ -129,6 +135,73 @@ describe('Farmer and plot detail', () => {
     expect(
       await screen.findByText('GI status: GI authorised user no. GI-AU-883-0010'),
     ).toBeInTheDocument();
+  });
+
+  it('masks the phone until an FPO admin reveals the full number', async () => {
+    const user = userEvent.setup();
+    renderApp(`/members/${MOCK_ACTIVE_FARMER_ID}`, true);
+
+    expect(await screen.findByText('Mobile: XXXXXX0010')).toBeInTheDocument();
+    expect(screen.queryByText(/\+91/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reveal number' }));
+    expect(await screen.findByText('Mobile: +919876500010')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reveal number' })).not.toBeInTheDocument();
+  });
+
+  it('drops the revealed number on a farmer switch and when the page is left (no unaudited re-show)', async () => {
+    const user = userEvent.setup();
+    const client = createQueryClient();
+    mockState.signedIn = true;
+    // Links outside the routes move between farmers while FarmerPage stays mounted.
+    render(
+      <MemoryRouter initialEntries={[`/members/${MOCK_ACTIVE_FARMER_ID}`]}>
+        <AppProviders queryClient={client}>
+          <Link to={`/members/${MOCK_ACTIVE_FARMER_ID}`}>to farmer A</Link>
+          <Link to={`/members/${MOCK_PENDING_FARMER_ID}`}>to farmer B</Link>
+          <AppRoutes />
+        </AppProviders>
+      </MemoryRouter>,
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Reveal number' }));
+    expect(await screen.findByText('Mobile: +919876500010')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'to farmer B' }));
+    expect(await screen.findByText('Mobile: XXXXXX0001')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'to farmer A' }));
+    expect(await screen.findByText('Mobile: XXXXXX0010')).toBeInTheDocument();
+    expect(screen.queryByText(/\+91/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Reveal number' }));
+    expect(await screen.findByText('Mobile: +919876500010')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Back to members' }));
+    await waitFor(() => {
+      expect(client.getMutationCache().getAll()).toHaveLength(0);
+    });
+  });
+
+  it('shows no Reveal to a field officer', async () => {
+    mockState.roles = ['field_officer'];
+    renderApp(`/members/${MOCK_ACTIVE_FARMER_ID}`, true);
+
+    expect(await screen.findByText('Mobile: XXXXXX0010')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reveal number' })).not.toBeInTheDocument();
+  });
+
+  it('shows the API error when the reveal is refused (403) and keeps the number masked', async () => {
+    server.use(
+      http.get('/v1/farmers/:farmerId/phone', () =>
+        HttpResponse.json(
+          { error: { code: 'forbidden', message: 'x', details: null } },
+          { status: 403 },
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderApp(`/members/${MOCK_ACTIVE_FARMER_ID}`, true);
+
+    await user.click(await screen.findByRole('button', { name: 'Reveal number' }));
+    expect(await screen.findByText('Your role does not allow this action.')).toBeInTheDocument();
+    expect(screen.getByText('Mobile: XXXXXX0010')).toBeInTheDocument();
   });
 
   it('shows the plot location status, declared vs walked area and the map with the GI outline', async () => {

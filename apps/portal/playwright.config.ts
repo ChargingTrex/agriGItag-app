@@ -7,6 +7,7 @@
  * - Mock (default): Playwright starts the portal with MSW (`npm run dev:mock`) on port 5174; no Docker.
  * - Live (`E2E_LIVE=1`, after `make up && make seed`): Playwright starts the Vite dev server on 5173, which
  *   proxies `/v1` to the compose `api` service (`API_URL`, default http://localhost:8000); mock-only specs skip.
+ *   `E2E_STAFF_PIN` is the admin's and QC officer's PIN on that stack (default 1234; the shared stack: 2468).
  * `E2E_BASE_URL` points either mode at a portal that is already running, and then nothing is started.
  */
 import { defineConfig, devices } from '@playwright/test';
