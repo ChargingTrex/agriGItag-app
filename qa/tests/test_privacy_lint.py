@@ -98,6 +98,11 @@ LEAKS = [
     ("index.html", "<p>9° 33.59' N</p>", "coordinate_precision"),
     ("index.html", "<p>GPS 9.5598061 78.1335214</p>", "coordinate_precision"),
     ("index.html", '<a href="https://maps.example.org/?q=9.5598061+78.1335214">m</a>', "coordinate_precision"),
+    # B18 (audit waves 3-6 #3): the four formats the renderer's schema check misses, as free text reaches the page.
+    ("index.html", "<p>Kumarapuram R.S. No. 112/3</p>", "sensitive_label"),
+    ("index.html", "<p>Kumarapuram புல எண் 123/4</p>", "sensitive_label"),
+    ("index.html", "<p>Kumarapuram 9.559806 78.133521</p>", "coordinate_precision"),
+    ("index.html", "<p>Call (98765) 43210</p>", "phone"),
 ]
 
 

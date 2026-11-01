@@ -94,7 +94,7 @@ def presign_put(
     if len(digest) != 32:
         raise ValueError("sha256 must be 64 hex characters")
     checksum = base64.b64encode(digest).decode()
-    params = {
+    params: dict[str, Any] = {
         "Bucket": bucket or get_settings().s3_bucket_evidence,
         "Key": key,
         "ContentType": content_type,

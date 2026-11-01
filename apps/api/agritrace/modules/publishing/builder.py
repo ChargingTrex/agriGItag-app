@@ -3,7 +3,7 @@
 Purpose: `load` reads everything one public batch page shows; `assemble` (pure) maps it onto W01's
 `PublicBatchRecord` allow-list: header and GI indicator, FSSAI and GI authorised-user numbers, lots with
 consent-aware farmer names, share %, 3 dp map pin, events in date order, grade with standard edition, readings
-and lab badge, location method and the generation stamp.
+and lab badge, location method and the generation stamp. `privacy_hits` lints the rendered page (B18).
 Serves: FR15-FR18 (public page), FR51 (grade block), FR60 (shares), FR62 (compliance numbers, pack and
 best-before dates), FR63 (events in date order with counts), FR72 (location method), PRD §12.1 (field
 inventory), plan §13 E2 (WebP variants), CLAUDE.md §6 (privacy), D-007, D-017, D-034.
@@ -17,6 +17,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
+from agritrace_page import RenderResult, privacy_lint
 from geoalchemy2.shape import to_shape
 from shapely.geometry import Point
 from sqlalchemy import select
@@ -619,3 +620,22 @@ def assemble(rows: BatchRows, build: PageBuild, now: datetime) -> dict[str, Any]
         "best_before_date": batch.best_before_date,
         "footer": {"last_updated": now, "generation": str(build.generation), "page_version": build.build_no},
     }
+
+
+def privacy_hits(page: RenderResult) -> list[dict[str, Any]]:
+    """Run the built-output privacy linter (W02) over a rendered page before it is published.
+
+    Args:
+        page: the rendered `index.html` and `data.json`.
+
+    Returns:
+        One `{loc: [file, line], msg, type: rule}` per rule and line that hit, in the shape of the
+        `public_record_invalid` details; the matched text is never included. Empty when the page is clean.
+    """
+    # The schema check inside `render` is the first line of defence, this linter the second (CLAUDE.md §6,
+    # audit waves 3-6 #3): free text such as a typed village can still carry a survey number or a phone.
+    hits = set()
+    for name, text, as_json in (("index.html", page.html, False), ("data.json", page.data_json, True)):
+        for offset, rule, _ in privacy_lint.scan_text(text, [], as_json):
+            hits.add((name, text.count("\n", 0, offset) + 1, rule))
+    return [{"loc": [f, line], "msg": "privacy lint hit", "type": rule} for f, line, rule in sorted(hits)]
