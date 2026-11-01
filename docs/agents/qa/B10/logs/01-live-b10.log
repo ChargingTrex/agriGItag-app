@@ -1,0 +1,103 @@
+$ cd apps/api && QA_WORLD=... QA_TOKEN_CACHE=... QA_PAGES=<scratchpad>/pages uv run python ../../docs/agents/qa/B10/logs/live_b10.py
+# 2026-11-01T17:24:52Z
+
+## 0 state found: build 1 of batch X (published by live_b09_part2.py)
+$ GET http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/builds
+-> HTTP 200  etag=None
+  {"items": [{"id": "01a19822-f179-78a7-95d7-6de77d4fd1bd", "batch_id": "01a19822-94cf-7100-bedc-ecf49185f598", "build_no": 1, "generation": 1, "status": "failed", "trigger": "publish", "built_at": null, "html_key": null, "json_key": null, "qr_key": null, "error": {"code": "public_record_invalid", "details": [{"loc": ["lots", 0, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}, {"loc": ["lots", 1, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}, {"loc": ["lots", 2, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}]}}], "next_cursor": null, "has_more": false}
+  build 1 status: failed error code: public_record_invalid
+
+## 1 fill the page-required fields the QA data lacked (farmer address, plot farming_type) via the API
+$ PATCH http://localhost:8000/v1/farmers/56a622ff-6789-4ae0-9a65-775491f5d2cf
+  body: {"address":{"village":"QA Thottiyangulam","block":"Tiruchuli","district":"Virudhunagar","state":"Tamil Nadu","pin":"626129"}}
+-> HTTP 200  etag=None
+  {"id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "user_id": "01a197e8-c83a-769a-aaa4-e8fc9255019e", "code": "FF88C00", "name": "QA Verifier Farmer", "name_local": null, "photo_key": null, "address": {"village": "QA Thottiyangulam", "block": "Tiruchuli", "taluk": null, "district": "Virudhunagar", "state": "Tamil Nadu", "pin": "626129"}, "village_id": null, "gi_authorised_user_no": null, "status": "active", "approved_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "approved_at": "2026-11-01T16:19:37.715052Z", "no_smartphone": false, "phone_masked": "X ...
+$ POST http://localhost:8000/v1/plots/01a19822-8d16-7299-a60c-63ac59dc79b2/correct
+  body: {"farming_type":"rainfed","reason_code":"land_record_checked"}
+-> HTTP 200  etag=None
+  {"id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "code": "QA-P5", "gi_tag_id": null, "pin": {"lat": 9.586, "lon": 78.112, "accuracy_m": 5.0}, "pin_method": "live_gps", "pin_device_time": "2026-11-01T17:22:43.606951Z", "pin_gps_time": null, "pin_server_received_at": "2026-11-01T17:22:43.630856Z", "declared_area": {"value": "1.000", "unit": "acre"}, "land_record_ref": "QA-SURVEY-77/3B", "walked_area": null, "area_gap_pct": null, "area_gap_exceeds": false, "farming_type": "rainfed", "irrigation_so ...
+
+## 2 rebuild -> build 2, worker builds it
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/rebuild
+-> HTTP 202  etag=None
+  {"id": "01a19824-8ba6-7b64-be17-9cb44db9453c", "batch_id": "01a19822-94cf-7100-bedc-ecf49185f598", "build_no": 2, "generation": 2, "status": "queued", "trigger": "rebuild", "built_at": null, "html_key": null, "json_key": null, "qr_key": null, "error": null}
+  CHECK PASS: rebuild -> 202 build_no 2 trigger rebuild
+$ GET http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/builds
+-> HTTP 200  etag=None
+  {"items": [{"id": "01a19822-f179-78a7-95d7-6de77d4fd1bd", "batch_id": "01a19822-94cf-7100-bedc-ecf49185f598", "build_no": 1, "generation": 1, "status": "failed", "trigger": "publish", "built_at": null, "html_key": null, "json_key": null, "qr_key": null, "error": {"code": "public_record_invalid", "details": [{"loc": ["lots", 0, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}, {"loc": ["lots", 1, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}, {"loc": ["lots", 2, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}]}}, {"id": "01a19824-8ba6-7b64-be17-9cb44db9453c", "batch_id": "01a19822-94cf-7100-bedc-ecf49185f598", "build_no": 2, "generation": 2, "status": "built", "trigger": "rebuild", "built_at": "2026-11-01T17:24:55.926863Z", "html_key": "batches/GQ6QTKYZYVEP/index.html", "json_key": "batches/GQ6QTKYZYVEP/data.json", "qr_key": "batches/GQ6QTKYZYVEP/qr.png", "error": null}], "next_cursor": null, "has_more": false}
+  CHECK PASS: build 2 built
+  sql> select generation from page_builds where batch_id='01a19822-94cf-7100-bedc-ecf49185f598' and build_no=2
+  =>  '2'
+
+## 3 after publish the objects exist and `generation` matches
+$ docker compose -f ../../infra/docker-compose.yml exec -T s3 awslocal s3 ls s3://public-pages/batches/GQ6QTKYZYVEP/
+2026-11-01 17:24:55       5035 data.json
+2026-11-01 17:24:55      19839 index.html
+2026-11-01 17:24:55        864 qr.png
+
+  index.html: 19839 bytes, ContentType=text/html; charset=utf-8, CacheControl=public, max-age=60, VersionId=AaGX6dNouTa9UpdSmo5uV1bh2zl5tI26
+  data.json: 5035 bytes, ContentType=application/json, CacheControl=public, max-age=60, VersionId=AaGX6dNn1bjQnElPE_SfgFwzpATx8_Gv
+  qr.png: 864 bytes, ContentType=image/png, CacheControl=public, max-age=31536000, immutable, VersionId=AaGX6dNmPcoQVIaHT.o5SFARt_jREjSq
+  data.json footer: {'last_updated': '2026-11-01T17:24:54.720413Z', 'generation': '2', 'page_version': 2}
+  CHECK PASS: index.html, data.json, qr.png exist; data.json footer.generation == page_builds.generation == 2
+$ GET http://localhost:8000/v1/public/batches/GQ6QTKYZYVEP
+-> HTTP 200  etag=None
+  <!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>விருதுநகர் சம்பா வத்தல் / VIRUDHUNAGAR SAMBA VATHAL · GI 883 · ...
+  CHECK PASS: GET /v1/public/batches/<code> serves the same HTML
+
+## 4 HTML (and data.json) have no phone / survey number / temp_uploads
+  sql> select string_agg(phone, ',') from users
+  =>  '+919000000003,+919000000011,+919000000012,+919000000013,+919000000001,+919000000091,+919000000002'
+  index.html: searched 22 strings, hits=[]
+  CHECK PASS: index.html: no phone, survey ref, PIN or temp_uploads
+  data.json: searched 22 strings, hits=[]
+  CHECK PASS: data.json: no phone, survey ref, PIN or temp_uploads
+  sql> select land_record_ref from plots where id='01a19822-8d16-7299-a60c-63ac59dc79b2'
+  =>  'QA-SURVEY-77/3B'
+  downloaded to $QA_PAGES/batches/GQ6QTKYZYVEP/
+
+## 5 QR decodes to {PUBLIC_BASE_URL}/b/<code>
+$ GET http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/qr.png
+-> HTTP 200  etag=None
+  �PNG
+
+   IHDR  �  �    }��  'IDATx��K��0����!�Q�̑��o`%h���zD醁 ...
+  decoded (S3 qr.png, GET /batches/{id}/qr.png): [['http://localhost:4566/public-pages/b/GQ6QTKYZYVEP'], ['http://localhost:4566/public-pages/b/GQ6QTKYZYVEP']]  expected: http://localhost:4566/public-pages/b/GQ6QTKYZYVEP
+  CHECK PASS: both QR images decode to exactly http://localhost:4566/public-pages/b/GQ6QTKYZYVEP
+
+## 6 events ascending
+  per-lot events: [[null, [["2026-04-15", null], ["2026-06-04", null], ["2026-09-02", null], ["2026-09-12", null], ["2026-09-22", null], ["2026-11-01", null]]], [null, [["2026-11-01", null]]], [null, [["2026-11-01", null]]]]
+  CHECK PASS: event dates ascending (and lot C's 5 events, pushed out of order, are all there)
+
+## 7 correction -> new build_no, old S3 versions kept
+  sql> select e.id from events e where e.lot_id='01a19822-91be-7efe-8b99-635b9d4a920e' and e.event_type='harvest'
+  =>  '01a19822-9223-742c-8c34-10160824e76c'
+$ GET http://localhost:8000/v1/lots/01a19822-91be-7efe-8b99-635b9d4a920e/events
+-> HTTP 200  etag=None
+  {"items": [{"id": "01a19822-9221-73e5-aeb5-1c44a0b6c337", "event_type": "land_preparation", "instance_no": 1, "status": "submitted", "occurred_on": "2026-04-15", "occurred_end_on": null, "version_no": 1, "change_kind": "create", "payload": {}, "entered_by_user_id": "01a197e0-9a3f-7678-b124-874b1d704f23", "on_behalf_of_farmer_id": null, "is_system_generated": false, "reason_code": null, "photos": []}, {"id": "01a19822-9225-7d31-82e8-716ef19a3765", "event_type": "sowing", "instance_no": 1, "status": "submitted", "occurred_on": "2026-06-04", "occurred_end_on": null, "version_no": 1, "change_kind": "create", "payload": {}, "entered_by_user_id": "01a197e0-9a3f-7678-b124-874b1d704f23", "on_behalf_of_farmer_id": null, "is_system_generated": false, "reason_code": null, "photos": []}, {"id": "01a19822-9223-742c-8c34-10160824e76c", "event_type": "harvest", "instance_no": 1, "status": "submitted", "occurred_on": "2026-09-02", "occurred_end_on": null, "version_no": 1, "change_kind": "create", "payload": {"bags": 5, "quantity": {"unit": "kg", "value": "110"}}, "entered_by_user_id": "01a197e0-9a3f-7678-b124-874b1d704f23", "on_behalf_of_farmer_id": null, "is_system_generated": false, "reason_code": null, "photos": []}, {"id": "01a19822-9227-79cd-b64c-060dc5c69758", "event_type": "drying", "instance_no": 1, "status": "submitted", "occurred_on": "2026-09-12", "occurred_end_on": null, "version_no": 1, "change_kind": "create", "payload": {}, "entered_by_user_id": "01a197e0-9a3f-7678-b124-874b1d704f23", "on_behalf_of_farmer_id": null, "is_system_generated": false, "reason_code": null, "photos": []}, {"id": "01a19822-921f-7bbc-95a1-87c620f46fc3", "event_type": "packing", "instance_no": 1, "status": "submitted", "occurred_on": "2026-09-22", "occurred_end_on": null, "version_no": 1, "change_kind": "create", "payload": {"bags": 4, "quantity": {"unit": "kg", "value": "100"}}, "entered_by_user_id": "01a197e0-9a3f-7678-b124-874b1d704f23", "on_behalf_of_farmer_id": null, "is_system_generated": false, "reason_code": null, "photos": []}], "next_cursor": null, "has_more": false}
+  current harvest version: {"id": "01a19822-9223-742c-8c34-10160824e76c", "event_type": "harvest", "instance_no": 1, "status": "submitted", "occurred_on": "2026-09-02", "occurred_end_on": null, "version_no": 1, "change_kind": "create", "payload": {"bags": 5, "quantity": {"unit": "kg", "value": "110"}}, "entered_by_user_id": "01a197e0-9a3f-7678-b124-874b1d704f23", "on_behalf_of_farmer_id": null, "is_system_generated": false, "reason_code": null, "photos": []}
+$ POST http://localhost:8000/v1/events/01a19822-9223-742c-8c34-10160824e76c/versions
+  body: {"client_id":"01a19824-a516-7945-9cd3-1430ea32621b","data":{"event_id":"01a19822-9223-742c-8c34-10160824e76c","version_no":2,"subject_type":"lot","lot_id":"01a19822-91be-7efe-8b99-635b9d4a920e","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"harvest","instance_no":1,"occurred_on":"2026-09-02","change_kind":"correct","reason_code":"entered_by_mistake","payload":{"quantity":{"value":112,"unit":"kg"},"bags":5},"clocks":{"device_time":"2026-11-01T17:25:00+00:00"}}}
+-> HTTP 200  etag=None
+  {"client_id": "01a19824-a516-7945-9cd3-1430ea32621b", "status": "accepted", "server_id": "01a19824-a516-7945-9cd3-1430ea32621b", "photo_uploads": [], "error": null}
+  CHECK PASS: officer correction of lot C's harvest -> 200 version 2
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/rebuild
+-> HTTP 202  etag=None
+  {"id": "01a19824-a55b-7785-937b-d611d7c6c2b0", "batch_id": "01a19822-94cf-7100-bedc-ecf49185f598", "build_no": 3, "generation": 3, "status": "queued", "trigger": "rebuild", "built_at": null, "html_key": null, "json_key": null, "qr_key": null, "error": null}
+  CHECK PASS: rebuild -> 202 build_no 3
+$ GET http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/builds
+-> HTTP 200  etag=None
+  {"items": [{"id": "01a19822-f179-78a7-95d7-6de77d4fd1bd", "batch_id": "01a19822-94cf-7100-bedc-ecf49185f598", "build_no": 1, "generation": 1, "status": "failed", "trigger": "publish", "built_at": null, "html_key": null, "json_key": null, "qr_key": null, "error": {"code": "public_record_invalid", "details": [{"loc": ["lots", 0, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 0, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}, {"loc": ["lots", 1, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 1, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}, {"loc": ["lots", 2, "place", "village"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "block"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "district"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "place", "state"], "msg": "String should have at least 1 character", "type": "string_too_short"}, {"loc": ["lots", 2, "farming_type"], "msg": "Input should be 'irrigated' or 'rainfed'", "type": "literal_error"}]}}, {"id": "01a19824-8ba6-7b64-be17-9cb44db9453c", "batch_id": "01a19822-94cf-7100-bedc-ecf49185f598", "build_no": 2, "generation": 2, "status": "built", "trigger": "rebuild", "built_at": "2026-11-01T17:24:55.926863Z", "html_key": "batches/GQ6QTKYZYVEP/index.html", "json_key": "batches/GQ6QTKYZYVEP/data.json", "qr_key": "batches/GQ6QTKYZYVEP/qr.png", "error": null}, {"id": "01a19824-a55b-7785-937b-d611d7c6c2b0", "ba ...
+  CHECK PASS: build 3 built
+  data.json versions: [('AaGX6dNqMqAoVvXUqDlpJB8JJX9sTnka', True, '2026-11-01 17:25:01+00:00'), ('AaGX6dNn1bjQnElPE_SfgFwzpATx8_Gv', False, '2026-11-01 17:24:55+00:00')]
+  (IsLatest, generation) per version: [(True, '3'), (False, '2')]
+  index.html versions: 2
+  CHECK PASS: data.json keeps 2 versions: generation 2 (old) and 3 (latest); index.html 2 versions
+  sql> select build_no, generation, trigger, status from page_builds where batch_id='01a19822-94cf-7100-bedc-ecf49185f598' order by build_no
+  =>  '1|1|publish|failed\n2|2|rebuild|built\n3|3|rebuild|built'
+# exit: 0

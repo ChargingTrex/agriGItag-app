@@ -1,0 +1,403 @@
+$ cd apps/api && QA_WORLD=... QA_TOKEN_CACHE=... uv run python ../../docs/agents/qa/B16/logs/live_b16.py
+# 2026-11-01T17:27:43Z
+# sign-in +919000000003 on device a0060e1d-00d4-47f6-92bc-53cffec51a84
+$ POST http://localhost:8000/v1/auth/otp/request
+  body: {"phone":"+919000000003"}
+-> HTTP 204  etag=None
+  
+$ POST http://localhost:8000/v1/auth/otp/verify
+  body: {"phone":"+919000000003","code":"123456","device_id":"a0060e1d-00d4-47f6-92bc-53cffec51a84","platform":"android"}
+-> HTTP 200  etag=None
+  {"kind": "pin_required", "pin_token": "<redacted>", "expires_in": 300, "pin_set": false}
+$ POST http://localhost:8000/v1/auth/pin/verify
+  body: {"pin":"2468"}
+-> HTTP 200  etag=None
+  {"kind": "session", "access_token": "<redacted>", "refresh_token": "<redacted>", "expires_in": 900, "roles": ["qc_officer"], "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597"}
+  sql> select id from users where phone='+919000000003'
+  =>  '01a197e0-9a40-7ce9-9928-837e73285e1b'
+
+## 1 G5: QC push [quality_reading R (intake 10.5 %), lot_intake I (230 kg)] on lot L ready_for_sale packed 200 kg
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19827-2787-73f6-99af-2e1a423ab498","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 L"}
+-> HTTP 201  etag=None
+  {"id": "01a19827-2787-73f6-99af-2e1a423ab498", "code": "LOTF70495D0", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 L", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"690febc7-33cf-47f7-9e7e-e0184de22e0f","app_version":"1.0.3","device_time":"2026-11-01T17:27:45.334853+00:00","entries":[{"client_id":"01a19827-27b7-77be-b98b-eaba59c5c9aa","kind":"event_version","data":{"event_id":"01a19827-27b6-7de6-9cf9-8808d0c4f720","version_no":1,"subject_type":"lot","lot_id":"01a19827-2787-73f6-99af-2e1a423ab498","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"packing","instance_no":1,"occurred_on":"2026-10-29","payload":{"quantity":{"value":200,"unit":"kg"},"bags":8},"clocks":{"device_time":"2026-11-01T17:27:45.334325+00:00"},"gps":{"lat":9.5 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:27:45.399270Z", "results": [{"client_id": "01a19827-27b7-77be-b98b-eaba59c5c9aa", "status": "accepted", "server_id": "01a19827-27b7-77be-b98b-eaba59c5c9aa", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19827-27fe-7c1a-9ab3-4543811899e0","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:27:45.406161+00:00","lot_id":"01a19827-2787-73f6-99af-2e1a423ab498"}
+-> HTTP 201  etag=None
+  {"id": "01a19827-27fe-7c1a-9ab3-4543811899e0", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19827-2787-73f6-99af-2e1a423ab498", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:27:45.406161Z", "server_received_at": "2026-11-01T17:27:45.433904Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19827-2787-73f6-99af-2e1a423ab498/ready
+-> HTTP 200  etag=None
+  {"id": "01a19827-2787-73f6-99af-2e1a423ab498", "code": "LOTF70495D0", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 L", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T17:27:45.475986Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"122c306d-ee44-4f5d-af72-609e28fd9b2b","app_version":"1.0.3","device_time":"2026-11-01T17:27:45.492265+00:00","entries":[{"client_id":"01a19827-2853-78f3-a966-921937c4d614","kind":"quality_reading","data":{"stage":"intake","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:27:45.491987+00:00","lot_id":"01a19827-2787-73f6-99af-2e1a423ab498"},"assist_session_id":null},{"client_id":"01a19827-2854-7a60-b368-99ea5aec75c6","kind":"lot_intake","data":{"lot_id":"01a ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:27:45.673542Z", "results": [{"client_id": "01a19827-2853-78f3-a966-921937c4d614", "status": "accepted", "server_id": "01a19827-2853-78f3-a966-921937c4d614", "photo_uploads": [], "error": null}, {"client_id": "01a19827-2854-7a60-b368-99ea5aec75c6", "status": "accepted", "server_id": "01a19827-2854-7a60-b368-99ea5aec75c6", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted']
+  CHECK PASS: 2 x accepted, intake server_id == I
+  sql> select id, processor_id, accepted_by_user_id, received_kg from lot_intakes where lot_id='01a19827-2787-73f6-99af-2e1a423ab498'
+  =>  '01a19827-2854-7a60-b368-99ea5aec75c6|01a197e0-9a73-78d5-be26-38029aebba19|01a197e0-9a40-7ce9-9928-837e73285e1b|230.000'
+  CHECK PASS: one lot_intakes row: id I, processor P (the FPO's only own one), accepted_by = QC user, 230 kg
+  sql> select status from lots where id='01a19827-2787-73f6-99af-2e1a423ab498'
+  =>  'received'
+  CHECK PASS: lot L received
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19827-2787-73f6-99af-2e1a423ab498' and status='open'
+  =>  'yield_check_unavailable:info'
+  CHECK FAIL: L's open flags include quantity_mismatch
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"4cba3847-226d-4742-9e82-c839304fd464","app_version":"1.0.3","device_time":"2026-11-01T17:28:49.031134+00:00","entries":[{"client_id":"01a19827-2853-78f3-a966-921937c4d614","kind":"quality_reading","data":{"stage":"intake","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:27:45.491987+00:00","lot_id":"01a19827-2787-73f6-99af-2e1a423ab498"},"assist_session_id":null},{"client_id":"01a19827-2854-7a60-b368-99ea5aec75c6","kind":"lot_intake","data":{"lot_id":"01a ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:49.087183Z", "results": [{"client_id": "01a19827-2853-78f3-a966-921937c4d614", "status": "duplicate", "server_id": "01a19827-2853-78f3-a966-921937c4d614", "photo_uploads": [], "error": null}, {"client_id": "01a19827-2854-7a60-b368-99ea5aec75c6", "status": "duplicate", "server_id": "01a19827-2854-7a60-b368-99ea5aec75c6", "photo_uploads": [], "error": null}]}
+  statuses: ['duplicate', 'duplicate']
+  CHECK PASS: same push again -> 2 x duplicate
+  sql> select count(*) from lot_intakes where lot_id='01a19827-2787-73f6-99af-2e1a423ab498'
+  =>  '1'
+  CHECK PASS: still one intake row
+
+## 2 processor: explicit own -> accepted with it; another FPO's -> not_found (zero/two own: integration test)
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-211f-7aff-87b2-46be1ec0af3f","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 explicit processor"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-211f-7aff-87b2-46be1ec0af3f", "code": "LOT91A88817", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 explicit processor", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19828-2139-7447-bf13-0691c14fc766","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:49.209712+00:00","lot_id":"01a19828-211f-7aff-87b2-46be1ec0af3f"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2139-7447-bf13-0691c14fc766", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19828-211f-7aff-87b2-46be1ec0af3f", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:28:49.209712Z", "server_received_at": "2026-11-01T17:28:49.226476Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a7d3e0fd-0c2a-473b-9127-7fe3dee91094","app_version":"1.0.3","device_time":"2026-11-01T17:28:49.241921+00:00","entries":[{"client_id":"01a19828-2159-7e68-ab50-5a4fd0a5ede0","kind":"lot_intake","data":{"lot_id":"01a19828-211f-7aff-87b2-46be1ec0af3f","sale_date":"2026-11-01","received":{"value":"50","unit":"kg"},"processor_id":"01a197e0-9a73-78d5-be26-38029aebba19"}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:49.322042Z", "results": [{"client_id": "01a19828-2159-7e68-ab50-5a4fd0a5ede0", "status": "accepted", "server_id": "01a19828-2159-7e68-ab50-5a4fd0a5ede0", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  CHECK PASS: explicit own processor -> accepted (open lot passes the gate at intake)
+  sql> select processor_id from lot_intakes where lot_id='01a19828-211f-7aff-87b2-46be1ec0af3f'
+  =>  '01a197e0-9a73-78d5-be26-38029aebba19'
+  CHECK PASS: stored with that processor
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-2207-720f-82ba-0088146e98ba","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 foreign processor"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2207-720f-82ba-0088146e98ba", "code": "LOT9791F6A1", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 foreign processor", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19828-2223-7d7c-a81c-115e5963df65","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:49.444113+00:00","lot_id":"01a19828-2207-720f-82ba-0088146e98ba"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2223-7d7c-a81c-115e5963df65", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19828-2207-720f-82ba-0088146e98ba", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:28:49.444113Z", "server_received_at": "2026-11-01T17:28:49.467594Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"4832bcb6-aa5d-4e15-93d9-263dad45bd11","app_version":"1.0.3","device_time":"2026-11-01T17:28:49.482903+00:00","entries":[{"client_id":"01a19828-224b-7568-bdb2-89ecd05b79ab","kind":"lot_intake","data":{"lot_id":"01a19828-2207-720f-82ba-0088146e98ba","sale_date":"2026-11-01","received":{"value":"50","unit":"kg"},"processor_id":"01a19828-224a-7f9f-ac23-39c8408c94c4"}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:49.497352Z", "results": [{"client_id": "01a19828-224b-7568-bdb2-89ecd05b79ab", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "not_found", "message": "Not found.", "details": {"processor_id": "01a19828-224a-7f9f-ac23-39c8408c94c4"}}}]}
+  statuses: ['rejected:not_found']
+  CHECK PASS: unknown/foreign processor -> rejected not_found
+
+## 3 open lot: drying-end 10.9 -> accepted, received, ready_at set; 11.5 or none -> gate_not_met moisture_gate_failed
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-225c-7297-a3a5-256954384d7d","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 open 10.9"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-225c-7297-a3a5-256954384d7d", "code": "LOT6D99F874", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 open 10.9", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19828-2272-79b4-8b5a-69dc4ccc58b7","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.9","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:49.522042+00:00","lot_id":"01a19828-225c-7297-a3a5-256954384d7d"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2272-79b4-8b5a-69dc4ccc58b7", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19828-225c-7297-a3a5-256954384d7d", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.9", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:28:49.522042Z", "server_received_at": "2026-11-01T17:28:49.540059Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"7a20b02b-c7be-407a-b97b-b98412fb3676","app_version":"1.0.3","device_time":"2026-11-01T17:28:49.552952+00:00","entries":[{"client_id":"01a19828-2290-7fb2-81ce-ac9640aaa73c","kind":"lot_intake","data":{"lot_id":"01a19828-225c-7297-a3a5-256954384d7d","sale_date":"2026-11-01","received":{"value":"60","unit":"kg"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:49.670613Z", "results": [{"client_id": "01a19828-2290-7fb2-81ce-ac9640aaa73c", "status": "accepted", "server_id": "01a19828-2290-7fb2-81ce-ac9640aaa73c", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  CHECK PASS: 10.9 % -> accepted
+  sql> select status, ready_at is not null from lots where id='01a19828-225c-7297-a3a5-256954384d7d'
+  =>  'received|t'
+  CHECK PASS: L received with ready_at
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-2373-7a29-9de7-9b3ec3b562d2","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 open 11.5 %"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2373-7a29-9de7-9b3ec3b562d2", "code": "LOTC154B157", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 open 11.5 %", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19828-2392-7c12-bf55-ba4c8332c721","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"11.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:49.811054+00:00","lot_id":"01a19828-2373-7a29-9de7-9b3ec3b562d2"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2392-7c12-bf55-ba4c8332c721", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19828-2373-7a29-9de7-9b3ec3b562d2", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "11.5", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:28:49.811054Z", "server_received_at": "2026-11-01T17:28:49.829591Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"75530967-82ee-480d-95cd-1f57545cffd9","app_version":"1.0.3","device_time":"2026-11-01T17:28:49.845019+00:00","entries":[{"client_id":"01a19828-23b4-7ea5-9d41-d5ac3a3024fc","kind":"lot_intake","data":{"lot_id":"01a19828-2373-7a29-9de7-9b3ec3b562d2","sale_date":"2026-11-01","received":{"value":"60","unit":"kg"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:49.868287Z", "results": [{"client_id": "01a19828-23b4-7ea5-9d41-d5ac3a3024fc", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "moisture_gate_failed", "message": "The latest drying-end moisture reading is missing or above the ready-for-sale limit.", "gate": "ready_for_sale"}]}}}]}
+  statuses: ['rejected:gate_not_met']
+  reasons: ['moisture_gate_failed']
+  sql> select status, ready_at is null from lots where id='01a19828-2373-7a29-9de7-9b3ec3b562d2'
+  =>  'open|t'
+  sql> select count(*) from lot_intakes where lot_id='01a19828-2373-7a29-9de7-9b3ec3b562d2'
+  =>  '0'
+  CHECK PASS: 11.5 % -> rejected gate_not_met [moisture_gate_failed]; lot unchanged; no intake row
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-246a-7fba-b5d4-14368783f859","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 open no reading"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-246a-7fba-b5d4-14368783f859", "code": "LOT0BFB7400", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 open no reading", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"71a09527-2f20-4004-923d-dc5e117b33fa","app_version":"1.0.3","device_time":"2026-11-01T17:28:50.049640+00:00","entries":[{"client_id":"01a19828-2481-7d6b-8fdb-c94f56de6b0d","kind":"lot_intake","data":{"lot_id":"01a19828-246a-7fba-b5d4-14368783f859","sale_date":"2026-11-01","received":{"value":"60","unit":"kg"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:50.070767Z", "results": [{"client_id": "01a19828-2481-7d6b-8fdb-c94f56de6b0d", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "moisture_gate_failed", "message": "The latest drying-end moisture reading is missing or above the ready-for-sale limit.", "gate": "ready_for_sale"}]}}}]}
+  statuses: ['rejected:gate_not_met']
+  reasons: ['moisture_gate_failed']
+  sql> select status, ready_at is null from lots where id='01a19828-246a-7fba-b5d4-14368783f859'
+  =>  'open|t'
+  sql> select count(*) from lot_intakes where lot_id='01a19828-246a-7fba-b5d4-14368783f859'
+  =>  '0'
+  CHECK PASS: no reading -> rejected gate_not_met [moisture_gate_failed]; lot unchanged; no intake row
+
+## 4 roles: farmer / field officer token -> forbidden; correction by QC -> forbidden, by FPO admin -> accepted
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-2534-79f0-b79a-d75ff8bacd9d","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 roles"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2534-79f0-b79a-d75ff8bacd9d", "code": "LOTA8757C07", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 roles", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19828-254b-71ff-9e15-60ead2a37501","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:50.251541+00:00","lot_id":"01a19828-2534-79f0-b79a-d75ff8bacd9d"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-254b-71ff-9e15-60ead2a37501", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19828-2534-79f0-b79a-d75ff8bacd9d", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:28:50.251541Z", "server_received_at": "2026-11-01T17:28:50.265241Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"534d39e3-9dce-48a7-8257-77ee83834e95","app_version":"1.0.3","device_time":"2026-11-01T17:28:50.275590+00:00","entries":[{"client_id":"01a19828-2563-7200-a231-d40d3bbc8119","kind":"lot_intake","data":{"lot_id":"01a19828-2534-79f0-b79a-d75ff8bacd9d","sale_date":"2026-11-01","received":{"value":"40","unit":"kg"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:50.289059Z", "results": [{"client_id": "01a19828-2563-7200-a231-d40d3bbc8119", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "Your role does not allow this action.", "details": {"required_roles": ["qc_officer", "fpo_admin"]}}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: lot_intake by farmer -> rejected forbidden
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"2dd41351-17b8-4a28-9139-1da1fd2cfc70","app_version":"1.0.3","device_time":"2026-11-01T17:28:50.292358+00:00","entries":[{"client_id":"01a19828-2574-75fe-ace9-710acc36b98c","kind":"lot_intake","data":{"lot_id":"01a19828-2534-79f0-b79a-d75ff8bacd9d","sale_date":"2026-11-01","received":{"value":"40","unit":"kg"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:50.307397Z", "results": [{"client_id": "01a19828-2574-75fe-ace9-710acc36b98c", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "Your role does not allow this action.", "details": {"required_roles": ["qc_officer", "fpo_admin"]}}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: lot_intake by field officer -> rejected forbidden
+  (no viewer user exists in the seeded FPO; the viewer case is tests/unit/test_b16_logic.py::test_intake_refused_for_other_roles)
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"9d70eaaa-1142-4823-8ce0-bcc5668e31a4","app_version":"1.0.3","device_time":"2026-11-01T17:28:50.310344+00:00","entries":[{"client_id":"01a19828-2586-7385-be22-959fedf0d95e","kind":"lot_intake","data":{"lot_id":"01a19828-225c-7297-a3a5-256954384d7d","sale_date":"2026-11-01","received":{"value":"58","unit":"kg"},"supersedes_intake_id":"01a19828-2290-7fb2-81ce-ac9640aaa73c","correction_reason":"scale misread"}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:50.322071Z", "results": [{"client_id": "01a19828-2586-7385-be22-959fedf0d95e", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "Only an FPO admin can correct an intake.", "details": {"required_roles": ["fpo_admin"]}}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: correction by QC officer -> rejected forbidden
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a6f5fe9b-e2d8-4b14-a04f-06946f34125b","app_version":"1.0.3","device_time":"2026-11-01T17:28:50.324871+00:00","entries":[{"client_id":"01a19828-2594-713d-ac2c-9e53b6a50077","kind":"lot_intake","data":{"lot_id":"01a19828-225c-7297-a3a5-256954384d7d","sale_date":"2026-11-01","received":{"value":"58","unit":"kg"},"supersedes_intake_id":"01a19828-2290-7fb2-81ce-ac9640aaa73c","correction_reason":"scale misread"}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:50.371858Z", "results": [{"client_id": "01a19828-2594-713d-ac2c-9e53b6a50077", "status": "accepted", "server_id": "01a19828-2594-713d-ac2c-9e53b6a50077", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  CHECK PASS: correction by FPO admin -> accepted
+  sql> select received_kg, supersedes_intake_id from lot_intakes where lot_id='01a19828-225c-7297-a3a5-256954384d7d' order by created_at
+  =>  '60.000|\n58.000|01a19828-2290-7fb2-81ce-ac9640aaa73c'
+   60.000|
+58.000|01a19828-2290-7fb2-81ce-ac9640aaa73c
+
+## 5 POST /v1/intakes by a QC officer -> 201; by a field officer -> 403
+$ POST http://localhost:8000/v1/intakes
+  body: {"client_id":"01a19828-260d-7a44-b8c9-17b66ed1d39b","lot_id":"01a19828-2534-79f0-b79a-d75ff8bacd9d","sale_date":"2026-11-01","received":{"value":"40","unit":"kg"}}
+-> HTTP 403  etag=None
+  {"error": {"code": "forbidden", "message": "Your role does not allow this action.", "details": {"required_roles": ["qc_officer", "fpo_admin"]}}}
+  CHECK PASS: field officer -> 403 forbidden
+$ POST http://localhost:8000/v1/intakes
+  body: {"client_id":"01a19828-260d-7a44-b8c9-17b66ed1d39b","lot_id":"01a19828-2534-79f0-b79a-d75ff8bacd9d","sale_date":"2026-11-01","received":{"value":"40","unit":"kg"}}
+-> HTTP 201  etag=None
+  {"id": "01a19828-260d-7a44-b8c9-17b66ed1d39b", "lot_id": "01a19828-2534-79f0-b79a-d75ff8bacd9d", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "sale_date": "2026-11-01", "received": {"value": "40", "unit": "kg"}, "price_per_kg": null, "intake_moisture_reading_id": null, "accepted_by_user_id": "01a197e0-9a40-7ce9-9928-837e73285e1b", "reconciliation": {"harvested": null, "packed": null, "received": {"value": "40", "unit": "kg"}, "used": null, "in_order": true}, "supersedes_intake_id": null, "correction_reason": null, "flags": [{"id": "01a19828-2670-7382-af60-a587c65c0fab", "subject_typ ...
+  CHECK PASS: QC officer -> 201 (processor defaulted)
+
+## 6 non-GI batch over GI-only holds (plot_outside_gi_region + yield_over_ceiling) -> gates pass, publish 202
+$ POST http://localhost:8000/v1/plots
+  body: {"client_id":"01a19828-268b-7d6b-aadb-9f67a326c81d","farmer_id":"56a622ff-6789-4ae0-9a65-775491f5d2cf","pin":{"lat":9.9252,"lon":78.1198,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:28:50.571180+00:00","declared_area":{"value":"1","unit":"acre"},"code":"QA-P8-OUT"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-268b-7d6b-aadb-9f67a326c81d", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "code": "QA-P8-OUT", "gi_tag_id": null, "pin": {"lat": 9.9252, "lon": 78.1198, "accuracy_m": 5.0}, "pin_method": "live_gps", "pin_device_time": "2026-11-01T17:28:50.571180Z", "pin_gps_time": null, "pin_server_received_at": "2026-11-01T17:28:50.593896Z", "declared_area": {"value": "1.000", "unit": "acre"}, "land_record_ref": null, "walked_area": null, "area_gap_pct": null, "area_gap_exceeds": false, "farming_type": null, "irrigation_source": null, "soil_type": null, "location_status": "outside", "location_method_label": "Live GPS pin", "revision_no": 1, "reviewed_at": null, "review_method": null, "review_outcome": null, "region_check": {"status": "outside", "distance_m": 30438.46224541, "region_version_id": "01a197e0-997b-71ac-ac2b-43d2e34f8433", "buffer_m": "150.000"}}
+  sql> select location_status from plots where id='01a19828-268b-7d6b-aadb-9f67a326c81d'
+  =>  'outside'
+   outside
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-2731-7e4a-a3da-f4f1cbefa541","plot_id":"01a19828-268b-7d6b-aadb-9f67a326c81d","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 outside region"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2731-7e4a-a3da-f4f1cbefa541", "code": "LOT8AD66EFE", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19828-268b-7d6b-aadb-9f67a326c81d", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 outside region", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-274d-7cde-bccc-a8b2bb1ec593","plot_id":"01a19822-8d81-7fbb-ab3c-05e3bfca8a92","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 yield hold"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-274d-7cde-bccc-a8b2bb1ec593", "code": "LOT4F6BA6E9", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d81-7fbb-ab3c-05e3bfca8a92", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 yield hold", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"2cfe706a-46e0-481e-89d7-20d46a2331c7","app_version":"1.0.3","device_time":"2026-11-01T17:28:50.791468+00:00","entries":[{"client_id":"01a19828-2768-7fb4-af10-ace1d482f6b4","kind":"event_version","data":{"event_id":"01a19828-2767-7334-af5a-731b5426dc6a","version_no":1,"subject_type":"lot","lot_id":"01a19828-274d-7cde-bccc-a8b2bb1ec593","plot_id":"01a19822-8d81-7fbb-ab3c-05e3bfca8a92","event_type":"harvest","instance_no":1,"occurred_on":"2026-10-22","payload":{"quantity":{"value":2000,"unit":"kg"},"bags":80},"clocks":{"device_time":"2026-11-01T17:28:50.791406+00:00"},"gps":{"lat":9 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:50.868135Z", "results": [{"client_id": "01a19828-2768-7fb4-af10-ace1d482f6b4", "status": "accepted", "server_id": "01a19828-2768-7fb4-af10-ace1d482f6b4", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19828-27b7-7764-b8c0-ad49c12d524c","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:50.871817+00:00","lot_id":"01a19828-2731-7e4a-a3da-f4f1cbefa541"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-27b7-7764-b8c0-ad49c12d524c", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19828-2731-7e4a-a3da-f4f1cbefa541", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:28:50.871817Z", "server_received_at": "2026-11-01T17:28:50.894496Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"0a97b97c-065a-443d-9e06-96607c7ade09","app_version":"1.0.3","device_time":"2026-11-01T17:28:50.915188+00:00","entries":[{"client_id":"01a19828-27e3-7df7-b825-892f08b035ce","kind":"lot_intake","data":{"lot_id":"01a19828-2731-7e4a-a3da-f4f1cbefa541","sale_date":"2026-11-01","received":{"value":"50","unit":"kg"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:51.010682Z", "results": [{"client_id": "01a19828-27e3-7df7-b825-892f08b035ce", "status": "accepted", "server_id": "01a19828-27e3-7df7-b825-892f08b035ce", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19828-2845-7764-b088-89abc87cae74","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:51.013782+00:00","lot_id":"01a19828-274d-7cde-bccc-a8b2bb1ec593"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2845-7764-b088-89abc87cae74", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19828-274d-7cde-bccc-a8b2bb1ec593", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:28:51.013782Z", "server_received_at": "2026-11-01T17:28:51.034539Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"b9b106a6-8f9b-4059-9dbe-7a93eef12120","app_version":"1.0.3","device_time":"2026-11-01T17:28:51.050218+00:00","entries":[{"client_id":"01a19828-286a-71f9-ba09-08fc224437c6","kind":"lot_intake","data":{"lot_id":"01a19828-274d-7cde-bccc-a8b2bb1ec593","sale_date":"2026-11-01","received":{"value":"50","unit":"kg"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:52.143126Z", "results": [{"client_id": "01a19828-286a-71f9-ba09-08fc224437c6", "status": "accepted", "server_id": "01a19828-286a-71f9-ba09-08fc224437c6", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19828-268b-7d6b-aadb-9f67a326c81d' and status='open'
+  =>  'plot_outside_gi_region:hold'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19828-274d-7cde-bccc-a8b2bb1ec593' and status='open'
+  =>  'yield_over_ceiling:hold'
+  CHECK PASS: open holds: plot_outside_gi_region on the plot, yield_over_ceiling on the lot
+$ POST http://localhost:8000/v1/batches
+  body: {"client_id":"01a19828-2d5c-7677-ac34-cb999eed0821","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","gi_label_requested":false,"lot_ids":["01a19828-2731-7e4a-a3da-f4f1cbefa541","01a19828-274d-7cde-bccc-a8b2bb1ec593"]}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2d5c-7677-ac34-cb999eed0821", "code": "7TEPK2S83C58", "superlot_code": "COMBO_LOT_77FD0B71", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": false, "gi_verified": false, "gi_block_reasons": [], "total_received": {"value": "100.000", "unit": "kg"}, "graded": null, "packed": null, "computed_grade": null, "standards_profile_version_id": null, "pack_date": null, "best_before_date": null, "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "second_signoff_required": false, "second_signoff_by": null, "shares": [{"lot_id": "01a19828-2731-7e4a-a3da-f4f1cbefa541", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "50.000", "unit": "kg"}, "share_pct": "50.000"}, {"lot_id": "01a19828-274d-7cde-bccc-a8b2bb1ec593", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "50.000", "unit": "kg"}, "share_pct": "50.000"}], "flags": [{"id": "01a19828-2c90-76f4-bb3e-bca930161906", "subject_type": "lot", "subject_id": "01a19828-274d-7cde-bccc-a8b2bb1ec593", "rule_code": "yield_over_ceiling", "severity": "hold", "status": "open"}, {"id": "01a19828-28aa-7a3f-b7e4-138b5267e724", "subject_type": "event", "subject_id": "01a19828-2767-7334-af5a-731b5426dc6a", "rule_code": "event_out_of_order", "severity": "warn", "status": "open"}, {"id": "01a19828-2825-766e-b137-7086d995545c", "subject_type": "lot", "subject_id": "01a19828-2731-7e4a-a3da-f4f1cbefa541", "rule_code": "yield_check_unavailable", "severity": "info", "status": "open"}, {"id": "01a19828-2727-7b20-9467-e905d60b919b", "subject_type": "plot", "subject_id": "01a19828-268b-7d6b-aadb-9f67a326c81d", "rule_code": "plot_outside_gi_region", "severity": "hold", "status": "open"}]}
+$ POST http://localhost:8000/v1/batches/01a19828-2d5c-7677-ac34-cb999eed0821/grading
+  body: {"declared_grade":"Standard","readings":[{"client_id":"01a19828-2df5-7b7c-996a-7525ebe20b9e","stage":"grading","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:52.469588+00:00","batch_id":"01a19828-2d5c-7677-ac34-cb999eed0821"}]}
+-> HTTP 201  etag=None
+  {"id": "01a19828-2e24-7faa-95c9-8c27e4127273", "batch_id": "01a19828-2d5c-7677-ac34-cb999eed0821", "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9", "computed_grade": "Standard", "declared_grade": "Standard", "status": "ok", "lab_certified": false, "per_parameter": {"moisture": {"parameter": "moisture", "outcome": "graded", "grade": "Standard", "reading_id": "01a19828-2df5-7b7c-996a-7525ebe20b9e", "value": "10.5", "unit": "%", "source": "instrument", "limit": {"min": null, "max": 11.0}, "capped_by_source": false, "lab_certified": false}, "extraneous_matter": {"parameter": "extraneo ...
+$ POST http://localhost:8000/v1/batches/01a19828-2d5c-7677-ac34-cb999eed0821/grading/approve
+  body: {"graded":{"value":95,"unit":"kg"}}
+-> HTTP 200  etag=None
+  {"id": "01a19828-2d5c-7677-ac34-cb999eed0821", "code": "7TEPK2S83C58", "superlot_code": "COMBO_LOT_77FD0B71", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "graded", "gi_label_requested": false, "gi_verified": false, "gi_block_reasons": [], "total_received": {"value": "100.000", "unit": "kg"}, "graded": {"value": "95", "unit": "kg"}, "packed": null, "computed_grade": "Standard", "standards_profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9", "pack_date": null, "best_before_date": null, "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "second_signoff_required": false, "second_signoff_by": null, "shares": [{"lot_id": "01a19828-2731-7e4a-a3da-f4f1cbefa541", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "50.000", "unit": "kg"}, "share_pct": "50.000"}, {"lot_id": "01a19828-274d-7cde-bccc-a8b2bb1ec593", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "50.000", "unit": "kg"}, "share_pct": "50.000"}], "flags": [{"id": "01a19828-2e45-7b92-a5db-50a0d7d77368", "subject_type": "batch", "subject_id": "01a19828-2d5c-7677-ac34-cb999eed0821", "rule_code": "profile_incomplete", "severity": "info", "status": "open"}, {"id": "01a19828-2c90-76f4-bb3e-bca930161906", "subject_type": "lot", "subject_id": "01a19828-274d-7cde-bccc-a8b2bb1ec593", "rule_code": "yield_over_ceiling", "severity": "hold", "status": "open"}, {"id": "01a19828 ...
+$ POST http://localhost:8000/v1/batches/01a19828-2d5c-7677-ac34-cb999eed0821/final-packing
+  body: {"packed":{"value":95,"unit":"kg"},"pack_date":"2026-11-01","best_before_date":"2027-11-01"}
+-> HTTP 200  etag=None
+  {"id": "01a19828-2d5c-7677-ac34-cb999eed0821", "code": "7TEPK2S83C58", "superlot_code": "COMBO_LOT_77FD0B71", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "packed", "gi_label_requested": false, "gi_verified": false, "gi_block_reasons": [], "total_received": {"value": "100.000", "unit": "kg"}, "graded": {"value": "95.000", "unit": "kg"}, "packed": {"value": "95", "unit": "kg"}, "computed_grade": "Standard", "standards_profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9", "pack_date": "2026-11-01", "best_before_date": "2027-11-01", "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "second_signoff_required": false, "second_signoff_by": null, "shares": [{"lot_id": "01a19828-2731-7e4a-a3da-f4f1cbefa541", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "50.000", "unit": "kg"}, "share_pct": "50.000"}, {"lot_id": "01a19828-274d-7cde-bccc-a8b2bb1ec593", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "50.000", "unit": "kg"}, "share_pct": "50.000"}], "flags": [{"id": "01a19828-2e45-7b92-a5db-50a0d7d77368", "subject_type": "batch", "subject_id": "01a19828-2d5c-7677-ac34-cb999eed0821", "rule_code": "profile_incomplete", "severity": "info", "status": "open"}, {"id": "01a19828-2c90-76f4-bb3e-bca930161906", "subject_type": "lot", "subject_id": "01a19828-274d-7cde-bccc-a8b2bb1ec593", "rule_code": "yield_over_ceiling", "severity" ...
+$ POST http://localhost:8000/v1/batches/01a19828-2d5c-7677-ac34-cb999eed0821/publish
+-> HTTP 202  etag=None
+  {"batch_id": "01a19828-2d5c-7677-ac34-cb999eed0821", "code": "7TEPK2S83C58", "build_no": 1, "page_build_id": "01a19828-3021-7e95-a2ea-f1e6d30765b4", "status": "queued"}
+  CHECK PASS: approve 200, final packing 200, publish 202
+  sql> select build_no, status from page_builds where batch_id='01a19828-2d5c-7677-ac34-cb999eed0821'
+  =>  '1|queued'
+   1|queued
+$ GET http://localhost:8000/v1/batches/01a19828-2d5c-7677-ac34-cb999eed0821
+-> HTTP 200  etag=None
+  {"id": "01a19828-2d5c-7677-ac34-cb999eed0821", "code": "7TEPK2S83C58", "superlot_code": "COMBO_LOT_77FD0B71", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "published", "gi_label_requested": false, "gi_verified": false, "gi_block_reasons": [], "total_received": {"value": "100.000", "unit": "kg"}, "graded": {"value": "95.000", "unit": "kg"}, "packed": {"value": "95.000", "unit": "kg"}, "computed_grade": "Standard", "standards_profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9", "pack_date": "2026-11-01", "best_before ...
+  CHECK PASS: gi_verified=false, gi_block_reasons=[]
+  sql> select stage, blocked_reasons::text from batch_approvals where batch_id='01a19828-2d5c-7677-ac34-cb999eed0821' order by created_at
+  =>  'intake|["event_out_of_order", "plot_outside_gi_region", "yield_check_unavailable", "yield_over_ceiling"]\ngrading|["event_out_of_order", "plot_outside_gi_region", "profile_incomplete", "yield_check_unavailable", "yield_over_ceiling"]\nfinal_packing|["event_out_of_order", "plot_outside_gi_region", "profile_incomplete", "yield_check_unavailable", "yield_over_ceiling"]\npublish|["event_out_of_order", "plot_outside_gi_region", "profile_incomplete", "yield_check_unavailable", "yield_over_ceiling"]'
+  CHECK PASS: each new batch_approvals.blocked_reasons lists both codes
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19828-268b-7d6b-aadb-9f67a326c81d' and status='open'
+  =>  'plot_outside_gi_region:hold'
+  sql> select string_agg(rule_code||':'||severity, ',' order by rule_code) from flags where subject_id='01a19828-274d-7cde-bccc-a8b2bb1ec593' and status='open'
+  =>  'yield_over_ceiling:hold'
+  CHECK PASS: both flags still open
+
+## 7 GI-requested batch with a GI-only hold -> publish 409 with open_hold_flag, gi_verified=false with reasons
+$ POST http://localhost:8000/v1/batches/01a19822-a02e-79b9-92f0-e9415f166987/publish
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "grading_not_approved", "message": "The grading has not been approved."}, {"code": "final_packing_missing", "message": "Final packing has not been signed off."}, {"code": "open_hold_flag", "message": "A hold flag must be resolved first (GET /v1/flags).", "flag_id": "01a19822-a01c-71b5-84bf-dd55c89a6ca3", "rule_code": "yield_over_ceiling", "subject_type": "lot", "subject_id": "01a19822-9f97-7856-84af-2acc788137a5"}]}}}
+  CHECK PASS: 409 with an open_hold_flag reason naming yield_over_ceiling (batch of lot F from the B09 run)
+$ GET http://localhost:8000/v1/batches/01a19822-a02e-79b9-92f0-e9415f166987
+-> HTTP 200  etag=None
+  {"id": "01a19822-a02e-79b9-92f0-e9415f166987", "code": "Y27EGZ680AFQ", "superlot_code": "COMBO_LOT_48E56CE7", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": true, "gi_verified": false, "gi_block_re ...
+  CHECK PASS: gi_verified=false with reasons
+
+## 8 assist scope: session S2 for the QA farmer; reading on their lot ok, on another farmer's lot / batch -> forbidden
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"84b86efd-8e2c-4781-8690-7ae931926503","app_version":"1.0.3","device_time":"2026-11-01T17:28:53.735222+00:00","entries":[{"client_id":"01a19828-32e6-7ebc-ac6f-685474ca5bf5","kind":"assist_session","data":{"farmer_id":"56a622ff-6789-4ae0-9a65-775491f5d2cf","started_at":"2026-11-01T17:28:53.735133+00:00","started_gps":null}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:53.776048Z", "results": [{"client_id": "01a19828-32e6-7ebc-ac6f-685474ca5bf5", "status": "accepted", "server_id": "01a19828-32e6-7ebc-ac6f-685474ca5bf5", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  CHECK PASS: assist_session S2 accepted
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-3314-7e1c-9efa-b2cafc42f8a8","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 assisted reading"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-3314-7e1c-9efa-b2cafc42f8a8", "code": "LOT5BA241EF", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 assisted reading", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"ab5e64af-968f-4b94-b5aa-0e47831cc8b3","app_version":"1.0.3","device_time":"2026-11-01T17:28:53.859244+00:00","entries":[{"client_id":"01a19828-3362-7446-8cea-f229e3e12d8d","kind":"quality_reading","data":{"stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.2","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:53.859087+00:00","lot_id":"01a19828-3314-7e1c-9efa-b2cafc42f8a8"},"assist_session_id":"01a19828-32e6-7ebc-ac6f-685474ca5bf5"}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:53.934709Z", "results": [{"client_id": "01a19828-3362-7446-8cea-f229e3e12d8d", "status": "accepted", "server_id": "01a19828-3362-7446-8cea-f229e3e12d8d", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  CHECK PASS: drying-end reading on the QA farmer's lot with S2 -> accepted
+  sql> select id from users where phone='+919000000002'
+  =>  '01a197e0-9a3f-7678-b124-874b1d704f23'
+  sql> select actor_user_id, assist_session_id, on_behalf_of_farmer_id from audit_log where entity_type='quality_readings' and entity_id='01a19828-3362-7446-8cea-f229e3e12d8d'
+  =>  '01a197e0-9a3f-7678-b124-874b1d704f23|01a19828-32e6-7ebc-ac6f-685474ca5bf5|56a622ff-6789-4ae0-9a65-775491f5d2cf'
+  CHECK PASS: its audit_log row carries S2 and the QA farmer
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19828-3485-7216-a3b8-1115738fe6ff","plot_id":"01a19825-c5c9-750c-b952-1b7a035e8ade","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 other farmer"}
+-> HTTP 201  etag=None
+  {"id": "01a19828-3485-7216-a3b8-1115738fe6ff", "code": "LOT7D8AEAA0", "farmer_id": "01a19825-c5c6-7054-b51f-c377aaebbf9c", "plot_id": "01a19825-c5c9-750c-b952-1b7a035e8ade", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 other farmer", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"a5bef0d6-73d2-4f93-afbd-30b471c86253","app_version":"1.0.3","device_time":"2026-11-01T17:28:54.182812+00:00","entries":[{"client_id":"01a19828-34a6-75f0-a045-2584ceef1035","kind":"quality_reading","data":{"stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.2","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:54.182746+00:00","lot_id":"01a19828-3485-7216-a3b8-1115738fe6ff"},"assist_session_id":"01a19828-32e6-7ebc-ac6f-685474ca5bf5"}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:54.206013Z", "results": [{"client_id": "01a19828-34a6-75f0-a045-2584ceef1035", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "The assist session is for another farmer.", "details": null}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: same on the B15 farmer F's lot -> rejected forbidden
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"e614afdd-f2c4-4a70-968d-1a6c33eac607","app_version":"1.0.3","device_time":"2026-11-01T17:28:54.208154+00:00","entries":[{"client_id":"01a19828-34c0-7e12-affe-b27fa80ab265","kind":"quality_reading","data":{"stage":"storage","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:28:54.208112+00:00","batch_id":"01a19822-9a38-7b3c-b148-4701af87e67d"},"assist_session_id":"01a19828-32e6-7ebc-ac6f-685474ca5bf5"}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:54.226045Z", "results": [{"client_id": "01a19828-34c0-7e12-affe-b27fa80ab265", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "A batch reading cannot be recorded in assist mode.", "details": null}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: batch quality_reading with S2 -> rejected forbidden
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"2c2fb396-de58-4f0d-9d1b-ed1e29233864","app_version":"1.0.3","device_time":"2026-11-01T17:28:54.228487+00:00","entries":[{"client_id":"01a19828-34d4-7c16-9348-e518c54b755d","kind":"event_version","assist_session_id":"01a19828-32e6-7ebc-ac6f-685474ca5bf5","data":{"event_id":"01a19828-34d5-73e8-b8c3-76a324bb90e0","version_no":1,"subject_type":"batch","batch_id":"01a19822-9a38-7b3c-b148-4701af87e67d","event_type":"grading","instance_no":1,"occurred_on":"2026-11-01","payload":{},"clocks":{"device_time":"2026-11-01T17:28:54.228433+00:00"}}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:54.249071Z", "results": [{"client_id": "01a19828-34d4-7c16-9348-e518c54b755d", "status": "rejected", "server_id": null, "photo_uploads": [], "error": {"code": "forbidden", "message": "A batch event cannot be recorded in assist mode.", "details": null}}]}
+  statuses: ['rejected:forbidden']
+  CHECK PASS: batch event_version with S2 -> rejected forbidden
+
+## 9 flag_resolution with S2 and with an unknown session -> accepted, audit row without assist fields
+  sql> select id from flags where subject_id in ('01a19822-8fbd-7e5e-b2ef-a9dfd13972e9','01a19827-2787-73f6-99af-2e1a423ab498') and rule_code='quantity_mismatch' and status='open' order by subject_id
+  =>  '01a19822-9189-757c-b887-942382e49f51'
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"06c6298b-84e9-4315-9075-0b84a0ac35f5","app_version":"1.0.3","device_time":"2026-11-01T17:28:54.345698+00:00","entries":[{"client_id":"01a19828-354a-7f33-8728-4bb72cb605fd","kind":"flag_resolution","assist_session_id":"01a19828-32e6-7ebc-ac6f-685474ca5bf5","data":{"flag_id":"01a19822-9189-757c-b887-942382e49f51","resolution":"looks_fine","reason_code":"field_visit","note":"QA verifier B16 line 10"}}]}
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:28:54.382063Z", "results": [{"client_id": "01a19828-354a-7f33-8728-4bb72cb605fd", "status": "accepted", "server_id": "01a19822-9189-757c-b887-942382e49f51", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  CHECK PASS: flag_resolution with session S2 -> accepted
+  sql> select count(*) filter (where on_behalf_of_farmer_id is not null or assist_session_id is not null), count(*) from audit_log where entity_id='01a19822-9189-757c-b887-942382e49f51'
+  =>  '0|2'
+  CHECK PASS: its audit_log row has no on_behalf_of_farmer_id / assist_session_id
+# exit: 0

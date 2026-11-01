@@ -1,0 +1,253 @@
+# NOTE (Verifier): sections 6 and 7 of this run FAILED on a Verifier scripting error (grading readings sent without batch_id -> 422 'set exactly one of lot_id and batch_id'); nothing was graded, approved, packed or published here. They were rerun in 03-live-b09-part2.log on the same batches.
+$ cd apps/api && QA_WORLD=<scratchpad>/world.json QA_TOKEN_CACHE=<scratchpad>/tokens.json uv run python ../../docs/agents/qa/B09/logs/live_b09.py
+# 2026-11-01T17:22:42Z
+
+## 0 setup: ids, a calibrated moisture meter, QA plots
+$ GET http://localhost:8000/v1/me
+-> HTTP 200  etag=None
+  {"user": {"id": "01a197e0-9a3e-772c-acc4-93407882f68b", "phone": "+919000000001", "name": "Demo FPO Admin", "name_local": null, "lang": "en", "is_super_admin": false}, "memberships": [{"fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "role": "fpo_admin"}], "device": {"id": "eda28ac8-07f0-44c8-9d54-c914d77d2887", "platform": "android", "app_version": null, "last_seen_at": "2026-11-01T17:18:06.509774Z"}}
+$ GET http://localhost:8000/v1/crops
+-> HTTP 200  etag=None
+  [{"id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "code": "SAMBA_VATHAL", "name_en": "VIRUDHUNAGAR SAMBA VATHAL", "name_local": "\u0bb5\u0bbf\u0bb0\u0bc1\u0ba4\u0bc1\u0ba8\u0b95\u0bb0\u0bcd \u0b9a\u0bae\u0bcd\u0baa\u0bbe \u0bb5\u0ba4\u0bcd\u0ba4\u0bb2\u0bcd", "lang": "ta", "gi_tag_id": "01a197e0-9962-766b-a4d8-4dc931a7ff9f", "event_schema": {"tracks": {"nursery": ["nursery", "sowing"], "main_field": ["land_preparation", "sowing", "harvest", "drying", "packing"]}, "mandatory": ["land_preparation", "nursery", "sowing", "harvest", "drying", "packing"]}, "active": true}]
+$ GET http://localhost:8000/v1/processors
+-> HTTP 200  etag=None
+  [{"id": "01a197e0-9a73-78d5-be26-38029aebba19", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "name": "VIRUDHAI_SCFC_VINOBA_BHAVA_FPO", "kind": "fpo", "address": {"village": "P Thottiyangulam", "block": "Tiruchuli", "taluk": null, "district": "Virudhunagar", "state": "Tamil Nadu", "pin": null}, "fssai_no": "DEMO-FSSAI-12426999000001", "gi_authorised_user_no": "DEMO-GI-AU-883-0001", "address_line": "P Thottiyangulam, Tiruchuli, Virudhunagar, Tamil Nadu"}]
+  sql> select f.id from farmers f join users u on u.id=f.user_id where u.phone='+919000000091'
+  =>  '56a622ff-6789-4ae0-9a65-775491f5d2cf'
+$ POST http://localhost:8000/v1/instruments
+  body: {"kind":"moisture_meter","make_model":"QA Verifier meter B09","serial_no":"QA-B09-01a198","calibrated_on":"2026-10-02","calibration_due_on":"2027-08-28"}
+-> HTTP 201  etag=None
+  {"kind": "moisture_meter", "make_model": "QA Verifier meter B09", "serial_no": "QA-B09-01a198", "calibrated_on": "2026-10-02", "calibration_due_on": "2027-08-28", "calibration_cert_photo_id": null, "active": true, "id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597"}
+$ POST http://localhost:8000/v1/plots
+  body: {"client_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","farmer_id":"56a622ff-6789-4ae0-9a65-775491f5d2cf","pin":{"lat":9.586,"lon":78.112,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:22:43.606951+00:00","declared_area":{"value":"1","unit":"acre"},"code":"QA-P5","land_record_ref":"QA-SURVEY-77/3B"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "code": "QA-P5", "gi_tag_id": null, "pin": {"lat": 9.586, "lon": 78.112, "accuracy_m": 5.0}, "pin_method": "live_gps", "pin_device_time": "2026-11-01T17:22:43.606951Z", "pin_gps_time": null, "pin_server_received_at": "2026-11-01T17:22:43.630856Z", "declared_area": {"value": "1.000", "unit": "acre"}, "land_record_ref": "QA-SURVEY-77/3B", "walked_area": null, "area_gap_pct": null, "area_gap_exceeds": false, "farming_type": null, "irrigation_source": null, "soil_type": null, "location_status": "confirmed", "location_method_label": "Live GPS pin", "revision_no": 1, "reviewed_at": null, "review_method": null, "review_outcome": null, "region_check": {"status": "inside", "distance_m": 0.0, "region_version_id": "01a197e0-997b-71ac-ac2b-43d2e34f8433", "buffer_m": "150.000"}}
+$ POST http://localhost:8000/v1/plots
+  body: {"client_id":"01a19822-8d81-7fbb-ab3c-05e3bfca8a92","farmer_id":"56a622ff-6789-4ae0-9a65-775491f5d2cf","pin":{"lat":9.586,"lon":78.132,"accuracy_m":5},"pin_method":"live_gps","device_time":"2026-11-01T17:22:43.713819+00:00","declared_area":{"value":"1","unit":"acre"},"code":"QA-P4"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-8d81-7fbb-ab3c-05e3bfca8a92", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "code": "QA-P4", "gi_tag_id": null, "pin": {"lat": 9.586, "lon": 78.132, "accuracy_m": 5.0}, "pin_method": "live_gps", "pin_device_time": "2026-11-01T17:22:43.713819Z", "pin_gps_time": null, "pin_server_received_at": "2026-11-01T17:22:43.730723Z", "declared_area": {"value": "1.000", "unit": "acre"}, "land_record_ref": null, "walked_area": null, "area_gap_pct": null, "area_gap_exceeds": false, "farming_type": null, "irrigation_source": null, "soil_type": null, "location_status": "confirmed", "location_method_label": "Live GPS pin", "revision_no": 1, "reviewed_at": null, "review_method": null, "review_outcome": null, "region_check": {"status": "inside", "distance_m": 0.0, "region_version_id": "01a197e0-997b-71ac-ac2b-43d2e34f8433", "buffer_m": "150.000"}}
+
+## 1 seeded reference batch FGP8T4033HM7: shares 31.250 / 62.500 / 6.250
+$ GET http://localhost:8000/v1/batches?limit=50
+-> HTTP 200  etag=None
+  {"items": [{"id": "01900000-0000-7000-8000-0000000b12aa", "code": "FGP8T4033HM7", "superlot_code": "COMBO_LOT_6C1DCCFE", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": true, "gi_verified": true, "gi_block_reasons": [], "total_received": {"value": "320.000", "unit": "kg"}, "graded": {"value": "20.000", "unit": "kg"}, "packed": null, "computed_grade": null, "standards_profile_version_id": null, "pack_date": null, "best_before_date": null, "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "second_signoff_required": false, "second_signoff_by": null, "shares": [{"lot_id": "01a197e0-9b9f-7b97-b26d-754167c1fc63", "farmer_id": "01a197e0-9b81-7d38-a211-02219523dbdb", "contributed": {"value": "200.000", "unit": "kg"}, "share_pct": "62.500"}, {"lot_id": "01a197e0-9ac1-7750-a9c6-e3a544813caf", "farmer_id": "01a197e0-9a93-7f85-82e3-c49216199139", "contributed": {"value": "100.000", "unit": "kg"}, "share_pct": "31.250"}, {"lot_id": "01a197e0-9c36-753c-9657-4e77ace61db8", "farmer_id": "01a197e0-9c1c-7503-8081-d81740f3a7eb", "contributed": {"value": "20.000", "unit": "kg"}, "share_pct": "6.250"}], "flags": []}], "next_cursor": null, "has_more": false}
+$ GET http://localhost:8000/v1/batches/01900000-0000-7000-8000-0000000b12aa
+-> HTTP 200  etag=None
+  {"id": "01900000-0000-7000-8000-0000000b12aa", "code": "FGP8T4033HM7", "superlot_code": "COMBO_LOT_6C1DCCFE", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": true, "gi_verified": true, "gi_block_reasons": [], "total_received": {"value": "320.000", "unit": "kg"}, "graded": {"value": "20.000", "unit": "kg"}, "packed": null, "computed_grade": null, "standards_profile_version_id": null, "pack_date": null, "best_before_date": null, "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "second_signoff_required": false, "second_signoff_by": null, "shares": [{"lot_id": "01a197e0-9b9f-7b97-b26d-754167c1fc63", "farmer_id": "01a197e0-9b81-7d38-a211-02219523dbdb", "contributed": {"value": "200.000", "unit": "kg"}, "share_pct": "62.500"}, {"lot_id": "01a197e0-9ac1-7750-a9c6-e3a544813caf", "farmer_id": "01a197e0-9a93-7f85-82e3-c49216199139", "contributed": {"value": "100.000", "unit": "kg"}, "share_pct": "31.250"}, {"lot_id": "01a197e0-9c36-753c-9657-4e77ace61db8", "farmer_id": "01a197e0-9c1c-7503-8081-d81740f3a7eb", "contributed": {"value": "20.000", "unit": "kg"}, "share_pct": "6.250"}], "flags": []}
+  shares: [('31.250', '100.000', 'kg'), ('6.250', '20.000', 'kg'), ('62.500', '200.000', 'kg')]
+  CHECK PASS: seeded shares are 31.250 / 62.500 / 6.250 of 100 / 200 / 20 kg
+$ POST http://localhost:8000/v1/batches
+  body: {"client_id":"01900000-0000-7000-8000-0000000b12aa","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","gi_label_requested":true,"lot_ids":["01a197e0-9b9f-7b97-b26d-754167c1fc63","01a197e0-9ac1-7750-a9c6-e3a544813caf","01a197e0-9c36-753c-9657-4e77ace61db8"]}
+-> HTTP 200  etag=None
+  {"id": "01900000-0000-7000-8000-0000000b12aa", "code": "FGP8T4033HM7", "superlot_code": "COMBO_LOT_6C1DCCFE", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": true, "gi_verified": true, "gi_block_reasons": [], "total_received": {"value": "320.000", "unit": "kg"}, "graded": {"value": "20.000", "unit": "kg"}, "packed": null, "computed_grade": null, "standards_profile_version_id": null, "pack_date": null, "best_before_date": null, "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407 ...
+  CHECK PASS: replaying the seed's batch client_id answers 200 with the same shares (D-005, no new row)
+  sql> select count(*) from batch_shares where batch_id='01900000-0000-7000-8000-0000000b12aa'
+  =>  '3'
+
+## 2 ready at 11.5 -> 409, at 10.9 -> ready
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19822-8e7b-79a4-9985-e5a4f5c00bd4","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B09 ready gate"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-8e7b-79a4-9985-e5a4f5c00bd4", "code": "LOT44538B65", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 ready gate", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19822-8ea9-7102-9829-bf0df7f8a523","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"11.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:44.009779+00:00","lot_id":"01a19822-8e7b-79a4-9985-e5a4f5c00bd4"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-8ea9-7102-9829-bf0df7f8a523", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19822-8e7b-79a4-9985-e5a4f5c00bd4", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "11.5", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:22:44.009779Z", "server_received_at": "2026-11-01T17:22:44.106592Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19822-8e7b-79a4-9985-e5a4f5c00bd4/ready
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "moisture_gate_failed", "message": "The latest drying-end moisture reading is missing or above the ready-for-sale limit.", "gate": "ready_for_sale"}]}}}
+  CHECK PASS: 11.5 % -> 409 gate_not_met [moisture_gate_failed]
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19822-8f5c-7d1a-b1b1-3a4178c92914","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.9","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:44.188561+00:00","lot_id":"01a19822-8e7b-79a4-9985-e5a4f5c00bd4"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-8f5c-7d1a-b1b1-3a4178c92914", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19822-8e7b-79a4-9985-e5a4f5c00bd4", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.9", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:22:44.188561Z", "server_received_at": "2026-11-01T17:22:44.223317Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19822-8e7b-79a4-9985-e5a4f5c00bd4/ready
+-> HTTP 200  etag=None
+  {"id": "01a19822-8e7b-79a4-9985-e5a4f5c00bd4", "code": "LOT44538B65", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 ready gate", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T17:22:44.270465Z", "gi_eligible": true, "gi_hold_reason": null}
+  CHECK PASS: 10.9 % -> 200 ready_for_sale with ready_at
+
+## 3 intake 100 vs packed 69 -> quantity_mismatch
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19822-8fbd-7e5e-b2ef-a9dfd13972e9","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B09 packed 69"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-8fbd-7e5e-b2ef-a9dfd13972e9", "code": "LOTFE1B78F6", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 packed 69", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"054d09a0-6e2c-4b3f-a386-f3bc5c7c5bb3","app_version":"1.0.3","device_time":"2026-11-01T17:22:44.318410+00:00","entries":[{"client_id":"01a19822-8fdf-7347-8183-dfa11d464ae4","kind":"event_version","data":{"event_id":"01a19822-8fde-7bb6-93b9-421ac756e8d8","version_no":1,"subject_type":"lot","lot_id":"01a19822-8fbd-7e5e-b2ef-a9dfd13972e9","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"packing","instance_no":1,"occurred_on":"2026-10-27","payload":{"quantity":{"value":69,"unit":"kg"},"bags":2},"clocks":{"device_time":"2026-11-01T17:22:44.318333+00:00"},"gps":{"lat":9.58 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:22:44.464908Z", "results": [{"client_id": "01a19822-8fdf-7347-8183-dfa11d464ae4", "status": "accepted", "server_id": "01a19822-8fdf-7347-8183-dfa11d464ae4", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19822-9075-79c0-b207-e21887ce2827","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:44.469796+00:00","lot_id":"01a19822-8fbd-7e5e-b2ef-a9dfd13972e9"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9075-79c0-b207-e21887ce2827", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19822-8fbd-7e5e-b2ef-a9dfd13972e9", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:22:44.469796Z", "server_received_at": "2026-11-01T17:22:44.490904Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19822-8fbd-7e5e-b2ef-a9dfd13972e9/ready
+-> HTTP 200  etag=None
+  {"id": "01a19822-8fbd-7e5e-b2ef-a9dfd13972e9", "code": "LOTFE1B78F6", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 packed 69", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T17:22:44.522277Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/intakes
+  body: {"client_id":"01a19822-90b5-77ba-8312-0c9fa1ff8071","lot_id":"01a19822-8fbd-7e5e-b2ef-a9dfd13972e9","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","sale_date":"2026-11-01","received":{"value":"100","unit":"kg"}}
+-> HTTP 201  etag=None
+  {"id": "01a19822-90b5-77ba-8312-0c9fa1ff8071", "lot_id": "01a19822-8fbd-7e5e-b2ef-a9dfd13972e9", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "sale_date": "2026-11-01", "received": {"value": "100", "unit": "kg"}, "price_per_kg": null, "intake_moisture_reading_id": null, "accepted_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "reconciliation": {"harvested": null, "packed": {"value": "69", "unit": "kg"}, "received": {"value": "100", "unit": "kg"}, "used": null, "in_order": false}, "supersedes_intake_id": null, "correction_reason": null, "flags": [{"id": "01a19822-9189-757c-b887-942382e49f51", "subject_type": "lot", "subject_id": "01a19822-8fbd-7e5e-b2ef-a9dfd13972e9", "rule_code": "quantity_mismatch", "severity": "warn", "status": "open"}, {"id": "01a19822-9182-7a61-8b4e-2ea5f4a6eac3", "subject_type": "lot", "subject_id": "01a19822-8fbd-7e5e-b2ef-a9dfd13972e9", "rule_code": "yield_check_unavailable", "severity": "info", "status": "open"}, {"id": "01a19822-9171-76fa-96fd-079325469411", "subject_type": "event", "subject_id": "01a19822-8fde-7bb6-93b9-421ac756e8d8", "rule_code": "event_out_of_order", "severity": "warn", "status": "open"}]}
+  CHECK PASS: 201, reconciliation.in_order false, flags include quantity_mismatch, lot received
+$ GET http://localhost:8000/v1/lots/01a19822-8fbd-7e5e-b2ef-a9dfd13972e9
+-> HTTP 200  etag=None
+  {"id": "01a19822-8fbd-7e5e-b2ef-a9dfd13972e9", "code": "LOTFE1B78F6", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 packed 69", "status": "received", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": {"value": "69.000", "unit": "kg"}, "ready_at": "2026-11-01T17:22:44.522277Z", "gi_eligible": true, "gi_hold_reason": null}
+  CHECK PASS: lot status received
+
+## 4 lots {100,200,20} -> 31.250/62.500/6.250 (batch X, also B10/B11's published batch)
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19822-91be-7efe-8b99-635b9d4a920e","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B09 X-C"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-91be-7efe-8b99-635b9d4a920e", "code": "LOT11F54FA0", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 X-C", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19822-91dc-7fb9-9b61-139c52f7157e","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B09 X-D"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-91dc-7fb9-9b61-139c52f7157e", "code": "LOTB240FD09", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 X-D", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19822-91fc-75a1-ac9f-7da2ef26e860","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B09 X-E"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-91fc-75a1-ac9f-7da2ef26e860", "code": "LOT16E4F654", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 X-E", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"55e8141c-7cf9-4b73-a2cc-71e41de720f8","app_version":"1.0.3","device_time":"2026-11-01T17:22:44.896600+00:00","entries":[{"client_id":"01a19822-9220-77db-b25f-1c6fb7931c1a","kind":"event_version","data":{"event_id":"01a19822-921f-7bbc-95a1-87c620f46fc3","version_no":1,"subject_type":"lot","lot_id":"01a19822-91be-7efe-8b99-635b9d4a920e","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"packing","instance_no":1,"occurred_on":"2026-09-22","payload":{"quantity":{"value":100,"unit":"kg"},"bags":4},"clocks":{"device_time":"2026-11-01T17:22:44.896090+00:00"},"gps":{"lat":9.5 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:22:45.118600Z", "results": [{"client_id": "01a19822-9220-77db-b25f-1c6fb7931c1a", "status": "accepted", "server_id": "01a19822-9220-77db-b25f-1c6fb7931c1a", "photo_uploads": [], "error": null}, {"client_id": "01a19822-9222-70cb-8e21-64e338709306", "status": "accepted", "server_id": "01a19822-9222-70cb-8e21-64e338709306", "photo_uploads": [], "error": null}, {"client_id": "01a19822-9224-7bdb-bed2-9ff3b3ed4759", "status": "accepted", "server_id": "01a19822-9224-7bdb-bed2-9ff3b3ed4759", "photo_uploads": [], "error": null}, {"client_id": "01a19822-9226-761c-94fb-212a380e76ba", "status": "accepted", "server_id": "01a19822-9226-761c-94fb-212a380e76ba", "photo_uploads": [], "error": null}, {"client_id": "01a19822-9228-74be-9bf1-ac0227747984", "status": "accepted", "server_id": "01a19822-9228-74be-9bf1-ac0227747984", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted', 'accepted', 'accepted', 'accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19822-9303-77f3-9691-ba021488a836","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:45.123788+00:00","lot_id":"01a19822-91be-7efe-8b99-635b9d4a920e"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9303-77f3-9691-ba021488a836", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19822-91be-7efe-8b99-635b9d4a920e", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:22:45.123788Z", "server_received_at": "2026-11-01T17:22:45.147248Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19822-91be-7efe-8b99-635b9d4a920e/ready
+-> HTTP 200  etag=None
+  {"id": "01a19822-91be-7efe-8b99-635b9d4a920e", "code": "LOT11F54FA0", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 X-C", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T17:22:45.179587Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/intakes
+  body: {"client_id":"01a19822-9346-76f7-8338-f1d235e9f60f","lot_id":"01a19822-91be-7efe-8b99-635b9d4a920e","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","sale_date":"2026-11-01","received":{"value":"100","unit":"kg"}}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9346-76f7-8338-f1d235e9f60f", "lot_id": "01a19822-91be-7efe-8b99-635b9d4a920e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "sale_date": "2026-11-01", "received": {"value": "100", "unit": "kg"}, "price_per_kg": null, "intake_moisture_reading_id": null, "accepted_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "reconciliation": {"harvested": {"value": "110", "unit" ...
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19822-93b3-73a6-8a49-ebcefedf51e7","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:45.299341+00:00","lot_id":"01a19822-91dc-7fb9-9b61-139c52f7157e"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-93b3-73a6-8a49-ebcefedf51e7", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19822-91dc-7fb9-9b61-139c52f7157e", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:22:45.299341Z", "server_received_at": "2026-11-01T17:22:45.323242Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19822-91dc-7fb9-9b61-139c52f7157e/ready
+-> HTTP 200  etag=None
+  {"id": "01a19822-91dc-7fb9-9b61-139c52f7157e", "code": "LOTB240FD09", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 X-D", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T17:22:45.356256Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/intakes
+  body: {"client_id":"01a19822-93f5-76f2-a2ec-41e9d65b6e54","lot_id":"01a19822-91dc-7fb9-9b61-139c52f7157e","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","sale_date":"2026-11-01","received":{"value":"200","unit":"kg"}}
+-> HTTP 201  etag=None
+  {"id": "01a19822-93f5-76f2-a2ec-41e9d65b6e54", "lot_id": "01a19822-91dc-7fb9-9b61-139c52f7157e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "sale_date": "2026-11-01", "received": {"value": "200", "unit": "kg"}, "price_per_kg": null, "intake_moisture_reading_id": null, "accepted_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "reconciliation": {"harvested": null, "packed": null, " ...
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19822-9446-7295-a25f-69d30d972f66","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:45.446338+00:00","lot_id":"01a19822-91fc-75a1-ac9f-7da2ef26e860"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9446-7295-a25f-69d30d972f66", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19822-91fc-75a1-ac9f-7da2ef26e860", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:22:45.446338Z", "server_received_at": "2026-11-01T17:22:45.466278Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19822-91fc-75a1-ac9f-7da2ef26e860/ready
+-> HTTP 200  etag=None
+  {"id": "01a19822-91fc-75a1-ac9f-7da2ef26e860", "code": "LOT16E4F654", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 X-E", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T17:22:45.496265Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/intakes
+  body: {"client_id":"01a19822-9485-7c9a-a6c5-0d3cfb5b8761","lot_id":"01a19822-91fc-75a1-ac9f-7da2ef26e860","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","sale_date":"2026-11-01","received":{"value":"20","unit":"kg"}}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9485-7c9a-a6c5-0d3cfb5b8761", "lot_id": "01a19822-91fc-75a1-ac9f-7da2ef26e860", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "sale_date": "2026-11-01", "received": {"value": "20", "unit": "kg"}, "price_per_kg": null, "intake_moisture_reading_id": null, "accepted_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "reconciliation": {"harvested": null, "packed": null, "r ...
+$ POST http://localhost:8000/v1/batches
+  body: {"client_id":"01a19822-94cf-7100-bedc-ecf49185f598","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","gi_label_requested":false,"lot_ids":["01a19822-91be-7efe-8b99-635b9d4a920e","01a19822-91dc-7fb9-9b61-139c52f7157e","01a19822-91fc-75a1-ac9f-7da2ef26e860"]}
+-> HTTP 201  etag=None
+  {"id": "01a19822-94cf-7100-bedc-ecf49185f598", "code": "GQ6QTKYZYVEP", "superlot_code": "COMBO_LOT_AFFDF73A", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": false, "gi_verified": false, "gi_block_reasons": [], "total_received": {"value": "320.000", "unit": "kg"}, "graded": null, "packed": null, "computed_grade": null, "standards_profile_version_id": null, "pack_date": null, "best_before_date": null, "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "second_signoff_required": false, "second_signoff_by": null, "shares": [{"lot_id": "01a19822-91dc-7fb9-9b61-139c52f7157e", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "200.000", "unit": "kg"}, "share_pct": "62.500"}, {"lot_id": "01a19822-91be-7efe-8b99-635b9d4a920e", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "100.000", "unit": "kg"}, "share_pct": "31.250"}, {"lot_id": "01a19822-91fc-75a1-ac9f-7da2ef26e860", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "20.000", "unit": "kg"}, "share_pct": "6.250"}], "flags": [{"id": "01a19822-94b6-7f7f-bb56-8065d359f495", "subject_type": "lot", "subject_id": "01a19822-91fc-75a1-ac9f-7da2ef26e860", "rule_code": "yield_check_unavailable", "severity": "info", "status": "open"}, {"id": "01a19822-9428-798b-b0dd-b609a8002625", "subject_type": "lot", "subject_id": "01a19822-91dc-7fb9-9b61-139c52f7157e", "rule_code": "yield_check_unavailable", "severity": "info", "status": "open"}, {"id": "01a19822-9398-76b2-8a1e-02f88120b90c", "subject_type": "event", "subject_id": "01a19822-9225-7d31-82e8-716ef19a3765", "rule_code": "event_out_of_order", "severity": "warn", "status": "open"}]}
+  shares by lot (100, 200, 20 kg): ['31.250', '62.500', '6.250']
+  CHECK PASS: 201, shares 31.250 / 62.500 / 6.250, total 320 kg
+  sql> select l.code, s.kg_contributed, s.share_pct from batch_shares s join lots l on l.id=s.lot_id where s.batch_id='01a19822-94cf-7100-bedc-ecf49185f598' order by s.kg_contributed
+  =>  'LOT16E4F654|20.000|6.250\nLOT11F54FA0|100.000|31.250\nLOTB240FD09|200.000|62.500'
+
+## 6 approve on declared_above_computed -> 409 (batch Y, one 100 kg lot)
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19822-993b-7a5d-b079-b8dcbfcc9b61","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B09 Y"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-993b-7a5d-b079-b8dcbfcc9b61", "code": "LOTB2232F11", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 Y", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19822-9977-7df6-a86f-0a6bba7a219e","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:46.775784+00:00","lot_id":"01a19822-993b-7a5d-b079-b8dcbfcc9b61"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9977-7df6-a86f-0a6bba7a219e", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19822-993b-7a5d-b079-b8dcbfcc9b61", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:22:46.775784Z", "server_received_at": "2026-11-01T17:22:46.806119Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19822-993b-7a5d-b079-b8dcbfcc9b61/ready
+-> HTTP 200  etag=None
+  {"id": "01a19822-993b-7a5d-b079-b8dcbfcc9b61", "code": "LOTB2232F11", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 Y", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T17:22:46.845302Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/intakes
+  body: {"client_id":"01a19822-99cc-74f3-8fbe-005dc0aab365","lot_id":"01a19822-993b-7a5d-b079-b8dcbfcc9b61","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","sale_date":"2026-11-01","received":{"value":"100","unit":"kg"}}
+-> HTTP 201  etag=None
+  {"id": "01a19822-99cc-74f3-8fbe-005dc0aab365", "lot_id": "01a19822-993b-7a5d-b079-b8dcbfcc9b61", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "sale_date": "2026-11-01", "received": {"value": "100", "unit": "kg"}, "price_per_kg": null, "intake_moisture_reading_id": null, "accepted_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "reconciliation": {"harvested": null, "packed": null, " ...
+$ POST http://localhost:8000/v1/batches
+  body: {"client_id":"01a19822-9a38-7b3c-b148-4701af87e67d","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","gi_label_requested":false,"lot_ids":["01a19822-993b-7a5d-b079-b8dcbfcc9b61"]}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9a38-7b3c-b148-4701af87e67d", "code": "597J3TCRRFTA", "superlot_code": "COMBO_LOT_1A1EBB35", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": false, "gi_verified": false, "gi_block_reasons": [], "total_received": {"value": "100.000", "unit": "kg"}, "graded": null, "packed": null, "computed_grade": null, "standards_profile_version_id": null, "pack_date": null, "best_before_date": null, "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "second_signoff_r ...
+$ POST http://localhost:8000/v1/batches/01a19822-9a38-7b3c-b148-4701af87e67d/grading
+  body: {"declared_grade":"Special","readings":[{"client_id":"01a19822-9ad7-74b7-9c81-8707fc1b1129","stage":"grading","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:47.127284+00:00"}]}
+-> HTTP 422  etag=None
+  {"error": {"code": "validation_error", "message": "The request has invalid or implausible values.", "details": [{"loc": ["body", "readings", 0], "msg": "Value error, set exactly one of lot_id and batch_id", "type": "value_error"}]}}
+  computed: None
+$ POST http://localhost:8000/v1/batches/01a19822-9a38-7b3c-b148-4701af87e67d/grading/approve
+  body: {"graded":{"value":90,"unit":"kg"}}
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "not_graded", "message": "No grade computed yet (POST /v1/batches/{id}/grading)."}]}}}
+  CHECK FAIL: approve -> 409 [declared_above_computed]
+
+## 7 publish before approval -> 409 listing reasons; pack 25 on 20 graded -> 409; after gates -> 202 + page_builds
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/grading
+  body: {"declared_grade":"Standard","readings":[{"client_id":"01a19822-9b3e-78b7-bfc8-48322ca826a6","stage":"grading","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:47.230201+00:00"}]}
+-> HTTP 422  etag=None
+  {"error": {"code": "validation_error", "message": "The request has invalid or implausible values.", "details": [{"loc": ["body", "readings", 0], "msg": "Value error, set exactly one of lot_id and batch_id", "type": "value_error"}]}}
+  CHECK FAIL: grading Standard on 10.5 % -> 201
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/publish
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "grading_not_approved", "message": "The grading has not been approved."}, {"code": "final_packing_missing", "message": "Final packing has not been signed off."}]}}}
+  CHECK PASS: publish before approval -> 409 [grading_not_approved, final_packing_missing]
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/grading/approve
+  body: {"graded":{"value":20,"unit":"kg"}}
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "not_graded", "message": "No grade computed yet (POST /v1/batches/{id}/grading)."}]}}}
+  CHECK FAIL: approve 20 kg -> 200 graded, computed Standard
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/final-packing
+  body: {"packed":{"value":25,"unit":"kg"},"pack_date":"2026-11-01","best_before_date":"2027-11-01"}
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "grading_not_approved", "message": "Final packing needs an approved grading, once.", "status": "created"}]}}}
+  CHECK FAIL: pack 25 on 20 graded -> 409 [packed_above_graded]
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/final-packing
+  body: {"packed":{"value":20,"unit":"kg"},"pack_date":"2026-11-01","best_before_date":"2027-11-01"}
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "grading_not_approved", "message": "Final packing needs an approved grading, once.", "status": "created"}]}}}
+  CHECK FAIL: pack 20 -> 200 packed
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/publish
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "grading_not_approved", "message": "The grading has not been approved."}, {"code": "final_packing_missing", "message": "Final packing has not been signed off."}]}}}
+  CHECK FAIL: publish -> 202 build_no 1 queued
+  sql> select build_no, generation, trigger, status from page_builds where batch_id='01a19822-94cf-7100-bedc-ecf49185f598'
+  =>  ''
+$ POST http://localhost:8000/v1/batches/01a19822-94cf-7100-bedc-ecf49185f598/publish
+-> HTTP 409  etag=None
+  {"error": {"code": "gate_not_met", "message": "The conditions for this step are not met yet.", "details": {"reasons": [{"code": "grading_not_approved", "message": "The grading has not been approved."}, {"code": "final_packing_missing", "message": "Final packing has not been signed off."}]}}}
+  CHECK FAIL: second publish -> 409 [already_published]
+
+## 5 ineligible lot + GI requested -> gi_verified=false with reasons (lot F, 2,000 kg on 1 acre)
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19822-9f97-7856-84af-2acc788137a5","plot_id":"01a19822-8d81-7fbb-ab3c-05e3bfca8a92","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B09 yield hold"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9f97-7856-84af-2acc788137a5", "code": "LOTE65738C0", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d81-7fbb-ab3c-05e3bfca8a92", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 yield hold", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"c70055f5-67ab-423e-a5c8-65f45a97fc45","app_version":"1.0.3","device_time":"2026-11-01T17:22:48.364156+00:00","entries":[{"client_id":"01a19822-9fad-76d4-b76e-d9b64c62dbde","kind":"event_version","data":{"event_id":"01a19822-9fac-76df-b2ad-04967d5b122e","version_no":1,"subject_type":"lot","lot_id":"01a19822-9f97-7856-84af-2acc788137a5","plot_id":"01a19822-8d81-7fbb-ab3c-05e3bfca8a92","event_type":"harvest","instance_no":1,"occurred_on":"2026-10-12","payload":{"quantity":{"value":2000,"unit":"kg"},"bags":80},"clocks":{"device_time":"2026-11-01T17:22:48.364100+00:00"},"gps":{"lat":9 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T17:22:48.393789Z", "results": [{"client_id": "01a19822-9fad-76d4-b76e-d9b64c62dbde", "status": "accepted", "server_id": "01a19822-9fad-76d4-b76e-d9b64c62dbde", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19822-9fcc-7249-86bf-b274a745423c","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T17:22:48.396474+00:00","lot_id":"01a19822-9f97-7856-84af-2acc788137a5"}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9fcc-7249-86bf-b274a745423c", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19822-9f97-7856-84af-2acc788137a5", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T17:22:48.396474Z", "server_received_at": "2026-11-01T17:22:48.409318Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19822-9f97-7856-84af-2acc788137a5/ready
+-> HTTP 200  etag=None
+  {"id": "01a19822-9f97-7856-84af-2acc788137a5", "code": "LOTE65738C0", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d81-7fbb-ab3c-05e3bfca8a92", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B09 yield hold", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T17:22:48.430127Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/intakes
+  body: {"client_id":"01a19822-9ff7-7ff7-b2d4-5e1e4a738ebc","lot_id":"01a19822-9f97-7856-84af-2acc788137a5","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","sale_date":"2026-11-01","received":{"value":"50","unit":"kg"}}
+-> HTTP 201  etag=None
+  {"id": "01a19822-9ff7-7ff7-b2d4-5e1e4a738ebc", "lot_id": "01a19822-9f97-7856-84af-2acc788137a5", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "sale_date": "2026-11-01", "received": {"value": "50", "unit": "kg"}, "price_per_kg": null, "intake_moisture_reading_id": null, "accepted_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "reconciliation": {"harvested": {"value": "2000", "unit": "kg"}, "packed": null, "received": {"value": "50", "unit": "kg"}, "used": null, "in_order": true}, "supersedes_intake_id": null, "correction_reason": null, "flags": [{"id": "01a19822-a01c-71b5-84bf-dd55c89a6ca3", "subject_type": "lot", "subject_id": "01a19822-9f97-7856-84af-2acc788137a5", "rule_code": "yield_over_ceiling", "severity": "hold", "status": "open"}, {"id": "01a19822-a018-75df-93a0-6dba6916053e", "subject_type": "event", "subject_id": "01a19822-9fac-76df-b2ad-04967d5b122e", "rule_code": "event_out_of_order", "severity": "warn", "status": "open"}]}
+  intake flags: [('yield_over_ceiling', 'hold'), ('event_out_of_order', 'warn')]
+$ POST http://localhost:8000/v1/batches
+  body: {"client_id":"01a19822-a02e-79b9-92f0-e9415f166987","processor_id":"01a197e0-9a73-78d5-be26-38029aebba19","gi_label_requested":true,"lot_ids":["01a19822-9f97-7856-84af-2acc788137a5"]}
+-> HTTP 201  etag=None
+  {"id": "01a19822-a02e-79b9-92f0-e9415f166987", "code": "Y27EGZ680AFQ", "superlot_code": "COMBO_LOT_48E56CE7", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "processor_id": "01a197e0-9a73-78d5-be26-38029aebba19", "status": "created", "gi_label_requested": true, "gi_verified": false, "gi_block_reasons": [{"lot_id": "01a19822-9f97-7856-84af-2acc788137a5", "reason": "lot_on_hold", "detail": "flags: yield_over_ceiling"}, {"lot_id": null, "reason": "hold_flag", "detail": "yield_over_ceiling"}], "total_received": {"value": "50.000", "unit": "kg"}, "graded": null, "packed": null, "computed_grade": null, "standards_profile_version_id": null, "pack_date": null, "best_before_date": null, "current_build_no": 0, "created_by": "01a197e0-9a3e-772c-acc4-93407882f68b", "second_signoff_required": false, "second_signoff_by": null, "shares": [{"lot_id": "01a19822-9f97-7856-84af-2acc788137a5", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "contributed": {"value": "50.000", "unit": "kg"}, "share_pct": "100.000"}], "flags": [{"id": "01a19822-a01c-71b5-84bf-dd55c89a6ca3", "subject_type": "lot", "subject_id": "01a19822-9f97-7856-84af-2acc788137a5", "rule_code": "yield_over_ceiling", "severity": "hold", "status": "open"}, {"id": "01a19822-a018-75df-93a0-6dba6916053e", "subject_type": "event", "subject_id": "01a19822-9fac-76df-b2ad-04967d5b122e", "rule_code": "event_out_of_order", "severity": "warn", "status": "open"}]}
+  gi_verified: False gi_block_reasons: [{'lot_id': '01a19822-9f97-7856-84af-2acc788137a5', 'reason': 'lot_on_hold', 'detail': 'flags: yield_over_ceiling'}, {'lot_id': None, 'reason': 'hold_flag', 'detail': 'yield_over_ceiling'}]
+  CHECK PASS: 201 gi_verified=false; reasons include lot_on_hold for lot F and hold_flag yield_over_ceiling
+
+world: {'farmer': '56a622ff-6789-4ae0-9a65-775491f5d2cf', 'phone': '+919000000091', 'crop': '01a197e0-99b6-76ae-b6ac-d666725ef32e', 'plots': [{'id': '4c50d79a-c871-4ded-8a27-17a65358c4cb', 'lat': 9.585, 'lon': 78.105}, {'id': '72b065f5-3555-4486-82bf-ae7e862ac49a', 'lat': 9.585, 'lon': 78.125}, {'id': '852b5d9d-d80b-495d-89cc-e6787354c2dc', 'lat': 9.585, 'lon': 78.145}], 'lots': ['45d6230a-20e8-4c1b-a578-c496127d802e', 'f8004b84-2cf3-45f8-918d-343def8588e6', '8d9f4a1e-0ccc-4b0f-90a0-c75caa0a683a'], 'processor': '01a197e0-9a73-78d5-be26-38029aebba19', 'instrument': '01a19822-8d02-7017-aae0-c9dfbe5da083', 'plot_main': {'id': '01a19822-8d16-7299-a60c-63ac59dc79b2', 'lat': 9.586, 'lon': 78.112}, 'plot_yield': {'id': '01a19822-8d81-7fbb-ab3c-05e3bfca8a92', 'lat': 9.586, 'lon': 78.132}, 'lot_b': '01a19822-8fbd-7e5e-b2ef-a9dfd13972e9', 'events_c': ['01a19822-9220-77db-b25f-1c6fb7931c1a', '01a19822-9222-70cb-8e21-64e338709306', '01a19822-9224-7bdb-bed2-9ff3b3ed4759', '01a19822-9226-761c-94fb-212a380e76ba', '01a19822-9228-74be-9bf1-ac0227747984'], 'batch_x': '01a19822-94cf-7100-bedc-ecf49185f598', 'batch_x_code': 'GQ6QTKYZYVEP', 'lots_x': ['01a19822-91be-7efe-8b99-635b9d4a920e', '01a19822-91dc-7fb9-9b61-139c52f7157e', '01a19822-91fc-75a1-ac9f-7da2ef26e860'], 'batch_y': '01a19822-9a38-7b3c-b148-4701af87e67d', 'published_at': '2026-11-01T17:22:48.183414+00:00', 'lot_f': '01a19822-9f97-7856-84af-2acc788137a5', 'batch_gi': '01a19822-a02e-79b9-92f0-e9415f166987'}
+# exit: 0
