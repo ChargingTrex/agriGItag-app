@@ -489,6 +489,8 @@ async def _lot(
         status=LotStatus.RECEIVED,
         practice_tags={"declared": ["inorganic", "ipm"], "derived": [], "contradiction": False},
         packed_kg=packed_kg(ref),
+        # Same start as lots_batches.service.create_lot: eligible until a hold flag says otherwise (FR29).
+        gi_eligible=True,
     )
     session.add(lot)
     await session.flush()
