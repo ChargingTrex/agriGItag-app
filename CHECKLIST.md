@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 46 % (31/68 items)
+Completion: 53 % (36/68 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -39,16 +39,16 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M05 — Farmer widget kit: FarmerButton, PictureCardGrid, BigStepper, NumberPad, StatusBadge, Voic — wave 2 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 confirm — verifier: Orchestrator-run suite PASS (198); device checks → Q01
 - [x] M06 — Auth & session: OTP auto-read, device binding, PIN for officer/QC, role routing, restore o — wave 2 — worker: Opus (2 rounds) — reviewer: SEC/MOB FAIL r1 / r2 confirm — verifier: Orchestrator-run suite PASS (264); device checks → Q01
 - [x] W02 — `privacy_lint.py` (canary strings + regexes for phone/Aadhaar/survey/polygon/coordinate pr — wave 2 — worker: Opus — reviewer: WEB PASS r1 — verifier: PASS (docs/agents/qa/W02.md; BM-03 LCP 1530 ms, BM-16 565 ms)
-- [ ] B06 — Events + sync push + evidence — wave 3 — worker: Opus (2 rounds) — reviewer: SEC PASS-PENDING-STACK — verifier: PENDING (merged conditionally; 17 integration tests deferred)
-- [ ] B13 — Config-driven fields/features + masters + bulk import (from the gap analysis) — wave 3 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
+- [x] B06 — Events + sync push + evidence — wave 3 — worker: Opus (2 rounds) — reviewer: SEC PASS-PENDING-STACK — verifier: PASS 8/8, BM-06 + BM-15 live (docs/agents/qa/B06.md, 2026-11-01)
+- [x] B13 — Config-driven fields/features + masters + bulk import (from the gap analysis) — wave 3 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PASS 5/5 (docs/agents/qa/B13.md; flag gate + YAML schema refusal live, build_virudhunagar.py run)
 - [x] M02 — Sync engine (outbox, triggers incl. reachability probe, timeouts 10 s/30 s, retry only on  — wave 3 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite PASS (401); device/network runs → Q01 (BM-11..15); server half of the r2 line → Verifier with B15
 - [ ] M14 — Sync engine audit P1 fixes (outbox retries in strict order + ordering rejections retried; refresh token re-read from secure storage so background sync does not sign farmers out) — wave 3 hotfix (audit waves-3-6 P1-1/P1-2, blocks G2) — worker: Opus (in progress 2026-11-01) — reviewer: — verifier:
 - [x] M03 — Ref data + local preview rules (GI point-in-polygon + buffer, yield 20/30, event order, mo — wave 3 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 + r2 confirm — verifier: Orchestrator-run rules suite PASS (63/63 parity)
 - [ ] P01 — Members: approvals, roster, farmer/plot detail with MapLibre/OSM + GI outline — wave 3 — worker: Opus (2 rounds) — reviewer: WEB PASS r1 + r2 confirm — verifier: PENDING (acceptance line 'masked phone + audited reveal' waits on B14; live API deferred)
 - [ ] P03 — Ready lots → Create batch: tick, running total, share %, greyed lots with reason, non-GI t — wave 3 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PENDING (merged 2026-10-31; 77 Vitest green on main; live API deferred)
-- [ ] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
-- [ ] B07 — Reference bundle + sync pull — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK r1 + r2 confirm — verifier: PENDING (merged conditionally 2026-10-31; 7 integration tests deferred)
-- [ ] B08 — Rules & flags — wave 4 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / r2 confirmed by Orchestrator — verifier: PENDING (merged conditionally 2026-10-31; 14 integration tests deferred)
+- [x] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PASS 5/5 (docs/agents/qa/B14.md)
+- [x] B07 — Reference bundle + sync pull — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK r1 + r2 confirm — verifier: PASS 3/3 (docs/agents/qa/B07.md; 304 on 11 parts live)
+- [x] B08 — Rules & flags — wave 4 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / r2 confirmed by Orchestrator (B08-r2.md filed 2026-11-01) — verifier: CONDITIONAL → PASS 8/8 (docs/agents/qa/B08.md; B08-1 closed by the r2 file)
 - [x] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: suite PASS (605) on the merged branch; device checks (< 20 s log, camera, GPS) → Q01
 - [ ] P02 — Flags & plot review — wave 4 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirm — verifier: PENDING (merged 2026-10-31; 57 Vitest green; live API deferred)
 - [ ] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PENDING (merged 2026-10-31; Vitest green on main; live API and D-041 server side deferred)
