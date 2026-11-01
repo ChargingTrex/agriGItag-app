@@ -1,7 +1,7 @@
 """Unit tests of evidence helpers: object key, presigned upload, EXIF reading and tolerances, WebP sizes.
 
 Serves: B06 deliverable 6 (object key format, presign request shape, EXIF comparison tolerances, variants
-sizing with a generated image), FR61, plan §13 B3, B6, D-011.
+sizing with a generated image), B18 (signed length, 2 MiB size ceiling), FR61, plan §13 B3, B6, D-011.
 Callers: pytest (`make test-unit`); no Docker (boto3 signs offline; Pillow generates the images).
 """
 
@@ -16,11 +16,13 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 from PIL import ExifTags, Image
+from pydantic import ValidationError
 
 from agritrace.core import storage
 from agritrace.core.config import get_settings
 from agritrace.core.schemas import GeoPoint
 from agritrace.modules.events import evidence
+from agritrace.modules.events.schemas import MAX_PHOTO_BYTES, PhotoIn
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -91,21 +93,23 @@ def test_object_key_format() -> None:
 
 
 def test_upload_instruction_binds_checksum_and_type(settings: None) -> None:
-    """One PUT on the public endpoint, signed over Content-Type and the SHA-256, 15-minute expiry.
+    """One PUT on the public endpoint, signed over Content-Type, SHA-256 and length, 15-minute expiry.
 
     Args:
         settings: S3 settings (fixture).
     """
     digest = hashlib.sha256(b"photo").hexdigest()
     expires = datetime(2026, 3, 4, tzinfo=UTC)
-    up = evidence.upload_instruction(uuid.uuid4(), "evidence/f/2026/e/p.jpg", "image/jpeg", digest, expires)
+    key = "evidence/f/2026/e/p.jpg"
+    up = evidence.upload_instruction(uuid.uuid4(), key, "image/jpeg", digest, 5, expires)
     parts = urlsplit(up.url)
     assert up.method == "PUT" and up.expires_at == expires
     assert f"{parts.scheme}://{parts.netloc}" == "http://192.168.1.5:4566"
     assert parts.path == "/evidence/evidence/f/2026/e/p.jpg"
     query = parse_qs(parts.query)
     assert query["X-Amz-Expires"] == ["900"]
-    assert {"content-type", "x-amz-checksum-sha256"} <= set(query["X-Amz-SignedHeaders"][0].split(";"))
+    signed = set(query["X-Amz-SignedHeaders"][0].split(";"))
+    assert {"content-length", "content-type", "x-amz-checksum-sha256"} <= signed
     checksum = base64.b64encode(hashlib.sha256(b"photo").digest()).decode()
     assert up.headers == {"Content-Type": "image/jpeg", "x-amz-checksum-sha256": checksum}
 
@@ -180,3 +184,19 @@ def test_object_key_extension_follows_content_type(content_type: str, ext: str) 
     """
     key = evidence.object_key(uuid.uuid4(), 2026, uuid.uuid4(), uuid.uuid4(), content_type)
     assert key.endswith(f".{ext}")
+
+
+@pytest.mark.parametrize(("size", "ok"), [(MAX_PHOTO_BYTES, True), (MAX_PHOTO_BYTES + 1, False)])
+def test_photo_size_ceiling(size: int, ok: bool) -> None:
+    """A declared size up to 2 MiB is accepted; one byte more is a `validation_error` (audit waves 3-6 #4).
+
+    Args:
+        size: the declared `size_bytes`.
+        ok: whether the declaration validates.
+    """
+    photo = {"client_id": str(uuid.uuid4()), "sha256": "ab" * 32, "size_bytes": size}
+    if ok:
+        assert PhotoIn.model_validate(photo).size_bytes == 2 * 1024 * 1024
+    else:
+        with pytest.raises(ValidationError, match="less than or equal to 2097152"):
+            PhotoIn.model_validate(photo)

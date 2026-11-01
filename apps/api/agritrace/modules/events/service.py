@@ -101,6 +101,7 @@ class PendingPhoto:
     key: str
     content_type: str
     sha256: str
+    size_bytes: int
     expires_at: datetime
 
 
@@ -342,7 +343,9 @@ async def _existing(session: AsyncSession, user: CurrentUser, version_id: uuid.U
     for photo in await session.scalars(query):
         photo.upload_url_expires_at = expires
         pending.append(
-            PendingPhoto(photo.id, photo.object_key, photo.content_type, photo.sha256_client, expires)
+            PendingPhoto(
+                photo.id, photo.object_key, photo.content_type, photo.sha256_client, photo.size_bytes, expires
+            )
         )
     return Written(row.id, row.event_id, created=False, pending=pending)
 
@@ -497,6 +500,7 @@ async def _add_version(
             evidence.object_key(user.fpo_id, v.occurred_on.year, v.event_id, p.client_id, p.content_type),
             p.content_type,
             p.sha256,
+            p.size_bytes,
             expires,
         )
         for p in v.photos
@@ -613,7 +617,7 @@ async def _finish(client_id: uuid.UUID, written: Written) -> SyncResult:
         photos, `events.verify_photo` enqueues it after upload.
     """
     uploads: list[PhotoUpload] = [
-        evidence.upload_instruction(p.id, p.key, p.content_type, p.sha256, p.expires_at)
+        evidence.upload_instruction(p.id, p.key, p.content_type, p.sha256, p.size_bytes, p.expires_at)
         for p in written.pending
     ]
     if written.created and not written.pending:

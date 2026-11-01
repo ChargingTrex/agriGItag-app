@@ -3,7 +3,8 @@
 Serves: B10 acceptance, one test per line: after publish objects exist and `generation` matches; HTML has no
 phone/survey/`temp_uploads`; revoked name consent → "Farmer 2"; correction → new build_no, old S3 versions
 kept; QR decodes to `{PUBLIC_BASE_URL}/b/<code>`; events ascending. Also the dev proxy, labels, lot QR and the
-rebuild gate. FR12, FR15-FR17, FR62, FR63, plan §13 E3, CLAUDE.md §6, D-007.
+rebuild gate; a privacy-lint hit fails the build with nothing written (B18). FR12, FR15-FR17, FR62, FR63,
+plan §13 E3, CLAUDE.md §6, D-007.
 Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`). Uses the seeded
 `world` of tests/integration/conftest.py and the helpers of test_lots_batches.py; the recorded
 `publishing.build_page` message is run through the real task.
@@ -32,6 +33,7 @@ from agritrace.core import storage
 from agritrace.core.config import get_settings
 from agritrace.core.db import get_sessionmaker
 from agritrace.core.enums import ChangeKind, ConsentType, EventSubject, EventType, FarmingType
+from agritrace.core.errors import PublicRecordInvalidError
 from agritrace.core.ids import uuid7
 from agritrace.modules.events.models import Event, EventVersion
 from agritrace.modules.identity.models import ConsentRecord, User
@@ -397,3 +399,36 @@ async def test_older_build_never_overwrites_a_newer_page(world: tuple[World, Asy
     assert data["footer"]["generation"] == "2"
     r = await client.get(f"/v1/batches/{batch['id']}/builds")
     assert [(b["build_no"], b["status"]) for b in r.json()["items"]] == [(1, "superseded"), (2, "built")]
+
+
+async def test_privacy_lint_hit_fails_the_build_and_writes_nothing(world: tuple[World, AsyncClient]) -> None:
+    """A survey number typed into a free-text village fails the build; no object is written (B18).
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    await _make_publishable(w)
+    async with get_sessionmaker()() as s:
+        processor = await s.get(Processor, w.processor)
+        assert processor is not None
+        processor.address = {**ADDRESS, "village": "Kumarapuram R.S. No. 112/3"}
+        await s.commit()
+    batch = await _publish(w, client, "100", build=False)
+    from agritrace.modules.publishing import tasks  # late: importing the worker reads the settings
+
+    _, kwargs = w.sent[-1]
+    with pytest.raises(PublicRecordInvalidError):
+        await asyncio.to_thread(tasks.build_page, **kwargs)
+    async with get_sessionmaker()() as s:
+        build = (await s.scalars(select(PageBuild).where(PageBuild.batch_id == uuid.UUID(batch["id"])))).one()
+    details = build.snapshot["error"]["details"]
+    assert build.status == "failed" and build.html_key is None
+    assert {d["type"] for d in details} == {"sensitive_label"}
+    assert {d["loc"][0] for d in details} == {"index.html", "data.json"} and "112/3" not in json.dumps(
+        details
+    )
+    listed = storage.client().list_objects_v2(
+        Bucket=get_settings().s3_bucket_public, Prefix=f"batches/{batch['code']}/"
+    )
+    assert listed["KeyCount"] == 0
