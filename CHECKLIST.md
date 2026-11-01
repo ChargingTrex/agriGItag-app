@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 88 % (70/80 items)
+Completion: 89 % (71/80 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -97,7 +97,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] Q03 — Public page verification: W02 suite + backend-down serve from MinIO + old version retrieva — wave 7 — worker: Opus Verifier — reviewer: — verifier: CONDITIONAL 2026-11-02 (docs/agents/qa/Q03.md: backend-down serve from LocalStack 9/9 objects 200, old version via ?versionId 200, W02 Robot 11/11, BM-03 perf 98 / LCP 1.712 s / 20.4 KB, BM-16 LCP 0.535 s, BM-09 0 hits; P2 Q03-1: two public/page.robot placeholders)
 - [ ] Q04 — Backend verification: full pytest incl. e2e reference batch, locust p95, Schemathesis fuzz — wave 7 — worker: Opus Verifier — reviewer: — verifier: FAIL → CONDITIONAL 2026-11-02 after B21 (docs/agents/qa/Q04.md: pytest 781/781; fuzz 1,004 cases 0 × 5xx, probes 11/11, Q04-1/2 closed; BM-07 p95 230 ms PASS on run 3 only — flaky P2 Q04-3: rules.check_event backlog → B22)
 - [x] B21 — Sync push hardening + API latency (NUL/int32 validation at the push boundary, per-entry DB-error rejection, telemetry 422 not 500; BM-07: uvicorn workers / pool / profile) — wave 7 hotfix (Q04-1/2/3) — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS r1 + micro-patch confirmed by Orchestrator — verifier: unit 631, test_sync 21 on the branch; BM-07 p95 1900 → 280/270 ms at 50 users on an isolated stack (docs/agents/qa/B21/); Q05 reruns locust + fuzz on the rebuilt shared stack (merged 2026-11-02)
-- [ ] B22 — `rules.check_event` incremental (re-reads the whole lot per event, ~3 s at 1,000 events; backlog makes BM-07 flaky, Q04-3) — wave 7 hotfix — worker: Opus (in progress 2026-11-02) — reviewer: — verifier: BM-07 rerun with a rules backlog
+- [x] B22 — `rules.check_event` incremental (re-reads the whole lot per event, ~3 s at 1,000 events; backlog makes BM-07 flaky, Q04-3) — wave 7 hotfix — worker: Opus (1 round + micro-patch) — reviewer: BE PASS r1 (equivalence proven on 20,000 random lots) + micro-patch confirmed by Orchestrator — verifier: unit 634, integration 57, e2e 2/2 on the branch; check_event 184 → 63 ms at 1,500 events (reviewer's run); BM-07 rerun with a backlog → next Q05 pass (merged 2026-11-02)
 - [ ] B23 — Refresh-token absolute lifetime (`session_max_days`, 401 `session_expired`) + `POST /v1/devices/{id}/revoke` (SEC ASVS L1 P1-1) — wave 7 hotfix — worker: Opus (in progress 2026-11-02) — reviewer: — verifier:
 - [x] D01 — G5 docs: DPDP data-subject runbook (SEC P1-2), deployment checklist from the SEC PARTIALs, README 5-minute-start fixes R1–R8 (DOCS-g5) — wave 7 — worker: Opus (1 round) — reviewer: Orchestrator (docs only; runbook SQL dry-run with ROLLBACK) — verifier: — (merged 2026-11-02; B24 export/erase routes → Architect-Gate queue; D-005 redaction exception → ruling)
 - [ ] Q05 — Release gate: benchmark sweep → `docs/agents/qa/benchmarks.json`, rubric, G5 report — wave 7 — worker: Opus Verifier — reviewer: — verifier: CONDITIONAL 2026-11-02 (docs/agents/qa/Q05.md, docs/agents/gates/G5-report.md, benchmarks.json: 9 PASS, BM-04 AAB unmeasured (human), 6 NOT RUN → Q01; G5 extras owed: wave-7 audit, SEC ASVS L1 pass, DOCS clean-clone check)
