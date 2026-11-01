@@ -1,0 +1,25 @@
+# HEAD 81def82: error codes asserted by B02-B05 tests -> present in docs/api/error-codes.md?
+rate_limited                     1
+otp_invalid                      1
+otp_locked                       1
+otp_expired                      1
+pin_invalid                      1
+pin_locked                       1
+forbidden                        1
+unauthorized                     1
+assist_session_invalid           1
+reason_required                  1
+invalid_geometry                 1
+gi_region_missing                1
+plot_locked                      1
+client_id_conflict               1
+farmer_phone_taken               1
+farmer_not_pending               1
+implausible_value                1
+unit_mismatch                    1
+unknown_parameter                1
+source_not_allowed               1
+instrument_calibration_expired   1
+moisture_trail_violation         1
+unknown_grade_for_profile        1
+append_only_violation            1

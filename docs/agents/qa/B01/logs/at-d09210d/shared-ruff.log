@@ -1,0 +1,6 @@
+# 2026-11-01T16:02:56Z 21:32  up 1 day, 21:05, 1 user, load averages: 7.50 19.84 90.53
+$ (cd apps/api) uv run ruff check . && uv run ruff format --check .
+All checks passed!
+173 files already formatted
+exit=0
+# 2026-11-01T16:02:56Z 21:32  up 1 day, 21:05, 1 user, load averages: 7.50 19.84 90.53

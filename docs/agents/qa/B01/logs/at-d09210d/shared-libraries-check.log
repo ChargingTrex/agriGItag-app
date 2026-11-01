@@ -1,0 +1,11 @@
+# 2026-11-01T16:02:49Z 21:32  up 1 day, 21:05, 1 user, load averages: 7.63 20.07 91.03
+$ (cd .) python3 infra/scripts/libraries-check.py
+check   apps/api/pyproject.toml: 32 dependencies, ok
+check   apps/public-page/pyproject.toml: 7 dependencies, ok
+check   apps/mobile/pubspec.yaml: 28 dependencies, ok
+check   apps/portal/package.json: 37 dependencies, ok
+check   apps/public-page/package.json: 2 dependencies, ok
+check   qa/robot/requirements.txt: 7 dependencies, ok
+libraries-check: PASS (171 ledger rows)
+exit=0
+# 2026-11-01T16:02:50Z 21:32  up 1 day, 21:05, 1 user, load averages: 7.63 20.07 91.03

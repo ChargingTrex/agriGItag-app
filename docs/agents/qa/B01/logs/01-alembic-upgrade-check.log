@@ -1,0 +1,6 @@
+# 2026-11-01T16:00:10Z 21:30  up 1 day, 21:02, 1 user, load averages: 7.00 29.35 108.44
+$ (cd .) docker compose -f infra/docker-compose.yml exec -T api sh -c 'alembic upgrade head && alembic check && alembic current'
+No new upgrade operations detected.
+0004_lots_append_only (head)
+exit=0
+# 2026-11-01T16:00:21Z 21:30  up 1 day, 21:02, 1 user, load averages: 6.00 28.40 107.18

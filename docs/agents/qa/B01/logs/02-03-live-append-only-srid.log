@@ -1,0 +1,39 @@
+# 2026-11-01T16:01:03Z 21:31  up 1 day, 21:03, 1 user, load averages: 7.29 25.68 102.12
+$ (cd .) PGPASSWORD=agritrace psql -h localhost -p 5433 -U agritrace -d agritrace -f docs/agents/qa/B01/logs/live.sql
+ event_versions_rows 
+---------------------
+                  27
+(1 row)
+
+BEGIN
+psql:docs/agents/qa/B01/logs/live.sql:4: ERROR:  append_only_violation
+DETAIL:  UPDATE on event_versions is not allowed
+HINT:  Add a new version instead of changing or deleting this row.
+CONTEXT:  PL/pgSQL function forbid_change() line 6 at RAISE
+ROLLBACK
+BEGIN
+psql:docs/agents/qa/B01/logs/live.sql:7: ERROR:  append_only_violation
+DETAIL:  DELETE on event_versions is not allowed
+HINT:  Add a new version instead of changing or deleting this row.
+CONTEXT:  PL/pgSQL function forbid_change() line 6 at RAISE
+ROLLBACK
+ event_versions_rows_after 
+---------------------------
+                        27
+(1 row)
+
+    f_table_name    | f_geometry_column | srid |     type     
+--------------------+-------------------+------+--------------
+ event_versions     | gps               | 4326 | Point
+ gi_region_versions | geom              | 4326 | MultiPolygon
+ plots              | pin               | 4326 | Point
+ plots              | walked_boundary   | 4326 | Polygon
+(4 rows)
+
+ plots | pins_4326 
+-------+-----------
+     3 |         3
+(1 row)
+
+exit=0
+# 2026-11-01T16:01:04Z 21:31  up 1 day, 21:03, 1 user, load averages: 7.29 25.68 102.12

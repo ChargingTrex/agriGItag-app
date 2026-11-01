@@ -1,0 +1,32 @@
+$ per-WP DECISION claim check: ids named in docs/agents/reports/<WP>.md + acceptance -> DECISIONS.md lines, docs/adr/<id>.md, tracked files with a "DECISION <id>" comment (git grep)
+== B01 claims: D-004 D-012 D-014 D-023
+  D-004 DECISIONS.md_lines=1 adr=yes code_files=2
+  D-012 DECISIONS.md_lines=1 adr=yes code_files=3
+  D-014 DECISIONS.md_lines=1 adr=yes code_files=3
+  D-023 DECISIONS.md_lines=1 adr=yes code_files=1
+  CHANGELOG: 1 line(s): - WP-B01 — Domain contracts, schema-first (39 SQLAlchemy models, migration 0001 with PostGIS, append-only an
+== B02 claims: D-004 D-005 D-012 D-020 D-022 D-024
+  D-004 DECISIONS.md_lines=1 adr=yes code_files=2
+  D-005 DECISIONS.md_lines=1 adr=yes code_files=10
+  D-012 DECISIONS.md_lines=1 adr=yes code_files=3
+  D-020 DECISIONS.md_lines=1 adr=yes code_files=4
+  D-022 DECISIONS.md_lines=1 adr=yes code_files=3
+  D-024 DECISIONS.md_lines=1 adr=yes code_files=6
+  CHANGELOG: 2 line(s): - WP-B02 — Identity and access (OTP sign-in with dev bypass, office PIN step, JWT 15 min + rotating per-devi
+== B03 claims: D-004 D-005 D-017 D-018 D-019
+  D-004 DECISIONS.md_lines=1 adr=yes code_files=2
+  D-005 DECISIONS.md_lines=1 adr=yes code_files=10
+  D-017 DECISIONS.md_lines=1 adr=yes code_files=10
+  D-018 DECISIONS.md_lines=1 adr=yes code_files=7
+  D-019 DECISIONS.md_lines=1 adr=yes code_files=3
+  CHANGELOG: 3 line(s): - WP-B03 — Registry + PostGIS geo (FPOs, processors, villages, farmers with F7 users rows, idempotent plots 
+== B04 claims: D-004 D-009
+  D-004 DECISIONS.md_lines=1 adr=yes code_files=2
+  D-009 DECISIONS.md_lines=1 adr=yes code_files=2
+  CHANGELOG: 1 line(s): - WP-B04 — Notifications (`notifications.send` task with redacted payloads, console provider + SMS stub, six
+== B05 claims: D-004 D-005 D-006 D-015
+  D-004 DECISIONS.md_lines=1 adr=yes code_files=2
+  D-005 DECISIONS.md_lines=1 adr=yes code_files=10
+  D-006 DECISIONS.md_lines=1 adr=yes code_files=8
+  D-015 DECISIONS.md_lines=1 adr=yes code_files=3
+  CHANGELOG: 1 line(s): - WP-B05 — Quality + grade engine (`StandardsProfileRules`, pure `grade_engine` shared via tests/fixtures/gr

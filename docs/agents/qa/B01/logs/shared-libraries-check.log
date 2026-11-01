@@ -1,0 +1,12 @@
+# 2026-11-01T16:17:34Z 21:47  up 1 day, 21:20, 1 user, load averages: 7.51 8.75 38.21
+$ (cd .) git rev-parse --short HEAD && python3 infra/scripts/libraries-check.py
+81def82
+check   apps/api/pyproject.toml: 32 dependencies, ok
+check   apps/public-page/pyproject.toml: 7 dependencies, ok
+check   apps/mobile/pubspec.yaml: 28 dependencies, ok
+check   apps/portal/package.json: 37 dependencies, ok
+check   apps/public-page/package.json: 2 dependencies, ok
+check   qa/robot/requirements.txt: 7 dependencies, ok
+libraries-check: PASS (171 ledger rows)
+exit=0
+# 2026-11-01T16:17:35Z 21:47  up 1 day, 21:20, 1 user, load averages: 7.51 8.75 38.21

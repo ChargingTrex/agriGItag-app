@@ -1,0 +1,6 @@
+# 2026-11-01T16:17:35Z 21:47  up 1 day, 21:20, 1 user, load averages: 7.51 8.75 38.21
+$ (cd apps/api) git rev-parse --short HEAD && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py --check && git status --short ../../docs/api/error-codes.md
+81def82
+docs/api/error-codes.md is current (49 codes)
+exit=0
+# 2026-11-01T16:17:39Z 21:47  up 1 day, 21:20, 1 user, load averages: 7.15 8.65 38.00

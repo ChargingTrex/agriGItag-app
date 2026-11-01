@@ -1,0 +1,5 @@
+# 2026-11-01T16:02:50Z 21:32  up 1 day, 21:05, 1 user, load averages: 7.63 20.07 91.03
+$ (cd apps/api) JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py --check && git status --short ../../docs/api/error-codes.md
+docs/api/error-codes.md is current (49 codes)
+exit=0
+# 2026-11-01T16:02:55Z 21:32  up 1 day, 21:05, 1 user, load averages: 7.50 19.84 90.53

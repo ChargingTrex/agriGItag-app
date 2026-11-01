@@ -1,0 +1,32 @@
+# 2026-11-01T16:01:10Z 21:31  up 1 day, 21:03, 1 user, load averages: 6.86 25.29 101.53
+$ (cd apps/api) uv run pytest tests/integration/test_schema.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 8 items
+
+tests/integration/test_schema.py::test_upgrade_head_then_check_reports_no_drift PASSED [ 12%]
+tests/integration/test_schema.py::test_live_enum_checks_match_the_strenums PASSED [ 25%]
+tests/integration/test_schema.py::test_event_versions_are_append_only[UPDATE event_versions SET payload = '{}'] PASSED [ 37%]
+tests/integration/test_schema.py::test_event_versions_are_append_only[DELETE FROM event_versions] PASSED [ 50%]
+tests/integration/test_schema.py::test_plot_pin_is_stored_in_srid_4326 PASSED [ 62%]
+tests/integration/test_schema.py::test_plot_insert_bumps_the_fpo_plots_reference_version PASSED [ 75%]
+tests/integration/test_schema.py::test_evidence_photo_allows_verification_updates_only PASSED [ 87%]
+tests/integration/test_schema.py::test_audited_insert_writes_an_audit_row_with_context PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_schema.py::test_upgrade_head_then_check_reports_no_drift
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_schema.py::test_live_enum_checks_match_the_strenums
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/integration/test_schema.py:191: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    live = dict((await conn.execute(query)).tuples().all())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 8 passed, 2 warnings in 29.37s ========================
+exit=0
+# 2026-11-01T16:01:43Z 21:31  up 1 day, 21:04, 1 user, load averages: 5.98 23.03 97.63

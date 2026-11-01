@@ -1,0 +1,26 @@
+# 2026-11-01T16:00:21Z 21:30  up 1 day, 21:02, 1 user, load averages: 6.00 28.40 107.18
+$ (cd apps/api) uv run lint-imports
+
+╔══╗─────────▶╔╗ ╔╗      ╔╗◀───┐
+╚╣╠╝◀─────┐  ╔╝╚╗║║────▶╔╝╚╗   │
+ ║║   ╔══╦══╦╩╗╔╝║║  ╔╦═╩╗╔╝╔═╦══╗
+ ║║╔══╣╔╗║╔╗║╔╣║ ║║ ╔╬╣╔╗║║ ║│║╔═╝
+╔╣╠╣║║║╚╝║╚╝║║║╚╗║╚═╝║║║║║╚╗║═╣║
+╚══╩╩╩╣╔═╩══╩╝╚═╝╚═══╩╩╝╚╩═╩╩═╩╝
+  └──▶║║                    ▲ 
+      ╚╝────────────────────┘
+
+
+---------
+Contracts
+---------
+
+Analyzed 104 files, 402 dependencies.
+-------------------------------------
+
+D-004 modules import other modules only via models and service KEPT (87 ignored imports)
+D-004 core never imports modules KEPT
+
+Contracts: 2 kept, 0 broken.
+exit=0
+# 2026-11-01T16:00:22Z 21:30  up 1 day, 21:02, 1 user, load averages: 6.00 28.40 107.18

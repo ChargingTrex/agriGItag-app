@@ -1,0 +1,11 @@
+# 2026-11-01T16:01:51Z 21:31  up 1 day, 21:04, 1 user, load averages: 5.74 22.69 97.08
+$ (cd .) python3 infra/scripts/doc-coverage.py
+Check              Target            Result  Detail
+python docstrings  apps/api          PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+python docstrings  apps/public-page  PASS    --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+dart doc comments  apps/mobile       PASS    No issues found! (ran in 5.7s)
+ts jsdoc           apps/portal       PASS    
+DECISION ids       DECISIONS.md      PASS    159 comment(s) in apps, packages, infra, qa; 0 unknown
+file headers       apps/             PASS    905 file(s); 0 without header
+exit=0
+# 2026-11-01T16:02:49Z 21:32  up 1 day, 21:05, 1 user, load averages: 7.63 20.07 91.03

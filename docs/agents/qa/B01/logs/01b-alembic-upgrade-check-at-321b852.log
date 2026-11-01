@@ -1,0 +1,7 @@
+# 2026-11-01T16:16:10Z 21:46  up 1 day, 21:18, 1 user, load averages: 4.81 9.11 41.44
+$ (cd .) git rev-parse --short HEAD && docker compose -f infra/docker-compose.yml exec -T api sh -c 'alembic upgrade head && alembic check && alembic current'
+81def82
+No new upgrade operations detected.
+0004_lots_append_only (head)
+exit=0
+# 2026-11-01T16:16:17Z 21:46  up 1 day, 21:18, 1 user, load averages: 4.58 8.99 41.21
