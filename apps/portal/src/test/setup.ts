@@ -12,8 +12,9 @@ import { handlers, resetMockData } from '../mocks/handlers';
 export const server = setupServer(...handlers, ...dashboardHandlers);
 
 // `findBy*`/`waitFor` give up after 1 s by default; on a loaded CI runner (or several agents' test runs at once)
-// the first render of a page takes longer, so wait up to 5 s. Passing tests are not slowed down.
-configure({ asyncUtilTimeout: 5000 });
+// the first render of a page takes longer. 5 s still missed the Flags table at load average 150 (P07), so wait
+// up to 15 s, as the Playwright `expect` does. Passing tests are not slowed down.
+configure({ asyncUtilTimeout: 15_000 });
 
 beforeAll(() => {
   server.listen({ onUnhandledFrame: 'error' });
