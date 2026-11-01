@@ -132,7 +132,7 @@ jobs:
 
   portal:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: apps/portal
@@ -154,6 +154,10 @@ jobs:
       - name: Initial bundle size (fails above 400 KB gzipped)
         shell: bash # explicit bash adds -o pipefail, so the budget failure survives the tee
         run: node scripts/bundle-size.ts | tee -a "$GITHUB_STEP_SUMMARY"
+      # P07: the admin chain (run twice) and axe on every screen, in MSW mock mode (no stack; D-052).
+      - run: npx playwright install --with-deps chromium
+      - name: Playwright e2e chain + axe (mock mode)
+        run: npm run e2e
 
   public-page:
     # W02: build the fixture page and gate the built files (FR-16, FR-19; BM-03, BM-09, BM-16).

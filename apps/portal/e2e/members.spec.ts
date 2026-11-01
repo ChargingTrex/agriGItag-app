@@ -2,26 +2,13 @@
  * Members end to end in MSW mock mode (no Docker): sign in with OTP + PIN, approve a pending farmer, see them
  * Active without a reload; open a plot and check the lazy map loads with the satellite layer off until asked.
  * Serves: plan §7.3 P01 acceptance "approve → active without reload", §13 D3 (satellite only on request),
- * FR8, FR28. Called by: `npm run e2e` (Playwright starts `npm run dev:mock` when PORTAL_URL is unset).
- * Against the real stack (PORTAL_URL set) the mock ids and codes do not exist: P07 owns that chain.
+ * FR8, FR28. Called by: `npm run e2e` (mock mode unless `E2E_LIVE=1`).
+ * Against the live stack (`E2E_LIVE=1`) the mock ids and codes do not exist: e2e/chain.spec.ts (P07) covers it.
  */
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { signIn } from './support.ts';
 
-test.skip(Boolean(process.env['PORTAL_URL']), 'mock-mode spec (MSW data and codes)');
-
-/**
- * Signs in as the mock FPO admin through the real login form.
- * @param page The Playwright page, already on a guarded route.
- * @returns Resolves when the PIN step is submitted.
- */
-async function signIn(page: Page): Promise<void> {
-  await page.getByLabel('Mobile number').fill('9876543210');
-  await page.getByRole('button', { name: 'Send code' }).click();
-  await page.getByLabel('SMS code').fill('123456');
-  await page.getByRole('button', { name: 'Verify code' }).click();
-  await page.getByLabel('PIN').fill('1234');
-  await page.getByRole('button', { name: 'Sign in' }).click();
-}
+test.skip(process.env['E2E_LIVE'] === '1', 'mock-mode spec (MSW data and codes)');
 
 // Tile servers are never contacted from tests (OSM tile policy, no network dependency); the `request`
 // event still fires for an aborted request, so "satellite tiles only after the click" stays checkable.

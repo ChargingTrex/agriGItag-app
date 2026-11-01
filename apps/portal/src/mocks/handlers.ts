@@ -5,9 +5,10 @@
  * farmer plots, plot correction; FR70, Dataflow "Review & flags"), P03 (lots, batch create with shares and
  * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60), P04 (batch list, readings, grade,
  * instruments, standards profile, grading approve, final packing, publish, builds with a simulated worker, rebuild,
- * qr.png, labels.pdf; FR15, FR48, FR49, FR62) and P08 (field config, import templates and CSV imports with dry
- * run; gap analysis "Master data uploads"). Called by: src/mocks/browser.ts,
- * src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`, `resetMockData`).
+ * qr.png, labels.pdf; FR15, FR48, FR49, FR62), P05 (binary labels.pdf, audit-export.csv; FR21, FR58) and P08
+ * (field config, import templates and CSV imports with dry run; gap analysis "Master data uploads").
+ * Called by: src/mocks/browser.ts, src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`,
+ * `resetMockData`).
  *
  * Every body is typed with the generated `components` schemas, so a contract change breaks
  * `npm run typecheck` here. State (farmers, processors, plots, flags, lots, batches, grades, readings, builds,
@@ -1218,7 +1219,29 @@ export const handlers = [
     if (batch.status !== 'packed' && batch.status !== 'published') {
       return fail(409, 'gate_not_met', { reasons: [{ code: 'final_packing_missing' }] });
     }
-    return new HttpResponse('%PDF-1.4 mock', { headers: { 'Content-Type': 'application/pdf' } });
+    // Binary body, as B10 sends it: a PDF header and nothing a viewer could render.
+    return new HttpResponse(new TextEncoder().encode('%PDF-1.4\n%mock\n'), {
+      headers: { 'Content-Type': 'application/pdf' },
+    });
+  }),
+  // B11: admin or viewer; one row per event version with `entered_by`, assist session, quantity + unit (FR58).
+  http.get('/v1/batches/:batchId/audit-export.csv', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.some((r) => r === 'fpo_admin' || r === 'viewer')) {
+      return fail(403, 'forbidden');
+    }
+    const batch = findBatch(params['batchId']);
+    if (!batch) return fail(404, 'not_found');
+    const csv = [
+      'subject_type,subject_code,event_type,version_no,change_kind,entered_by,assist_session_id,quantity,unit',
+      `lot,VSV-0001-L1,harvest,1,create,${MOCK_USER_ID},,100,kg`,
+    ].join('\r\n');
+    return new HttpResponse(`${csv}\r\n`, {
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="audit-${batch.code}.csv"`,
+      },
+    });
   }),
   http.post('/v1/processors', async ({ request }) => {
     if (!authed(request)) return fail(401, 'unauthorized');

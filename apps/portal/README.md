@@ -23,9 +23,9 @@ Node 24 and npm. Run from `apps/portal`.
 | `npm test`          | Vitest + React Testing Library, network mocked by MSW                                                                                                 |
 | `npm run build`     | Typecheck and production build into `dist/`                                                                                                           |
 | `npm run size`      | Gzipped size of the initial bundle from `dist/index.html`; fails above 400 KB                                                                         |
-| `npm run e2e`       | Playwright against `PORTAL_URL` (default http://localhost:5173). Needs `npx playwright install chromium` first; that and the real tests are P07       |
+| `npm run e2e`       | Playwright (Chromium): MSW mock mode by default; `E2E_LIVE=1` for the seeded stack; `E2E_BASE_URL` for a running portal. See "E2E (P07)" below        |
 
-The CI job is in `ci-job.yml` (to be moved into `.github/workflows/ci.yml`).
+The CI job is the `portal` job of `.github/workflows/ci.yml`.
 
 ## Layout
 
@@ -94,4 +94,15 @@ const members = useCursorList<Member>({
 - Routes: `/members` (pending approvals + roster), `/members/:farmerId`, `/members/plots/:plotId`, `/processors`.
 - The plot map (`src/features/members/PlotMap.tsx`, maplibre-gl) is a `React.lazy` chunk; only plot pages
   download it. Satellite tiles are requested only after "Show satellite view".
-- `npm run e2e` without `PORTAL_URL` starts `npm run dev:mock` on port 5174 and runs the mock-mode specs.
+- `npm run e2e` (mock mode) starts `npm run dev:mock` on port 5174 and runs the mock-mode specs.
+
+## E2E (P07)
+
+- `e2e/chain.spec.ts`: sign in (dev OTP) → import and approve a farmer → clear a flag → Ready lots → create a
+  batch → approve grading, final packing, publish → labels; run twice in one session, each under 10 minutes.
+  `e2e/axe.spec.ts`: axe on every route, failing on serious/critical (the chain also checks each screen).
+- Mock mode (CI): `npx playwright install chromium && npm run e2e`. The chain plays the QC phone by writing
+  the grade into MSW state (`agritraceMock`, D-052).
+- Live mode, on the B12 seed: `make up && make seed && cd apps/portal && E2E_LIVE=1 npm run e2e`. Playwright
+  starts `npm run dev` on 5173 (proxy `/v1` → `API_URL`, default http://localhost:8000); the QC grading is
+  posted over the API as the seeded QC officer; batch creation is skipped (the seed batches every lot).
