@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 38 % (25/65 items)
+Completion: 46 % (30/65 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -23,7 +23,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G1 Contract
 
-- [ ] B01 — Domain contracts (schema-first) — wave 1 — worker: Opus (2 rounds) — reviewer: Architect-Gate APPROVED-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
+- [x] B01 — Domain contracts (schema-first) — wave 1 — worker: Opus (2 rounds) — reviewer: Architect-Gate APPROVED-PENDING-STACK → live 2026-11-01 — verifier: PASS 5/5 (docs/agents/qa/B01.md; append-only trigger live, SRID 4326, alembic check clean)
 - [x] M00 — Skeleton: flavors, M3 theme + tokens, go_router role redirect, l10n en/ta, generated Dart  — wave 1 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 — verifier: PASS (docs/agents/qa/M00.md)
 - [x] P00 — Skeleton, auth guard, generated client, MSW from spec, lint/test/e2e config — wave 1 — worker: Opus — reviewer: WEB PASS r1 — verifier: PASS (docs/agents/qa/P00.md)
 - [x] W01 — `render(public_batch) -> (html, json)`, Jinja2 `batch.html.j2`, inline CSS < 12 KB, JS < 4 — wave 1 — worker: Opus (2 rounds) — reviewer: WEB r1 FAIL, r2 PASS — verifier: PASS (docs/agents/qa/W01.md)
@@ -31,10 +31,10 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 ## G2 Core backend
 
-- [ ] B02 — Identity — wave 2 — worker: Opus (2 rounds) — reviewer: SEC FAIL r1 / PASS-PENDING-STACK r2 — verifier: PENDING (merged conditionally; integration tests deferred)
-- [ ] B03 — Registry + PostGIS geo — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; PostGIS tests deferred)
-- [ ] B04 — Notifications — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
-- [ ] B05 — Quality + grade engine — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
+- [x] B02 — Identity — wave 2 — worker: Opus (2 rounds) — reviewer: SEC FAIL r1 / PASS-PENDING-STACK r2 — verifier: PASS 6/6 (docs/agents/qa/B02.md; live 429/409/403/401 with the dev OTP)
+- [x] B03 — Registry + PostGIS geo — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PASS 7/7 (docs/agents/qa/B03.md; live locate_point inside/near_edge/outside)
+- [x] B04 — Notifications — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PASS 2/2 (docs/agents/qa/B04.md; live broker + worker; P3 visibility_timeout note → TODO)
+- [x] B05 — Quality + grade engine — wave 2 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PASS 9/9, BM-08 65/65 (docs/agents/qa/B05.md)
 - [x] M01 — Drift store + DAOs + migrations + schema test — wave 2 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 + r2 confirm — verifier: Orchestrator-run db suite PASS; Go-AVD timing → Q01
 - [x] M04 — Capture kit: camera (no gallery), compress to long edge 1600 px at JPEG q≈80 stepping down — wave 2 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 confirm — verifier: Orchestrator-run suite PASS; device checks → Q01
 - [x] M05 — Farmer widget kit: FarmerButton, PictureCardGrid, BigStepper, NumberPad, StatusBadge, Voic — wave 2 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 confirm — verifier: Orchestrator-run suite PASS (198); device checks → Q01
