@@ -1,4 +1,4 @@
-# Handover — AgriTrace build, state at 2026-11-02 01:50 IST (day 4: first live-stack day; Verifier wave 7 in progress)
+# Handover — AgriTrace build, state at 2026-11-02 02:40 IST (day 4: first live-stack day; wave 7 nearly done)
 
 Written for: whoever resumes the multi-agent build (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §6–§7 (audit follow-ups, gate blockers) and the decision-number ledger line.
 
@@ -7,8 +7,8 @@ Written for: whoever resumes the multi-agent build (human or the Orchestrator se
 | Area | State |
 |---|---|
 | Plan | `PLAN.md` (approved 2026-10-29); specs in `docs/agents/specs/`; rulings `docs/agents/gates/rulings-2026-10-31*.md` |
-| Progress | `CHECKLIST.md`: **84 % (64/76)**. Backend B00–B20 verified live; mobile M00–M16 merged, reviewed, 812 tests green, APK 30.03 MiB; portal P01–P10 and W03 verified live (P06 line 5 re-check pending); Q02 CONDITIONAL (members coverage → P11), Q03 CONDITIONAL (2 Robot placeholders), Q04 FAIL (BM-07 p95 3.1 s, push 5xx on NUL/int32 → B21), Q06 Robot API suites 67/67 merged, Q07 portal Robot suites in flight |
-| Gates | **G0 and G1 SIGNED** (2026-11-01/02). **G2** readiness filed BLOCKED (`docs/agents/gates/G2.md`): Robot API suites now green (Q06), P01 live line PASS (P10), B08-2 closed (B20) — remaining: the portal/mobile Robot placeholders the readiness script counts (Q07 in flight; mobile ones are Q01/G3 scope → Architect-Gate ruling). G3–G5 unsigned |
+| Progress | `CHECKLIST.md`: **88 % (68/77)**. Backend B00–B20 verified live; mobile M00–M16 merged + 812 tests green, APK 30.03 MiB (AAB download unmeasured: human step, TODO); portal P01–P11 and W03 verified live; Q02 PASS, Q03 CONDITIONAL (2 page.robot placeholders → Q07 r2), Q04 FAIL → B21 fixed it on its branch (BM-07 p95 280 ms; push 5xx → per-entry rejection) and is in BE/SEC review; Q06 Robot API 67/67 and Q07 portal Robot P01–P04 12/12 merged; Q07 round 2 (P05/P06/P08/P07 + public page placeholders, P06 line 5) in flight |
+| Gates | **G0, G1, G2 SIGNED** (G2 on 2026-11-02 with the ruling that the 10 mobile Robot placeholders are Q01/G3 scope). **G3 BLOCKED** (Q01 device work + Go AVD; P05/P06/P08 Robot + P06 line 5 → Q07 r2; AAB figure). **G4 BLOCKED** (same portal placeholders + 2 page.robot + P06 line 5). G5 after Q05 (`docs/agents/gates/G*.md`) |
 | Audits | `docs/agents/audits/wave-0-2.md` (3 P1, 11 P2, 6 P3) and `waves-3-6.md` (2 P1, 5 P2, 9 P3). **All five P1s are fixed and merged** (M14, M16, P09); P2s fixed: M15, B18, B19; the rest are TODO §6/§7 lines |
 | Decisions | D-001…D-054 (D-049 unused; D-055–D-058 reserved, unused: B18/B19/P09/M16 needed no ADR) |
 | Main | 391 commits; backend 623 unit / 780 total (full suite green on the live stack); mobile 812 tests, analyzer clean; portal 135 Vitest, bundle 243 KB gz; public page 76 pytest; qa/tests 109; 49 error codes; migrations 0001–0004; OpenAPI, TS and Dart clients regenerated and byte-identical after the last backend merge (B18) |
@@ -25,9 +25,8 @@ B00 (CONDITIONAL → PASS after B17), Q00 deferred lines closed, B01–B05, B06,
 
 | Agent | What | Resume |
 |---|---|---|
-| Q07 QA Lead | 11 portal Robot placeholders (P01–P04) → real `robotframework-browser` tests on isolated project `agritrace-q07` (:8030, portal :5183); report `docs/agents/reports/Q07.md` | if missing: respawn with the Q06 recipe; then also the 2 `qa/robot/public/page.robot` placeholders (Q03-1) |
-| P11 Worker | `PlotMap.tsx` Vitest test so `members` coverage ≥ 80 % (Q02-1) | small; Orchestrator confirms + merges, then Q02 → PASS |
-| B21 Worker | Q04-1/2 push validation (NUL, int32, per-entry DB-error rejection, telemetry 422) + Q04-3 BM-07 (profile, uvicorn workers, pool) on its own project `agritrace-b21` (:8040); may change `openapi.json` → regenerate TS + Dart clients at merge | BE review (SEC hat) → merge → `make up` → Q05 reruns locust + fuzz |
+| Q07 QA Lead (round 2) | remaining Robot placeholders: portal P05 ×2, P06 ×5 (incl. the P06 line-5 audit-reason re-check), P08 ×3, P07 ×2, public `page.robot` ×2, on an isolated compose project; branch `worktree-agent-ac14cb14a1f0ec7bc` (round 1 already merged) | merge → `gate-readiness G3/G4/G5` should list only Q01 mobile lines → Architect-Gate re-evaluates G3/G4 |
+| BE/SEC Reviewer of B21 | `worktree-agent-ac5367febd6d197aa` @ 8cd7944: NUL/int32 validation at the push boundary, per-entry DB-error rejection (SQLSTATE 22), telemetry 422, `WEB_CONCURRENCY=4` in the api Dockerfile (BM-07 p95 1900 → 280 ms) | on PASS: merge, re-export openapi (25 int32 maxima), `npm run gen:api`, Dart `tool/gen_api.sh`, `make up` (if BuildKit says "lease not found": `docker builder prune -af`), then Q05 |
 
 No other worktrees should exist (`git worktree list`). Shared-stack live checks are blocked by the admin OTP cap until ~21:49 IST; use an isolated project.
 
