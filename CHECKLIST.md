@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 48 % (31/65 items)
+Completion: 46 % (31/68 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -42,6 +42,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] B06 — Events + sync push + evidence — wave 3 — worker: Opus (2 rounds) — reviewer: SEC PASS-PENDING-STACK — verifier: PENDING (merged conditionally; 17 integration tests deferred)
 - [ ] B13 — Config-driven fields/features + masters + bulk import (from the gap analysis) — wave 3 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PENDING (merged conditionally; integration tests deferred)
 - [x] M02 — Sync engine (outbox, triggers incl. reachability probe, timeouts 10 s/30 s, retry only on  — wave 3 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite PASS (401); device/network runs → Q01 (BM-11..15); server half of the r2 line → Verifier with B15
+- [ ] M14 — Sync engine audit P1 fixes (outbox retries in strict order + ordering rejections retried; refresh token re-read from secure storage so background sync does not sign farmers out) — wave 3 hotfix (audit waves-3-6 P1-1/P1-2, blocks G2) — worker: Opus (in progress 2026-11-01) — reviewer: — verifier:
 - [x] M03 — Ref data + local preview rules (GI point-in-polygon + buffer, yield 20/30, event order, mo — wave 3 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 + r2 confirm — verifier: Orchestrator-run rules suite PASS (63/63 parity)
 - [ ] P01 — Members: approvals, roster, farmer/plot detail with MapLibre/OSM + GI outline — wave 3 — worker: Opus (2 rounds) — reviewer: WEB PASS r1 + r2 confirm — verifier: PENDING (acceptance line 'masked phone + audited reveal' waits on B14; live API deferred)
 - [ ] P03 — Ready lots → Create batch: tick, running total, share %, greyed lots with reason, non-GI t — wave 3 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PENDING (merged 2026-10-31; 77 Vitest green on main; live API deferred)
@@ -62,6 +63,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
 - [x] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (2 rounds) — reviewer: MOB/SEC FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (724 on main); device checks → Q01
 - [x] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / r2 one P2, patch confirmed by Orchestrator — verifier: Orchestrator-run suite PASS (779 on main); device checks → Q01; live lot_intake push → Verifier with B16
+- [ ] M15 — QC pick-lot fallback lists open/drying lots (audit waves-3-6 finding 5, P2) — wave 5 hotfix — worker: Opus (in progress 2026-11-01) — reviewer: — verifier:
 - [ ] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirmed by Orchestrator — verifier: PENDING (merged 2026-11-01; 131 Vitest on the branch, 129 green + 2 P06 dashboard timeouts under load; live API deferred)
 - [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 — verifier: PENDING (merged 2026-10-31; 120 Vitest green on main; live API, correction reason (B11) and opt-out preview (B03 route) deferred)
 - [ ] P08 — Master data uploads: CSV import for farmers, villages, inputs with template download, dry- — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS-PENDING-STACK r1 — verifier: PENDING (merged 2026-10-31; 87 Vitest green on main; live API deferred)
@@ -70,6 +72,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 ## G4 Portal + Publish
 
 - [ ] B10 — Publishing — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 8 integration tests deferred)
+- [ ] B18 — Audit P2 fixes at trust boundaries (presigned PUT bound to declared Content-Length + size ceiling; publish runs the privacy linter and fails the build on a hit; linter patterns for R.S. No., Tamil survey label, spaced coordinates, dotted phones) — wave 6 hotfix — worker: Opus (in progress 2026-11-01) — reviewer: — verifier:
 - [ ] B11 — Reporting + stubs — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; 11 integration tests deferred)
 - [x] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (793 on main); device checks → Q01
 - [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (1 round) — reviewer: WEB PASS r1 — verifier: PENDING (merged 2026-10-31; 76 pytest + privacy lint + html-validate green; Lighthouse 3G re-run and print dialogs deferred)
