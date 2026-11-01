@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 78 % (57/73 items)
+Completion: 78 % (58/74 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -26,7 +26,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M00 — Skeleton: flavors, M3 theme + tokens, go_router role redirect, l10n en/ta, generated Dart  — wave 1 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 — verifier: PASS (docs/agents/qa/M00.md)
 - [x] P00 — Skeleton, auth guard, generated client, MSW from spec, lint/test/e2e config — wave 1 — worker: Opus — reviewer: WEB PASS r1 — verifier: PASS (docs/agents/qa/P00.md) + Robot headless-browser test PASS 1/1 live 2026-11-01 (G1 blocker cleared)
 - [x] W01 — `render(public_batch) -> (html, json)`, Jinja2 `batch.html.j2`, inline CSS < 12 KB, JS < 4 — wave 1 — worker: Opus (2 rounds) — reviewer: WEB r1 FAIL, r2 PASS — verifier: PASS (docs/agents/qa/W01.md)
-- [ ] **Gate G1 signed** — blocker cleared 2026-11-01 (P00 Robot PASS); Architect-Gate signing (docs/agents/gates/G1.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [x] **Gate G1 signed** 2026-11-02 by the Architect-Gate (docs/agents/gates/G1.md; P00 Robot headless-browser test PASS; spec validates, clients byte-identical, D-001…D-012 accepted) (docs/agents/gates/G1.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G2 Core backend
 
@@ -55,7 +55,8 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M07 — Farmer home + 8 events (F03–F09, F16, F17), out-of-order prompt, lot readiness — wave 4 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: suite PASS (605) on the merged branch; device checks (< 20 s log, camera, GPS) → Q01
 - [x] P02 — Flags & plot review — wave 4 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirm — verifier: PASS 2/2 live (docs/agents/qa/P02.md, 2026-11-01)
 - [x] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PASS 4/4 live incl. D-041 non-GI line (docs/agents/qa/P04.md)
-- [ ] **Gate G2 signed** (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [ ] Q06 — Robot API suites implemented and green (48 placeholders in qa/robot/api → real tests on an isolated stack; G2 blocker) — wave 7 — worker: Opus QA Lead (in progress 2026-11-02) — reviewer: — verifier: robot run in docs/agents/qa/Q06/robot/
+- [ ] **Gate G2 signed** — readiness filed BLOCKED 2026-11-02 (Robot API placeholders → Q06; P01 live line → P10; B08-2 → B20; mobile/portal Robot placeholders belong to G3/G4 scope) (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G3 Mobile core
 
