@@ -1,0 +1,32 @@
+agritrace-api-1 'deadlock' lines: 0
+agritrace-worker-1 'deadlock' lines: 0
+agritrace-db-1 'deadlock' lines: 0
+agritrace-api-1 HTTP 500 lines: 0
+agritrace-api-1 POST /v1/intakes 201 lines: 20
+agritrace-worker-1 rules.check_event lines: 80
+
+## concurrency sample (first runs): check_event received/succeeded vs push/intake answers, by time
+2026-11-01T19:00:00.678032239Z [2026-11-01 19:00:00,559: INFO/MainProcess] Task rules.check_event[e47e2e41-4776-403d-8d5d-e000cce7f27a] received
+2026-11-01T19:00:00.698057320Z INFO:     169.254.169.254:49204 - "POST /v1/sync/push HTTP/1.1" 200 OK
+2026-11-01T19:00:00.779707519Z [2026-11-01 19:00:00,773: INFO/MainProcess] Task rules.check_event[18c0c4f6-037b-4177-be76-5a8b1750d1b1] received
+2026-11-01T19:00:02.097254967Z INFO:     169.254.169.254:51526 - "POST /v1/intakes HTTP/1.1" 201 Created
+2026-11-01T19:00:02.270572343Z [2026-11-01 19:00:02,269: INFO/MainProcess] Task rules.check_event[d08688dd-50a2-4517-8210-d335d850bc67] received
+2026-11-01T19:00:02.360681751Z [2026-11-01 19:00:02,359: INFO/MainProcess] Task rules.check_event[0e2aec1e-3b6a-4760-a6c1-56d794ab183c] received
+2026-11-01T19:00:02.391592578Z INFO:     169.254.169.254:49204 - "POST /v1/sync/push HTTP/1.1" 200 OK
+2026-11-01T19:00:02.725570498Z INFO:     169.254.169.254:51526 - "POST /v1/intakes HTTP/1.1" 201 Created
+2026-11-01T19:00:02.921295578Z [2026-11-01 19:00:02,920: INFO/MainProcess] Task rules.check_event[03ba3484-0037-4cbe-aa8a-464ef54c23b3] received
+2026-11-01T19:00:03.106650877Z [2026-11-01 19:00:03,106: INFO/MainProcess] Task rules.check_event[9cc0494d-619a-4be8-ac52-ce4abaee5f46] received
+2026-11-01T19:00:03.116605598Z INFO:     169.254.169.254:49204 - "POST /v1/sync/push HTTP/1.1" 200 OK
+2026-11-01T19:00:03.804760845Z INFO:     169.254.169.254:51526 - "POST /v1/intakes HTTP/1.1" 201 Created
+2026-11-01T19:00:04.042807769Z [2026-11-01 19:00:04,040: INFO/MainProcess] Task rules.check_event[b99d169e-7fa8-49be-86ae-d23a3932c2b0] received
+2026-11-01T19:00:04.080369545Z [2026-11-01 19:00:04,079: INFO/MainProcess] Task rules.check_event[8a836214-c53c-4e72-99dd-fb3594b0bbfc] received
+2026-11-01T19:00:04.088732795Z INFO:     169.254.169.254:49204 - "POST /v1/sync/push HTTP/1.1" 200 OK
+2026-11-01T19:00:04.360040130Z INFO:     169.254.169.254:51526 - "POST /v1/intakes HTTP/1.1" 201 Created
+2026-11-01T19:00:04.553273217Z [2026-11-01 19:00:04,536: INFO/MainProcess] Task rules.check_event[012538ce-ee34-4b45-b0fb-1923dce25fae] received
+2026-11-01T19:00:04.712009674Z [2026-11-01 19:00:04,710: INFO/MainProcess] Task rules.check_event[9870820b-fc36-43f5-9822-57cfa6996663] received
+2026-11-01T19:00:04.722685795Z INFO:     169.254.169.254:49204 - "POST /v1/sync/push HTTP/1.1" 200 OK
+2026-11-01T19:00:04.916696614Z [2026-11-01 19:00:04,874: INFO/ForkPoolWorker-7] Task rules.check_event[e47e2e41-4776-403d-8d5d-e000cce7f27a] succeeded in 3.8187174900012906s: ['event_out_of_order']
+2026-11-01T19:00:05.151295632Z INFO:     169.254.169.254:51526 - "POST /v1/intakes HTTP/1.1" 201 Created
+2026-11-01T19:00:05.386906142Z [2026-11-01 19:00:05,386: INFO/MainProcess] Task rules.check_event[35fe5396-23b1-49a2-aaa3-43ec911c2817] received
+2026-11-01T19:00:05.470967516Z [2026-11-01 19:00:05,470: INFO/MainProcess] Task rules.check_event[58a8241a-34d6-450e-862e-83cdc3f54ce1] received
+2026-11-01T19:00:05.544058554Z INFO:     169.254.169.254:49204 - "POST /v1/sync/push HTTP/1.1" 200 OK

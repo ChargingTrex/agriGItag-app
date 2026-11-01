@@ -9,6 +9,7 @@ import re
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.exc import DBAPIError
 
 from agritrace.core.errors import REGISTRY, AppError, GateNotMetError, install_handlers
 
@@ -43,6 +44,17 @@ def _client() -> AsyncClient:
             GateNotMetError: always.
         """
         raise GateNotMetError(details={"open_flags": 2})
+
+    @app.get("/deadlock")
+    def deadlock() -> None:
+        """Raise the driver error Postgres sends when it breaks a deadlock (B08-2).
+
+        Raises:
+            DBAPIError: always, with `orig.sqlstate` 40P01.
+        """
+        orig = Exception("deadlock detected")
+        orig.sqlstate = "40P01"  # type: ignore[attr-defined]
+        raise DBAPIError("INSERT INTO flags", {}, orig)
 
     @app.get("/num/{n}")
     def num(n: int) -> int:
@@ -111,3 +123,10 @@ async def test_wrong_method_keeps_allow_header() -> None:
     assert r.status_code == 405
     assert r.json()["error"]["code"] == "method_not_allowed"
     assert r.headers["allow"] == "GET"
+
+
+async def test_deadlock_is_retryable_503() -> None:
+    """A Postgres deadlock answers 503 `retry_later` with `Retry-After`, not 500 (QA issue B08-2, B20)."""
+    async with _client() as c:
+        r = await c.get("/deadlock")
+    assert (r.status_code, r.headers["retry-after"], r.json()["error"]["code"]) == (503, "1", "retry_later")
