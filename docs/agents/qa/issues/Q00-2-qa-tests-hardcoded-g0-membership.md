@@ -22,3 +22,5 @@ Evidence: `docs/agents/qa/Q00/logs/32-qa-tests.txt`.
 
 ## Also seen (not a Q00 defect)
 `gate-readiness.py B02` exits 1: the six `qa/robot/api/identity.robot` tests are still tagged `not-ready`, even though B02 is verified PASS (commit `c0962da`). That test's `gate.main(["B02"]) == 1` assertion is still true for now, but a G2 gate run will flag B02 until those placeholders are turned into real tests (log 33).
+
+**Resolution (Orchestrator, 2026-11-01, commit 2a0d775):** the B17 row moved from the G0 section to the G5 section ("wave 7 hotfix"), so G0 is again exactly {B00, Q00}; `qa/tests` 102 passed. The test stays strict on purpose.
