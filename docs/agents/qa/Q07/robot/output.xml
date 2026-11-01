@@ -1,0 +1,4085 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.5 (Python 3.12.13 on darwin)" generated="2026-11-02T02:05:28.406047" rpa="false" schemaversion="5">
+<suite id="s1" name="Portal" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/portal">
+<suite id="s1-s1" name="Portal" source="/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/portal/portal.robot">
+<test id="s1-s1-t1" name="Portal Loads In A Headless Browser" line="25">
+<kw name="New Browser" owner="Browser">
+<msg time="2026-11-02T02:05:29.402223" level="INFO">{"browser": "chromium", "headless": true, "chromiumSandbox": false, "devtools": false, "handleSIGHUP": true, "handleSIGINT": true, "handleSIGTERM": true, "slowMo": 0.0, "timeout": 30000.0, "tracesDir": "/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/browser/traces/temp/16d83493-aed8-40f0-9c13-51a9e5075354"}</msg>
+<msg time="2026-11-02T02:05:29.488425" level="INFO">Starting Browser process /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/.venv/lib/python3.12/site-packages/Browser/wrapper/index.js using at 127.0.0.1:49586</msg>
+<msg time="2026-11-02T02:05:32.886133" level="INFO">Successfully created browser with options: {"browser":"chromium","headless":true,"chromiumSandbox":false,"devtools":false,"handleSIGHUP":true,"handleSIGINT":true,"handleSIGTERM":true,"slowMo":0,"timeout":30000,"tracesDir":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/browser/traces/temp/16d83493-aed8-40f0-9c13-51a9e5075354"}</msg>
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="PASS" start="2026-11-02T02:05:29.400931" elapsed="3.486301"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<msg time="2026-11-02T02:05:34.273290" level="INFO">Successfully initialized new page object and opened url: http://localhost:5183</msg>
+<msg time="2026-11-02T02:05:34.273477" level="INFO">No context was open. New context was automatically opened when this page is created.</msg>
+<arg>${PORTAL_BASE}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="PASS" start="2026-11-02T02:05:32.888883" elapsed="1.385079"/>
+</kw>
+<kw name="Get Title" owner="Browser">
+<msg time="2026-11-02T02:05:34.341123" level="INFO">Title: 'AgriTrace FPO portal'</msg>
+<arg>!=</arg>
+<arg>${EMPTY}</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the title of the current page.</doc>
+<status status="PASS" start="2026-11-02T02:05:34.274526" elapsed="0.066837"/>
+</kw>
+<kw name="Close Browser" owner="Browser" type="TEARDOWN">
+<msg time="2026-11-02T02:05:34.465580" level="INFO">Closed browser</msg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-11-02T02:05:34.342490" elapsed="0.123531"/>
+</kw>
+<tag>FR-14</tag>
+<tag>portal</tag>
+<tag>smoke</tag>
+<tag>WP-P00</tag>
+<status status="PASS" start="2026-11-02T02:05:29.399038" elapsed="5.067220"/>
+</test>
+<test id="s1-s1-t2" name="Approving A Member Makes It Active Without Reload" line="32">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:05:34.493414" level="INFO">${known} = None</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:05:34.491313" elapsed="0.002194"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:05:34.494694" elapsed="0.000183"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:05:34.493854" elapsed="0.001142"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:05:34.495775" elapsed="0.000173"/>
+</kw>
+<return>
+<status status="NOT RUN" start="2026-11-02T02:05:34.496129" elapsed="0.000166"/>
+</return>
+<status status="NOT RUN" start="2026-11-02T02:05:34.495122" elapsed="0.001289"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:05:34.493760" elapsed="0.002743"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2026-11-02T02:05:34.499287" level="INFO">${ADMIN_PAGE} = failed</msg>
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2026-11-02T02:05:34.497037" elapsed="0.002429"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<msg time="2026-11-02T02:05:34.501752" level="INFO">{"browser": "chromium", "headless": true, "chromiumSandbox": false, "devtools": false, "handleSIGHUP": true, "handleSIGINT": true, "handleSIGTERM": true, "slowMo": 0.0, "timeout": 30000.0, "tracesDir": "/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/browser/traces/temp/e5901df7-269a-428a-b4ad-0b8d1822ef1c"}</msg>
+<msg time="2026-11-02T02:05:34.852098" level="INFO">Successfully created browser with options: {"browser":"chromium","headless":true,"chromiumSandbox":false,"devtools":false,"handleSIGHUP":true,"handleSIGINT":true,"handleSIGTERM":true,"slowMo":0,"timeout":30000,"tracesDir":"/Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/browser/traces/temp/e5901df7-269a-428a-b4ad-0b8d1822ef1c"}</msg>
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="PASS" start="2026-11-02T02:05:34.500047" elapsed="0.352425"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<msg time="2026-11-02T02:05:34.857210" level="INFO">{
+  "acceptDownloads": true,
+  "bypassCSP": false,
+  "forcedColors": "none",
+  "ignoreHTTPSErrors": false,
+  "javaScriptEnabled": true,
+  "offline": false,
+  "reducedMotion": "no-preference",
+  "serviceWorkers": "allow",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  }
+}</msg>
+<msg time="2026-11-02T02:05:34.874609" level="INFO">Successfully created context. </msg>
+<msg time="2026-11-02T02:05:34.874758" level="INFO">{'acceptDownloads': True, 'bypassCSP': False, 'forcedColors': 'none', 'ignoreHTTPSErrors': False, 'javaScriptEnabled': True, 'offline': False, 'reducedMotion': 'no-preference', 'serviceWorkers': 'allow', 'viewport': {'width': 1280, 'height': 800}}</msg>
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="PASS" start="2026-11-02T02:05:34.853517" elapsed="0.021552"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<msg time="2026-11-02T02:05:35.853012" level="INFO">Successfully initialized new page object and opened url: http://localhost:5183/</msg>
+<msg time="2026-11-02T02:05:35.853522" level="INFO">${page} = {'page_id': 'page=e38ddede-98f2-4351-b46b-de05ccad70ab', 'video_path': ''}</msg>
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="PASS" start="2026-11-02T02:05:34.875636" elapsed="0.977972"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:05:35.855235" level="INFO">Fills the text '9000000001' in the given field.</msg>
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:35.854205" elapsed="0.329927"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:05:36.186066" level="INFO">Clicks the element 'role=button[name="Send code"]'.</msg>
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.185291" elapsed="0.174308"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:05:36.552102" level="INFO">Waited for Element with selector internal:label="SMS code"s at state visible</msg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.361109" elapsed="0.191320"/>
+</kw>
+<msg time="2026-11-02T02:05:36.552897" level="INFO">${sent} = True</msg>
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.360037" elapsed="0.192974"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:05:36.554044" elapsed="0.000174"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:05:36.554755" elapsed="0.000215"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:05:36.553343" elapsed="0.001878"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:05:36.553268" elapsed="0.002184"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:05:36.557177" level="INFO">Fills the text '123456' in the given field.</msg>
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.555777" elapsed="0.016458"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:05:36.573910" level="INFO">Clicks the element 'role=button[name="Verify code"]'.</msg>
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.572782" elapsed="0.065090"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:05:36.736750" level="INFO">Waited for Element with selector internal:label=/^(PIN|Choose a 4-digit PIN)$/ at state visible</msg>
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.638480" elapsed="0.098628"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<msg time="2026-11-02T02:05:36.750496" level="INFO">${first} = 1</msg>
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.737661" elapsed="0.012942"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:05:36.752988" level="INFO">Fills the text '1234' in the given field.</msg>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.751704" elapsed="0.019588"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:05:36.772783" level="INFO">Clicks the element 'role=button[name="Next"]'.</msg>
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.771774" elapsed="0.075906"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:05:36.849473" level="INFO">Fills the text '1234' in the given field.</msg>
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.848259" elapsed="0.017039"/>
+</kw>
+<status status="PASS" start="2026-11-02T02:05:36.750893" elapsed="0.114571"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:05:36.866374" elapsed="0.000298"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:05:36.865581" elapsed="0.001442"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:05:36.750833" elapsed="0.116329"/>
+</if>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:05:36.868605" level="INFO">Clicks the element 'role=button[name=/sign in$/i]'.</msg>
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.867532" elapsed="0.054776"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:05:37.212381" level="INFO">Waited for Element with selector role=navigation[name="Main"] at state visible</msg>
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:05:36.923074" elapsed="0.289605"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2026-11-02T02:05:37.214543" level="INFO">${ADMIN_PAGE} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2026-11-02T02:05:37.213290" elapsed="0.001477"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable ${ADMIN_PAGE}; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:05:34.490328" elapsed="2.724713"/>
+</kw>
+<kw name="New Farmer" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:38.491160" level="INFO">${f} = {'id': '2ad03b20-8183-4161-9c95-04d2bc252705', 'user_id': '01a198d4-15b8-7f5c-99d1-fe2f427d110f', 'phone': '+919797428293', 'name': 'QA Robot Pending 7a66bc'}</msg>
+<var>${f}</var>
+<arg>QA Robot Pending ${{uuid.uuid4().hex[:6]}}</arg>
+<arg>approve=${False}</arg>
+<doc>Onboard, approve and record data consent for a farmer in the demo FPO (as the FPO admin).</doc>
+<status status="PASS" start="2026-11-02T02:05:37.215394" elapsed="61.276511"/>
+</kw>
+<kw name="Open Screen">
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:38.505563" level="INFO">Clicks the element 'role=navigation[name="Main"] &gt;&gt; role=link[name="Members"]'.</msg>
+<arg>role=navigation[name="Main"] &gt;&gt; role=link[name="${label}"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.502131" elapsed="0.088955"/>
+</kw>
+<arg>Members</arg>
+<doc>Open a sidebar screen by its label (client-side navigation inside the portal).
+Args: ${label} the navigation label, e.g. "Ready lots".
+Fails: no such link in the Main navigation.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.498868" elapsed="0.092508"/>
+</kw>
+<kw name="Evaluate JavaScript" owner="Browser">
+<msg time="2026-11-02T02:06:38.638207" level="INFO">JavaScript executed successfully.</msg>
+<arg>${None}</arg>
+<arg>window.__qaNoReload = 'still-here'</arg>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Executes the given JavaScript in the browser page.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.591764" elapsed="0.046673"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-02T02:06:38.640412" level="INFO">${pending} = role=table[name="Waiting for approval"] &gt;&gt; tr:has-text("QA Robot Pending 7a66bc")</msg>
+<var>${pending}</var>
+<arg>role=table[name="Waiting for approval"] &gt;&gt; tr:has-text("${f}[name]")</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.638969" elapsed="0.001533"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:38.738996" level="INFO">Waited for Element with selector role=table[name="Waiting for approval"] &gt;&gt; tr:has-text("QA Robot Pending 7a66bc") at state visible</msg>
+<arg>${pending}</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.640960" elapsed="0.098215"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:38.740194" level="INFO">Clicks the element 'role=button[name="Approve QA Robot Pending 7a66bc"]'.</msg>
+<arg>role=button[name="Approve ${f}[name]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.739456" elapsed="0.051232"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:38.893479" level="INFO">Waited for Element with selector role=table[name="Waiting for approval"] &gt;&gt; tr:has-text("QA Robot Pending 7a66bc") at state detached</msg>
+<arg>${pending}</arg>
+<arg>detached</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.791036" elapsed="0.102783"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:38.941118" level="INFO">Text: ['F224AD2\tQA ROBOT PENDING 7A66BC\tQA Thottiyangulam, Tiruchuli, Virudhunagar, Tamil Nadu, 626129\t\nActive']</msg>
+<arg>role=table[name="All members"] &gt;&gt; tr:has-text("${f}[name]")</arg>
+<arg>contains</arg>
+<arg>Active</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.894421" elapsed="0.046881"/>
+</kw>
+<kw name="Evaluate JavaScript" owner="Browser">
+<msg time="2026-11-02T02:06:38.948029" level="INFO">JavaScript executed successfully.</msg>
+<msg time="2026-11-02T02:06:38.948317" level="INFO">${marker} = still-here</msg>
+<var>${marker}</var>
+<arg>${None}</arg>
+<arg>window.__qaNoReload</arg>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Executes the given JavaScript in the browser page.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.941607" elapsed="0.006757"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${marker}</arg>
+<arg>still-here</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.948732" elapsed="0.001133"/>
+</kw>
+<kw name="Call Api" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:38.970331" level="INFO">${farmer} = &lt;Response [200]&gt;</msg>
+<var>${farmer}</var>
+<arg>GET</arg>
+<arg>/farmers/${f}[id]</arg>
+<arg>${ADMIN}</arg>
+<arg>200</arg>
+<doc>Call the live API as a user and optionally assert the status.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.950218" elapsed="0.020214"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${farmer.json()}[status]</arg>
+<arg>active</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.970873" elapsed="0.001190"/>
+</kw>
+<tag>FR-8</tag>
+<tag>portal</tag>
+<tag>WP-P01</tag>
+<status status="PASS" start="2026-11-02T02:05:34.482376" elapsed="64.490490"/>
+</test>
+<test id="s1-s1-t3" name="Phone Is Masked Except An Audited Reveal" line="49">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:38.991671" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.990995" elapsed="0.000731"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:38.993338" elapsed="0.000181"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:38.992130" elapsed="0.001480"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:38.996202" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:39.006236" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.994298" elapsed="0.012254"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:39.006799" elapsed="0.000727"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:38.993738" elapsed="0.013955"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:38.991945" elapsed="0.015860"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.008324" elapsed="0.000214"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.009159" elapsed="0.000238"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.010383" elapsed="0.000254"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.011130" elapsed="0.000184"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.011733" elapsed="0.000210"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.012384" elapsed="0.000139"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.012952" elapsed="0.000120"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.013506" elapsed="0.000173"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.014056" elapsed="0.000170"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:39.013210" elapsed="0.001158"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:39.013180" elapsed="0.001300"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.014820" elapsed="0.000179"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.015408" elapsed="0.000148"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.015808" elapsed="0.000108"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.016132" elapsed="0.000099"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.016585" elapsed="0.000090"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.016860" elapsed="0.000092"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.017130" elapsed="0.000089"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:39.016364" elapsed="0.000926"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.017590" elapsed="0.000089"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:39.017348" elapsed="0.000405"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:39.016335" elapsed="0.001475"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.017964" elapsed="0.000096"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.018276" elapsed="0.000093"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:39.018707" elapsed="0.000146"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:38.990281" elapsed="0.028722"/>
+</kw>
+<kw name="New Farmer" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:39.383839" level="INFO">${f} = {'id': 'fde9e815-c8ad-4251-8648-f65adee99ba1', 'user_id': '01a198d4-17ff-7ba9-8975-58f3777b8f0d', 'phone': '+919743013465', 'name': 'QA Robot Reveal f50e12'}</msg>
+<var>${f}</var>
+<arg>QA Robot Reveal ${{uuid.uuid4().hex[:6]}}</arg>
+<doc>Onboard, approve and record data consent for a farmer in the demo FPO (as the FPO admin).</doc>
+<status status="PASS" start="2026-11-02T02:06:39.019206" elapsed="0.364696"/>
+</kw>
+<kw name="Call Api" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:39.401354" level="INFO">${farmer} = &lt;Response [200]&gt;</msg>
+<var>${farmer}</var>
+<arg>GET</arg>
+<arg>/farmers/${f}[id]</arg>
+<arg>${ADMIN}</arg>
+<arg>200</arg>
+<doc>Call the live API as a user and optionally assert the status.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.384157" elapsed="0.017285"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-02T02:06:39.402377" level="INFO">${masked} = XXXXXX3465</msg>
+<var>${masked}</var>
+<arg>${farmer.json()}[phone_masked]</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.401694" elapsed="0.000729"/>
+</kw>
+<kw name="Should Match Regexp" owner="BuiltIn">
+<arg>${masked}</arg>
+<arg>^X+${f}[phone][-4:]$</arg>
+<doc>Fails if the `string` does not match the regular expression `pattern`.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.402698" elapsed="0.001144"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:39.539438" level="INFO">Successfully opened URL http://localhost:5183/members/fde9e815-c8ad-4251-8648-f65adee99ba1</msg>
+<arg>${PORTAL_BASE}/members/${f}[id]</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.404082" elapsed="0.135609"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:39.824536" level="INFO">Waited for Element with selector role=heading[name="QA Robot Reveal f50e12"] at state visible</msg>
+<arg>role=heading[name="${f}[name]"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.540031" elapsed="0.284696"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:39.850938" level="INFO">Text: ['BACK TO MEMBERS\nQA Robot Reveal f50e12\nActive\n\nFarmer code: F294CDF\n\nAddress: QA Thottiyangulam, Tiruchuli, Virudhunagar, Tamil Nadu, 626129\n\nMobile: XXXXXX3465\n\nREVEAL NUMBER\n\nGI status: Not registered as a GI authorised user\n\nApproved on 2 Nov 2026\n\nPlots\n"Add another plot" is done in the mobile app by the farmer or field officer, because the pin is taken on the field.']</msg>
+<arg>main</arg>
+<arg>contains</arg>
+<arg>Mobile: ${masked}</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.825140" elapsed="0.025925"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:39.862517" level="INFO">Text: ['BACK TO MEMBERS\nQA Robot Reveal f50e12\nActive\n\nFarmer code: F294CDF\n\nAddress: QA Thottiyangulam, Tiruchuli, Virudhunagar, Tamil Nadu, 626129\n\nMobile: XXXXXX3465\n\nREVEAL NUMBER\n\nGI status: Not registered as a GI authorised user\n\nApproved on 2 Nov 2026\n\nPlots\n"Add another plot" is done in the mobile app by the farmer or field officer, because the pin is taken on the field.']</msg>
+<arg>main</arg>
+<arg>not contains</arg>
+<arg>${f}[phone][-10:]</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.851441" elapsed="0.011205"/>
+</kw>
+<kw name="Phone Reveals">
+<kw name="Create Dictionary" owner="BuiltIn">
+<msg time="2026-11-02T02:06:39.865333" level="INFO">&amp;{params} = { entity_type=farmers | entity_id=fde9e815-c8ad-4251-8648-f65adee99ba1 }</msg>
+<var>&amp;{params}</var>
+<arg>entity_type=farmers</arg>
+<arg>entity_id=${farmer_id}</arg>
+<doc>Creates and returns a dictionary based on the given `items`.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.863964" elapsed="0.001441"/>
+</kw>
+<kw name="Call Api" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:39.908186" level="INFO">${rows} = &lt;Response [200]&gt;</msg>
+<var>${rows}</var>
+<arg>GET</arg>
+<arg>/audit-log</arg>
+<arg>${ADMIN}</arg>
+<arg>200</arg>
+<arg>params=${params}</arg>
+<doc>Call the live API as a user and optionally assert the status.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.865687" elapsed="0.042553"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-11-02T02:06:39.909753" level="INFO">${count} = 0</msg>
+<var>${count}</var>
+<arg>sum(1 for row in $rows.json()["items"] if row["action"] == "farmer.phone_reveal")</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.908490" elapsed="0.001310"/>
+</kw>
+<return>
+<value>${count}</value>
+<status status="PASS" start="2026-11-02T02:06:39.909887" elapsed="0.000136"/>
+</return>
+<msg time="2026-11-02T02:06:39.910214" level="INFO">${before} = 0</msg>
+<var>${before}</var>
+<arg>${f}[id]</arg>
+<doc>Count a farmer's `farmer.phone_reveal` audit rows (GET /v1/audit-log as the FPO admin).
+Args: ${farmer_id} the farmer.
+Returns: the number of reveal rows.
+Fails: the audit log call does not answer 200.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.863403" elapsed="0.046847"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-11-02T02:06:39.910848" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${before}</arg>
+<arg>0</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.910460" elapsed="0.000544"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:39.911673" level="INFO">Clicks the element 'role=button[name="Reveal number"]'.</msg>
+<arg>role=button[name="Reveal number"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.911185" elapsed="0.038644"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:39.994110" level="INFO">Text: ['BACK TO MEMBERS\nQA Robot Reveal f50e12\nActive\n\nFarmer code: F294CDF\n\nAddress: QA Thottiyangulam, Tiruchuli, Virudhunagar, Tamil Nadu, 626129\n\nMobile: +919743013465\n\nGI status: Not registered as a GI authorised user\n\nApproved on 2 Nov 2026\n\nPlots\n"Add another plot" is done in the mobile app by the farmer or field officer, because the pin is taken on the field.']</msg>
+<arg>main</arg>
+<arg>contains</arg>
+<arg>Mobile: ${f}[phone]</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.950199" elapsed="0.044060"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<arg>role=button[name="Reveal number"]</arg>
+<arg>==</arg>
+<arg>0</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:39.994527" elapsed="0.006369"/>
+</kw>
+<kw name="Phone Reveals">
+<kw name="Create Dictionary" owner="BuiltIn">
+<msg time="2026-11-02T02:06:40.002937" level="INFO">&amp;{params} = { entity_type=farmers | entity_id=fde9e815-c8ad-4251-8648-f65adee99ba1 }</msg>
+<var>&amp;{params}</var>
+<arg>entity_type=farmers</arg>
+<arg>entity_id=${farmer_id}</arg>
+<doc>Creates and returns a dictionary based on the given `items`.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.002293" elapsed="0.000696"/>
+</kw>
+<kw name="Call Api" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:40.053295" level="INFO">${rows} = &lt;Response [200]&gt;</msg>
+<var>${rows}</var>
+<arg>GET</arg>
+<arg>/audit-log</arg>
+<arg>${ADMIN}</arg>
+<arg>200</arg>
+<arg>params=${params}</arg>
+<doc>Call the live API as a user and optionally assert the status.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.003192" elapsed="0.050163"/>
+</kw>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2026-11-02T02:06:40.054464" level="INFO">${count} = 1</msg>
+<var>${count}</var>
+<arg>sum(1 for row in $rows.json()["items"] if row["action"] == "farmer.phone_reveal")</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.053612" elapsed="0.000902"/>
+</kw>
+<return>
+<value>${count}</value>
+<status status="PASS" start="2026-11-02T02:06:40.054611" elapsed="0.000143"/>
+</return>
+<msg time="2026-11-02T02:06:40.054945" level="INFO">${after} = 1</msg>
+<var>${after}</var>
+<arg>${f}[id]</arg>
+<doc>Count a farmer's `farmer.phone_reveal` audit rows (GET /v1/audit-log as the FPO admin).
+Args: ${farmer_id} the farmer.
+Returns: the number of reveal rows.
+Fails: the audit log call does not answer 200.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.001687" elapsed="0.053297"/>
+</kw>
+<kw name="Should Be Equal As Integers" owner="BuiltIn">
+<msg time="2026-11-02T02:06:40.055604" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<arg>${after}</arg>
+<arg>1</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.055185" elapsed="0.000507"/>
+</kw>
+<tag>FR-25</tag>
+<tag>portal</tag>
+<tag>WP-P01</tag>
+<status status="PASS" start="2026-11-02T02:06:38.985505" elapsed="1.070358"/>
+</test>
+<test id="s1-s1-t4" name="Reviewing A Held Lot Makes It Tickable In Create Batch" line="68">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:40.065519" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.064979" elapsed="0.000589"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.066122" elapsed="0.000102"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:40.065710" elapsed="0.000749"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:40.067604" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:40.072782" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.066891" elapsed="0.006079"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:40.073092" elapsed="0.000161"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:40.066525" elapsed="0.006801"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:40.065678" elapsed="0.007713"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.073665" elapsed="0.000126"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.074044" elapsed="0.000098"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.074586" elapsed="0.000108"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.074991" elapsed="0.000114"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.075296" elapsed="0.000107"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.075632" elapsed="0.000108"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.075927" elapsed="0.000091"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.076452" elapsed="0.000121"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.076758" elapsed="0.000094"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:40.076145" elapsed="0.000779"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:40.076117" elapsed="0.000865"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.077128" elapsed="0.000093"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.077398" elapsed="0.000112"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.077722" elapsed="0.000089"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.077987" elapsed="0.000087"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.078507" elapsed="0.000122"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.078864" elapsed="0.000094"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.079129" elapsed="0.000086"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:40.078238" elapsed="0.001049"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.079553" elapsed="0.000112"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:40.079343" elapsed="0.000447"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:40.078206" elapsed="0.001677"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.080092" elapsed="0.000097"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.080422" elapsed="0.000106"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:40.080774" elapsed="0.000094"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.064347" elapsed="0.016676"/>
+</kw>
+<kw name="Held Lot">
+<kw name="New Plot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:40.578487" level="INFO">${plot} = {'id': 'ffc8dd8c-bebe-4c4f-b27e-1ea05e49cb5d', 'fpo_id': '01a198d2-f975-7c80-ac7d-278408fa4c67', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'code': 'P-02', 'gi_tag_id': None, 'pin': {'lat': ...</msg>
+<var>${plot}</var>
+<doc>Register a 1-acre plot as the FPO admin (POST /v1/plots).</doc>
+<status status="PASS" start="2026-11-02T02:06:40.082039" elapsed="0.496535"/>
+</kw>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:41.070025" level="INFO">${lot} = {'id': 'ab169f5f-e5d8-4339-b48c-1d2441071f2a', 'code': 'LOT65DF8A0E', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'ffc8dd8c-bebe-4c4f-b27e-1ea05e49cb5d', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>50</arg>
+<arg>${plot}</arg>
+<arg>harvest_kg=2000</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:40.579072" elapsed="0.491071"/>
+</kw>
+<kw name="Wait For Flag" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:41.117016" level="INFO">${flag} = {'id': '01a198d4-1f64-7dc2-b81a-825de1a55960', 'fpo_id': '01a198d2-f975-7c80-ac7d-278408fa4c67', 'subject_type': 'lot', 'subject_id': 'ab169f5f-e5d8-4339-b48c-1d2441071f2a', 'rule_code': 'yield_over_c...</msg>
+<var>${flag}</var>
+<arg>${lot}[id]</arg>
+<arg>yield_over_ceiling</arg>
+<doc>Wait until the worker's rules have raised a flag on a subject.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.070677" elapsed="0.046437"/>
+</kw>
+<kw name="Create Dictionary" owner="BuiltIn">
+<msg time="2026-11-02T02:06:41.119210" level="INFO">${held} = {'lot': {'id': 'ab169f5f-e5d8-4339-b48c-1d2441071f2a', 'code': 'LOT65DF8A0E', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'ffc8dd8c-bebe-4c4f-b27e-1ea05e49cb5d', 'crop_id': '01a198...</msg>
+<var>${held}</var>
+<arg>lot=${lot}</arg>
+<arg>flag=${flag}</arg>
+<doc>Creates and returns a dictionary based on the given `items`.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.117685" elapsed="0.001626"/>
+</kw>
+<return>
+<value>${held}</value>
+<status status="PASS" start="2026-11-02T02:06:41.119492" elapsed="0.000244"/>
+</return>
+<msg time="2026-11-02T02:06:41.120221" level="INFO">${held} = {'lot': {'id': 'ab169f5f-e5d8-4339-b48c-1d2441071f2a', 'code': 'LOT65DF8A0E', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'ffc8dd8c-bebe-4c4f-b27e-1ea05e49cb5d', 'crop_id': '01a198...</msg>
+<var>${held}</var>
+<doc>A received lot held by `yield_over_ceiling` (2000 kg harvested on a 1-acre plot), and that
+open hold flag, for the P02 review lines. Each call makes a new one, so the two P02 tests do not
+depend on each other's review.
+Returns: {"lot": LotOut, "flag": FlagOut}.
+Fails: the worker raises no hold within the `Wait For Flag` timeout.
+Side effects: creates a plot, a lot, its events and intake.</doc>
+<status status="PASS" start="2026-11-02T02:06:40.081576" elapsed="1.038749"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:41.294240" level="INFO">Successfully opened URL http://localhost:5183/ready-lots</msg>
+<arg>${PORTAL_BASE}/ready-lots</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.120802" elapsed="0.173791"/>
+</kw>
+<kw name="Get Attribute" owner="Browser">
+<msg time="2026-11-02T02:06:41.521016" level="INFO">Attribute is: 'Lot LOT65DF8A0E: On hold: Yield above the ceiling. It can only go into a non-GI batch.'</msg>
+<arg>role=checkbox[name=/^Lot ${held}[lot][code]: /]</arg>
+<arg>aria-label</arg>
+<arg>contains</arg>
+<arg>Yield above the ceiling</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the HTML ``attribute`` of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.295206" elapsed="0.226068"/>
+</kw>
+<kw name="Get Element States" owner="Browser">
+<msg time="2026-11-02T02:06:41.563604" level="INFO">States are: ['attached', 'visible', 'disabled', 'readonly', 'defocused', 'unchecked']</msg>
+<arg>role=checkbox[name=/^Lot ${held}[lot][code]: /]</arg>
+<arg>contains</arg>
+<arg>disabled</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Get the active states from the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.521928" elapsed="0.041827"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:41.718390" level="INFO">Successfully opened URL http://localhost:5183/flags/01a198d4-1f64-7dc2-b81a-825de1a55960</msg>
+<arg>${PORTAL_BASE}/flags/${held}[flag][id]</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.564030" elapsed="0.154546"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:41.919005" level="INFO">Waited for Element with selector role=heading[name="Resolve this flag"] at state visible</msg>
+<arg>role=heading[name="Resolve this flag"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.718849" elapsed="0.200344"/>
+</kw>
+<kw name="Select Options By" owner="Browser">
+<msg time="2026-11-02T02:06:41.920548" level="INFO">Selects the option(s) looks_fine by attribute SelectAttribute.value from element internal:label=/^Outcome/.</msg>
+<arg>internal:label=/^Outcome/</arg>
+<arg>value</arg>
+<arg>looks_fine</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Selects options from select element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.919677" elapsed="0.047420"/>
+</kw>
+<kw name="Select Options By" owner="Browser">
+<msg time="2026-11-02T02:06:41.968315" level="INFO">Selects the option(s) 1 by attribute SelectAttribute.index from element internal:label=/^Reason/.</msg>
+<arg>internal:label=/^Reason/</arg>
+<arg>index</arg>
+<arg>1</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Selects options from select element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.967488" elapsed="0.023074"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:06:41.992665" level="INFO">Fills the text 'QA Robot: field visit confirmed the yield' in the given field.</msg>
+<arg>internal:label=/^Note/</arg>
+<arg>QA Robot: field visit confirmed the yield</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:41.991209" elapsed="0.020253"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:42.012929" level="INFO">Clicks the element 'role=button[name="Save review"]'.</msg>
+<arg>role=button[name="Save review"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.011920" elapsed="0.073622"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:42.176303" level="INFO">Waited for Element with selector text=/^Cleared on/ at state visible</msg>
+<arg>text=/^Cleared on/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.086106" elapsed="0.090442"/>
+</kw>
+<kw name="Wait Until Keyword Succeeds" owner="BuiltIn">
+<kw name="Lot Should Be GI Eligible">
+<kw name="Call Api" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:42.193398" level="INFO">${lot} = &lt;Response [200]&gt;</msg>
+<var>${lot}</var>
+<arg>GET</arg>
+<arg>/lots/${lot_id}</arg>
+<arg>${ADMIN}</arg>
+<arg>200</arg>
+<doc>Call the live API as a user and optionally assert the status.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.179377" elapsed="0.014082"/>
+</kw>
+<kw name="Should Be True" owner="BuiltIn">
+<arg>${lot.json()}[gi_eligible]</arg>
+<arg>msg=lot ${lot_id} is not GI eligible yet</arg>
+<doc>Fails if the given condition is not true.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.194260" elapsed="0.000784"/>
+</kw>
+<arg>${held}[lot][id]</arg>
+<doc>Assert the server marks a lot `gi_eligible` (GET /v1/lots/{id} as the FPO admin).
+Args: ${lot_id} the lot.
+Fails: the lot is still not GI eligible (retry it with Wait Until Keyword Succeeds).</doc>
+<status status="PASS" start="2026-11-02T02:06:42.178756" elapsed="0.016419"/>
+</kw>
+<arg>90s</arg>
+<arg>3s</arg>
+<arg>Lot Should Be GI Eligible</arg>
+<arg>${held}[lot][id]</arg>
+<doc>Runs the specified keyword and retries if it fails.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.176880" elapsed="0.018384"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:42.291752" level="INFO">Successfully opened URL http://localhost:5183/ready-lots</msg>
+<arg>${PORTAL_BASE}/ready-lots</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.195464" elapsed="0.096661"/>
+</kw>
+<kw name="Get Element States" owner="Browser">
+<msg time="2026-11-02T02:06:42.542674" level="INFO">States are: ['attached', 'visible', 'enabled', 'editable', 'defocused', 'unchecked']</msg>
+<arg>role=checkbox[name="Tick lot ${held}[lot][code]"]</arg>
+<arg>contains</arg>
+<arg>enabled</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Get the active states from the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.292640" elapsed="0.250168"/>
+</kw>
+<kw name="Check Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${held}[lot][code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Checks the checkbox or selects radio button found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.543038" elapsed="0.065397"/>
+</kw>
+<kw name="Get Checkbox State" owner="Browser">
+<msg time="2026-11-02T02:06:42.620651" level="INFO">Retrieved dom property for element role=checkbox[name="Tick lot LOT65DF8A0E"] containing true</msg>
+<msg time="2026-11-02T02:06:42.620731" level="INFO">Checkbox is checked</msg>
+<arg>role=checkbox[name="Tick lot ${held}[lot][code]"]</arg>
+<arg>==</arg>
+<arg>checked</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the state of the checkbox found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.608705" elapsed="0.012138"/>
+</kw>
+<kw name="Uncheck Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${held}[lot][code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Unchecks the checkbox found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.621069" elapsed="0.075413"/>
+</kw>
+<tag>FR-70</tag>
+<tag>portal</tag>
+<tag>WP-P02</tag>
+<status status="PASS" start="2026-11-02T02:06:40.061145" elapsed="2.635553"/>
+</test>
+<test id="s1-s1-t5" name="Required Review Fields Block Submit" line="91">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:42.707179" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.706605" elapsed="0.000623"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.707767" elapsed="0.000106"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:42.707365" elapsed="0.000613"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:42.709661" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:42.716552" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.708615" elapsed="0.008243"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:42.717080" elapsed="0.000262"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:42.708072" elapsed="0.009398"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:42.707334" elapsed="0.010251"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.718025" elapsed="0.000218"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.718811" elapsed="0.000200"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.719684" elapsed="0.000244"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.720256" elapsed="0.000136"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.720649" elapsed="0.000110"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.720948" elapsed="0.000096"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.721251" elapsed="0.000099"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.721697" elapsed="0.000092"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.721965" elapsed="0.000109"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:42.721482" elapsed="0.000681"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:42.721451" elapsed="0.000780"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.722384" elapsed="0.000096"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.722659" elapsed="0.000087"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.722950" elapsed="0.000087"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.723466" elapsed="0.000211"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.724341" elapsed="0.000166"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.724901" elapsed="0.000167"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.725443" elapsed="0.000218"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:42.723920" elapsed="0.001842"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.726092" elapsed="0.000097"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:42.725829" elapsed="0.000436"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:42.723871" elapsed="0.002447"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.726485" elapsed="0.000093"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.726791" elapsed="0.000090"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:42.727106" elapsed="0.000091"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.705920" elapsed="0.021394"/>
+</kw>
+<kw name="Held Lot">
+<kw name="New Plot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:42.786475" level="INFO">${plot} = {'id': '89475ae3-b3a9-4fca-b9fe-8c42998b581e', 'fpo_id': '01a198d2-f975-7c80-ac7d-278408fa4c67', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'code': 'P-03', 'gi_tag_id': None, 'pin': {'lat': ...</msg>
+<var>${plot}</var>
+<doc>Register a 1-acre plot as the FPO admin (POST /v1/plots).</doc>
+<status status="PASS" start="2026-11-02T02:06:42.727980" elapsed="0.058648"/>
+</kw>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:43.228768" level="INFO">${lot} = {'id': 'aebd281f-1924-46dd-9257-533f618815f8', 'code': 'LOT6AFCC7B9', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': '89475ae3-b3a9-4fca-b9fe-8c42998b581e', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>50</arg>
+<arg>${plot}</arg>
+<arg>harvest_kg=2000</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:42.787017" elapsed="0.441836"/>
+</kw>
+<kw name="Wait For Flag" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:43.250925" level="INFO">${flag} = {'id': '01a198d4-27d2-75f4-8356-8f9e905da361', 'fpo_id': '01a198d2-f975-7c80-ac7d-278408fa4c67', 'subject_type': 'lot', 'subject_id': 'aebd281f-1924-46dd-9257-533f618815f8', 'rule_code': 'yield_over_c...</msg>
+<var>${flag}</var>
+<arg>${lot}[id]</arg>
+<arg>yield_over_ceiling</arg>
+<doc>Wait until the worker's rules have raised a flag on a subject.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.229108" elapsed="0.021897"/>
+</kw>
+<kw name="Create Dictionary" owner="BuiltIn">
+<msg time="2026-11-02T02:06:43.252844" level="INFO">${held} = {'lot': {'id': 'aebd281f-1924-46dd-9257-533f618815f8', 'code': 'LOT6AFCC7B9', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': '89475ae3-b3a9-4fca-b9fe-8c42998b581e', 'crop_id': '01a198...</msg>
+<var>${held}</var>
+<arg>lot=${lot}</arg>
+<arg>flag=${flag}</arg>
+<doc>Creates and returns a dictionary based on the given `items`.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.251401" elapsed="0.001514"/>
+</kw>
+<return>
+<value>${held}</value>
+<status status="PASS" start="2026-11-02T02:06:43.253086" elapsed="0.000240"/>
+</return>
+<msg time="2026-11-02T02:06:43.253672" level="INFO">${held} = {'lot': {'id': 'aebd281f-1924-46dd-9257-533f618815f8', 'code': 'LOT6AFCC7B9', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': '89475ae3-b3a9-4fca-b9fe-8c42998b581e', 'crop_id': '01a198...</msg>
+<var>${held}</var>
+<doc>A received lot held by `yield_over_ceiling` (2000 kg harvested on a 1-acre plot), and that
+open hold flag, for the P02 review lines. Each call makes a new one, so the two P02 tests do not
+depend on each other's review.
+Returns: {"lot": LotOut, "flag": FlagOut}.
+Fails: the worker raises no hold within the `Wait For Flag` timeout.
+Side effects: creates a plot, a lot, its events and intake.</doc>
+<status status="PASS" start="2026-11-02T02:06:42.727561" elapsed="0.526173"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:43.365078" level="INFO">Successfully opened URL http://localhost:5183/flags/01a198d4-27d2-75f4-8356-8f9e905da361</msg>
+<arg>${PORTAL_BASE}/flags/${held}[flag][id]</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.254016" elapsed="0.111545"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:43.526136" level="INFO">Waited for Element with selector role=heading[name="Resolve this flag"] at state visible</msg>
+<arg>role=heading[name="Resolve this flag"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.366942" elapsed="0.159550"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:43.528283" level="INFO">Clicks the element 'role=button[name="Save review"]'.</msg>
+<arg>role=button[name="Save review"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.526962" elapsed="0.112669"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:43.650578" level="INFO">Waited for Element with selector text="Choose a reason." at state visible</msg>
+<arg>text="Choose a reason."</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.640206" elapsed="0.010570"/>
+</kw>
+<kw name="Call Api" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:43.664128" level="INFO">${flag} = &lt;Response [200]&gt;</msg>
+<var>${flag}</var>
+<arg>GET</arg>
+<arg>/flags/${held}[flag][id]</arg>
+<arg>${ADMIN}</arg>
+<arg>200</arg>
+<doc>Call the live API as a user and optionally assert the status.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.651020" elapsed="0.013176"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${flag.json()}[status]</arg>
+<arg>open</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.664486" elapsed="0.000731"/>
+</kw>
+<tag>FR-70</tag>
+<tag>portal</tag>
+<tag>WP-P02</tag>
+<status status="PASS" start="2026-11-02T02:06:42.702737" elapsed="0.962660"/>
+</test>
+<test id="s1-s1-t6" name="Lots 100 200 20 kg Show Shares 31.25 62.5 6.25" line="102">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:43.674169" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.673675" elapsed="0.000544"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.674781" elapsed="0.000103"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:43.674385" elapsed="0.000571"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:43.676099" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:43.681798" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.675408" elapsed="0.006578"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:43.682105" elapsed="0.000177"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:43.675023" elapsed="0.007331"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:43.674323" elapsed="0.008091"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.682640" elapsed="0.000106"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.683121" elapsed="0.000113"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.683589" elapsed="0.000097"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.683882" elapsed="0.000092"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.684150" elapsed="0.000088"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.684416" elapsed="0.000086"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.684673" elapsed="0.000089"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.685080" elapsed="0.000088"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.685382" elapsed="0.000100"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:43.684882" elapsed="0.000670"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:43.684854" elapsed="0.000753"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.685750" elapsed="0.000089"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.686019" elapsed="0.000090"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.686322" elapsed="0.000092"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.686592" elapsed="0.000090"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.687013" elapsed="0.000145"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.687380" elapsed="0.000106"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.687672" elapsed="0.000092"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:43.686802" elapsed="0.001033"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.688106" elapsed="0.000090"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:43.687893" elapsed="0.000538"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:43.686777" elapsed="0.001710"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.688634" elapsed="0.000092"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.688933" elapsed="0.000086"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:43.689231" elapsed="0.000087"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.673167" elapsed="0.016262"/>
+</kw>
+<kw name="Share Lots">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:43.691533" level="INFO">${lots} = None</msg>
+<var>${lots}</var>
+<arg>${SHARE_LOTS}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.690542" elapsed="0.001035"/>
+</kw>
+<if>
+<branch type="IF" condition="$lots is None">
+<kw name="Create List" owner="BuiltIn">
+<msg time="2026-11-02T02:06:43.692419" level="INFO">${lots} = []</msg>
+<var>${lots}</var>
+<doc>Creates and returns a list containing the given items.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.692036" elapsed="0.000423"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:43.880199" level="INFO">${lot} = {'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>${kg}</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:43.693341" elapsed="0.186936"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${lots}</arg>
+<arg>${lot}</arg>
+<doc>Adds `values` to the end of `list`.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.880642" elapsed="0.000765"/>
+</kw>
+<var name="${kg}">100</var>
+<status status="PASS" start="2026-11-02T02:06:43.693117" elapsed="0.188389"/>
+</iter>
+<iter>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:44.106765" level="INFO">${lot} = {'id': 'c8eaee25-da82-4639-a0ac-d99de89c5574', 'code': 'LOT3930A964', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>${kg}</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:43.881965" elapsed="0.224872"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${lots}</arg>
+<arg>${lot}</arg>
+<doc>Adds `values` to the end of `list`.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.107105" elapsed="0.000459"/>
+</kw>
+<var name="${kg}">200</var>
+<status status="PASS" start="2026-11-02T02:06:43.881699" elapsed="0.225950"/>
+</iter>
+<iter>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:44.332903" level="INFO">${lot} = {'id': 'b247ebfd-caab-4a04-8460-c12d8dcb2a63', 'code': 'LOT67A5A267', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>${kg}</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:44.108109" elapsed="0.224897"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${lots}</arg>
+<arg>${lot}</arg>
+<doc>Adds `values` to the end of `list`.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.333401" elapsed="0.000498"/>
+</kw>
+<var name="${kg}">20</var>
+<status status="PASS" start="2026-11-02T02:06:44.107818" elapsed="0.226173"/>
+</iter>
+<var>${kg}</var>
+<value>100</value>
+<value>200</value>
+<value>20</value>
+<status status="PASS" start="2026-11-02T02:06:43.692659" elapsed="0.641408"/>
+</for>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2026-11-02T02:06:44.335405" level="INFO">${SHARE_LOTS} = [{'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f...</msg>
+<arg>${SHARE_LOTS}</arg>
+<arg>${lots}</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.334362" elapsed="0.001129"/>
+</kw>
+<status status="PASS" start="2026-11-02T02:06:43.691704" elapsed="0.643868"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:43.691671" elapsed="0.643968"/>
+</if>
+<return>
+<value>${lots}</value>
+<status status="PASS" start="2026-11-02T02:06:44.335693" elapsed="0.000191"/>
+</return>
+<msg time="2026-11-02T02:06:44.336280" level="INFO">${lots} = [{'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f...</msg>
+<var>${lots}</var>
+<doc>The three packed and received lots of 100, 200 and 20 kg on the QA plot (P03 shares line and
+the batch that P03 create and P04 happy path use), made once per run.
+Returns: the three LotOut bodies, in that order.
+Side effects: first call creates the lots (see `Packed Lot`) and sets the suite variable ${SHARE_LOTS}.</doc>
+<status status="PASS" start="2026-11-02T02:06:43.690125" elapsed="0.646233"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:44.441985" level="INFO">Successfully opened URL http://localhost:5183/ready-lots</msg>
+<arg>${PORTAL_BASE}/ready-lots</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.336581" elapsed="0.105998"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Check Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${lot}[code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Checks the checkbox or selects radio button found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.444629" elapsed="0.366943"/>
+</kw>
+<var name="${lot}">{'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<status status="PASS" start="2026-11-02T02:06:44.444129" elapsed="0.367563"/>
+</iter>
+<iter>
+<kw name="Check Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${lot}[code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Checks the checkbox or selects radio button found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.812284" elapsed="0.081789"/>
+</kw>
+<var name="${lot}">{'id': 'c8eaee25-da82-4639-a0ac-d99de89c5574', 'code': 'LOT3930A964', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<status status="PASS" start="2026-11-02T02:06:44.811921" elapsed="0.082434"/>
+</iter>
+<iter>
+<kw name="Check Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${lot}[code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Checks the checkbox or selects radio button found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.894886" elapsed="0.064986"/>
+</kw>
+<var name="${lot}">{'id': 'b247ebfd-caab-4a04-8460-c12d8dcb2a63', 'code': 'LOT67A5A267', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<status status="PASS" start="2026-11-02T02:06:44.894569" elapsed="0.065421"/>
+</iter>
+<var>${lot}</var>
+<value>@{lots}</value>
+<status status="PASS" start="2026-11-02T02:06:44.442811" elapsed="0.517264"/>
+</for>
+<for flavor="IN ZIP">
+<iter>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:44.995506" level="INFO">Text: ['31.250 %']</msg>
+<msg time="2026-11-02T02:06:44.995682" level="INFO">${share} = 31.250 %</msg>
+<var>${share}</var>
+<arg>role=table[name="Ready lots"] &gt;&gt; tr:has-text("${lot}[code]") &gt;&gt; td &gt;&gt; nth=-1</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.961153" elapsed="0.034570"/>
+</kw>
+<kw name="Should Be Equal As Numbers" owner="BuiltIn">
+<msg time="2026-11-02T02:06:44.996690" level="INFO">Argument types are:
+&lt;class 'str'&gt;
+&lt;class 'float'&gt;</msg>
+<arg>${share.rstrip(' %')}</arg>
+<arg>${want}</arg>
+<doc>Fails if objects are unequal after converting them to real numbers.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.995999" elapsed="0.000810"/>
+</kw>
+<var name="${lot}">{'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<var name="${want}">31.25</var>
+<status status="PASS" start="2026-11-02T02:06:44.960791" elapsed="0.036102"/>
+</iter>
+<iter>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:45.012209" level="INFO">Text: ['62.500 %']</msg>
+<msg time="2026-11-02T02:06:45.012384" level="INFO">${share} = 62.500 %</msg>
+<var>${share}</var>
+<arg>role=table[name="Ready lots"] &gt;&gt; tr:has-text("${lot}[code]") &gt;&gt; td &gt;&gt; nth=-1</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:44.997505" elapsed="0.014921"/>
+</kw>
+<kw name="Should Be Equal As Numbers" owner="BuiltIn">
+<msg time="2026-11-02T02:06:45.013282" level="INFO">Argument types are:
+&lt;class 'str'&gt;
+&lt;class 'float'&gt;</msg>
+<arg>${share.rstrip(' %')}</arg>
+<arg>${want}</arg>
+<doc>Fails if objects are unequal after converting them to real numbers.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.012687" elapsed="0.000683"/>
+</kw>
+<var name="${lot}">{'id': 'c8eaee25-da82-4639-a0ac-d99de89c5574', 'code': 'LOT3930A964', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<var name="${want}">62.5</var>
+<status status="PASS" start="2026-11-02T02:06:44.997187" elapsed="0.016257"/>
+</iter>
+<iter>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:45.030685" level="INFO">Text: ['6.250 %']</msg>
+<msg time="2026-11-02T02:06:45.030860" level="INFO">${share} = 6.250 %</msg>
+<var>${share}</var>
+<arg>role=table[name="Ready lots"] &gt;&gt; tr:has-text("${lot}[code]") &gt;&gt; td &gt;&gt; nth=-1</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.013930" elapsed="0.016974"/>
+</kw>
+<kw name="Should Be Equal As Numbers" owner="BuiltIn">
+<msg time="2026-11-02T02:06:45.031795" level="INFO">Argument types are:
+&lt;class 'str'&gt;
+&lt;class 'float'&gt;</msg>
+<arg>${share.rstrip(' %')}</arg>
+<arg>${want}</arg>
+<doc>Fails if objects are unequal after converting them to real numbers.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.031175" elapsed="0.000708"/>
+</kw>
+<var name="${lot}">{'id': 'b247ebfd-caab-4a04-8460-c12d8dcb2a63', 'code': 'LOT67A5A267', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<var name="${want}">6.25</var>
+<status status="PASS" start="2026-11-02T02:06:45.013652" elapsed="0.018308"/>
+</iter>
+<var>${lot}</var>
+<var>${want}</var>
+<value>${lots}</value>
+<value>${{[31.25, 62.5, 6.25]}}</value>
+<status status="PASS" start="2026-11-02T02:06:44.960201" elapsed="0.071842"/>
+</for>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:45.045782" level="INFO">Text: ['3 lots ticked, total 320 kg']</msg>
+<arg>text=/lots? ticked, total/</arg>
+<arg>contains</arg>
+<arg>320 kg</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.032280" elapsed="0.013633"/>
+</kw>
+<tag>FR-37</tag>
+<tag>portal</tag>
+<tag>WP-P03</tag>
+<status status="PASS" start="2026-11-02T02:06:43.670286" elapsed="1.375829"/>
+</test>
+<test id="s1-s1-t7" name="Out Of GI Lot Is Greyed With A Tooltip" line="116">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:45.054015" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.053535" elapsed="0.000526"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.054536" elapsed="0.000095"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:45.054187" elapsed="0.000512"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:45.055737" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:45.060947" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.055087" elapsed="0.006045"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:45.061252" elapsed="0.000173"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:45.054755" elapsed="0.006739"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:45.054158" elapsed="0.007396"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.061774" elapsed="0.000102"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.062118" elapsed="0.000091"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.062720" elapsed="0.000101"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.063025" elapsed="0.000091"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.063299" elapsed="0.000090"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.063574" elapsed="0.000088"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.063840" elapsed="0.000090"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.064265" elapsed="0.000090"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.064527" elapsed="0.000087"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:45.064059" elapsed="0.000624"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:45.064030" elapsed="0.000707"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.064882" elapsed="0.000088"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.065151" elapsed="0.000086"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.065446" elapsed="0.000086"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.065709" elapsed="0.000085"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.066123" elapsed="0.000087"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.066390" elapsed="0.000084"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.066646" elapsed="0.000084"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:45.065912" elapsed="0.000888"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.067059" elapsed="0.000086"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:45.066854" elapsed="0.000362"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:45.065887" elapsed="0.001380"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.067414" elapsed="0.000088"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.067714" elapsed="0.000088"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:45.068016" elapsed="0.000087"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.053037" elapsed="0.015176"/>
+</kw>
+<kw name="New Plot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:45.093612" level="INFO">${plot} = {'id': 'a6f2b311-fda1-4b06-a214-a465b051b9df', 'fpo_id': '01a198d2-f975-7c80-ac7d-278408fa4c67', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'code': 'P-04', 'gi_tag_id': None, 'pin': {'lat': ...</msg>
+<var>${plot}</var>
+<arg>13.0827</arg>
+<arg>80.2707</arg>
+<doc>Register a 1-acre plot as the FPO admin (POST /v1/plots).</doc>
+<status status="PASS" start="2026-11-02T02:06:45.068394" elapsed="0.025286"/>
+</kw>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:45.382508" level="INFO">${lot} = {'id': '2af0be03-584a-40ec-8be4-a2932c989d94', 'code': 'LOTE08224B5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'a6f2b311-fda1-4b06-a214-a465b051b9df', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>30</arg>
+<arg>${plot}</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:45.093969" elapsed="0.288595"/>
+</kw>
+<kw name="Wait For Flag" owner="agritrace_keywords">
+<arg>${plot}[id]</arg>
+<arg>plot_outside_gi_region</arg>
+<doc>Wait until the worker's rules have raised a flag on a subject.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.382815" elapsed="0.013287"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:45.497200" level="INFO">Successfully opened URL http://localhost:5183/ready-lots</msg>
+<arg>${PORTAL_BASE}/ready-lots</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.396340" elapsed="0.101658"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-02T02:06:45.499517" level="INFO">${box} = role=checkbox[name=/^Lot LOTE08224B5: /]</msg>
+<var>${box}</var>
+<arg>role=checkbox[name=/^Lot ${lot}[code]: /]</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.498519" elapsed="0.001083"/>
+</kw>
+<kw name="Get Element States" owner="Browser">
+<msg time="2026-11-02T02:06:45.772161" level="INFO">States are: ['attached', 'visible', 'disabled', 'readonly', 'defocused', 'unchecked']</msg>
+<arg>${box}</arg>
+<arg>contains</arg>
+<arg>disabled</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Get the active states from the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.500023" elapsed="0.272278"/>
+</kw>
+<kw name="Get Attribute" owner="Browser">
+<msg time="2026-11-02T02:06:45.784343" level="INFO">Attribute is: 'Lot LOTE08224B5: Outside the GI region. It can only go into a non-GI batch.'</msg>
+<arg>${box}</arg>
+<arg>aria-label</arg>
+<arg>==</arg>
+<arg>Lot ${lot}[code]: ${NOT_GI}</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the HTML ``attribute`` of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.772575" elapsed="0.011900"/>
+</kw>
+<kw name="Hover" owner="Browser">
+<arg>${box} &gt;&gt; xpath=ancestor::span[1]/..</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Moves the virtual mouse and scrolls to the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.784771" elapsed="0.030104"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:46.003206" level="INFO">Text: ['Outside the GI region. It can only go into a non-GI batch.']</msg>
+<arg>role=tooltip</arg>
+<arg>==</arg>
+<arg>${NOT_GI}</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:45.815168" elapsed="0.188160"/>
+</kw>
+<kw name="Get Style" owner="Browser">
+<msg time="2026-11-02T02:06:46.013911" level="INFO">Value of key: color</msg>
+<msg time="2026-11-02T02:06:46.013964" level="INFO">Value of selected property: rgba(0, 0, 0, 0.6)</msg>
+<arg>tr:has-text("${lot}[code]") &gt;&gt; td &gt;&gt; nth=1</arg>
+<arg>color</arg>
+<arg>==</arg>
+<arg>rgba(0, 0, 0, 0.6)</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Gets the computed style properties of the element selected by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.003582" elapsed="0.010490"/>
+</kw>
+<tag>FR-29</tag>
+<tag>portal</tag>
+<tag>WP-P03</tag>
+<status status="PASS" start="2026-11-02T02:06:45.050289" elapsed="0.963970"/>
+</test>
+<test id="s1-s1-t8" name="Create Batch Returns An Id And A QR" line="131">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:46.020651" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.020230" elapsed="0.000462"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.021101" elapsed="0.000084"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:46.020803" elapsed="0.000443"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:46.022171" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:46.026352" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.021591" elapsed="0.004928"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:46.026629" elapsed="0.000145"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:46.021297" elapsed="0.005541"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:46.020777" elapsed="0.006116"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.027095" elapsed="0.000093"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.027407" elapsed="0.000083"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.027813" elapsed="0.000085"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.028078" elapsed="0.000081"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.028322" elapsed="0.000079"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.028566" elapsed="0.000078"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.028801" elapsed="0.000082"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.029172" elapsed="0.000080"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.029405" elapsed="0.000080"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:46.028990" elapsed="0.000558"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:46.028967" elapsed="0.000631"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.029733" elapsed="0.000083"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.029984" elapsed="0.000086"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.030260" elapsed="0.000080"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.030647" elapsed="0.000089"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.031044" elapsed="0.000082"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.031289" elapsed="0.000079"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.031524" elapsed="0.000078"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:46.030851" elapsed="0.000816"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.031904" elapsed="0.000079"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:46.031716" elapsed="0.000331"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:46.030827" elapsed="0.001266"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.032224" elapsed="0.000081"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.032493" elapsed="0.000080"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.032771" elapsed="0.000081"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.019807" elapsed="0.013147"/>
+</kw>
+<kw name="Share Lots">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:46.034145" level="INFO">${lots} = [{'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f...</msg>
+<var>${lots}</var>
+<arg>${SHARE_LOTS}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.033671" elapsed="0.000516"/>
+</kw>
+<if>
+<branch type="IF" condition="$lots is None">
+<kw name="Create List" owner="BuiltIn">
+<var>${lots}</var>
+<doc>Creates and returns a list containing the given items.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.034578" elapsed="0.000085"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<var>${lot}</var>
+<arg>${kg}</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.035057" elapsed="0.000082"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${lots}</arg>
+<arg>${lot}</arg>
+<doc>Adds `values` to the end of `list`.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.035287" elapsed="0.000082"/>
+</kw>
+<var name="${kg}"/>
+<status status="NOT RUN" start="2026-11-02T02:06:46.034878" elapsed="0.000550"/>
+</iter>
+<var>${kg}</var>
+<value>100</value>
+<value>200</value>
+<value>20</value>
+<status status="NOT RUN" start="2026-11-02T02:06:46.034744" elapsed="0.000740"/>
+</for>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${SHARE_LOTS}</arg>
+<arg>${lots}</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:46.035679" elapsed="0.000086"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:46.034289" elapsed="0.001536"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:46.034266" elapsed="0.001607"/>
+</if>
+<return>
+<value>${lots}</value>
+<status status="PASS" start="2026-11-02T02:06:46.035917" elapsed="0.000094"/>
+</return>
+<msg time="2026-11-02T02:06:46.036190" level="INFO">${lots} = [{'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f...</msg>
+<var>${lots}</var>
+<doc>The three packed and received lots of 100, 200 and 20 kg on the QA plot (P03 shares line and
+the batch that P03 create and P04 happy path use), made once per run.
+Returns: the three LotOut bodies, in that order.
+Side effects: first call creates the lots (see `Packed Lot`) and sets the suite variable [{'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-74c9-bb75-127afb8bf286', 'season_label': 'QA Robot', 'status': 'received', 'practice_tags': {'declared': [], 'derived': [], 'contradiction': False}, 'harvested': None, 'packed': {'value': '100.000', 'unit': 'kg'}, 'ready_at': '2026-11-01T20:36:43.789666Z', 'gi_eligible': True, 'gi_hold_reason': None}, {'id': 'c8eaee25-da82-4639-a0ac-d99de89c5574', 'code': 'LOT3930A964', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-74c9-bb75-127afb8bf286', 'season_label': 'QA Robot', 'status': 'received', 'practice_tags': {'declared': [], 'derived': [], 'contradiction': False}, 'harvested': None, 'packed': {'value': '200.000', 'unit': 'kg'}, 'ready_at': '2026-11-01T20:36:44.023419Z', 'gi_eligible': True, 'gi_hold_reason': None}, {'id': 'b247ebfd-caab-4a04-8460-c12d8dcb2a63', 'code': 'LOT67A5A267', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-74c9-bb75-127afb8bf286', 'season_label': 'QA Robot', 'status': 'received', 'practice_tags': {'declared': [], 'derived': [], 'contradiction': False}, 'harvested': None, 'packed': {'value': '20.000', 'unit': 'kg'}, 'ready_at': '2026-11-01T20:36:44.221095Z', 'gi_eligible': True, 'gi_hold_reason': None}].</doc>
+<status status="PASS" start="2026-11-02T02:06:46.033299" elapsed="0.002936"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:46.116806" level="INFO">Successfully opened URL http://localhost:5183/ready-lots</msg>
+<arg>${PORTAL_BASE}/ready-lots</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.037089" elapsed="0.079901"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Check Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${lot}[code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Checks the checkbox or selects radio button found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.117666" elapsed="0.303782"/>
+</kw>
+<var name="${lot}">{'id': 'eb33bd89-59ab-4389-bc87-5e1597664fd1', 'code': 'LOTFFBADDF5', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<status status="PASS" start="2026-11-02T02:06:46.117446" elapsed="0.304107"/>
+</iter>
+<iter>
+<kw name="Check Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${lot}[code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Checks the checkbox or selects radio button found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.422017" elapsed="0.067212"/>
+</kw>
+<var name="${lot}">{'id': 'c8eaee25-da82-4639-a0ac-d99de89c5574', 'code': 'LOT3930A964', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<status status="PASS" start="2026-11-02T02:06:46.421735" elapsed="0.067695"/>
+</iter>
+<iter>
+<kw name="Check Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${lot}[code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Checks the checkbox or selects radio button found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.490354" elapsed="0.082928"/>
+</kw>
+<var name="${lot}">{'id': 'b247ebfd-caab-4a04-8460-c12d8dcb2a63', 'code': 'LOT67A5A267', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</var>
+<status status="PASS" start="2026-11-02T02:06:46.489778" elapsed="0.083726"/>
+</iter>
+<var>${lot}</var>
+<value>@{lots}</value>
+<status status="PASS" start="2026-11-02T02:06:46.117115" elapsed="0.456524"/>
+</for>
+<kw name="Create Batch In The UI">
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:46.575593" level="INFO">Clicks the element 'role=combobox[name="Processor"]'.</msg>
+<arg>role=combobox[name="Processor"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.574712" elapsed="0.067334"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:46.643801" level="INFO">Clicks the element 'role=option &gt;&gt; nth=0'.</msg>
+<arg>role=option &gt;&gt; nth=0</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.642519" elapsed="0.284967"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:46.928463" level="INFO">Clicks the element 'role=button[name="Create batch"s]'.</msg>
+<arg>role=button[name="Create batch"s]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.927759" elapsed="0.255941"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:47.594395" level="INFO">Text: ['Batch 2HMJFZN2SN1W']</msg>
+<msg time="2026-11-02T02:06:47.594565" level="INFO">${heading} = Batch 2HMJFZN2SN1W</msg>
+<var>${heading}</var>
+<arg>role=heading[level=1][name=/^Batch /]</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.183992" elapsed="0.410614"/>
+</kw>
+<kw name="Get Url" owner="Browser">
+<msg time="2026-11-02T02:06:47.597874" level="INFO">${url} = http://localhost:5183/batches/60bfc6af-f505-451d-bf46-dd14a6a2e355</msg>
+<var>${url}</var>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the current URL.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.594858" elapsed="0.003129"/>
+</kw>
+<kw name="Create Dictionary" owner="BuiltIn">
+<msg time="2026-11-02T02:06:47.599168" level="INFO">${batch} = {'id': '60bfc6af-f505-451d-bf46-dd14a6a2e355', 'code': '2HMJFZN2SN1W'}</msg>
+<var>${batch}</var>
+<arg>id=${url.split("/batches/")[1]}</arg>
+<arg>code=${heading.removeprefix("Batch ").strip()}</arg>
+<doc>Creates and returns a dictionary based on the given `items`.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.598261" elapsed="0.000954"/>
+</kw>
+<return>
+<value>${batch}</value>
+<status status="PASS" start="2026-11-02T02:06:47.599307" elapsed="0.000125"/>
+</return>
+<msg time="2026-11-02T02:06:47.599618" level="INFO">${batch} = {'id': '60bfc6af-f505-451d-bf46-dd14a6a2e355', 'code': '2HMJFZN2SN1W'}</msg>
+<var>${batch}</var>
+<doc>On Ready lots with lots ticked: pick the first processor, press "Create batch" and wait for
+the batch page.
+Returns: {"id", "code"} of the new batch, read from the URL and the "Batch &lt;code&gt;" heading.
+Fails: the batch page does not open.
+Side effects: creates a batch of the ticked lots as the FPO admin.</doc>
+<status status="PASS" start="2026-11-02T02:06:46.574135" elapsed="1.025523"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:47.613202" level="INFO">Text: ['Batch ID: 2HMJFZN2SN1W (super lot COMBO_LOT_FEAB7529)']</msg>
+<arg>p:has-text("Batch ID:")</arg>
+<arg>contains</arg>
+<arg>Batch ID: ${batch}[code]</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.599862" elapsed="0.013478"/>
+</kw>
+<kw name="Call Api" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:47.664773" level="INFO">${png} = &lt;Response [200]&gt;</msg>
+<var>${png}</var>
+<arg>GET</arg>
+<arg>/batches/${batch}[id]/qr.png</arg>
+<arg>${ADMIN}</arg>
+<arg>200</arg>
+<doc>Call the live API as a user and optionally assert the status.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.613593" elapsed="0.051243"/>
+</kw>
+<kw name="Decode Qr" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:47.772807" level="INFO">${texts} = ['http://localhost:4596/public-pages/b/2HMJFZN2SN1W']</msg>
+<var>${texts}</var>
+<arg>${png.content}</arg>
+<doc>Decode the QR codes in a PNG with zxing-cpp (the decoder apps/api's tests use, B10).</doc>
+<status status="PASS" start="2026-11-02T02:06:47.665097" elapsed="0.107789"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${texts}</arg>
+<arg>${{[$PUBLIC_BASE + "/b/" + $batch["code"]]}}</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.773196" elapsed="0.000946"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2026-11-02T02:06:47.775581" level="INFO">${BATCH_X} = {'id': '60bfc6af-f505-451d-bf46-dd14a6a2e355', 'code': '2HMJFZN2SN1W'}</msg>
+<arg>${BATCH_X}</arg>
+<arg>${batch}</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.774440" elapsed="0.001231"/>
+</kw>
+<tag>FR-12</tag>
+<tag>portal</tag>
+<tag>WP-P03</tag>
+<status status="PASS" start="2026-11-02T02:06:46.017631" elapsed="1.758241"/>
+</test>
+<test id="s1-s1-t9" name="Batch Over Threshold Needs A Second Sign Off" line="147">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:47.788447" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.787901" elapsed="0.000597"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.789242" elapsed="0.000113"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:47.788645" elapsed="0.000784"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:47.790797" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:47.796232" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.789863" elapsed="0.006562"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:47.796548" elapsed="0.000174"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:47.789495" elapsed="0.007303"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:47.788611" elapsed="0.008251"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.797096" elapsed="0.000118"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.797479" elapsed="0.000099"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.797974" elapsed="0.000112"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.798292" elapsed="0.000091"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.798563" elapsed="0.000089"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.798834" elapsed="0.000089"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.799100" elapsed="0.000093"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.799534" elapsed="0.000092"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.799801" elapsed="0.000089"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:47.799322" elapsed="0.000638"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:47.799292" elapsed="0.000725"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.800166" elapsed="0.000091"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.800440" elapsed="0.000088"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.800736" elapsed="0.000089"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.801000" elapsed="0.000087"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.801432" elapsed="0.000091"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.801703" elapsed="0.000086"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.802234" elapsed="0.000140"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:47.801210" elapsed="0.001247"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.802836" elapsed="0.000142"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:47.802519" elapsed="0.000612"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:47.801183" elapsed="0.002056"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.803473" elapsed="0.000141"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.803866" elapsed="0.000114"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:47.804395" elapsed="0.000162"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:47.787336" elapsed="0.017436"/>
+</kw>
+<kw name="New Plot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:47.833738" level="INFO">${plot} = {'id': '7282e5d1-361b-47c1-914e-dd0918a3515c', 'fpo_id': '01a198d2-f975-7c80-ac7d-278408fa4c67', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'code': 'P-05', 'gi_tag_id': None, 'pin': {'lat': ...</msg>
+<var>${plot}</var>
+<arg>declared_area=${{ {"value": "5", "unit": "acre"} }}</arg>
+<doc>Register a 1-acre plot as the FPO admin (POST /v1/plots).</doc>
+<status status="PASS" start="2026-11-02T02:06:47.805564" elapsed="0.028274"/>
+</kw>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:48.039648" level="INFO">${lot} = {'id': '2386471e-619a-4ee5-b168-6145c2c9df29', 'code': 'LOT4CC29A97', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': '7282e5d1-361b-47c1-914e-dd0918a3515c', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>1100</arg>
+<arg>${plot}</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:47.834089" elapsed="0.205629"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:48.147161" level="INFO">Successfully opened URL http://localhost:5183/ready-lots</msg>
+<arg>${PORTAL_BASE}/ready-lots</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:48.039977" elapsed="0.107544"/>
+</kw>
+<kw name="Check Checkbox" owner="Browser">
+<arg>role=checkbox[name="Tick lot ${lot}[code]"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Checks the checkbox or selects radio button found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:48.149418" elapsed="0.286390"/>
+</kw>
+<kw name="Create Batch In The UI">
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:48.437263" level="INFO">Clicks the element 'role=combobox[name="Processor"]'.</msg>
+<arg>role=combobox[name="Processor"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:48.436651" elapsed="0.057875"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:48.495607" level="INFO">Clicks the element 'role=option &gt;&gt; nth=0'.</msg>
+<arg>role=option &gt;&gt; nth=0</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:48.494927" elapsed="0.284860"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:48.781227" level="INFO">Clicks the element 'role=button[name="Create batch"s]'.</msg>
+<arg>role=button[name="Create batch"s]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:48.780154" elapsed="0.262648"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:49.292144" level="INFO">Text: ['Batch H1TE13F7EDG4']</msg>
+<msg time="2026-11-02T02:06:49.292305" level="INFO">${heading} = Batch H1TE13F7EDG4</msg>
+<var>${heading}</var>
+<arg>role=heading[level=1][name=/^Batch /]</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.043086" elapsed="0.249257"/>
+</kw>
+<kw name="Get Url" owner="Browser">
+<msg time="2026-11-02T02:06:49.295217" level="INFO">${url} = http://localhost:5183/batches/4e67e2c3-7d75-48b4-9428-b2c593291400</msg>
+<var>${url}</var>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the current URL.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.292555" elapsed="0.002714"/>
+</kw>
+<kw name="Create Dictionary" owner="BuiltIn">
+<msg time="2026-11-02T02:06:49.296285" level="INFO">${batch} = {'id': '4e67e2c3-7d75-48b4-9428-b2c593291400', 'code': 'H1TE13F7EDG4'}</msg>
+<var>${batch}</var>
+<arg>id=${url.split("/batches/")[1]}</arg>
+<arg>code=${heading.removeprefix("Batch ").strip()}</arg>
+<doc>Creates and returns a dictionary based on the given `items`.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.295512" elapsed="0.000814"/>
+</kw>
+<return>
+<value>${batch}</value>
+<status status="PASS" start="2026-11-02T02:06:49.296407" elapsed="0.000118"/>
+</return>
+<doc>On Ready lots with lots ticked: pick the first processor, press "Create batch" and wait for
+the batch page.
+Returns: {"id", "code"} of the new batch, read from the URL and the "Batch &lt;code&gt;" heading.
+Fails: the batch page does not open.
+Side effects: creates a batch of the ticked lots as the FPO admin.</doc>
+<status status="PASS" start="2026-11-02T02:06:48.436126" elapsed="0.860534"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:49.304067" level="INFO">Waited for Element with selector text=/Waiting for a second admin/ at state visible</msg>
+<arg>text=/Waiting for a second admin/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.296859" elapsed="0.007386"/>
+</kw>
+<kw name="Get Element States" owner="Browser">
+<msg time="2026-11-02T02:06:49.342961" level="INFO">States are: ['attached', 'visible', 'disabled', 'readonly', 'defocused']</msg>
+<arg>role=button[name=/^Sign off(:|$)/]</arg>
+<arg>contains</arg>
+<arg>disabled</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Get the active states from the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.304516" elapsed="0.038587"/>
+</kw>
+<kw name="Get Attribute" owner="Browser">
+<msg time="2026-11-02T02:06:49.356648" level="INFO">Attribute is: 'Sign off: You created this batch; a different FPO admin must give the second sign-off.'</msg>
+<arg>role=button[name=/^Sign off(:|$)/]</arg>
+<arg>aria-label</arg>
+<arg>contains</arg>
+<arg>a different FPO admin must give the second sign-off</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the HTML ``attribute`` of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.343368" elapsed="0.013418"/>
+</kw>
+<tag>FR-9</tag>
+<tag>portal</tag>
+<tag>WP-P03</tag>
+<status status="PASS" start="2026-11-02T02:06:47.783295" elapsed="1.573688"/>
+</test>
+<test id="s1-s1-t10" name="Declared Special Computed Standard Disables Approve With Reason" line="159">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:49.365309" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.364809" elapsed="0.000547"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.365860" elapsed="0.000102"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:49.365488" elapsed="0.000547"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:49.367129" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:49.372691" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.366440" elapsed="0.006437"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:49.372996" elapsed="0.000159"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:49.366094" elapsed="0.007321"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:49.365457" elapsed="0.008033"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.373731" elapsed="0.000120"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.374110" elapsed="0.000103"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.374570" elapsed="0.000096"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.374869" elapsed="0.000091"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.375142" elapsed="0.000088"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.375414" elapsed="0.000088"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.375683" elapsed="0.000092"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.376112" elapsed="0.000094"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.376380" elapsed="0.000088"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:49.375902" elapsed="0.000636"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:49.375872" elapsed="0.000723"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.376742" elapsed="0.000091"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.377012" elapsed="0.000087"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.377308" elapsed="0.000088"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.377568" elapsed="0.000087"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.377997" elapsed="0.000090"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.378267" elapsed="0.000087"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.378525" elapsed="0.000088"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:49.377779" elapsed="0.000904"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.378952" elapsed="0.000090"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:49.378740" elapsed="0.000372"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:49.377752" elapsed="0.001411"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.379311" elapsed="0.000090"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.379613" elapsed="0.000089"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:49.379925" elapsed="0.000111"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:49.364293" elapsed="0.015865"/>
+</kw>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:49.533303" level="INFO">${lot} = {'id': 'e0b47962-f111-4a46-89e6-8ff2ca3c6c8b', 'code': 'LOTAC262966', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>100</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:49.380338" elapsed="0.153027"/>
+</kw>
+<kw name="New Batch" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:49.650021" level="INFO">${batch} = {'id': '58dd7025-8892-427a-b17b-536e99120d46', 'code': 'QV02X6ZGJSWY', 'superlot_code': 'COMBO_LOT_164E3B06', 'crop_id': '01a198d2-f93f-74c9-bb75-127afb8bf286', 'processor_id': '01a198d2-f98d-78fe-b84...</msg>
+<var>${batch}</var>
+<arg>${{[$lot["id"]]}}</arg>
+<arg>gi=${True}</arg>
+<doc>Merge received lots into a batch (POST /v1/batches as the FPO admin).</doc>
+<status status="PASS" start="2026-11-02T02:06:49.533598" elapsed="0.116759"/>
+</kw>
+<kw name="Grade Batch" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:50.250544" level="INFO">${grading} = {'id': '01a198d4-43bf-7304-965b-c19fd7787017', 'batch_id': '58dd7025-8892-427a-b17b-536e99120d46', 'profile_version_id': '01a198d2-f95f-7268-a394-02de20185164', 'computed_grade': 'Standard', 'declared...</msg>
+<var>${grading}</var>
+<arg>${batch}[id]</arg>
+<arg>Special</arg>
+<arg>10.5</arg>
+<doc>Grade a batch as the seeded QC officer (POST /v1/batches/{id}/grading, 201).</doc>
+<status status="PASS" start="2026-11-02T02:06:49.650736" elapsed="0.599894"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${grading}[computed_grade]</arg>
+<arg>Standard</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-11-02T02:06:50.251154" elapsed="0.002226"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:50.457048" level="INFO">Successfully opened URL http://localhost:5183/batches/58dd7025-8892-427a-b17b-536e99120d46</msg>
+<arg>${PORTAL_BASE}/batches/${batch}[id]</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:50.253649" elapsed="0.203689"/>
+</kw>
+<kw name="Get Element States" owner="Browser">
+<msg time="2026-11-02T02:06:51.211439" level="INFO">States are: ['attached', 'visible', 'disabled', 'readonly', 'defocused']</msg>
+<arg>role=button[name=/^Approve grading/]</arg>
+<arg>contains</arg>
+<arg>disabled</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Get the active states from the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:50.457738" elapsed="0.753934"/>
+</kw>
+<kw name="Get Attribute" owner="Browser">
+<msg time="2026-11-02T02:06:51.229852" level="INFO">Attribute is: 'Approve grading: Declared grade Special is above the computed grade Standard: correct the readings, re-test or lower the declared grade.'</msg>
+<arg>role=button[name=/^Approve grading/]</arg>
+<arg>aria-label</arg>
+<arg>contains</arg>
+<arg>Declared grade Special is above the computed grade Standard</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the HTML ``attribute`` of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:51.212047" elapsed="0.018011"/>
+</kw>
+<tag>FR-49</tag>
+<tag>portal</tag>
+<tag>WP-P04</tag>
+<status status="PASS" start="2026-11-02T02:06:49.361238" elapsed="1.869108"/>
+</test>
+<test id="s1-s1-t11" name="Missing Reading Disables Approve" line="171">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:51.250468" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:51.249672" elapsed="0.000942"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.251292" elapsed="0.000106"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:51.250900" elapsed="0.000619"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:51.253275" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:51.263723" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:51.252198" elapsed="0.011815"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:51.264286" elapsed="0.000204"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:51.251658" elapsed="0.012936"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:51.250836" elapsed="0.013850"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.265234" elapsed="0.000296"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.266316" elapsed="0.000273"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.267872" elapsed="0.000278"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.268836" elapsed="0.000248"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.269682" elapsed="0.000251"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.270208" elapsed="0.000342"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.270985" elapsed="0.000194"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.272104" elapsed="0.000184"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.272666" elapsed="0.000160"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:51.271536" elapsed="0.001409"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:51.271492" elapsed="0.001545"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.273306" elapsed="0.000136"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.273865" elapsed="0.000160"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.274326" elapsed="0.000127"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.274828" elapsed="0.000167"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.276477" elapsed="0.000136"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.276949" elapsed="0.000174"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.277405" elapsed="0.000139"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:51.275833" elapsed="0.001834"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.278092" elapsed="0.000143"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:51.277768" elapsed="0.000568"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:51.275774" elapsed="0.002627"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.278591" elapsed="0.000108"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.278979" elapsed="0.000123"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:51.279472" elapsed="0.000246"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:51.248840" elapsed="0.031186"/>
+</kw>
+<kw name="Packed Lot" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:52.100845" level="INFO">${lot} = {'id': '9a3230a3-9430-40ad-98df-dc3702bfc120', 'code': 'LOTE9DDC133', 'farmer_id': 'e378bebf-6a1d-4fb9-94d8-ae62d779bd7f', 'plot_id': 'de1b32f4-76dc-422b-bb42-5874fc283a1d', 'crop_id': '01a198d2-f93f-...</msg>
+<var>${lot}</var>
+<arg>60</arg>
+<doc>Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).</doc>
+<status status="PASS" start="2026-11-02T02:06:51.280270" elapsed="0.820683"/>
+</kw>
+<kw name="New Batch" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:52.278340" level="INFO">${batch} = {'id': 'c6c06ec5-8701-4c0f-9c99-dcb69392e948', 'code': 'S8VF0HMPSGWT', 'superlot_code': 'COMBO_LOT_618ADF51', 'crop_id': '01a198d2-f93f-74c9-bb75-127afb8bf286', 'processor_id': '01a198d2-f98d-78fe-b84...</msg>
+<var>${batch}</var>
+<arg>${{[$lot["id"]]}}</arg>
+<arg>gi=${True}</arg>
+<doc>Merge received lots into a batch (POST /v1/batches as the FPO admin).</doc>
+<status status="PASS" start="2026-11-02T02:06:52.101393" elapsed="0.177061"/>
+</kw>
+<kw name="Grade Batch" owner="agritrace_keywords">
+<arg>${batch}[id]</arg>
+<arg>Standard</arg>
+<doc>Grade a batch as the seeded QC officer (POST /v1/batches/{id}/grading, 201).</doc>
+<status status="PASS" start="2026-11-02T02:06:52.278870" elapsed="0.023167"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:52.401881" level="INFO">Successfully opened URL http://localhost:5183/batches/c6c06ec5-8701-4c0f-9c99-dcb69392e948</msg>
+<arg>${PORTAL_BASE}/batches/${batch}[id]</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.302394" elapsed="0.099815"/>
+</kw>
+<kw name="Get Text" owner="Browser">
+<msg time="2026-11-02T02:06:52.723401" level="INFO">Text: ['Batch S8VF0HMPSGWT\nCreated\nGI verified\nTotal 60 kg\nProcessor VIRUDHAI_SCFC_VINOBA_BHAVA_FPO\nBatch ID and QR\n\nBatch ID: S8VF0HMPSGWT (super lot COMBO_LOT_618ADF51)\n\nReference c6c06ec5-8701-4c0f-9c99-dcb69392e948. The QR code opens the public page at /b/S8VF0HMPSGWT; it appears under Public page once the batch is published.\n\nFarmer shares\nFarmer\tReceived\tShare\nFarmer e378bebf\t60 kg\t100.000 %\nGrading\n\nComputed grade: not computed (reading missing)\n\nDeclared grade: Standard\n\nStandard: profile version 01a198d2. Computed 2 Nov.\n\nGraded quantity (kg)\nGraded quantity (kg)\n\nBecomes the ceiling for final packing.\n\nAPPROVE GRADING\nA required quality reading is missing: moisture.\nFinal packing\nPacked quantity (kg)\nPacked quantity (kg)\n\n\u200b\n\nPack date\nPack date\n\n\u200b\n\nBest before\nBest before\n\n\u200b\n\nSIGN OFF FINAL PACKING\nThe grading has not been approved.\nPublic page\nPUBLISH\nThe grading has not been approved.\nFinal packing has not been signed off.\nLabels and exports\n\nPack labels: one A4 sheet of 8 labels, each with the batch QR, product, batch ID S8VF0HMPSGWT, pack and best-before dates and FSSAI number. Stick one label on every pack.\n\nPrint at 100 % (actual size, not “fit to page”) on A4, as many sheets as you have packs divided by 8.\n\nDOWNLOAD LABELS\nFinal packing has not been signed off.\n\nAudit trail: every version of every event of the batch and its lots, with who entered it and the assist session.\n\nDOWNLOAD AUDIT CSV\n\nLots and shares: lot code, farmer, harvested, on-farm packed and received kg, the share of the final packed kg (derived: packed kg × share %) and share %.\n\nDOWNLOAD LOTS CSV\nLoading farmer names…']</msg>
+<arg>main</arg>
+<arg>contains</arg>
+<arg>not computed (reading missing)</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns text attribute of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.403040" elapsed="0.320757"/>
+</kw>
+<kw name="Get Element States" owner="Browser">
+<msg time="2026-11-02T02:06:52.761232" level="INFO">States are: ['attached', 'visible', 'disabled', 'readonly', 'defocused']</msg>
+<arg>role=button[name=/^Approve grading/]</arg>
+<arg>contains</arg>
+<arg>disabled</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Get the active states from the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.724379" elapsed="0.036987"/>
+</kw>
+<kw name="Get Attribute" owner="Browser">
+<msg time="2026-11-02T02:06:52.774174" level="INFO">Attribute is: 'Approve grading: A required quality reading is missing: moisture.'</msg>
+<arg>role=button[name=/^Approve grading/]</arg>
+<arg>aria-label</arg>
+<arg>contains</arg>
+<arg>A required quality reading is missing: moisture.</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the HTML ``attribute`` of the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.761619" elapsed="0.012768"/>
+</kw>
+<tag>FR-46</tag>
+<tag>portal</tag>
+<tag>WP-P04</tag>
+<status status="PASS" start="2026-11-02T02:06:51.243528" elapsed="1.531557"/>
+</test>
+<test id="s1-s1-t12" name="Happy Path Publishes And Shows The URL" line="183">
+<kw name="Portal As Admin">
+<kw name="Get Variable Value" owner="BuiltIn">
+<msg time="2026-11-02T02:06:52.786170" level="INFO">${known} = page=e38ddede-98f2-4351-b46b-de05ccad70ab</msg>
+<var>${known}</var>
+<arg>${ADMIN_PAGE}</arg>
+<doc>Returns variable value or `default` if the variable does not exist.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.785386" elapsed="0.000870"/>
+</kw>
+<if>
+<branch type="IF" condition="$known == &quot;failed&quot;">
+<kw name="Fail" owner="BuiltIn">
+<arg>The portal sign-in failed in an earlier test; see that test.</arg>
+<doc>Fails the test or task with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.786839" elapsed="0.000142"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:52.786443" elapsed="0.000656"/>
+</branch>
+<branch type="ELSE IF" condition="$known is not None">
+<kw name="Switch Page" owner="Browser">
+<msg time="2026-11-02T02:06:52.788381" level="INFO">Switching to page page=e38ddede-98f2-4351-b46b-de05ccad70ab,context ALL, browser ALL</msg>
+<msg time="2026-11-02T02:06:52.794900" level="INFO">Returned active page id</msg>
+<arg>${known}</arg>
+<arg>context=ALL</arg>
+<arg>browser=ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Switches the active browser page to another open page by ``id`` or ``NEW``.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.787558" elapsed="0.007656"/>
+</kw>
+<return>
+<status status="PASS" start="2026-11-02T02:06:52.795418" elapsed="0.000225"/>
+</return>
+<status status="PASS" start="2026-11-02T02:06:52.787173" elapsed="0.008592"/>
+</branch>
+<status status="PASS" start="2026-11-02T02:06:52.786407" elapsed="0.009467"/>
+</if>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>failed</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.796318" elapsed="0.000191"/>
+</kw>
+<kw name="New Browser" owner="Browser">
+<arg>chromium</arg>
+<arg>headless=True</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.797051" elapsed="0.000185"/>
+</kw>
+<kw name="New Context" owner="Browser">
+<arg>viewport={'width': 1280, 'height': 800}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new BrowserContext with specified options.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.797621" elapsed="0.000122"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<var>${page}</var>
+<arg>${PORTAL_BASE}/</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.797956" elapsed="0.000095"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Mobile number"s</arg>
+<arg>${ADMIN}[3:]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.798234" elapsed="0.000089"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.798502" elapsed="0.000088"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<var>${sent}</var>
+<arg>Wait For Elements State</arg>
+<arg>internal:label="SMS code"s</arg>
+<arg>visible</arg>
+<arg>timeout=10s</arg>
+<doc>Runs the specified keyword and returns the status as a Boolean value.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.798764" elapsed="0.000093"/>
+</kw>
+<if>
+<branch type="IF" condition="not ${sent}">
+<kw name="Sleep" owner="BuiltIn">
+<arg>61s</arg>
+<doc>Pauses execution for the given time.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.799253" elapsed="0.000091"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Send code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.799517" elapsed="0.000087"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:52.799030" elapsed="0.000642"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:52.798998" elapsed="0.000731"/>
+</if>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="SMS code"s</arg>
+<arg>${OTP_DEV_CODE}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.799959" elapsed="0.000149"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Verify code"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.800456" elapsed="0.000150"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>internal:label=/^(PIN|Choose a 4-digit PIN)$/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.800917" elapsed="0.000109"/>
+</kw>
+<kw name="Get Element Count" owner="Browser">
+<var>${first}</var>
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<tag>Assertion</tag>
+<tag>Getter</tag>
+<tag>PageContent</tag>
+<doc>Returns the count of elements found with ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.801209" elapsed="0.000091"/>
+</kw>
+<if>
+<branch type="IF" condition="${first}">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Choose a 4-digit PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.801646" elapsed="0.000086"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>role=button[name="Next"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.801913" elapsed="0.000085"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="Type the PIN again"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.802167" elapsed="0.000084"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:52.801426" elapsed="0.000893"/>
+</branch>
+<branch type="ELSE">
+<kw name="Fill Text" owner="Browser">
+<arg>internal:label="PIN"s</arg>
+<arg>${OFFICE_PIN}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.802578" elapsed="0.000086"/>
+</kw>
+<status status="NOT RUN" start="2026-11-02T02:06:52.802375" elapsed="0.000357"/>
+</branch>
+<status status="NOT RUN" start="2026-11-02T02:06:52.801397" elapsed="0.001385"/>
+</if>
+<kw name="Click" owner="Browser">
+<arg>role=button[name=/sign in$/i]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.802925" elapsed="0.000086"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>role=navigation[name="Main"]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.803218" elapsed="0.000088"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<arg>${ADMIN_PAGE}</arg>
+<arg>${page}[page_id]</arg>
+<doc>Makes the variable available everywhere within the scope of the current suite.</doc>
+<status status="NOT RUN" start="2026-11-02T02:06:52.803953" elapsed="0.000185"/>
+</kw>
+<doc>Bring the signed-in FPO admin's page to the front. The first call of a run opens a headless
+Chromium and signs +919000000001 in through the login form (mobile, dev OTP, then the PIN step; a
+fresh seed has no PIN yet, so the form chooses 1234). Later calls reuse that page, so a
+run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
+fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
+Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+failed (no retry: each attempt would spend another OTP).
+Side effects: sets the suite variable page=e38ddede-98f2-4351-b46b-de05ccad70ab; on a fresh seed sets the admin's PIN.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.784796" elapsed="0.019535"/>
+</kw>
+<kw name="Variable Should Exist" owner="BuiltIn">
+<arg>${BATCH_X}</arg>
+<arg>msg=Run "Create Batch Returns An Id And A QR" first: it creates the batch.</arg>
+<doc>Fails the given variable does not exist in the current scope.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.804639" elapsed="0.000772"/>
+</kw>
+<kw name="Grade Batch" owner="agritrace_keywords">
+<arg>${BATCH_X}[id]</arg>
+<arg>Standard</arg>
+<arg>10.5</arg>
+<doc>Grade a batch as the seeded QC officer (POST /v1/batches/{id}/grading, 201).</doc>
+<status status="PASS" start="2026-11-02T02:06:52.805772" elapsed="0.052464"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2026-11-02T02:06:53.036908" level="INFO">Successfully opened URL http://localhost:5183/batches/60bfc6af-f505-451d-bf46-dd14a6a2e355</msg>
+<arg>${PORTAL_BASE}/batches/${BATCH_X}[id]</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2026-11-02T02:06:52.858804" elapsed="0.178815"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:06:53.042107" level="INFO">Fills the text '320' in the given field.</msg>
+<arg>internal:label="Graded quantity (kg)"s</arg>
+<arg>320</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:53.039583" elapsed="0.944878"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:53.985520" level="INFO">Clicks the element 'role=button[name="Approve grading"s]'.</msg>
+<arg>role=button[name="Approve grading"s]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:53.984834" elapsed="0.056657"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:54.229642" level="INFO">Waited for Element with selector text=/^Grading approved/ at state visible</msg>
+<arg>text=/^Grading approved/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.041773" elapsed="0.188052"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:06:54.230735" level="INFO">Fills the text '320' in the given field.</msg>
+<arg>internal:label="Packed quantity (kg)"s</arg>
+<arg>320</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.230091" elapsed="0.013572"/>
+</kw>
+<kw name="Days Ago" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:54.245057" level="INFO">${today} = 2026-11-02</msg>
+<var>${today}</var>
+<arg>0</arg>
+<doc>Return the ISO date ``days`` before today (negative = in the future).</doc>
+<status status="PASS" start="2026-11-02T02:06:54.243992" elapsed="0.001122"/>
+</kw>
+<kw name="Days Ago" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:54.245733" level="INFO">${best_before} = 2027-11-01</msg>
+<var>${best_before}</var>
+<arg>-364</arg>
+<doc>Return the ISO date ``days`` before today (negative = in the future).</doc>
+<status status="PASS" start="2026-11-02T02:06:54.245362" elapsed="0.000415"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:06:54.246577" level="INFO">Fills the text '2026-11-02' in the given field.</msg>
+<arg>internal:label="Pack date"s</arg>
+<arg>${today}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.245980" elapsed="0.011954"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2026-11-02T02:06:54.258890" level="INFO">Fills the text '2027-11-01' in the given field.</msg>
+<arg>internal:label="Best before"s</arg>
+<arg>${best_before}</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.258207" elapsed="0.012929"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:54.272067" level="INFO">Clicks the element 'role=button[name="Sign off final packing"s]'.</msg>
+<arg>role=button[name="Sign off final packing"s]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.271417" elapsed="0.070231"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:54.533017" level="INFO">Waited for Element with selector text=/^Packed \d/ at state visible</msg>
+<arg>text=/^Packed \\d/</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.342006" elapsed="0.191308"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2026-11-02T02:06:54.534305" level="INFO">Clicks the element 'role=button[name="Publish"s]'.</msg>
+<arg>role=button[name="Publish"s]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.533596" elapsed="0.040697"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2026-11-02T02:06:54.575502" level="INFO">${url} = http://localhost:4596/public-pages/b/2HMJFZN2SN1W</msg>
+<var>${url}</var>
+<arg>${PUBLIC_BASE}/b/${BATCH_X}[code]</arg>
+<doc>Returns the given values which can then be assigned to a variable.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.574722" elapsed="0.000833"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:57.416314" level="INFO">Waited for Element with selector role=link[name="http://localhost:4596/public-pages/b/2HMJFZN2SN1W"s] at state visible</msg>
+<arg>role=link[name="${url}"s]</arg>
+<arg>visible</arg>
+<arg>timeout=180s</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:54.575828" elapsed="2.840685"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<msg time="2026-11-02T02:06:57.426351" level="INFO">Waited for Element with selector role=img[name="QR code opening http://localhost:4596/public-pages/b/2HMJFZN2SN1W"s] at state visible</msg>
+<arg>role=img[name="QR code opening ${url}"s]</arg>
+<arg>visible</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="PASS" start="2026-11-02T02:06:57.416842" elapsed="0.009761"/>
+</kw>
+<kw name="Call Api" owner="agritrace_keywords">
+<msg time="2026-11-02T02:06:57.444034" level="INFO">${batch} = &lt;Response [200]&gt;</msg>
+<var>${batch}</var>
+<arg>GET</arg>
+<arg>/batches/${BATCH_X}[id]</arg>
+<arg>${ADMIN}</arg>
+<arg>200</arg>
+<doc>Call the live API as a user and optionally assert the status.</doc>
+<status status="PASS" start="2026-11-02T02:06:57.427012" elapsed="0.017295"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${batch.json()}[status]</arg>
+<arg>published</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2026-11-02T02:06:57.444615" elapsed="0.000819"/>
+</kw>
+<tag>FR-15</tag>
+<tag>portal</tag>
+<tag>WP-P04</tag>
+<status status="PASS" start="2026-11-02T02:06:52.780721" elapsed="4.664897"/>
+</test>
+<kw name="Close Browser" owner="Browser" type="TEARDOWN">
+<msg time="2026-11-02T02:06:57.548622" level="INFO">Closed all browsers</msg>
+<arg>ALL</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-11-02T02:06:57.454553" elapsed="0.094277"/>
+</kw>
+<doc>FPO admin portal acceptance (plan §7.3 P01-P08) and the P07 chain.
+Serves: FR-8, FR-9, FR-12, FR-13, FR-14, FR-15, FR-23, FR-25, FR-29, FR-37, FR-41, FR-46,
+FR-49, FR-58, FR-70; gate G4; WP Q07 (P01-P04 lines real). Run by: Q02 Verifier, gate G4.
+Needs `rfbrowser init` once and the portal served in live mode (`npm run dev`, no VITE_MSW)
+against the stack under test; see qa/robot/README.md.
+Every test drives the UI as the seeded FPO admin, signed in once per run through the login
+form. Data the line needs (farmers, plots, packed lots, QC grading) is made over the API
+with the agritrace_keywords fixtures; API reads only back up what the screen showed
+(the stored status, the audit row, the QR content). Ready lots is opened with a full page load, because the
+portal caches lots and hold flags for 30 s and each test makes its lots just before.
+Placeholders are tagged not-ready and skip until their WP merges.</doc>
+<status status="PASS" start="2026-11-02T02:05:28.489432" elapsed="89.059498"/>
+</suite>
+<status status="PASS" start="2026-11-02T02:05:28.407942" elapsed="89.157435"/>
+</suite>
+<statistics>
+<total>
+<stat pass="12" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="1" fail="0" skip="0">FR-12</stat>
+<stat pass="1" fail="0" skip="0">FR-14</stat>
+<stat pass="1" fail="0" skip="0">FR-15</stat>
+<stat pass="1" fail="0" skip="0">FR-25</stat>
+<stat pass="1" fail="0" skip="0">FR-29</stat>
+<stat pass="1" fail="0" skip="0">FR-37</stat>
+<stat pass="1" fail="0" skip="0">FR-46</stat>
+<stat pass="1" fail="0" skip="0">FR-49</stat>
+<stat pass="2" fail="0" skip="0">FR-70</stat>
+<stat pass="1" fail="0" skip="0">FR-8</stat>
+<stat pass="1" fail="0" skip="0">FR-9</stat>
+<stat pass="12" fail="0" skip="0">portal</stat>
+<stat pass="1" fail="0" skip="0">smoke</stat>
+<stat pass="1" fail="0" skip="0">WP-P00</stat>
+<stat pass="2" fail="0" skip="0">WP-P01</stat>
+<stat pass="2" fail="0" skip="0">WP-P02</stat>
+<stat pass="4" fail="0" skip="0">WP-P03</stat>
+<stat pass="3" fail="0" skip="0">WP-P04</stat>
+</tag>
+<suite>
+<stat name="Portal" id="s1" pass="12" fail="0" skip="0">Portal</stat>
+<stat name="Portal" id="s1-s1" pass="12" fail="0" skip="0">Portal.Portal</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

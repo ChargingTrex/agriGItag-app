@@ -1,4 +1,4 @@
-# Handover — AgriTrace build, state at 2026-11-02 00:40 IST (day 4: first live-stack day)
+# Handover — AgriTrace build, state at 2026-11-02 02:40 IST (day 4: first live-stack day; wave 7 nearly done)
 
 Written for: whoever resumes the multi-agent build (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §6–§7 (audit follow-ups, gate blockers) and the decision-number ledger line.
 
@@ -7,13 +7,13 @@ Written for: whoever resumes the multi-agent build (human or the Orchestrator se
 | Area | State |
 |---|---|
 | Plan | `PLAN.md` (approved 2026-10-29); specs in `docs/agents/specs/`; rulings `docs/agents/gates/rulings-2026-10-31*.md` |
-| Progress | `CHECKLIST.md`: **72 % (51/71)**. Every backend package B00–B19 is **verified on the live stack** (`docs/agents/qa/B*.md`); every mobile package M00–M16 is merged, reviewed and green on main (device runs → Q01); portal P01–P08 and W03 are merged and reviewed, their live-API verification is **in flight** (see §2) |
-| Gates | **G0 SIGNED** 2026-11-01 (`docs/agents/gates/G0.md`). **G1 BLOCKED** only by the P00 Robot headless-browser test never having run (the WEB Verifier is running it). G2–G5 unsigned |
+| Progress | `CHECKLIST.md`: **88 % (68/77)**. Backend B00–B20 verified live; mobile M00–M16 merged + 812 tests green, APK 30.03 MiB (AAB download unmeasured: human step, TODO); portal P01–P11 and W03 verified live; Q02 PASS, Q03 CONDITIONAL (2 page.robot placeholders → Q07 r2), Q04 FAIL → B21 fixed it on its branch (BM-07 p95 280 ms; push 5xx → per-entry rejection) and is in BE/SEC review; Q06 Robot API 67/67 and Q07 portal Robot P01–P04 12/12 merged; Q07 round 2 (P05/P06/P08/P07 + public page placeholders, P06 line 5) in flight |
+| Gates | **G0, G1, G2 SIGNED** (G2 on 2026-11-02 with the ruling that the 10 mobile Robot placeholders are Q01/G3 scope). **G3 BLOCKED** (Q01 device work + Go AVD; P05/P06/P08 Robot + P06 line 5 → Q07 r2; AAB figure). **G4 BLOCKED** (same portal placeholders + 2 page.robot + P06 line 5). G5 after Q05 (`docs/agents/gates/G*.md`) |
 | Audits | `docs/agents/audits/wave-0-2.md` (3 P1, 11 P2, 6 P3) and `waves-3-6.md` (2 P1, 5 P2, 9 P3). **All five P1s are fixed and merged** (M14, M16, P09); P2s fixed: M15, B18, B19; the rest are TODO §6/§7 lines |
 | Decisions | D-001…D-054 (D-049 unused; D-055–D-058 reserved, unused: B18/B19/P09/M16 needed no ADR) |
 | Main | 391 commits; backend 623 unit / 780 total (full suite green on the live stack); mobile 812 tests, analyzer clean; portal 135 Vitest, bundle 243 KB gz; public page 76 pytest; qa/tests 109; 49 error codes; migrations 0001–0004; OpenAPI, TS and Dart clients regenerated and byte-identical after the last backend merge (B18) |
 | Remote | **none.** No `origin`; creating `ChargingTrex/agriGitag` and pushing was denied by the permission classifier. Human step: `gh repo create ChargingTrex/agriGitag --private --source . --remote origin --push` |
-| Stack | Docker Desktop up (engine 29.3.1); compose stack running from main @ 72c52b5+ (api/worker rebuilt after B19), seeded (reference batch `FGP8T4033HM7` untouched; Verifiers added QA farmers +919000000091/92/151/152, staff PINs 2468 for +919000000001 and +919000000003, QA batches incl. published `GQ6QTKYZYVEP`). **DB on host port 5433** via git-ignored `infra/.env` (Homebrew Postgres owns 5432) |
+| Stack | Docker Desktop up; compose stack running from main **rebuilt 01:41 IST incl. B20** (a stuck BuildKit lease had blocked `make up` four times; `docker builder prune -af` cleared it), seeded; Verifiers added many QA rows (incl. 6,269 fuzz events on farmers +919000000091/92) — reseed (`down -v && make up && make seed`) before any demo. **Admin OTP cap (10/day) is exhausted on this stack until ~21:49 IST 2026-11-02**: staff sign-ins for live checks must use a fresh isolated compose project (recipe in `docs/agents/reports/Q06.md`). DB on host port 5433 via `infra/.env` |
 
 ### Merged today (2026-11-01), in order
 P05, P07, M13 (yesterday's in-flight branches) → B17 (first live-stack fixes) → M15 → B18 → P09 → M14+M16 → B19. Reviews for every one in `docs/agents/reviews/`; reports in `docs/agents/reports/`.
@@ -25,16 +25,17 @@ B00 (CONDITIONAL → PASS after B17), Q00 deferred lines closed, B01–B05, B06,
 
 | Agent | What | Resume |
 |---|---|---|
-| WEB Verifier (one Opus agent) | P00 Robot `Portal Loads In A Headless Browser` (G1 blocker) → `docs/agents/qa/P00.md` section; P07 live chain `E2E_LIVE=1` twice without reseed; P01–P06, P08 live-API acceptance lines with screenshots; W03 Lighthouse 3G on a published page; writes `docs/agents/qa/P0x.md`, `W03.md` | If the session is new: check `git log -- docs/agents/qa/P0*` and `docs/agents/qa/W03.md`; respawn for whatever is missing (brief: same as `docs/agents/qa-rubric.md`, portal in live mode via `VITE_API_BASE_URL`, do not touch the reference batch) |
+| Q07 QA Lead (round 2) | remaining Robot placeholders: portal P05 ×2, P06 ×5 (incl. the P06 line-5 audit-reason re-check), P08 ×3, P07 ×2, public `page.robot` ×2, on an isolated compose project; branch `worktree-agent-ac14cb14a1f0ec7bc` (round 1 already merged) | merge → `gate-readiness G3/G4/G5` should list only Q01 mobile lines → Architect-Gate re-evaluates G3/G4 |
+| BE/SEC Reviewer of B21 | `worktree-agent-ac5367febd6d197aa` @ 8cd7944: NUL/int32 validation at the push boundary, per-entry DB-error rejection (SQLSTATE 22), telemetry 422, `WEB_CONCURRENCY=4` in the api Dockerfile (BM-07 p95 1900 → 280 ms) | on PASS: merge, re-export openapi (25 int32 maxima), `npm run gen:api`, Dart `tool/gen_api.sh`, `make up` (if BuildKit says "lease not found": `docker builder prune -af`), then Q05 |
 
-No worktrees are open (`git worktree list` = main only). If the WEB Verifier's report exists: tick the P rows, resume the Architect-Gate for G1 (its brief: `docs/agents/gates/G1.md` conditions; P00 Robot PASS clears the block), then open G2 (`docs/agents/gates/G2.md`: B02–B08, B13, B14 verified ✓; M01–M07 ✓; P01–P04 live ✓ pending; audits: all P1 closed on main; Robot API suites must be un-`not-ready`-tagged and run — TODO line "Robot API suites still tagged not-ready").
+No other worktrees should exist (`git worktree list`). Shared-stack live checks are blocked by the admin OTP cap until ~21:49 IST; use an isolated project.
 
 ## 3. Next steps (in order)
 
-1. Portal/public-page Verifier report → tick P01–P08, W03 → G1 sign → G2 gate agent (also writes `docs/agents/audits/` nothing new; the two audits exist) → G3/G4 need the same plus M13 size.
-2. **M13 size measurement** on a quiet host: `cd apps/mobile && tool/size_check.sh` (bundletool shim per `docs/agents/reports/M13.md`; needs ~3 GB disk, 25+ min; host must not be running Lighthouse). Budgets: APK ≤ 100 MiB hard / 40 warn, AAB download ≤ 30 MiB.
-3. Wave 7 Verifiers: Q01 (needs an Android Go AVD: API 27, 2 GB, 2 cores, 720×1280 — none exists; `Medium_Phone_API_36.1` only), Q02 (portal: Vitest coverage ≥ 80 % in features + the P07 live chain), Q03 (public page backend-down serve from S3 + old version retrievable), Q04 (locust p95 BM-07, Schemathesis fuzz on `/sync/push`), Q05 (benchmark sweep → `docs/agents/qa/benchmarks.json`, G5 report).
-4. Open P2/P3 follow-ups from the audits and Verifiers are all in `TODO.md` §4, §6, §7 with owners.
+1. Merge P11 (Q02 → PASS), Q07 (then G4 Robot condition met), B21 (then Q04 rerun). After B21: `make up` (if the build fails with a BuildKit "lease not found", run `docker builder prune -af` first).
+2. Architect-Gate: sign G2 (rule on the mobile Robot placeholders belonging to G3/Q01), evaluate G3 (needs the P06 line-5 re-check: correction reason in the portal Audit Log, on a fresh stack) and G4 (B10/B11/W03 verified; Robot portal/public suites from Q07).
+3. Q05 release gate: benchmark sweep with `collect.py --results-dir docs/agents/qa/bench-results/` (see TODO), rerun BM-07 + the Schemathesis fuzz after B21, the P06 line-5 check, `/ponytail-audit` on the final tree if anything but tests changed, G5 report — Q01 (device checks) will stay open until an Android Go AVD exists, so G5 can only be CONDITIONAL.
+4. Human blockers in §4; open P2/P3 follow-ups in `TODO.md` §4, §6, §7 with owners.
 
 ## 4. Blockers only a human can clear
 

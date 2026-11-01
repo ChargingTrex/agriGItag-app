@@ -1,0 +1,38 @@
+ Container agritrace-q07-worker-1 Stopping 
+ Container agritrace-q07-api-1 Stopping 
+ Container agritrace-q07-mosquitto-1 Stopping 
+ Container agritrace-q07-mosquitto-1 Stopped 
+ Container agritrace-q07-mosquitto-1 Removing 
+ Container agritrace-q07-mosquitto-1 Removed 
+ Container agritrace-q07-api-1 Stopped 
+ Container agritrace-q07-api-1 Removing 
+ Container agritrace-q07-api-1 Removed 
+ Container agritrace-q07-worker-1 Stopped 
+ Container agritrace-q07-worker-1 Removing 
+ Container agritrace-q07-worker-1 Removed 
+ Container agritrace-q07-s3-init-1 Stopping 
+ Container agritrace-q07-db-1 Stopping 
+ Container agritrace-q07-valkey-1 Stopping 
+ Container agritrace-q07-s3-init-1 Stopped 
+ Container agritrace-q07-s3-init-1 Removing 
+ Container agritrace-q07-s3-init-1 Removed 
+ Container agritrace-q07-s3-1 Stopping 
+ Container agritrace-q07-valkey-1 Stopped 
+ Container agritrace-q07-valkey-1 Removing 
+ Container agritrace-q07-valkey-1 Removed 
+ Container agritrace-q07-db-1 Stopped 
+ Container agritrace-q07-db-1 Removing 
+ Container agritrace-q07-db-1 Removed 
+ Container agritrace-q07-s3-1 Stopped 
+ Container agritrace-q07-s3-1 Removing 
+ Container agritrace-q07-s3-1 Removed 
+ Network agritrace-q07_default Removing 
+ Volume agritrace-q07_db-data Removing 
+ Volume agritrace-q07_db-data Removed 
+ Network agritrace-q07_default Removed 
+Untagged: agritrace-q07-api:dev
+Deleted: sha256:71b64d8b5f0c6b1d993f9183f6d6654374438c2e24cc86e80c8793e717317538
+rmi agritrace-q07-api:dev exit=0
+after: 0 containers, 0 volumes, 0 networks, 0 images named agritrace-q07; dev server :5183 stopped (0 listeners)
+removed: qa/.venv, apps/portal/node_modules (npm ci by Q07), qa/robot/results (ignored), Playwright chromium_headless_shell-1243 (installed by Q07)
+shared agritrace-* stack untouched

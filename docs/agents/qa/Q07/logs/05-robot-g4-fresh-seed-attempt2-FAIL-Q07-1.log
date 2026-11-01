@@ -1,0 +1,61 @@
+ 1:52  up 2 days,  1:25, 1 user, load averages: 12.63 13.91 16.68
+2026-11-01T20:22:58Z
+==============================================================================
+Portal                                                                        
+==============================================================================
+Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) and the P0...
+==============================================================================
+Portal Loads In A Headless Browser                                    | PASS |
+------------------------------------------------------------------------------
+Approving A Member Makes It Active Without Reload                     | PASS |
+------------------------------------------------------------------------------
+Phone Is Masked Except An Audited Reveal                              | PASS |
+------------------------------------------------------------------------------
+Reviewing A Held Lot Makes It Tickable In Create Batch                | FAIL |
+Keyword 'Enabled After Reload' failed after retrying for 1 minute 30 seconds. The last error was: Elements states '['detached']' (list) should contain '['enabled']' (list)
+------------------------------------------------------------------------------
+Required Review Fields Block Submit                                   | FAIL |
+TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+Call log:
+  - waiting for locator('role=heading[name="Resolve this flag"]') to be visible
+------------------------------------------------------------------------------
+Lots 100 200 20 kg Show Shares 31.25 62.5 6.25                        | FAIL |
+TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+Call log:
+  - waiting for locator('role=checkbox[name="Tick lot LOT80452358"]')
+------------------------------------------------------------------------------
+Out Of GI Lot Is Greyed With A Tooltip                                | FAIL |
+Elements states '['detached']' (list) should contain '['disabled']' (list)
+------------------------------------------------------------------------------
+Create Batch Returns An Id And A QR                                   | FAIL |
+TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+Call log:
+  - waiting for locator('role=checkbox[name="Tick lot LOT80452358"]')
+------------------------------------------------------------------------------
+Batch Over Threshold Needs A Second Sign Off                          | FAIL |
+TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+Call log:
+  - waiting for locator('role=checkbox[name="Tick lot LOT023E6281"]')
+------------------------------------------------------------------------------
+Declared Special Computed Standard Disables Approve With Reason       | FAIL |
+Elements states '['detached']' (list) should contain '['disabled']' (list)
+------------------------------------------------------------------------------
+Missing Reading Disables Approve                                      | FAIL |
+TimeoutError: locator.evaluate: Timeout 20000ms exceeded.
+Call log:
+  - waiting for locator('main')
+------------------------------------------------------------------------------
+Happy Path Publishes And Shows The URL                                | FAIL |
+msg=Run "Create Batch Returns An Id And A QR" first: it creates the batch.
+------------------------------------------------------------------------------
+Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) a... | FAIL |
+12 tests, 3 passed, 9 failed
+==============================================================================
+Portal                                                                | FAIL |
+12 tests, 3 passed, 9 failed
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/report.html
+robot exit=9 wall=292 s
+ 1:57  up 2 days,  1:30, 1 user, load averages: 20.28 18.76 18.12
