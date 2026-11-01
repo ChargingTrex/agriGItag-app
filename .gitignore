@@ -36,3 +36,4 @@ qa/robot/results/
 apps/mobile/android/build/
 apps/mobile/android/app/build/
 apps/mobile/android/.gradle/
+.schemathesis/
