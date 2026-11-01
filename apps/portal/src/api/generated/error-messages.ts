@@ -53,4 +53,5 @@ export const ERROR_MESSAGES: Readonly<Record<string, string>> = {
   rate_limited: "Too many requests.",
   internal_error: "Something went wrong on the server.",
   not_implemented_pilot: "This feature is not available in the pilot.",
+  retry_later: "The server was busy with a conflicting change; this change was not saved.",
 };

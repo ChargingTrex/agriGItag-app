@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 80 % (59/74 items)
+Completion: 81 % (60/74 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -64,14 +64,14 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] B15 — Backend gaps from B08 review and M09 (grading-loss split D-030, `farmer` push kind + `client_id` D-031, assist_session kind D-032) — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PASS (docs/agents/qa/B15.md; live push [farmer, assist_session, consent, plot] 4× accepted, replay 4× duplicate, timeout-then-sync → one farmer)
 - [x] B16 — QC intake via sync (`lot_intake` push kind, `POST /intakes` for QC, processor default, moisture gate at intake; D-040), non-GI holds (D-041), assist_session_id per kind (D-042) — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: CONDITIONAL → PASS 2026-11-02 (docs/agents/qa/B16.md; live lot_intake pushes OK; B16-1 race closed by B19, live rerun 5/5 open, log 04-live-b16-race-after-B19.log)
 - [x] B19 — Stale rules run must not close a flag it could not see (B16-1 race in `store_flags`) — wave 6 hotfix — worker: Opus (2 rounds) — reviewer: BE FAIL r1 (deadlock + lock scope) → r2 exact fixes confirmed by Orchestrator — verifier: integration 53 + unit 623 on the branch; main 780/780 after merge; live race script 5/5 open (2026-11-02)
-- [ ] B20 — Backend live fixes: `event.correct` audit row keeps `reason_code` (P06), optional `farming_type` must not fail a page build (B10-1), B08-2 intake/rules deadlock verified closed by B19 or fixed — wave 7 hotfix — worker: Opus (in progress 2026-11-02) — reviewer: — verifier:
+- [x] B20 — Backend live fixes: `event.correct` audit row keeps `reason_code` (P06), optional `farming_type` must not fail a page build (B10-1), B08-2 intake/rules deadlock verified closed by B19 or fixed — wave 7 hotfix — worker: Opus (1 round + patch) — reviewer: BE PASS r1 + patch confirmed by Orchestrator — verifier: unit 624, integration 63, public page 76 on the branch; B08-2 0/20 live (docs/agents/qa/B20/logs); P06 line 5 re-verify at Q02 (merged 2026-11-02)
 - [x] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: Opus (1 round + 2 micro-patches) — reviewer: MOB PASS r1 — verifier: Orchestrator-run suite PASS (660 on main); device checks → Q01
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
 - [x] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (2 rounds) — reviewer: MOB/SEC FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (724 on main); device checks → Q01
 - [x] M11 — QC mode: scan, intake checks, grading form from profile, grade preview, final packing, BLE — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / r2 one P2, patch confirmed by Orchestrator — verifier: Orchestrator-run suite PASS (779 on main); device checks → Q01; live lot_intake push → Verifier with B16
 - [x] M15 — QC pick-lot fallback lists open/drying lots (audit waves-3-6 finding 5, P2) — wave 5 hotfix — worker: Opus (1 round) — reviewer: Orchestrator (audit-specified one-line fix) — verifier: qc suite 53/53 on the branch; full suite 812/812 on main (merged 2026-11-01)
 - [x] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirmed by Orchestrator — verifier: PASS 2/2 live (docs/agents/qa/P05.md)
-- [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 — verifier: FAIL 4/5 live (docs/agents/qa/P06.md: audit search shows actor but B11's event.correct row drops reason_code → B20)
+- [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 — verifier: FAIL 4/5 live (docs/agents/qa/P06.md: audit search shows actor but B11's event.correct row drops reason_code → fixed in B20, re-verify live at Q02)
 - [x] P08 — Master data uploads: CSV import for farmers, villages, inputs with template download, dry- — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS-PENDING-STACK r1 — verifier: PASS 3/3 live (docs/agents/qa/P08.md)
 - [ ] **Gate G3 signed** (docs/agents/gates/G3.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
