@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 84 % (62/74 items)
+Completion: 83 % (62/75 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -82,6 +82,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] B11 — Reporting + stubs — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PASS 4/4, BM-05 100 % completeness, 9 reference problems flagged (docs/agents/qa/B11.md)
 - [x] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (793 on main); device checks → Q01
 - [x] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (1 round) — reviewer: WEB PASS r1 — verifier: PASS live (docs/agents/qa/W03.md: 3G perf 0.98, LCP 1743 ms, 19.7 KB; 4G LCP 548 ms; privacy lint 0; og:url/og:image → B10 TODO)
+- [ ] Q07 — Portal Robot suites implemented and green (11 placeholders P01–P04 in qa/robot/portal → real Browser-library tests on an isolated stack; G4 Robot condition, also counted by gate-readiness G2) — wave 7 — worker: Opus QA Lead (in progress 2026-11-02) — reviewer: — verifier: robot run in docs/agents/qa/Q07/robot/
 - [ ] **Gate G4 signed** (docs/agents/gates/G4.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G5 Pilot candidate
