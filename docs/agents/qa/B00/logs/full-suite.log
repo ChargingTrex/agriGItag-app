@@ -1,0 +1,245 @@
+21:18  up 1 day, 20:50, 1 user, load averages: 58.54 266.39 244.63
+$ cd apps/api && uv run pytest tests -q -p no:cacheprovider -rfE   (no -x; pytest-timeout not installed, so no --timeout)
+.F.................F.................................................... [  9%]
+...............F........................................................ [ 18%]
+........................................................................ [ 28%]
+........................................................................ [ 37%]
+........................................................................ [ 46%]
+........................................................................ [ 56%]
+........................................................................ [ 65%]
+............................................................FF.......... [ 75%]
+........................................................................ [ 84%]
+........................................................................ [ 93%]
+................................................                         [100%]
+=================================== FAILURES ===================================
+______________ test_reference_batch_flags_gates_fixes_and_publish ______________
+
+api = (Demo(fpo=UUID('01a197cc-8b0c-7566-aed4-e4ac046dd3bc'), staff={<Role.FPO_ADMIN: 'fpo_admin'>: UUID('01a197cc-8b06-748c... 'page_build_id': '01a197cc-9a3a-7e3d-a25f-eb211f3cf136', 'build_no': 1})]), <httpx.AsyncClient object at 0x1126b5b20>)
+
+    async def test_reference_batch_flags_gates_fixes_and_publish(api: tuple[Demo, AsyncClient]) -> None:
+        """Seeded state → exact flags and refused gates; after the fixes → published page, GI verified, shares.
+    
+        Args:
+            api: the seeded demo and client (fixture).
+        """
+        d, client = api
+        batch = str(demo.BATCH_ID)
+        flags = await _flag_codes(client)
+        assert flags == Counter(demo.EXPECTED_FLAGS)
+        assert not set(demo.ABSENT_FLAGS) & set(flags)
+    
+        d.act_as(Role.QC_OFFICER)
+        r = await client.post(f"/v1/batches/{batch}/grading", json={"declared_grade": "A"})
+        assert r.status_code == 422 and r.json()["error"]["code"] == "unknown_grade_for_profile", r.text
+        d.act_as(Role.FPO_ADMIN)
+        graded = {"graded": {"value": 20, "unit": "kg"}}
+        assert "not_graded" in _reasons(await client.post(f"/v1/batches/{batch}/grading/approve", json=graded))
+        refused = _reasons(await client.post(f"/v1/batches/{batch}/publish"))
+        assert {"grading_not_approved", "final_packing_missing"} <= refused
+    
+        await _apply_fixes(d, client, batch)
+        r = await client.post(f"/v1/batches/{batch}/publish")
+        assert r.status_code == 202, r.text
+        name, kwargs = d.sent[-1]
+        assert name == "publishing.build_page"
+        from agritrace.modules.publishing import tasks  # late: importing the worker reads the settings
+    
+        assert await asyncio.to_thread(tasks.build_page, **kwargs) == "built"
+    
+        out = (await client.get(f"/v1/batches/{batch}")).json()
+        assert (out["code"], out["superlot_code"], out["status"]) == (
+            demo.BATCH_CODE,
+            demo.SUPERLOT_CODE,
+            "published",
+        )
+>       assert out["gi_verified"] is True and out["gi_block_reasons"] == []
+E       assert (False is True)
+
+tests/e2e/test_reference_batch.py:339: AssertionError
+____________ test_migration_0003_applies_and_alembic_check_is_clean ____________
+
+ids = {'demo': UUID('01a197cc-8b0c-7566-aed4-e4ac046dd3bc'), 'other': UUID('01a197cc-ea6e-7c9b-b8f7-1fe69190048d'), 'admin_demo': UUID('01a197cc-ea75-7139-8547-8dee794b1dc5'), 'admin_other': UUID('01a197cc-ea7e-70de-8ed7-73bc3ed6bc62'), ...}
+
+    def test_migration_0003_applies_and_alembic_check_is_clean(ids: dict[str, Any]) -> None:
+        """Head is 0003_masters and the models match the schema (no drift).
+    
+        Args:
+            ids: the seeded ids (fixture ran `alembic upgrade head`).
+        """
+>       assert "0003_masters" in _alembic("current").stdout
+E       AssertionError: assert '0003_masters' in '0004_lots_append_only (head)\n'
+E        +  where '0004_lots_append_only (head)\n' = CompletedProcess(args=['/Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/alembic', 'current'], returncode=0, stdout='0004_lots_append_only (head)\n', stderr='').stdout
+E        +    where CompletedProcess(args=['/Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/alembic', 'current'], returncode=0, stdout='0004_lots_append_only (head)\n', stderr='') = _alembic('current')
+
+tests/integration/test_config_imports.py:196: AssertionError
+____________________ test_reject_pending_and_refuse_active _____________________
+
+api = (<httpx.AsyncClient object at 0x114418d70>, <test_registry.Caller object at 0x11441b0e0>)
+ids = {'fpo_a': UUID('01a197ce-3a71-7753-9951-f6d77f36050b'), 'fpo_b': UUID('01a197ce-3a76-74da-8b2e-1cd84a7bf037'), 'super_admin': UUID('01a197ce-3a7b-720f-9341-ecc39497c23a'), 'admin_a': UUID('01a197ce-3a81-773e-a655-eb5fe37f60f8'), ...}
+
+    async def test_reject_pending_and_refuse_active(api: tuple[AsyncClient, Caller], ids: dict[str, Any]) -> None:
+        """Reject a pending farmer → suspended with an audit reason; reject an active farmer → 409.
+    
+        Args:
+            api: client and caller holder.
+            ids: the seeded ids.
+        """
+        client, caller = api
+        pending = await _farmer(client, caller, ids)
+        body = {"reason_code": "duplicate", "reason_text": "Registered twice"}
+        rejected = await client.post(f"/v1/farmers/{pending['id']}/reject", json=body)
+        assert rejected.status_code == 200, rejected.text
+        assert rejected.json()["status"] == "suspended"
+>       assert await _audit(pending["id"], "farmer.reject") == [body]
+E       AssertionError: assert [{'reason_cod...oved': False}] == [{'reason_cod...tered twice'}]
+E         
+E         At index 0 diff: {'reason_code': 'duplicate', 'reason_text': 'Registered twice', 'devices_revoked': 0, 'membership_removed': False} != {'reason_code': 'duplicate', 'reason_text': 'Registered twice'}
+E         Use -v to get more diff
+
+tests/integration/test_registry_b14.py:101: AssertionError
+___________ test_prod_refuses_missing_or_console_sms_provider[None] ____________
+
+sms_provider = None
+
+    @pytest.mark.parametrize("sms_provider", [None, "console"])
+    def test_prod_refuses_missing_or_console_sms_provider(sms_provider: str | None) -> None:
+        """ENV=prod does not start without a real SMS gateway (review B04-r1 P2-1).
+    
+        Args:
+            sms_provider: the refused value.
+        """
+        from pydantic import ValidationError
+    
+        from agritrace.core.config import Settings
+    
+        secret = "x" * 32
+>       with pytest.raises(ValidationError, match="requires a real SMS_PROVIDER"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'requires a real SMS_PROVIDER'
+E         Actual message: '1 validation error for Settings\n  Value error, ENV=prod requires JWT_SECRET of at least 32 bytes and no OTP_DEV_CODE [type=value_error]\n    For further information visit https://errors.pydantic.dev/2.14/v/value_error'
+
+tests/unit/test_notifications_service.py:263: AssertionError
+__________ test_prod_refuses_missing_or_console_sms_provider[console] __________
+
+sms_provider = 'console'
+
+    @pytest.mark.parametrize("sms_provider", [None, "console"])
+    def test_prod_refuses_missing_or_console_sms_provider(sms_provider: str | None) -> None:
+        """ENV=prod does not start without a real SMS gateway (review B04-r1 P2-1).
+    
+        Args:
+            sms_provider: the refused value.
+        """
+        from pydantic import ValidationError
+    
+        from agritrace.core.config import Settings
+    
+        secret = "x" * 32
+>       with pytest.raises(ValidationError, match="requires a real SMS_PROVIDER"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'requires a real SMS_PROVIDER'
+E         Actual message: '1 validation error for Settings\n  Value error, ENV=prod requires JWT_SECRET of at least 32 bytes and no OTP_DEV_CODE [type=value_error]\n    For further information visit https://errors.pydantic.dev/2.14/v/value_error'
+
+tests/unit/test_notifications_service.py:263: AssertionError
+=============================== warnings summary ===============================
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/e2e/test_reference_batch.py: 1 warning
+tests/integration/test_b16.py: 3 warnings
+tests/integration/test_lots_batches.py: 6 warnings
+tests/integration/test_publishing.py: 8 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:967: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:124: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    staff = {roles[phone]: user for phone, user in rows.tuples()}
+
+tests/e2e/test_reference_batch.py::test_seed_is_idempotent
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:125: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    lots = dict((await s.execute(select(Lot.code, Lot.id).where(Lot.fpo_id == fpo))).tuples().all())
+
+tests/e2e/test_reference_batch.py: 3 warnings
+tests/integration/test_publishing.py: 9 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/publishing/builder.py:192: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    ).tuples()
+
+tests/integration/test_b16.py: 15 warnings
+tests/integration/test_lots_batches.py: 10 warnings
+tests/integration/test_publishing.py: 9 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:680: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    for event_type, payload in (await session.execute(query)).tuples():
+
+tests/integration/test_bundle_pull.py::test_photo_pending_after_24_hours_and_presigned_variants
+tests/integration/test_sync.py::test_undo_within_24_hours_marks_event_undone
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/events/service.py:1199: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_identity.py: 15 warnings
+tests/integration/test_registry_b14.py: 1 warning
+tests/integration/test_sync_b15.py: 9 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:149: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/integration/test_identity.py: 11 warnings
+tests/integration/test_registry_b14.py: 1 warning
+tests/integration/test_sync_b15.py: 9 warnings
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/jwt/api_jwt.py:370: InsecureKeyLengthWarning: The HMAC key is 23 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+tests/integration/test_quality.py::test_profile_versions_need_super_admin_and_allow_incomplete
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/quality/service.py:267: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_registry.py: 9 warnings
+tests/integration/test_registry_b14.py: 4 warnings
+tests/integration/test_sync_b15.py: 3 warnings
+  /Users/fi-it/.local/share/uv/python/cpython-3.12.13-macos-x86_64-none/lib/python3.12/concurrent/futures/thread.py:59: AlwaysEagerIgnored: task_always_eager has no effect on send_task
+    result = self.fn(*self.args, **self.kwargs)
+
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_stage_tiles
+tests/integration/test_reporting.py::test_flags_and_batches
+tests/integration/test_reporting.py::test_land_area
+tests/integration/test_reporting.py::test_finished_goods_and_scans
+tests/integration/test_reporting.py::test_sync_health
+tests/integration/test_reporting.py::test_100_scans_per_minute_then_429
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:600: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_completeness_is_lots_with_all_mandatory_events_over_lots
+tests/integration/test_reporting.py::test_stage_tiles
+tests/integration/test_reporting.py::test_flags_and_batches
+tests/integration/test_reporting.py::test_land_area
+tests/integration/test_reporting.py::test_finished_goods_and_scans
+tests/integration/test_reporting.py::test_sync_health
+tests/integration/test_reporting.py::test_100_scans_per_minute_then_429
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:609: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/integration/test_reporting.py::test_csv_row_per_version_with_entered_by_and_assist_session
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/reporting/service.py:831: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    for v, subject, event_type, lot_code, name in rows.tuples().all():
+
+tests/integration/test_schema.py::test_live_enum_checks_match_the_strenums
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/integration/test_schema.py:191: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    live = dict((await conn.execute(query)).tuples().all())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+FAILED tests/integration/test_config_imports.py::test_migration_0003_applies_and_alembic_check_is_clean
+FAILED tests/integration/test_registry_b14.py::test_reject_pending_and_refuse_active
+FAILED tests/unit/test_notifications_service.py::test_prod_refuses_missing_or_console_sms_provider[None]
+FAILED tests/unit/test_notifications_service.py::test_prod_refuses_missing_or_console_sms_provider[console]
+5 failed, 763 passed, 152 warnings in 239.97s (0:03:59)
+exit=1
+21:22  up 1 day, 20:54, 1 user, load averages: 6.39 121.74 185.55

@@ -1,0 +1,901 @@
+20:05  up 1 day, 19:37, 1 user, load averages: 84.98 119.09 161.40
+# rerun 1 of the B00 integration line, with botocore DEBUG logs captured (shown only for failing tests)
+$ uv run pytest tests/integration/test_healthz.py tests/integration/test_storage.py tests/integration/test_schema.py -q -p no:cacheprovider -rfE --log-level=DEBUG
+F.F........                                                              [100%]
+=================================== FAILURES ===================================
+_____________________________ test_healthz_all_ok ______________________________
+
+client = <httpx.AsyncClient object at 0x11e918ce0>
+
+    async def test_healthz_all_ok(client: AsyncClient) -> None:
+        """All three checks pass when the containers are up.
+    
+        Args:
+            client: HTTP client over the app (fixture).
+        """
+        r = await client.get("/v1/healthz")
+>       assert r.status_code == 200
+E       assert 503 == 200
+E        +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+tests/integration/test_healthz.py:20: AssertionError
+------------------------------ Captured log setup ------------------------------
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+INFO     testcontainers.core.docker_client:docker_client.py:187 using host unix:///Users/fi-it/.docker/run/docker.sock
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+DEBUG    docker.auth:auth.py:177 Found 'credsStore' section
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /version HTTP/1.1" 200 None
+DEBUG    testcontainers.core.container:container.py:246 Creating Ryuk container
+DEBUG    testcontainers.core.container:container.py:492 Creating new Reaper for session: 0821183b-82d5-439f-99db-64aa9fa3b678
+INFO     testcontainers.core.docker_client:docker_client.py:187 using host unix:///Users/fi-it/.docker/run/docker.sock
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+DEBUG    docker.auth:auth.py:177 Found 'credsStore' section
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /version HTTP/1.1" 200 None
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+DEBUG    docker.auth:auth.py:177 Found 'credsStore' section
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /version HTTP/1.1" 200 None
+INFO     testcontainers.core.container:container.py:248 Pulling image testcontainers/ryuk:0.8.1
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/images/testcontainers/ryuk:0.8.1/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/create?name=testcontainers-ryuk-0821183b-82d5-439f-99db-64aa9fa3b678 HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/a9735fb66ce68762c2577246aceeb2e7d68b224da00b5a4c9ecf52950d585d1f/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/a9735fb66ce68762c2577246aceeb2e7d68b224da00b5a4c9ecf52950d585d1f/start HTTP/1.1" 204 0
+INFO     testcontainers.core.container:container.py:288 Container started: a9735fb66ce6
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:699 fetching status of container <testcontainers.core.container.DockerContainer object at 0x11b872ff0>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/a9735fb66ce68762c2577246aceeb2e7d68b224da00b5a4c9ecf52950d585d1f/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:677 status is now running
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/a9735fb66ce68762c2577246aceeb2e7d68b224da00b5a4c9ecf52950d585d1f/json HTTP/1.1" 200 None
+INFO     testcontainers.core.container:container.py:248 Pulling image postgis/postgis:16-3.4
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/images/postgis/postgis:16-3.4/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/create HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/start HTTP/1.1" 204 0
+INFO     testcontainers.core.container:container.py:288 Container started: 1eee7fe7bb5a
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/8a558d3e53d79a5d716c36e5a61a264cb543152cba841ddc8d6a0ff139b20450/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/8a558d3e53d79a5d716c36e5a61a264cb543152cba841ddc8d6a0ff139b20450/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/274775b6fe4445ab3adf9ef90b8b73d72c941d539dd171f25984b6556d7d47a9/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/274775b6fe4445ab3adf9ef90b8b73d72c941d539dd171f25984b6556d7d47a9/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/0ee42450ba0f23b0ca95282f2f67562416631e25ea23834d7bb4db554528b0f2/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/0ee42450ba0f23b0ca95282f2f67562416631e25ea23834d7bb4db554528b0f2/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/aa377c727b6be94fc67fa2d0fb7b8328c8962929edabc03009d2ff83d7b41106/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/aa377c727b6be94fc67fa2d0fb7b8328c8962929edabc03009d2ff83d7b41106/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/36e5351cded019f481b195b4124214bb67e7b477693eab5ce73df6a624947cde/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/36e5351cded019f481b195b4124214bb67e7b477693eab5ce73df6a624947cde/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/cb3c9ffbba17ba1ea23ef43f89255ba42618e45369e5e99e1a81da8e57f9801a/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/cb3c9ffbba17ba1ea23ef43f89255ba42618e45369e5e99e1a81da8e57f9801a/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/9cfed6a5bdd412faf1ea05284bc902323bd327c3e79119bb4a166cdfc0ebc3e8/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/9cfed6a5bdd412faf1ea05284bc902323bd327c3e79119bb4a166cdfc0ebc3e8/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/ced9fc45d49014fc27ab078a6f8d25ec80c78eedf52df64d9d792957c1f0a3a9/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/ced9fc45d49014fc27ab078a6f8d25ec80c78eedf52df64d9d792957c1f0a3a9/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/10c52f4ab8fe8dafec3953af4887655eb5cb2b51bbf67318ed2675df7607aa32/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/10c52f4ab8fe8dafec3953af4887655eb5cb2b51bbf67318ed2675df7607aa32/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/02df8fd589d2821632c078d9c5145b6fbdc01f94df6e6f39b5c1213fe332d87d/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/02df8fd589d2821632c078d9c5145b6fbdc01f94df6e6f39b5c1213fe332d87d/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/1f42cfc9d7bdd60abfc2770435e8ee6b3a778e0bb1f46607a95755db5a40caaf/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/1f42cfc9d7bdd60abfc2770435e8ee6b3a778e0bb1f46607a95755db5a40caaf/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/0950c1ccaedde990ad88f30a4283539a2506156eb7d467e460157ea4213524b0/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/0950c1ccaedde990ad88f30a4283539a2506156eb7d467e460157ea4213524b0/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/b24d85c08fa814335011501bb36836f5e1d38397d9ca2576a8cc28ba3be6127d/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/b24d85c08fa814335011501bb36836f5e1d38397d9ca2576a8cc28ba3be6127d/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/4660c96e515037ac193d1e131817af1c2d5c2814eb06a35f2f636f9e8216bfe7/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/4660c96e515037ac193d1e131817af1c2d5c2814eb06a35f2f636f9e8216bfe7/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/65b2cb80d222bd5531bfd8619b9600ece0c72a308b432bf1f87540c9ca9fe455/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/65b2cb80d222bd5531bfd8619b9600ece0c72a308b432bf1f87540c9ca9fe455/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/27a96e134563c51f3cc5bf4553f3b4c202a0a3f6eb3bf938d16d7ea2dea5823e/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/27a96e134563c51f3cc5bf4553f3b4c202a0a3f6eb3bf938d16d7ea2dea5823e/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/16667cda7fd23ef259514f1a0dbc95e3032500296ebba9c897b42d6f766f8a6e/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/16667cda7fd23ef259514f1a0dbc95e3032500296ebba9c897b42d6f766f8a6e/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/f02dafb21010d537894558fbaf4376c6e3584d44e29d36cbd37c210e365d59bb/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/f02dafb21010d537894558fbaf4376c6e3584d44e29d36cbd37c210e365d59bb/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/300e91f8e2982d06426a55d9b9a7cfe48ceba55843d8323adb9e3bc5e104d45a/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/300e91f8e2982d06426a55d9b9a7cfe48ceba55843d8323adb9e3bc5e104d45a/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/bdf4bd601df0c207db380e6d6b4b652453bbbdb8b34c4f758dff4b0e3eed54e4/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/bdf4bd601df0c207db380e6d6b4b652453bbbdb8b34c4f758dff4b0e3eed54e4/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/da19c1f8202d7fe3e2be9416c6ce4eaa0e7b521ccfca16202b9ccf9f0ed2b19f/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/da19c1f8202d7fe3e2be9416c6ce4eaa0e7b521ccfca16202b9ccf9f0ed2b19f/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:868 ExecWaitStrategy: Command failed with exit code 2, expected 0. Retrying...
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/exec HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/exec/86a8ef8c1bfbe2d0fbd6678c54b472a7346314c771f1305fb4b951161974f08c/start HTTP/1.1" 101 0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/exec/86a8ef8c1bfbe2d0fbd6678c54b472a7346314c771f1305fb4b951161974f08c/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:863 ExecWaitStrategy: Command succeeded with exit code 0 after 49.51s
+INFO     testcontainers.core.docker_client:docker_client.py:187 using host unix:///Users/fi-it/.docker/run/docker.sock
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+DEBUG    docker.auth:auth.py:177 Found 'credsStore' section
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /version HTTP/1.1" 200 None
+DEBUG    testcontainers.core.container:container.py:246 Creating Ryuk container
+INFO     testcontainers.core.container:container.py:248 Pulling image valkey/valkey:8-alpine
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/images/valkey/valkey:8-alpine/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/create HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/42611d46033226ecedb8e89e835eb8a7126c7d65b1527cfd2b3aaa6428842801/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/42611d46033226ecedb8e89e835eb8a7126c7d65b1527cfd2b3aaa6428842801/start HTTP/1.1" 204 0
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:699 fetching status of container <testcontainers.community.redis.RedisContainer object at 0x11b8aeab0>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/42611d46033226ecedb8e89e835eb8a7126c7d65b1527cfd2b3aaa6428842801/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:677 status is now running
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/42611d46033226ecedb8e89e835eb8a7126c7d65b1527cfd2b3aaa6428842801/json HTTP/1.1" 200 None
+DEBUG    redis.connection:connection.py:667 Failed to enable maintenance notifications: unknown subcommand 'MAINT_NOTIFICATIONS'. Try CLIENT HELP.
+INFO     testcontainers.core.container:container.py:288 Container started: 42611d460332
+INFO     testcontainers.core.docker_client:docker_client.py:187 using host unix:///Users/fi-it/.docker/run/docker.sock
+DEBUG    docker.utils.config:config.py:21 Trying paths: ['/Users/fi-it/.docker/config.json', '/Users/fi-it/.dockercfg']
+DEBUG    docker.utils.config:config.py:25 Found file at path: /Users/fi-it/.docker/config.json
+DEBUG    docker.auth:auth.py:177 Found 'credsStore' section
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /version HTTP/1.1" 200 None
+DEBUG    testcontainers.core.container:container.py:246 Creating Ryuk container
+INFO     testcontainers.core.container:container.py:248 Pulling image localstack/localstack:4.14.0
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/images/localstack/localstack:4.14.0/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/create HTTP/1.1" 201 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "POST /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/start HTTP/1.1" 204 0
+INFO     testcontainers.core.container:container.py:288 Container started: f162b920646d
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=0&stdout=1&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/logs?stderr=1&stdout=0&timestamps=0&follow=0&tail=all HTTP/1.1" 200 None
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:699 fetching status of container <testcontainers.community.postgres.PostgresContainer object at 0x11b776d80>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:677 status is now running
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/1eee7fe7bb5a21b7731d80faf7b13ba02aeb1980a3dbb6b7b321e06ee5b146db/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:699 fetching status of container <testcontainers.community.redis.RedisContainer object at 0x11b8aeab0>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/42611d46033226ecedb8e89e835eb8a7126c7d65b1527cfd2b3aaa6428842801/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:677 status is now running
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/42611d46033226ecedb8e89e835eb8a7126c7d65b1527cfd2b3aaa6428842801/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:699 fetching status of container <testcontainers.community.localstack.LocalStackContainer object at 0x11b8f7f20>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:677 status is now running
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:699 fetching status of container <testcontainers.community.localstack.LocalStackContainer object at 0x11b8f7f20>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    testcontainers.core.wait_strategies:wait_strategies.py:677 status is now running
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:None "GET /v1.54/containers/f162b920646d649b7d854d2e29348479f5597ef502fb62c887b4dfc145128a71/json HTTP/1.1" 200 None
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from creating-client-class.iot-data to creating-client-class.iot-data-plane
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from before-call.apigateway to before-call.api-gateway
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from request-created.machinelearning.Predict to request-created.machine-learning.Predict
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from before-parameter-build.autoscaling.CreateLaunchConfiguration to before-parameter-build.auto-scaling.CreateLaunchConfiguration
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from before-parameter-build.route53 to before-parameter-build.route-53
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from request-created.cloudsearchdomain.Search to request-created.cloudsearch-domain.Search
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from docs.*.autoscaling.CreateLaunchConfiguration.complete-section to docs.*.auto-scaling.CreateLaunchConfiguration.complete-section
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from before-parameter-build.logs.CreateExportTask to before-parameter-build.cloudwatch-logs.CreateExportTask
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from docs.*.logs.CreateExportTask.complete-section to docs.*.cloudwatch-logs.CreateExportTask.complete-section
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from before-parameter-build.cloudsearchdomain.Search to before-parameter-build.cloudsearch-domain.Search
+DEBUG    botocore.hooks:hooks.py:482 Changing event name from docs.*.cloudsearchdomain.Search.complete-section to docs.*.cloudsearch-domain.Search.complete-section
+DEBUG    botocore.loaders:loaders.py:181 Loading JSON file: /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/botocore/data/endpoints.json
+DEBUG    botocore.loaders:loaders.py:181 Loading JSON file: /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/botocore/data/sdk-default-configuration.json
+DEBUG    botocore.hooks:hooks.py:238 Event choose-service-name: calling handler <function handle_service_name_alias at 0x111c33880>
+DEBUG    botocore.loaders:loaders.py:181 Loading JSON file: /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/botocore/data/s3/2006-03-01/service-2.json.gz
+DEBUG    botocore.loaders:loaders.py:181 Loading JSON file: /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/botocore/data/s3/2006-03-01/service-2.sdk-extras.json
+DEBUG    botocore.loaders:loaders.py:181 Loading JSON file: /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/botocore/data/s3/2006-03-01/endpoint-rule-set-1.json.gz
+DEBUG    botocore.loaders:loaders.py:181 Loading JSON file: /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/botocore/data/partitions.json
+DEBUG    botocore.hooks:hooks.py:238 Event creating-client-class.s3: calling handler <function add_generate_presigned_post at 0x111b91760>
+DEBUG    botocore.hooks:hooks.py:238 Event creating-client-class.s3: calling handler <function lazy_call.<locals>._handler at 0x11b899800>
+DEBUG    botocore.hooks:hooks.py:238 Event creating-client-class.s3: calling handler <function add_generate_presigned_url at 0x111b914e0>
+DEBUG    botocore.endpoint:endpoint.py:416 Setting s3 timeout as (3, 10)
+DEBUG    botocore.utils:utils.py:1748 Registering S3 region redirector handler
+DEBUG    botocore.utils:utils.py:1696 Registering S3Express Identity Resolver
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function validate_bucket_name at 0x111c55940>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function remove_bucket_from_url_paths_from_model at 0x111c57ce0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <bound method S3RegionRedirectorv2.annotate_request_context of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <bound method ClientCreator._inject_s3_input_parameters of <botocore.client.ClientCreator object at 0x11c0094f0>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function generate_idempotent_uuid at 0x111c55760>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function _handle_request_validation_mode_member at 0x111c5c4a0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <function customize_endpoint_resolver_builtins at 0x111c57ec0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <bound method S3RegionRedirectorv2.redirect_from_cache of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.regions:regions.py:522 Calling endpoint provider with parameters: {'Bucket': 'evidence', 'Region': 'ap-south-1', 'UseFIPS': False, 'UseDualStack': False, 'Endpoint': 'http://localhost:55574', 'ForcePathStyle': True, 'Accelerate': False, 'UseGlobalEndpoint': False, 'DisableAccessPoints': True, 'DisableMultiRegionAccessPoints': False, 'UseArnRegion': True, 'UseS3ExpressControlEndpoint': True, 'DisableS3ExpressSessionAuth': False}
+DEBUG    botocore.regions:regions.py:537 Endpoint provider result: http://localhost:55574/evidence
+DEBUG    botocore.regions:regions.py:707 Selecting from endpoint provider's list of auth schemes: "sigv4". User selected auth scheme is: "s3v4"
+DEBUG    botocore.regions:regions.py:795 Selected auth type "v4" as "s3v4" with signing context params: {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function add_expect_header at 0x111c55d00>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <bound method S3ExpressIdentityResolver.apply_signing_cache_key of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function add_recursion_detection_header at 0x111c54fe0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function inject_api_version_header_if_needed at 0x111c57240>
+DEBUG    botocore.endpoint:endpoint.py:114 Making request for OperationModel(name=CreateBucket) with params: {'url_path': '', 'query_string': {}, 'method': 'PUT', 'headers': {'x-amz-bucket-object-lock-enabled': 'true', 'User-Agent': 'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121'}, 'body': b'<CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>ap-south-1</LocationConstraint></CreateBucketConfiguration>', 'auth_path': '/evidence/', 'url': 'http://localhost:55574/evidence', 'context': {'client_region': 'ap-south-1', 'client_config': <botocore.config.Config object at 0x11c445250>, 'has_streaming_input': False, 'auth_type': 's3v4', 'unsigned_payload': None, 'auth_options': ['aws.auth#sigv4'], 's3_redirect': {'redirected': False, 'bucket': 'evidence', 'params': {'Bucket': 'evidence', 'ObjectLockEnabledForBucket': True, 'CreateBucketConfiguration': {'LocationConstraint': 'ap-south-1'}}}, 'input_params': {'Bucket': 'evidence'}, 'signing': {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}, 'endpoint_properties': {'authSchemes': [{'disableDoubleEncoding': True, 'name': 'sigv4', 'signingName': 's3', 'signingRegion': 'ap-south-1'}]}}}
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <bound method RequestSigner.handler of <botocore.signers.RequestSigner object at 0x11c445190>>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.CreateBucket: calling handler <function set_operation_specific_signer at 0x111c55440>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.CreateBucket: calling handler <function _set_auth_scheme_preference_signer at 0x111c5c5e0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <function remove_arn_from_signing_path at 0x111c57e20>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <function _set_extra_headers_for_unsigned_request at 0x111c5c540>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <bound method S3ExpressIdentityResolver.resolve_s3express_identity of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.auth:auth.py:439 Calculating signature using v4 auth.
+DEBUG    botocore.auth:auth.py:440 CanonicalRequest:
+PUT
+/evidence
+
+host:localhost:55574
+x-amz-bucket-object-lock-enabled:true
+x-amz-content-sha256:4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c
+x-amz-date:20261101T143740Z
+
+host;x-amz-bucket-object-lock-enabled;x-amz-content-sha256;x-amz-date
+4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c
+DEBUG    botocore.auth:auth.py:442 StringToSign:
+AWS4-HMAC-SHA256
+20261101T143740Z
+20261101/ap-south-1/s3/aws4_request
+b78dfcd57b91463f65e2f46a6146d3b6218b09e50daad70e54e359c87ff0ee89
+DEBUG    botocore.auth:auth.py:444 Signature:
+eaf091e8b76a4a7777671cffd7b8ef6382ed17516e4b63f83561d6e736cde469
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <bound method UserAgentString.rebuild_and_replace_user_agent_handler of <botocore.useragent.UserAgentString object at 0x11c48e8d0>>
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <function add_retry_headers at 0x111c57c40>
+DEBUG    botocore.endpoint:endpoint.py:265 Sending http request: <AWSPreparedRequest stream_output=False, method=PUT, url=http://localhost:55574/evidence, headers={'x-amz-bucket-object-lock-enabled': b'true', 'User-Agent': b'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121', 'X-Amz-Date': b'20261101T143740Z', 'X-Amz-Content-SHA256': b'4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c', 'Authorization': b'AWS4-HMAC-SHA256 Credential=test/20261101/ap-south-1/s3/aws4_request, SignedHeaders=host;x-amz-bucket-object-lock-enabled;x-amz-content-sha256;x-amz-date, Signature=eaf091e8b76a4a7777671cffd7b8ef6382ed17516e4b63f83561d6e736cde469', 'amz-sdk-invocation-id': b'8c2e96c0-5c91-4c0c-90e6-ef4c7825457a', 'amz-sdk-request': b'attempt=1', 'Content-Length': '154'}>
+DEBUG    urllib3.connectionpool:connectionpool.py:247 Starting new HTTP connection (1): localhost:55574
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <function _update_status_code at 0x111c5c400>
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <bound method RetryHandler.needs_retry of <botocore.retries.standard.RetryHandler object at 0x11c48f4a0>>
+DEBUG    botocore.retries.standard:standard.py:176 Retry needed, retrying request after delay of: 0.43678353165531525
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <bound method S3RegionRedirectorv2.redirect_from_error of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.endpoint:endpoint.py:377 Response received to retry, sleeping for 0.43678353165531525 seconds
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <bound method RequestSigner.handler of <botocore.signers.RequestSigner object at 0x11c445190>>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.CreateBucket: calling handler <function set_operation_specific_signer at 0x111c55440>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.CreateBucket: calling handler <function _set_auth_scheme_preference_signer at 0x111c5c5e0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <function remove_arn_from_signing_path at 0x111c57e20>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <function _set_extra_headers_for_unsigned_request at 0x111c5c540>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <bound method S3ExpressIdentityResolver.resolve_s3express_identity of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.auth:auth.py:439 Calculating signature using v4 auth.
+DEBUG    botocore.auth:auth.py:440 CanonicalRequest:
+PUT
+/evidence
+
+host:localhost:55574
+x-amz-bucket-object-lock-enabled:true
+x-amz-content-sha256:4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c
+x-amz-date:20261101T143751Z
+
+host;x-amz-bucket-object-lock-enabled;x-amz-content-sha256;x-amz-date
+4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c
+DEBUG    botocore.auth:auth.py:442 StringToSign:
+AWS4-HMAC-SHA256
+20261101T143751Z
+20261101/ap-south-1/s3/aws4_request
+60f81c8a2356925b288e06479145ef7666acbce9098c9ba6d85390811513fcd7
+DEBUG    botocore.auth:auth.py:444 Signature:
+cf52f4d1b761ffd1a4af83a370d54d53f519074c08766134aa5717661a3105a8
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <bound method UserAgentString.rebuild_and_replace_user_agent_handler of <botocore.useragent.UserAgentString object at 0x11c48e8d0>>
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <function add_retry_headers at 0x111c57c40>
+DEBUG    botocore.endpoint:endpoint.py:265 Sending http request: <AWSPreparedRequest stream_output=False, method=PUT, url=http://localhost:55574/evidence, headers={'x-amz-bucket-object-lock-enabled': b'true', 'User-Agent': b'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121', 'X-Amz-Date': b'20261101T143751Z', 'X-Amz-Content-SHA256': b'4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c', 'Authorization': b'AWS4-HMAC-SHA256 Credential=test/20261101/ap-south-1/s3/aws4_request, SignedHeaders=host;x-amz-bucket-object-lock-enabled;x-amz-content-sha256;x-amz-date, Signature=cf52f4d1b761ffd1a4af83a370d54d53f519074c08766134aa5717661a3105a8', 'amz-sdk-invocation-id': b'8c2e96c0-5c91-4c0c-90e6-ef4c7825457a', 'amz-sdk-request': b'attempt=2; max=3', 'Content-Length': '154'}>
+DEBUG    urllib3.connectionpool:connectionpool.py:247 Starting new HTTP connection (2): localhost:55574
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:55574 "PUT /evidence HTTP/1.1" 200 0
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.CreateBucket: calling handler <function _handle_200_error at 0x111c5c220>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.CreateBucket: calling handler <function handle_expires_header at 0x111c5c040>
+DEBUG    botocore.parsers:parsers.py:255 Response headers: {'Server': 'TwistedWeb/25.5.0', 'Date': 'Sun, 01 Nov 2026 14:37:51 GMT', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'HEAD,GET,PUT,POST,DELETE,OPTIONS,PATCH', 'Access-Control-Allow-Headers': 'authorization,cache-control,content-length,content-md5,content-type,etag,location,x-amz-acl,x-amz-content-sha256,x-amz-date,x-amz-request-id,x-amz-security-token,x-amz-tagging,x-amz-target,x-amz-user-agent,x-amz-version-id,x-amzn-requestid,x-localstack-target,amz-sdk-invocation-id,amz-sdk-request,x-amz-log-type', 'Access-Control-Expose-Headers': 'etag,x-amz-version-id,x-amz-log-result,x-amz-executed-version,x-amz-function-error', 'Vary': 'Origin', 'Location': 'http://evidence.s3.localhost.localstack.cloud:4566/', 'x-amz-bucket-arn': 'arn:aws:s3:::evidence', 'x-amz-request-id': 'd51e87a8-06e4-4dbb-b662-76b67e85b3c0', 'x-amz-id-2': 's9lzHYrFp76ZVxRcpX9+5cjAnEH2ROuNkd2BHfIa6UkFVdtjf5mKR3/eTPFvsiP/XV/VLi31234=', 'x-localstack': 'true', 'Content-Length': '0'}
+DEBUG    botocore.parsers:parsers.py:256 Response body:
+b''
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <function _update_status_code at 0x111c5c400>
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <bound method RetryHandler.needs_retry of <botocore.retries.standard.RetryHandler object at 0x11c48f4a0>>
+DEBUG    botocore.retries.standard:standard.py:203 Not retrying request.
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <bound method S3RegionRedirectorv2.redirect_from_error of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event after-call.s3.CreateBucket: calling handler <bound method RetryQuotaChecker.release_retry_quota of <botocore.retries.standard.RetryQuotaChecker object at 0x11c48f260>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function validate_bucket_name at 0x111c55940>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function remove_bucket_from_url_paths_from_model at 0x111c57ce0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <bound method S3RegionRedirectorv2.annotate_request_context of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <bound method ClientCreator._inject_s3_input_parameters of <botocore.client.ClientCreator object at 0x11c0094f0>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function generate_idempotent_uuid at 0x111c55760>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function _handle_request_validation_mode_member at 0x111c5c4a0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <function customize_endpoint_resolver_builtins at 0x111c57ec0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <bound method S3RegionRedirectorv2.redirect_from_cache of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.regions:regions.py:522 Calling endpoint provider with parameters: {'Bucket': 'public-pages', 'Region': 'ap-south-1', 'UseFIPS': False, 'UseDualStack': False, 'Endpoint': 'http://localhost:55574', 'ForcePathStyle': True, 'Accelerate': False, 'UseGlobalEndpoint': False, 'DisableAccessPoints': True, 'DisableMultiRegionAccessPoints': False, 'UseArnRegion': True, 'UseS3ExpressControlEndpoint': True, 'DisableS3ExpressSessionAuth': False}
+DEBUG    botocore.regions:regions.py:537 Endpoint provider result: http://localhost:55574/public-pages
+DEBUG    botocore.regions:regions.py:707 Selecting from endpoint provider's list of auth schemes: "sigv4". User selected auth scheme is: "s3v4"
+DEBUG    botocore.regions:regions.py:795 Selected auth type "v4" as "s3v4" with signing context params: {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function add_expect_header at 0x111c55d00>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <bound method S3ExpressIdentityResolver.apply_signing_cache_key of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function add_recursion_detection_header at 0x111c54fe0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function inject_api_version_header_if_needed at 0x111c57240>
+DEBUG    botocore.endpoint:endpoint.py:114 Making request for OperationModel(name=CreateBucket) with params: {'url_path': '', 'query_string': {}, 'method': 'PUT', 'headers': {'User-Agent': 'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121'}, 'body': b'<CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>ap-south-1</LocationConstraint></CreateBucketConfiguration>', 'auth_path': '/public-pages/', 'url': 'http://localhost:55574/public-pages', 'context': {'client_region': 'ap-south-1', 'client_config': <botocore.config.Config object at 0x11c445250>, 'has_streaming_input': False, 'auth_type': 's3v4', 'unsigned_payload': None, 'auth_options': ['aws.auth#sigv4'], 's3_redirect': {'redirected': False, 'bucket': 'public-pages', 'params': {'Bucket': 'public-pages', 'CreateBucketConfiguration': {'LocationConstraint': 'ap-south-1'}}}, 'input_params': {'Bucket': 'public-pages'}, 'signing': {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}, 'endpoint_properties': {'authSchemes': [{'disableDoubleEncoding': True, 'name': 'sigv4', 'signingName': 's3', 'signingRegion': 'ap-south-1'}]}}}
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <bound method RequestSigner.handler of <botocore.signers.RequestSigner object at 0x11c445190>>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.CreateBucket: calling handler <function set_operation_specific_signer at 0x111c55440>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.CreateBucket: calling handler <function _set_auth_scheme_preference_signer at 0x111c5c5e0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <function remove_arn_from_signing_path at 0x111c57e20>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <function _set_extra_headers_for_unsigned_request at 0x111c5c540>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <bound method S3ExpressIdentityResolver.resolve_s3express_identity of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.auth:auth.py:439 Calculating signature using v4 auth.
+DEBUG    botocore.auth:auth.py:440 CanonicalRequest:
+PUT
+/public-pages
+
+host:localhost:55574
+x-amz-content-sha256:4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c
+x-amz-date:20261101T143752Z
+
+host;x-amz-content-sha256;x-amz-date
+4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c
+DEBUG    botocore.auth:auth.py:442 StringToSign:
+AWS4-HMAC-SHA256
+20261101T143752Z
+20261101/ap-south-1/s3/aws4_request
+7aae2d8ef220c20de259d17f28619f2f60ce3d9ad0067b40a3ce9361b7007658
+DEBUG    botocore.auth:auth.py:444 Signature:
+f4948bfd9b1a4f1ea5d444dfe2d65bb6a738d059aa0023b3a3ae499a254c5f41
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <bound method UserAgentString.rebuild_and_replace_user_agent_handler of <botocore.useragent.UserAgentString object at 0x11c48e8d0>>
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <function add_retry_headers at 0x111c57c40>
+DEBUG    botocore.endpoint:endpoint.py:265 Sending http request: <AWSPreparedRequest stream_output=False, method=PUT, url=http://localhost:55574/public-pages, headers={'User-Agent': b'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121', 'X-Amz-Date': b'20261101T143752Z', 'X-Amz-Content-SHA256': b'4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c', 'Authorization': b'AWS4-HMAC-SHA256 Credential=test/20261101/ap-south-1/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=f4948bfd9b1a4f1ea5d444dfe2d65bb6a738d059aa0023b3a3ae499a254c5f41', 'amz-sdk-invocation-id': b'ce25d50e-d417-409f-a421-fe8f502fd1fd', 'amz-sdk-request': b'attempt=1', 'Content-Length': '154'}>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:55574 "PUT /public-pages HTTP/1.1" 200 0
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.CreateBucket: calling handler <function _handle_200_error at 0x111c5c220>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.CreateBucket: calling handler <function handle_expires_header at 0x111c5c040>
+DEBUG    botocore.parsers:parsers.py:255 Response headers: {'Server': 'TwistedWeb/25.5.0', 'Date': 'Sun, 01 Nov 2026 14:37:52 GMT', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'HEAD,GET,PUT,POST,DELETE,OPTIONS,PATCH', 'Access-Control-Allow-Headers': 'authorization,cache-control,content-length,content-md5,content-type,etag,location,x-amz-acl,x-amz-content-sha256,x-amz-date,x-amz-request-id,x-amz-security-token,x-amz-tagging,x-amz-target,x-amz-user-agent,x-amz-version-id,x-amzn-requestid,x-localstack-target,amz-sdk-invocation-id,amz-sdk-request,x-amz-log-type', 'Access-Control-Expose-Headers': 'etag,x-amz-version-id,x-amz-log-result,x-amz-executed-version,x-amz-function-error', 'Vary': 'Origin', 'Location': 'http://public-pages.s3.localhost.localstack.cloud:4566/', 'x-amz-bucket-arn': 'arn:aws:s3:::public-pages', 'x-amz-request-id': '8e97552c-a865-4652-8c83-b558590a792a', 'x-amz-id-2': 's9lzHYrFp76ZVxRcpX9+5cjAnEH2ROuNkd2BHfIa6UkFVdtjf5mKR3/eTPFvsiP/XV/VLi31234=', 'x-localstack': 'true', 'Content-Length': '0'}
+DEBUG    botocore.parsers:parsers.py:256 Response body:
+b''
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <function _update_status_code at 0x111c5c400>
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <bound method RetryHandler.needs_retry of <botocore.retries.standard.RetryHandler object at 0x11c48f4a0>>
+DEBUG    botocore.retries.standard:standard.py:203 Not retrying request.
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <bound method S3RegionRedirectorv2.redirect_from_error of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event after-call.s3.CreateBucket: calling handler <bound method RetryQuotaChecker.release_retry_quota of <botocore.retries.standard.RetryQuotaChecker object at 0x11c48f260>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutBucketVersioning: calling handler <function validate_bucket_name at 0x111c55940>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutBucketVersioning: calling handler <function remove_bucket_from_url_paths_from_model at 0x111c57ce0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutBucketVersioning: calling handler <bound method S3RegionRedirectorv2.annotate_request_context of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutBucketVersioning: calling handler <bound method ClientCreator._inject_s3_input_parameters of <botocore.client.ClientCreator object at 0x11c0094f0>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutBucketVersioning: calling handler <function generate_idempotent_uuid at 0x111c55760>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutBucketVersioning: calling handler <function _handle_request_validation_mode_member at 0x111c5c4a0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <function customize_endpoint_resolver_builtins at 0x111c57ec0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <bound method S3RegionRedirectorv2.redirect_from_cache of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.regions:regions.py:522 Calling endpoint provider with parameters: {'Bucket': 'public-pages', 'Region': 'ap-south-1', 'UseFIPS': False, 'UseDualStack': False, 'Endpoint': 'http://localhost:55574', 'ForcePathStyle': True, 'Accelerate': False, 'UseGlobalEndpoint': False, 'DisableMultiRegionAccessPoints': False, 'UseArnRegion': True, 'UseS3ExpressControlEndpoint': True, 'DisableS3ExpressSessionAuth': False}
+DEBUG    botocore.regions:regions.py:537 Endpoint provider result: http://localhost:55574/public-pages
+DEBUG    botocore.regions:regions.py:707 Selecting from endpoint provider's list of auth schemes: "sigv4". User selected auth scheme is: "s3v4"
+DEBUG    botocore.regions:regions.py:795 Selected auth type "v4" as "s3v4" with signing context params: {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.PutBucketVersioning: calling handler <function add_expect_header at 0x111c55d00>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.PutBucketVersioning: calling handler <bound method S3ExpressIdentityResolver.apply_signing_cache_key of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.PutBucketVersioning: calling handler <function add_recursion_detection_header at 0x111c54fe0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.PutBucketVersioning: calling handler <function inject_api_version_header_if_needed at 0x111c57240>
+DEBUG    botocore.endpoint:endpoint.py:114 Making request for OperationModel(name=PutBucketVersioning) with params: {'url_path': '?versioning', 'query_string': {}, 'method': 'PUT', 'headers': {'User-Agent': 'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121', 'x-amz-checksum-crc32': 'C8vlPQ==', 'x-amz-sdk-checksum-algorithm': 'CRC32'}, 'body': b'<VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Enabled</Status></VersioningConfiguration>', 'auth_path': '/public-pages/', 'url': 'http://localhost:55574/public-pages?versioning', 'context': {'client_region': 'ap-south-1', 'client_config': <botocore.config.Config object at 0x11c445250>, 'has_streaming_input': False, 'auth_type': 's3v4', 'unsigned_payload': None, 'auth_options': ['aws.auth#sigv4'], 's3_redirect': {'redirected': False, 'bucket': 'public-pages', 'params': {'Bucket': 'public-pages', 'VersioningConfiguration': {'Status': 'Enabled'}}}, 'input_params': {'Bucket': 'public-pages'}, 'signing': {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}, 'endpoint_properties': {'authSchemes': [{'disableDoubleEncoding': True, 'name': 'sigv4', 'signingName': 's3', 'signingRegion': 'ap-south-1'}]}, 'checksum': {'request_algorithm_header': {'name': 'x-amz-sdk-checksum-algorithm', 'value': 'CRC32'}, 'request_algorithm': {'algorithm': 'crc32', 'in': 'header', 'name': 'x-amz-checksum-crc32'}}}}
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.PutBucketVersioning: calling handler <bound method RequestSigner.handler of <botocore.signers.RequestSigner object at 0x11c445190>>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.PutBucketVersioning: calling handler <function set_operation_specific_signer at 0x111c55440>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.PutBucketVersioning: calling handler <function _set_auth_scheme_preference_signer at 0x111c5c5e0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.PutBucketVersioning: calling handler <function remove_arn_from_signing_path at 0x111c57e20>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.PutBucketVersioning: calling handler <function _set_extra_headers_for_unsigned_request at 0x111c5c540>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.PutBucketVersioning: calling handler <bound method S3ExpressIdentityResolver.resolve_s3express_identity of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.auth:auth.py:439 Calculating signature using v4 auth.
+DEBUG    botocore.auth:auth.py:440 CanonicalRequest:
+PUT
+/public-pages
+versioning=
+host:localhost:55574
+x-amz-checksum-crc32:C8vlPQ==
+x-amz-content-sha256:482d4e510b5cdcf0bbf3a044e82832dc711f4f28757a6c06eb21758282a73ef7
+x-amz-date:20261101T143752Z
+x-amz-sdk-checksum-algorithm:CRC32
+
+host;x-amz-checksum-crc32;x-amz-content-sha256;x-amz-date;x-amz-sdk-checksum-algorithm
+482d4e510b5cdcf0bbf3a044e82832dc711f4f28757a6c06eb21758282a73ef7
+DEBUG    botocore.auth:auth.py:442 StringToSign:
+AWS4-HMAC-SHA256
+20261101T143752Z
+20261101/ap-south-1/s3/aws4_request
+9d3ed56489206b8a859b69298ab73eb886a147a4c074e04198362fd01860022d
+DEBUG    botocore.auth:auth.py:444 Signature:
+8862c319562aebb06cd82ff450e9385d065fa62a11f9f7020a4aceacfbce9791
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.PutBucketVersioning: calling handler <bound method UserAgentString.rebuild_and_replace_user_agent_handler of <botocore.useragent.UserAgentString object at 0x11c48e8d0>>
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.PutBucketVersioning: calling handler <function add_retry_headers at 0x111c57c40>
+DEBUG    botocore.endpoint:endpoint.py:265 Sending http request: <AWSPreparedRequest stream_output=False, method=PUT, url=http://localhost:55574/public-pages?versioning, headers={'User-Agent': b'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,U,N,b cfg/retry-mode#standard Botocore/1.43.121', 'x-amz-checksum-crc32': b'C8vlPQ==', 'x-amz-sdk-checksum-algorithm': b'CRC32', 'X-Amz-Date': b'20261101T143752Z', 'X-Amz-Content-SHA256': b'482d4e510b5cdcf0bbf3a044e82832dc711f4f28757a6c06eb21758282a73ef7', 'Authorization': b'AWS4-HMAC-SHA256 Credential=test/20261101/ap-south-1/s3/aws4_request, SignedHeaders=host;x-amz-checksum-crc32;x-amz-content-sha256;x-amz-date;x-amz-sdk-checksum-algorithm, Signature=8862c319562aebb06cd82ff450e9385d065fa62a11f9f7020a4aceacfbce9791', 'amz-sdk-invocation-id': b'37419562-a81c-4208-b733-591ba28bf501', 'amz-sdk-request': b'attempt=1', 'Content-Length': '123'}>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:55574 "PUT /public-pages?versioning HTTP/1.1" 200 0
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.PutBucketVersioning: calling handler <function _handle_200_error at 0x111c5c220>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.PutBucketVersioning: calling handler <function handle_expires_header at 0x111c5c040>
+DEBUG    botocore.parsers:parsers.py:255 Response headers: {'Server': 'TwistedWeb/25.5.0', 'Date': 'Sun, 01 Nov 2026 14:37:52 GMT', 'x-amz-request-id': '7e68a59c-aebd-4cad-927c-b2925ceba76a', 'x-amz-id-2': 's9lzHYrFp76ZVxRcpX9+5cjAnEH2ROuNkd2BHfIa6UkFVdtjf5mKR3/eTPFvsiP/XV/VLi31234=', 'x-localstack': 'true', 'Content-Length': '0'}
+DEBUG    botocore.parsers:parsers.py:256 Response body:
+b''
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.PutBucketVersioning: calling handler <function _update_status_code at 0x111c5c400>
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.PutBucketVersioning: calling handler <bound method RetryHandler.needs_retry of <botocore.retries.standard.RetryHandler object at 0x11c48f4a0>>
+DEBUG    botocore.retries.standard:standard.py:203 Not retrying request.
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.PutBucketVersioning: calling handler <bound method S3RegionRedirectorv2.redirect_from_error of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event after-call.s3.PutBucketVersioning: calling handler <bound method RetryQuotaChecker.release_retry_quota of <botocore.retries.standard.RetryQuotaChecker object at 0x11c48f260>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function validate_bucket_name at 0x111c55940>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function remove_bucket_from_url_paths_from_model at 0x111c57ce0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <bound method S3RegionRedirectorv2.annotate_request_context of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <bound method ClientCreator._inject_s3_input_parameters of <botocore.client.ClientCreator object at 0x11c0094f0>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function generate_idempotent_uuid at 0x111c55760>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.CreateBucket: calling handler <function _handle_request_validation_mode_member at 0x111c5c4a0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <function customize_endpoint_resolver_builtins at 0x111c57ec0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <bound method S3RegionRedirectorv2.redirect_from_cache of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.regions:regions.py:522 Calling endpoint provider with parameters: {'Bucket': 'id-docs', 'Region': 'ap-south-1', 'UseFIPS': False, 'UseDualStack': False, 'Endpoint': 'http://localhost:55574', 'ForcePathStyle': True, 'Accelerate': False, 'UseGlobalEndpoint': False, 'DisableAccessPoints': True, 'DisableMultiRegionAccessPoints': False, 'UseArnRegion': True, 'UseS3ExpressControlEndpoint': True, 'DisableS3ExpressSessionAuth': False}
+DEBUG    botocore.regions:regions.py:537 Endpoint provider result: http://localhost:55574/id-docs
+DEBUG    botocore.regions:regions.py:707 Selecting from endpoint provider's list of auth schemes: "sigv4". User selected auth scheme is: "s3v4"
+DEBUG    botocore.regions:regions.py:795 Selected auth type "v4" as "s3v4" with signing context params: {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function add_expect_header at 0x111c55d00>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <bound method S3ExpressIdentityResolver.apply_signing_cache_key of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function add_recursion_detection_header at 0x111c54fe0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.CreateBucket: calling handler <function inject_api_version_header_if_needed at 0x111c57240>
+DEBUG    botocore.endpoint:endpoint.py:114 Making request for OperationModel(name=CreateBucket) with params: {'url_path': '', 'query_string': {}, 'method': 'PUT', 'headers': {'User-Agent': 'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121'}, 'body': b'<CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>ap-south-1</LocationConstraint></CreateBucketConfiguration>', 'auth_path': '/id-docs/', 'url': 'http://localhost:55574/id-docs', 'context': {'client_region': 'ap-south-1', 'client_config': <botocore.config.Config object at 0x11c445250>, 'has_streaming_input': False, 'auth_type': 's3v4', 'unsigned_payload': None, 'auth_options': ['aws.auth#sigv4'], 's3_redirect': {'redirected': False, 'bucket': 'id-docs', 'params': {'Bucket': 'id-docs', 'CreateBucketConfiguration': {'LocationConstraint': 'ap-south-1'}}}, 'input_params': {'Bucket': 'id-docs'}, 'signing': {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}, 'endpoint_properties': {'authSchemes': [{'disableDoubleEncoding': True, 'name': 'sigv4', 'signingName': 's3', 'signingRegion': 'ap-south-1'}]}}}
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <bound method RequestSigner.handler of <botocore.signers.RequestSigner object at 0x11c445190>>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.CreateBucket: calling handler <function set_operation_specific_signer at 0x111c55440>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.CreateBucket: calling handler <function _set_auth_scheme_preference_signer at 0x111c5c5e0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <function remove_arn_from_signing_path at 0x111c57e20>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <function _set_extra_headers_for_unsigned_request at 0x111c5c540>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.CreateBucket: calling handler <bound method S3ExpressIdentityResolver.resolve_s3express_identity of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.auth:auth.py:439 Calculating signature using v4 auth.
+DEBUG    botocore.auth:auth.py:440 CanonicalRequest:
+PUT
+/id-docs
+
+host:localhost:55574
+x-amz-content-sha256:4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c
+x-amz-date:20261101T143752Z
+
+host;x-amz-content-sha256;x-amz-date
+4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c
+DEBUG    botocore.auth:auth.py:442 StringToSign:
+AWS4-HMAC-SHA256
+20261101T143752Z
+20261101/ap-south-1/s3/aws4_request
+dae71438430a69faef5d1f2630af27fbd58c69f700b3178a4a54ecebb71153c7
+DEBUG    botocore.auth:auth.py:444 Signature:
+9632eb707e3355b18f322a15736229481e9e2ac26fa8404ff3423fac6e00655b
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <bound method UserAgentString.rebuild_and_replace_user_agent_handler of <botocore.useragent.UserAgentString object at 0x11c48e8d0>>
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.CreateBucket: calling handler <function add_retry_headers at 0x111c57c40>
+DEBUG    botocore.endpoint:endpoint.py:265 Sending http request: <AWSPreparedRequest stream_output=False, method=PUT, url=http://localhost:55574/id-docs, headers={'User-Agent': b'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121', 'X-Amz-Date': b'20261101T143752Z', 'X-Amz-Content-SHA256': b'4a721217057c4d5019a418db756fc18e9dce8f67d4d23aa67d8f1819d1fb073c', 'Authorization': b'AWS4-HMAC-SHA256 Credential=test/20261101/ap-south-1/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=9632eb707e3355b18f322a15736229481e9e2ac26fa8404ff3423fac6e00655b', 'amz-sdk-invocation-id': b'2ad304f4-b340-404f-a10a-caafd6892df3', 'amz-sdk-request': b'attempt=1', 'Content-Length': '154'}>
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:55574 "PUT /id-docs HTTP/1.1" 200 0
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.CreateBucket: calling handler <function _handle_200_error at 0x111c5c220>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.CreateBucket: calling handler <function handle_expires_header at 0x111c5c040>
+DEBUG    botocore.parsers:parsers.py:255 Response headers: {'Server': 'TwistedWeb/25.5.0', 'Date': 'Sun, 01 Nov 2026 14:37:52 GMT', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'HEAD,GET,PUT,POST,DELETE,OPTIONS,PATCH', 'Access-Control-Allow-Headers': 'authorization,cache-control,content-length,content-md5,content-type,etag,location,x-amz-acl,x-amz-content-sha256,x-amz-date,x-amz-request-id,x-amz-security-token,x-amz-tagging,x-amz-target,x-amz-user-agent,x-amz-version-id,x-amzn-requestid,x-localstack-target,amz-sdk-invocation-id,amz-sdk-request,x-amz-log-type', 'Access-Control-Expose-Headers': 'etag,x-amz-version-id,x-amz-log-result,x-amz-executed-version,x-amz-function-error', 'Vary': 'Origin', 'Location': 'http://id-docs.s3.localhost.localstack.cloud:4566/', 'x-amz-bucket-arn': 'arn:aws:s3:::id-docs', 'x-amz-request-id': '56dd257c-1b99-4733-b562-d4f0800fee53', 'x-amz-id-2': 's9lzHYrFp76ZVxRcpX9+5cjAnEH2ROuNkd2BHfIa6UkFVdtjf5mKR3/eTPFvsiP/XV/VLi31234=', 'x-localstack': 'true', 'Content-Length': '0'}
+DEBUG    botocore.parsers:parsers.py:256 Response body:
+b''
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <function _update_status_code at 0x111c5c400>
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <bound method RetryHandler.needs_retry of <botocore.retries.standard.RetryHandler object at 0x11c48f4a0>>
+DEBUG    botocore.retries.standard:standard.py:203 Not retrying request.
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.CreateBucket: calling handler <bound method S3RegionRedirectorv2.redirect_from_error of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event after-call.s3.CreateBucket: calling handler <bound method RetryQuotaChecker.release_retry_quota of <botocore.retries.standard.RetryQuotaChecker object at 0x11c48f260>>
+DEBUG    asyncio:selector_events.py:64 Using selector: KqueueSelector
+------------------------------ Captured log call -------------------------------
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.HeadBucket: calling handler <function validate_bucket_name at 0x111c55940>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.HeadBucket: calling handler <function remove_bucket_from_url_paths_from_model at 0x111c57ce0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.HeadBucket: calling handler <bound method S3RegionRedirectorv2.annotate_request_context of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.HeadBucket: calling handler <bound method ClientCreator._inject_s3_input_parameters of <botocore.client.ClientCreator object at 0x11c0094f0>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.HeadBucket: calling handler <function generate_idempotent_uuid at 0x111c55760>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.HeadBucket: calling handler <function _handle_request_validation_mode_member at 0x111c5c4a0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <function customize_endpoint_resolver_builtins at 0x111c57ec0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <bound method S3RegionRedirectorv2.redirect_from_cache of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.regions:regions.py:522 Calling endpoint provider with parameters: {'Bucket': 'evidence', 'Region': 'ap-south-1', 'UseFIPS': False, 'UseDualStack': False, 'Endpoint': 'http://localhost:55574', 'ForcePathStyle': True, 'Accelerate': False, 'UseGlobalEndpoint': False, 'DisableMultiRegionAccessPoints': False, 'UseArnRegion': True, 'DisableS3ExpressSessionAuth': False}
+WARNING  agritrace.main:main.py:80 health probe _ping_db failed: TimeoutError()
+DEBUG    botocore.regions:regions.py:537 Endpoint provider result: http://localhost:55574/evidence
+DEBUG    botocore.regions:regions.py:707 Selecting from endpoint provider's list of auth schemes: "sigv4". User selected auth scheme is: "s3v4"
+DEBUG    botocore.regions:regions.py:795 Selected auth type "v4" as "s3v4" with signing context params: {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.HeadBucket: calling handler <function add_expect_header at 0x111c55d00>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.HeadBucket: calling handler <bound method S3ExpressIdentityResolver.apply_signing_cache_key of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.HeadBucket: calling handler <function add_recursion_detection_header at 0x111c54fe0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-call.s3.HeadBucket: calling handler <function inject_api_version_header_if_needed at 0x111c57240>
+DEBUG    botocore.endpoint:endpoint.py:114 Making request for OperationModel(name=HeadBucket) with params: {'url_path': '', 'query_string': {}, 'method': 'HEAD', 'headers': {'User-Agent': 'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121'}, 'body': b'', 'auth_path': '/evidence/', 'url': 'http://localhost:55574/evidence', 'context': {'client_region': 'ap-south-1', 'client_config': <botocore.config.Config object at 0x11c445250>, 'has_streaming_input': False, 'auth_type': 's3v4', 'unsigned_payload': None, 'auth_options': ['aws.auth#sigv4'], 's3_redirect': {'redirected': False, 'bucket': 'evidence', 'params': {'Bucket': 'evidence'}}, 'input_params': {'Bucket': 'evidence'}, 'signing': {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}, 'endpoint_properties': {'authSchemes': [{'disableDoubleEncoding': True, 'name': 'sigv4', 'signingName': 's3', 'signingRegion': 'ap-south-1'}]}}}
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.HeadBucket: calling handler <bound method RequestSigner.handler of <botocore.signers.RequestSigner object at 0x11c445190>>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.HeadBucket: calling handler <function set_operation_specific_signer at 0x111c55440>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.HeadBucket: calling handler <function _set_auth_scheme_preference_signer at 0x111c5c5e0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.HeadBucket: calling handler <function remove_arn_from_signing_path at 0x111c57e20>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.HeadBucket: calling handler <function _set_extra_headers_for_unsigned_request at 0x111c5c540>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.HeadBucket: calling handler <bound method S3ExpressIdentityResolver.resolve_s3express_identity of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.auth:auth.py:439 Calculating signature using v4 auth.
+DEBUG    botocore.auth:auth.py:440 CanonicalRequest:
+HEAD
+/evidence
+
+host:localhost:55574
+x-amz-content-sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+x-amz-date:20261101T143848Z
+
+host;x-amz-content-sha256;x-amz-date
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+DEBUG    botocore.auth:auth.py:442 StringToSign:
+AWS4-HMAC-SHA256
+20261101T143848Z
+20261101/ap-south-1/s3/aws4_request
+d8c8cca4f91e121637319947c2879b6c0e29b0a6db8a9363dbb2227153580573
+DEBUG    botocore.auth:auth.py:444 Signature:
+2c02234dde6b35e2102642e5c9386fb3e4a0d8acdada8a1b586d6651b450a00b
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.HeadBucket: calling handler <bound method UserAgentString.rebuild_and_replace_user_agent_handler of <botocore.useragent.UserAgentString object at 0x11c48e8d0>>
+DEBUG    botocore.hooks:hooks.py:238 Event request-created.s3.HeadBucket: calling handler <function add_retry_headers at 0x111c57c40>
+DEBUG    botocore.endpoint:endpoint.py:265 Sending http request: <AWSPreparedRequest stream_output=False, method=HEAD, url=http://localhost:55574/evidence, headers={'User-Agent': b'Boto3/1.43.121 md/Botocore#1.43.121 ua/2.1 os/macos#24.6.0 md/arch#x86_64 lang/python#3.12.13 md/pyimpl#CPython m/Z,E,e,N,b cfg/retry-mode#standard Botocore/1.43.121', 'X-Amz-Date': b'20261101T143848Z', 'X-Amz-Content-SHA256': b'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'Authorization': b'AWS4-HMAC-SHA256 Credential=test/20261101/ap-south-1/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=2c02234dde6b35e2102642e5c9386fb3e4a0d8acdada8a1b586d6651b450a00b', 'amz-sdk-invocation-id': b'cfc1f2af-b56f-419b-903e-b8d909f2e2c1', 'amz-sdk-request': b'attempt=1'}>
+DEBUG    redis.asyncio.connection:connection.py:429 Failed to enable maintenance notifications: unknown subcommand 'MAINT_NOTIFICATIONS'. Try CLIENT HELP.
+DEBUG    urllib3.connectionpool:connectionpool.py:550 http://localhost:55574 "HEAD /evidence HTTP/1.1" 200 0
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.HeadBucket: calling handler <function _handle_200_error at 0x111c5c220>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parse.s3.HeadBucket: calling handler <function handle_expires_header at 0x111c5c040>
+DEBUG    botocore.parsers:parsers.py:255 Response headers: {'Server': 'TwistedWeb/25.5.0', 'Date': 'Sun, 01 Nov 2026 14:38:48 GMT', 'Content-Type': 'application/xml', 'x-amz-bucket-arn': 'arn:aws:s3:::evidence', 'x-amz-bucket-region': 'ap-south-1', 'x-amz-request-id': '8e003c9f-4ab9-4a07-a838-825fe1313198', 'x-amz-id-2': 's9lzHYrFp76ZVxRcpX9+5cjAnEH2ROuNkd2BHfIa6UkFVdtjf5mKR3/eTPFvsiP/XV/VLi31234=', 'x-localstack': 'true', 'Content-Length': '0'}
+DEBUG    botocore.parsers:parsers.py:256 Response body:
+b''
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.HeadBucket: calling handler <function _update_status_code at 0x111c5c400>
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.HeadBucket: calling handler <bound method RetryHandler.needs_retry of <botocore.retries.standard.RetryHandler object at 0x11c48f4a0>>
+DEBUG    botocore.retries.standard:standard.py:203 Not retrying request.
+DEBUG    botocore.hooks:hooks.py:238 Event needs-retry.s3.HeadBucket: calling handler <bound method S3RegionRedirectorv2.redirect_from_error of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event after-call.s3.HeadBucket: calling handler <bound method RetryQuotaChecker.release_retry_quota of <botocore.retries.standard.RetryQuotaChecker object at 0x11c48f260>>
+INFO     httpx:_client.py:1740 HTTP Request: GET http://test/v1/healthz "HTTP/1.1 503 Service Unavailable"
+_______________________ test_presigned_put_checks_sha256 _______________________
+
+    @contextlib.contextmanager
+    def map_httpcore_exceptions() -> typing.Iterator[None]:
+        global HTTPCORE_EXC_MAP
+        if len(HTTPCORE_EXC_MAP) == 0:
+            HTTPCORE_EXC_MAP = _load_httpcore_exceptions()
+        try:
+>           yield
+
+.venv/lib/python3.12/site-packages/httpx/_transports/default.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/httpx/_transports/default.py:250: in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py:256: in handle_request
+    raise exc from None
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py:236: in handle_request
+    response = connection.handle_request(
+.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py:103: in handle_request
+    return self._connection.handle_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:136: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:106: in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:177: in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py:217: in _receive_event
+    data = self._network_stream.read(
+.venv/lib/python3.12/site-packages/httpcore/_backends/sync.py:126: in read
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/fi-it/.local/share/uv/python/cpython-3.12.13-macos-x86_64-none/lib/python3.12/contextlib.py:158: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+map = {<class 'TimeoutError'>: <class 'httpcore.ReadTimeout'>, <class 'OSError'>: <class 'httpcore.ReadError'>}
+
+    @contextlib.contextmanager
+    def map_exceptions(map: ExceptionMapping) -> typing.Iterator[None]:
+        try:
+            yield
+        except Exception as exc:  # noqa: PIE786
+            for from_exc, to_exc in map.items():
+                if isinstance(exc, from_exc):
+>                   raise to_exc(exc) from exc
+E                   httpcore.ReadTimeout: timed out
+
+.venv/lib/python3.12/site-packages/httpcore/_exceptions.py:14: ReadTimeout
+
+The above exception was the direct cause of the following exception:
+
+stack = None
+
+    def test_presigned_put_checks_sha256(stack: None) -> None:
+        """Matching bytes are stored; wrong bytes give 400, a missing checksum or other Content-Type give 403.
+    
+        Args:
+            stack: the running containers (fixture).
+        """
+        body = b"\xff\xd8 fake jpeg"
+        digest = hashlib.sha256(body).digest()
+        url = storage.presign_put("t/photo.jpg", "image/jpeg", digest.hex())
+        headers = {"Content-Type": "image/jpeg", "x-amz-checksum-sha256": base64.b64encode(digest).decode()}
+    
+>       assert httpx.put(url, content=b"tampered", headers=headers).status_code == 400
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_storage.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/httpx/_api.py:345: in put
+    return request(
+.venv/lib/python3.12/site-packages/httpx/_api.py:109: in request
+    return client.request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_transports/default.py:249: in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/fi-it/.local/share/uv/python/cpython-3.12.13-macos-x86_64-none/lib/python3.12/contextlib.py:158: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @contextlib.contextmanager
+    def map_httpcore_exceptions() -> typing.Iterator[None]:
+        global HTTPCORE_EXC_MAP
+        if len(HTTPCORE_EXC_MAP) == 0:
+            HTTPCORE_EXC_MAP = _load_httpcore_exceptions()
+        try:
+            yield
+        except Exception as exc:
+            mapped_exc = None
+    
+            for from_exc, to_exc in HTTPCORE_EXC_MAP.items():
+                if not isinstance(exc, from_exc):
+                    continue
+                # We want to map to the most specific exception we can find.
+                # Eg if `exc` is an `httpcore.ReadTimeout`, we want to map to
+                # `httpx.ReadTimeout`, not just `httpx.TimeoutException`.
+                if mapped_exc is None or issubclass(to_exc, mapped_exc):
+                    mapped_exc = to_exc
+    
+            if mapped_exc is None:  # pragma: no cover
+                raise
+    
+            message = str(exc)
+>           raise mapped_exc(message) from exc
+E           httpx.ReadTimeout: timed out
+
+.venv/lib/python3.12/site-packages/httpx/_transports/default.py:118: ReadTimeout
+------------------------------ Captured log call -------------------------------
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <function validate_ascii_metadata at 0x111c56700>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <function sse_md5 at 0x111c559e0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <function convert_body_to_file_like_object at 0x111c57100>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <function validate_bucket_name at 0x111c55940>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <function remove_bucket_from_url_paths_from_model at 0x111c57ce0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <bound method S3RegionRedirectorv2.annotate_request_context of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <bound method ClientCreator._inject_s3_input_parameters of <botocore.client.ClientCreator object at 0x11c0094f0>>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <function generate_idempotent_uuid at 0x111c55760>
+DEBUG    botocore.hooks:hooks.py:238 Event before-parameter-build.s3.PutObject: calling handler <function _handle_request_validation_mode_member at 0x111c5c4a0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <function customize_endpoint_resolver_builtins at 0x111c57ec0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-endpoint-resolution.s3: calling handler <bound method S3RegionRedirectorv2.redirect_from_cache of <botocore.utils.S3RegionRedirectorv2 object at 0x11c48f230>>
+DEBUG    botocore.regions:regions.py:522 Calling endpoint provider with parameters: {'Bucket': 'evidence', 'Region': 'ap-south-1', 'UseFIPS': False, 'UseDualStack': False, 'Endpoint': 'http://localhost:55574', 'ForcePathStyle': True, 'Accelerate': False, 'UseGlobalEndpoint': False, 'Key': 't/photo.jpg', 'DisableMultiRegionAccessPoints': False, 'UseArnRegion': True, 'DisableS3ExpressSessionAuth': False}
+DEBUG    botocore.regions:regions.py:537 Endpoint provider result: http://localhost:55574/evidence
+DEBUG    botocore.regions:regions.py:707 Selecting from endpoint provider's list of auth schemes: "sigv4". User selected auth scheme is: "s3v4"
+DEBUG    botocore.regions:regions.py:795 Selected auth type "v4" as "s3v4" with signing context params: {'region': 'ap-south-1', 'signing_name': 's3', 'disableDoubleEncoding': True}
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.PutObject: calling handler <function set_operation_specific_signer at 0x111c55440>
+DEBUG    botocore.hooks:hooks.py:238 Event choose-signer.s3.PutObject: calling handler <function _set_auth_scheme_preference_signer at 0x111c5c5e0>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.PutObject: calling handler <function remove_arn_from_signing_path at 0x111c57e20>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.PutObject: calling handler <function _set_extra_headers_for_unsigned_request at 0x111c5c540>
+DEBUG    botocore.hooks:hooks.py:238 Event before-sign.s3.PutObject: calling handler <bound method S3ExpressIdentityResolver.resolve_s3express_identity of <botocore.utils.S3ExpressIdentityResolver object at 0x11c48f530>>
+DEBUG    botocore.auth:auth.py:439 Calculating signature using v4 auth.
+DEBUG    botocore.auth:auth.py:440 CanonicalRequest:
+PUT
+/evidence/t/photo.jpg
+X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=test%2F20261101%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T143905Z&X-Amz-Expires=900&X-Amz-SignedHeaders=content-type%3Bhost%3Bx-amz-checksum-sha256
+content-type:image/jpeg
+host:localhost:55574
+x-amz-checksum-sha256:z+fINkw/d6AYJ8WnOXsnUN6u/aHPVtovP22ObIwywIs=
+
+content-type;host;x-amz-checksum-sha256
+UNSIGNED-PAYLOAD
+DEBUG    botocore.auth:auth.py:442 StringToSign:
+AWS4-HMAC-SHA256
+20261101T143905Z
+20261101/ap-south-1/s3/aws4_request
+ef85a8ad43dc0bf37b8fb8fb008f22442837dce25af68f8c3adf19c7a5148554
+DEBUG    botocore.auth:auth.py:444 Signature:
+dc18706d418bf4b1990dce707ad4670f81a5f715b90035c2990f2e71fa344d75
+DEBUG    httpcore.connection:_trace.py:47 connect_tcp.started host='localhost' port=55574 local_address=None timeout=5.0 socket_options=None
+DEBUG    httpcore.connection:_trace.py:47 connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x11ee2ce30>
+DEBUG    httpcore.http11:_trace.py:47 send_request_headers.started request=<Request [b'PUT']>
+DEBUG    httpcore.http11:_trace.py:47 send_request_headers.complete
+DEBUG    httpcore.http11:_trace.py:47 send_request_body.started request=<Request [b'PUT']>
+DEBUG    httpcore.http11:_trace.py:47 send_request_body.complete
+DEBUG    httpcore.http11:_trace.py:47 receive_response_headers.started request=<Request [b'PUT']>
+DEBUG    httpcore.http11:_trace.py:47 receive_response_headers.failed exception=ReadTimeout(TimeoutError('timed out'))
+DEBUG    httpcore.http11:_trace.py:47 response_closed.started
+DEBUG    httpcore.http11:_trace.py:47 response_closed.complete
+=============================== warnings summary ===============================
+tests/integration/test_healthz.py::test_healthz_all_ok
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_schema.py::test_live_enum_checks_match_the_strenums
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/integration/test_schema.py:191: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    live = dict((await conn.execute(query)).tuples().all())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_healthz.py::test_healthz_all_ok - assert 503 ==...
+FAILED tests/integration/test_storage.py::test_presigned_put_checks_sha256 - ...
+2 failed, 9 passed, 2 warnings in 406.11s (0:06:46)
+exit=1

@@ -1,0 +1,192 @@
+21:23  up 1 day, 20:55, 1 user, load averages: 4.11 103.33 175.09
+# triage rerun of the one failing e2e test with --showlocals to see gi_block_reasons
+$ uv run pytest tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish -q -p no:cacheprovider -rfE -l
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_reference_batch_flags_gates_fixes_and_publish ______________
+
+api = (Demo(fpo=UUID('01a197d0-d8e5-7d14-8497-8ee936002f7d'), staff={<Role.FPO_ADMIN: 'fpo_admin'>: UUID('01a197d0-d8e1-7dd5... 'page_build_id': '01a197d0-e355-7d59-b7be-2e20ca1e10a0', 'build_no': 1})]), <httpx.AsyncClient object at 0x11b02cdd0>)
+
+    async def test_reference_batch_flags_gates_fixes_and_publish(api: tuple[Demo, AsyncClient]) -> None:
+        """Seeded state → exact flags and refused gates; after the fixes → published page, GI verified, shares.
+    
+        Args:
+            api: the seeded demo and client (fixture).
+        """
+        d, client = api
+        batch = str(demo.BATCH_ID)
+        flags = await _flag_codes(client)
+        assert flags == Counter(demo.EXPECTED_FLAGS)
+        assert not set(demo.ABSENT_FLAGS) & set(flags)
+    
+        d.act_as(Role.QC_OFFICER)
+        r = await client.post(f"/v1/batches/{batch}/grading", json={"declared_grade": "A"})
+        assert r.status_code == 422 and r.json()["error"]["code"] == "unknown_grade_for_profile", r.text
+        d.act_as(Role.FPO_ADMIN)
+        graded = {"graded": {"value": 20, "unit": "kg"}}
+        assert "not_graded" in _reasons(await client.post(f"/v1/batches/{batch}/grading/approve", json=graded))
+        refused = _reasons(await client.post(f"/v1/batches/{batch}/publish"))
+        assert {"grading_not_approved", "final_packing_missing"} <= refused
+    
+        await _apply_fixes(d, client, batch)
+        r = await client.post(f"/v1/batches/{batch}/publish")
+        assert r.status_code == 202, r.text
+        name, kwargs = d.sent[-1]
+        assert name == "publishing.build_page"
+        from agritrace.modules.publishing import tasks  # late: importing the worker reads the settings
+    
+        assert await asyncio.to_thread(tasks.build_page, **kwargs) == "built"
+    
+        out = (await client.get(f"/v1/batches/{batch}")).json()
+        assert (out["code"], out["superlot_code"], out["status"]) == (
+            demo.BATCH_CODE,
+            demo.SUPERLOT_CODE,
+            "published",
+        )
+>       assert out["gi_verified"] is True and out["gi_block_reasons"] == []
+E       assert (False is True)
+
+api        = (Demo(fpo=UUID('01a197d0-d8e5-7d14-8497-8ee936002f7d'), staff={<Role.FPO_ADMIN: 'fpo_admin'>: UUID('01a197d0-d8e1-7dd5... 'page_build_id': '01a197d0-e355-7d59-b7be-2e20ca1e10a0', 'build_no': 1})]), <httpx.AsyncClient object at 0x11b02cdd0>)
+batch      = '01900000-0000-7000-8000-0000000b12aa'
+client     = <httpx.AsyncClient object at 0x11b02cdd0>
+d          = Demo(fpo=UUID('01a197d0-d8e5-7d14-8497-8ee936002f7d'), staff={<Role.FPO_ADMIN: 'fpo_admin'>: UUID('01a197d0-d8e1-7dd5-...id': '01900000-0000-7000-8000-0000000b12aa', 'page_build_id': '01a197d0-e355-7d59-b7be-2e20ca1e10a0', 'build_no': 1})])
+flags      = Counter({'quantity_mismatch': 3, 'yield_check_unavailable': 3, 'ipm_without_pest_event': 3, 'practice_tag_contradiction': 3, 'grading_loss_high': 1})
+graded     = {'graded': {'value': 20, 'unit': 'kg'}}
+kwargs     = {'batch_id': '01900000-0000-7000-8000-0000000b12aa', 'page_build_id': '01a197d0-e355-7d59-b7be-2e20ca1e10a0', 'build_no': 1}
+name       = 'publishing.build_page'
+out        = {'id': '01900000-0000-7000-8000-0000000b12aa', 'code': 'FGP8T4033HM7', 'superlot_code': 'COMBO_LOT_6C1DCCFE', 'crop_id': '01a197d0-d89a-7a1e-a751-2b3a8c513d21', ...}
+r          = <Response [202 Accepted]>
+refused    = {'final_packing_missing', 'grading_not_approved'}
+tasks      = <module 'agritrace.modules.publishing.tasks' from '/Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/publishing/tasks.py'>
+
+tests/e2e/test_reference_batch.py:339: AssertionError
+=============================== warnings summary ===============================
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:967: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:124: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    staff = {roles[phone]: user for phone, user in rows.tuples()}
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:125: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    lots = dict((await s.execute(select(Lot.code, Lot.id).where(Lot.fpo_id == fpo))).tuples().all())
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/publishing/builder.py:192: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    ).tuples()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+1 failed, 7 warnings in 25.77s
+exit=1
+$ uv run pytest tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish -q -p no:cacheprovider -rfE -l -vv
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 1 item
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish FAILED [100%]
+
+=================================== FAILURES ===================================
+______________ test_reference_batch_flags_gates_fixes_and_publish ______________
+
+api = (Demo(fpo=UUID('01a197d1-62ee-7d77-bff0-336994b22341'), staff={<Role.FPO_ADMIN: 'fpo_admin'>: UUID('01a197d1-62ea-7ccb... 'page_build_id': '01a197d1-6be1-76fb-9156-3e3d53a1e06b', 'build_no': 1})]), <httpx.AsyncClient object at 0x116274470>)
+
+    async def test_reference_batch_flags_gates_fixes_and_publish(api: tuple[Demo, AsyncClient]) -> None:
+        """Seeded state → exact flags and refused gates; after the fixes → published page, GI verified, shares.
+    
+        Args:
+            api: the seeded demo and client (fixture).
+        """
+        d, client = api
+        batch = str(demo.BATCH_ID)
+        flags = await _flag_codes(client)
+        assert flags == Counter(demo.EXPECTED_FLAGS)
+        assert not set(demo.ABSENT_FLAGS) & set(flags)
+    
+        d.act_as(Role.QC_OFFICER)
+        r = await client.post(f"/v1/batches/{batch}/grading", json={"declared_grade": "A"})
+        assert r.status_code == 422 and r.json()["error"]["code"] == "unknown_grade_for_profile", r.text
+        d.act_as(Role.FPO_ADMIN)
+        graded = {"graded": {"value": 20, "unit": "kg"}}
+        assert "not_graded" in _reasons(await client.post(f"/v1/batches/{batch}/grading/approve", json=graded))
+        refused = _reasons(await client.post(f"/v1/batches/{batch}/publish"))
+        assert {"grading_not_approved", "final_packing_missing"} <= refused
+    
+        await _apply_fixes(d, client, batch)
+        r = await client.post(f"/v1/batches/{batch}/publish")
+        assert r.status_code == 202, r.text
+        name, kwargs = d.sent[-1]
+        assert name == "publishing.build_page"
+        from agritrace.modules.publishing import tasks  # late: importing the worker reads the settings
+    
+        assert await asyncio.to_thread(tasks.build_page, **kwargs) == "built"
+    
+        out = (await client.get(f"/v1/batches/{batch}")).json()
+        assert (out["code"], out["superlot_code"], out["status"]) == (
+            demo.BATCH_CODE,
+            demo.SUPERLOT_CODE,
+            "published",
+        )
+>       assert out["gi_verified"] is True and out["gi_block_reasons"] == []
+E       assert (False is True)
+
+api        = (Demo(fpo=UUID('01a197d1-62ee-7d77-bff0-336994b22341'), staff={<Role.FPO_ADMIN: 'fpo_admin'>: UUID('01a197d1-62ea-7ccb... 'page_build_id': '01a197d1-6be1-76fb-9156-3e3d53a1e06b', 'build_no': 1})]), <httpx.AsyncClient object at 0x116274470>)
+batch      = '01900000-0000-7000-8000-0000000b12aa'
+client     = <httpx.AsyncClient object at 0x116274470>
+d          = Demo(fpo=UUID('01a197d1-62ee-7d77-bff0-336994b22341'), staff={<Role.FPO_ADMIN: 'fpo_admin'>: UUID('01a197d1-62ea-7ccb-...id': '01900000-0000-7000-8000-0000000b12aa', 'page_build_id': '01a197d1-6be1-76fb-9156-3e3d53a1e06b', 'build_no': 1})])
+flags      = Counter({'quantity_mismatch': 3, 'yield_check_unavailable': 3, 'ipm_without_pest_event': 3, 'practice_tag_contradiction': 3, 'grading_loss_high': 1})
+graded     = {'graded': {'value': 20, 'unit': 'kg'}}
+kwargs     = {'batch_id': '01900000-0000-7000-8000-0000000b12aa', 'page_build_id': '01a197d1-6be1-76fb-9156-3e3d53a1e06b', 'build_no': 1}
+name       = 'publishing.build_page'
+out        = {'id': '01900000-0000-7000-8000-0000000b12aa', 'code': 'FGP8T4033HM7', 'superlot_code': 'COMBO_LOT_6C1DCCFE', 'crop_id': '01a197d1-62b4-73d4-b3df-c110f02aaf1a', ...}
+r          = <Response [202 Accepted]>
+refused    = {'final_packing_missing', 'grading_not_approved'}
+tasks      = <module 'agritrace.modules.publishing.tasks' from '/Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/publishing/tasks.py'>
+
+tests/e2e/test_reference_batch.py:339: AssertionError
+=============================== warnings summary ===============================
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/lots_batches/service.py:967: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:124: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    staff = {roles[phone]: user for phone, user in rows.tuples()}
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/e2e/test_reference_batch.py:125: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    lots = dict((await s.execute(select(Lot.code, Lot.id).where(Lot.fpo_id == fpo))).tuples().all())
+
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/publishing/builder.py:192: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    ).tuples()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish
+======================== 1 failed, 7 warnings in 22.14s ========================
+exit=1
+
+# triage: same test with a scratch plugin (pytest_exception_interact) that prints the GI fields of `out`
+$ PYTHONPATH=<scratch> uv run pytest tests/e2e/test_reference_batch.py::test_reference_batch_flags_gates_fixes_and_publish -q -p no:cacheprovider -p diag_locals -s
+DIAG {'status': 'published', 'gi_label_requested': True, 'gi_verified': False, 'gi_block_reasons': [{'lot_id': '01a197d2-7d47-7962-b270-ff5d2fabd84e', 'reason': 'lot_on_hold', 'detail': None}, {'lot_id': '01a197d2-7de3-7617-abd9-49b88bfadbb7', 'reason': 'lot_on_hold', 'detail': None}, {'lot_id': '01a197d2-7e56-7da2-9cda-6eb78b2b0739', 'reason': 'lot_on_hold', 'detail': None}]}
+1 failed, 7 warnings in 29.41s

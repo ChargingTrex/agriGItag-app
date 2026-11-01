@@ -1,0 +1,24 @@
+$ docker compose -f infra/docker-compose.yml ps
+NAME                    IMAGE                          COMMAND                  SERVICE     CREATED         STATUS                        PORTS
+agritrace-api-1         agritrace-api:dev              "uvicorn agritrace.m…"   api         6 minutes ago   Up About a minute (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+agritrace-db-1          postgis/postgis:16-3.4         "docker-entrypoint.s…"   db          6 minutes ago   Up 6 minutes (healthy)        127.0.0.1:5433->5432/tcp
+agritrace-mosquitto-1   eclipse-mosquitto:2            "/docker-entrypoint.…"   mosquitto   6 minutes ago   Up 6 minutes                  127.0.0.1:1883->1883/tcp
+agritrace-s3-1          localstack/localstack:4.14.0   "docker-entrypoint.sh"   s3          6 minutes ago   Up 6 minutes (healthy)        0.0.0.0:4566->4566/tcp, [::]:4566->4566/tcp
+agritrace-valkey-1      valkey/valkey:8-alpine         "tini -- docker-entr…"   valkey      6 minutes ago   Up 6 minutes (healthy)        127.0.0.1:6379->6379/tcp
+agritrace-worker-1      agritrace-api:dev              "celery -A agritrace…"   worker      6 minutes ago   Up About a minute             8000/tcp
+
+$ curl -sS -i http://localhost:8000/v1/healthz
+HTTP/1.1 200 OK
+date: Sun, 01 Nov 2026 14:27:21 GMT
+server: uvicorn
+content-length: 34
+content-type: application/json
+
+{"db":"ok","redis":"ok","s3":"ok"}
+
+$ curl -sS -I http://localhost:8000/v1/healthz
+HTTP/1.1 200 OK
+date: Sun, 01 Nov 2026 14:27:22 GMT
+server: uvicorn
+content-length: 0
+

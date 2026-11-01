@@ -1,0 +1,13 @@
+$ cd apps/api && uv run python -m agritrace.export_openapi
+/Users/fi-it/Documents/projects/agriGitag/packages/openapi/openapi.json
+exit=0
+$ head -c 200 ../../packages/openapi/openapi.json
+{
+  "components": {
+    "schemas": {
+      "Address": {
+        "description": "Structured address of a farmer, plot, FPO or processor (FR53); also a second GI check by taluk.\n\nEvery part is optiona
+$ python3 -c "import json;print(json.load(open(\"../../packages/openapi/openapi.json\"))[\"openapi\"])"
+3.1.0
+$ git status --short ../../packages/openapi && git diff --stat ../../packages/openapi
+(empty = committed spec is byte-identical to the regenerated one)

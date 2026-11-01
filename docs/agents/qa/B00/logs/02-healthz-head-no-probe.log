@@ -1,0 +1,23 @@
+# HEAD-without-probes check: pause valkey, compare GET vs HEAD, unpause
+$ docker pause agritrace-valkey-1
+agritrace-valkey-1
+$ curl -sS -i --max-time 20 http://localhost:8000/v1/healthz
+HTTP/1.1 503 Service Unavailable
+date: Sun, 01 Nov 2026 14:27:43 GMT
+server: uvicorn
+content-length: 51
+content-type: application/json
+
+{"db":"ok","redis":"error: TimeoutError","s3":"ok"}
+$ curl -sS -I --max-time 20 -w "time_total=%{time_total}s
+" http://localhost:8000/v1/healthz
+HTTP/1.1 200 OK
+date: Sun, 01 Nov 2026 14:27:46 GMT
+server: uvicorn
+content-length: 0
+
+time_total=0.004212s
+$ docker unpause agritrace-valkey-1
+agritrace-valkey-1
+$ curl -sS http://localhost:8000/v1/healthz
+{"db":"ok","redis":"ok","s3":"ok"}

@@ -1,0 +1,17 @@
+21:16  up 1 day, 20:49, 1 user, load averages: 178.52 343.54 267.26
+# rerun 2 of the B00 integration line (nothing else of mine running), DEBUG logs captured for failing tests
+$ uv run pytest tests/integration/test_healthz.py tests/integration/test_storage.py tests/integration/test_schema.py -q -p no:cacheprovider -rfE --log-level=DEBUG
+...........                                                              [100%]
+=============================== warnings summary ===============================
+tests/integration/test_healthz.py::test_healthz_all_ok
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_schema.py::test_live_enum_checks_match_the_strenums
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/tests/integration/test_schema.py:191: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    live = dict((await conn.execute(query)).tuples().all())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+11 passed, 2 warnings in 65.84s (0:01:05)
+exit=0
+21:18  up 1 day, 20:50, 1 user, load averages: 68.62 275.35 247.49

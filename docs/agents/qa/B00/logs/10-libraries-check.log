@@ -1,0 +1,9 @@
+$ python3 infra/scripts/libraries-check.py
+check   apps/api/pyproject.toml: 32 dependencies, ok
+check   apps/public-page/pyproject.toml: 7 dependencies, ok
+check   apps/mobile/pubspec.yaml: 28 dependencies, ok
+check   apps/portal/package.json: 37 dependencies, ok
+check   apps/public-page/package.json: 2 dependencies, ok
+check   qa/robot/requirements.txt: 7 dependencies, ok
+libraries-check: PASS (171 ledger rows)
+exit=0

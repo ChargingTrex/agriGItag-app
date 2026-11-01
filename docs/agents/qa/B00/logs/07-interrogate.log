@@ -1,0 +1,1245 @@
+$ cd apps/api && uv run interrogate -vv agritrace
+== Coverage for /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/ ==
+------------------------------ Detailed Coverage -------------------------------
+| Name                                                             |    Status |
+|------------------------------------------------------------------|-----------|
+| __init__.py (module)                                             |   COVERED |
+|------------------------------------------------------------------|-----------|
+| export_openapi.py (module)                                       |   COVERED |
+| main (L15)                                                       |   COVERED |
+|------------------------------------------------------------------|-----------|
+| main.py (module)                                                 |   COVERED |
+| Health (L56)                                                     |   COVERED |
+| _check (L64)                                                     |   COVERED |
+| _ping_db (L85)                                                   |   COVERED |
+| _ping_redis (L95)                                                |   COVERED |
+| _ping_s3 (L108)                                                  |   COVERED |
+| healthz (L117)                                                   |   COVERED |
+| reachable (L135)                                                 |   COVERED |
+| _validate_config_at_boot (L149)                                  |   COVERED |
+| create_app (L171)                                                |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/__init__.py (module)                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/audit.py (module)                                           |   COVERED |
+| AuditContext (L49)                                               |   COVERED |
+| set_audit_context (L63)                                          |   COVERED |
+| reset_audit_context (L78)                                        |   COVERED |
+| Audited (L93)                                                    |   COVERED |
+| is_secret_column (L109)                                          |   COVERED |
+| _json_default (L126)                                             |   COVERED |
+| _diff (L139)                                                     |   COVERED |
+| audit_rows (L164)                                                |   COVERED |
+| _write_audit_rows (L203)                                         |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/auth.py (module)                                            |   COVERED |
+| CurrentUser (L72)                                                |   COVERED |
+| _encode (L84)                                                    |   COVERED |
+| issue_access_token (L104)                                        |   COVERED |
+| issue_pin_token (L139)                                           |   COVERED |
+| decode_token (L164)                                              |   COVERED |
+| user_from_claims (L192)                                          |   COVERED |
+| issued_before_sign_in (L216)                                     |   COVERED |
+| _device_active (L229)                                            |   COVERED |
+| _assist_farmer (L254)                                            |   COVERED |
+| assist_session_farmer (L279)                                     |   COVERED |
+| get_current_user (L305)                                          |   COVERED |
+| require_role (L365)                                              |   COVERED |
+| require_role.dependency (L378)                                   |   COVERED |
+| assert_same_fpo (L399)                                           |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/config.py (module)                                          |   COVERED |
+| Settings (L17)                                                   |   COVERED |
+| Settings._empty_otp_is_off (L73)                                 |   COVERED |
+| Settings._refuse_dev_secrets_in_prod (L85)                       |   COVERED |
+| get_settings (L105)                                              |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/db.py (module)                                              |   COVERED |
+| _enum_values (L30)                                               |   COVERED |
+| Base (L42)                                                       |   COVERED |
+| IdTimestamps (L75)                                               |   COVERED |
+| TenantScoped (L101)                                              |   COVERED |
+| get_engine (L113)                                                |   COVERED |
+| get_sessionmaker (L126)                                          |   COVERED |
+| get_session (L135)                                               |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/enums.py (module)                                           |   COVERED |
+| Role (L15)                                                       |   COVERED |
+| UserStatus (L25)                                                 |   COVERED |
+| ConsentType (L32)                                                |   COVERED |
+| OrgKind (L40)                                                    |   COVERED |
+| FarmerStatus (L48)                                               |   COVERED |
+| PinMethod (L56)                                                  |   COVERED |
+| FarmingType (L63)                                                |   COVERED |
+| IrrigationSource (L70)                                           |   COVERED |
+| LocationStatus (L80)                                             |   COVERED |
+| InputCategory (L89)                                              |   COVERED |
+| PracticeTag (L100)                                               |   COVERED |
+| ProducerGroupKind (L108)                                         |   COVERED |
+| EventSubject (L115)                                              |   COVERED |
+| EventType (L122)                                                 |   COVERED |
+| EventStatus (L138)                                               |   COVERED |
+| ChangeKind (L148)                                                |   COVERED |
+| PhotoStatus (L157)                                               |   COVERED |
+| LotStatus (L167)                                                 |   COVERED |
+| BatchStatus (L178)                                               |   COVERED |
+| ApprovalStage (L187)                                             |   COVERED |
+| StandardsScheme (L196)                                           |   COVERED |
+| ProfileVersionStatus (L205)                                      |   COVERED |
+| InstrumentKind (L213)                                            |   COVERED |
+| ReadingStage (L222)                                              |   COVERED |
+| ReadingSource (L231)                                             |   COVERED |
+| GradeStatus (L239)                                               |   COVERED |
+| FlagSubject (L247)                                               |   COVERED |
+| Severity (L257)                                                  |   COVERED |
+| FlagStatus (L265)                                                |   COVERED |
+| NotificationChannel (L274)                                       |   COVERED |
+| NotificationStatus (L283)                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/errors.py (module)                                          |   COVERED |
+| AppError (L26)                                                   |   COVERED |
+| AppError.__init_subclass__ (L38)                                 |   COVERED |
+| AppError.__init__ (L57)                                          |   COVERED |
+| ValidationFailedError (L69)                                      |   COVERED |
+| UnauthorizedError (L77)                                          |   COVERED |
+| ForbiddenError (L85)                                             |   COVERED |
+| NotFoundError (L93)                                              |   COVERED |
+| MethodNotAllowedError (L101)                                     |   COVERED |
+| ConflictError (L109)                                             |   COVERED |
+| GateNotMetError (L117)                                           |   COVERED |
+| AppendOnlyViolationError (L125)                                  |   COVERED |
+| ClientIdConflictError (L136)                                     |   COVERED |
+| PlotLockedError (L144)                                           |   COVERED |
+| ReasonRequiredError (L152)                                       |   COVERED |
+| InvalidGeometryError (L160)                                      |   COVERED |
+| GiRegionMissingError (L168)                                      |   COVERED |
+| FarmerNotPendingError (L176)                                     |   COVERED |
+| FarmerPhoneTakenError (L184)                                     |   COVERED |
+| FieldRequiredError (L195)                                        |   COVERED |
+| FieldUnknownError (L203)                                         |   COVERED |
+| FeatureDisabledError (L211)                                      |   COVERED |
+| ImportTooLargeError (L219)                                       |   COVERED |
+| ImportRowInvalidError (L227)                                     |   COVERED |
+| ImportRowExistsError (L235)                                      |   COVERED |
+| RateLimitedError (L243)                                          |   COVERED |
+| PayloadTooLargeError (L251)                                      |   COVERED |
+| InternalError (L259)                                             |   COVERED |
+| NotImplementedPilotError (L267)                                  |   COVERED |
+| ImplausibleValueError (L279)                                     |   COVERED |
+| UnitMismatchError (L287)                                         |   COVERED |
+| UnknownParameterError (L295)                                     |   COVERED |
+| SourceNotAllowedError (L303)                                     |   COVERED |
+| InstrumentCalibrationExpiredError (L311)                         |   COVERED |
+| MoistureTrailViolationError (L319)                               |   COVERED |
+| UnknownGradeForProfileError (L327)                               |   COVERED |
+| NoPublishedProfileError (L335)                                   |   COVERED |
+| ProfileIncompleteNotAllowedError (L343)                          |   COVERED |
+| OtpInvalidError (L352)                                           |   COVERED |
+| OtpExpiredError (L360)                                           |   COVERED |
+| OtpLockedError (L368)                                            |   COVERED |
+| PinInvalidError (L376)                                           |   COVERED |
+| PinLockedError (L384)                                            |   COVERED |
+| RefreshReusedError (L392)                                        |   COVERED |
+| AssistSessionInvalidError (L400)                                 |   COVERED |
+| DeviceInUseError (L414)                                          |   COVERED |
+| AccountInactiveError (L422)                                      |   COVERED |
+| ConsentConflictError (L434)                                      |   COVERED |
+| StaleVersionError (L446)                                         |   COVERED |
+| UndoWindowClosedError (L454)                                     |   COVERED |
+| FlagNotOpenError (L465)                                          |   COVERED |
+| ResolutionForbiddenError (L473)                                  |   COVERED |
+| PublicRecordInvalidError (L484)                                  |   COVERED |
+| append_only_error (L498)                                         |   COVERED |
+| _envelope (L512)                                                 |   COVERED |
+| _app_error (L531)                                                |   COVERED |
+| _validation_error (L545)                                         |   COVERED |
+| _http_error (L560)                                               |   COVERED |
+| _db_error (L585)                                                 |   COVERED |
+| _unhandled (L604)                                                |   COVERED |
+| install_handlers (L621)                                          |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/fieldconfig.py (module)                                     |   COVERED |
+| ConfigInvalid (L38)                                              |   COVERED |
+| _Strict (L46)                                                    |   COVERED |
+| Labels (L52)                                                     |   COVERED |
+| FieldSpec (L59)                                                  |   COVERED |
+| EntityConfig (L76)                                               |   COVERED |
+| EntityConfig._unique_names (L86)                                 |   COVERED |
+| Features (L101)                                                  |   COVERED |
+| FieldOverride (L118)                                             |   COVERED |
+| TenantConfig (L127)                                              |   COVERED |
+| Config (L137)                                                    |   COVERED |
+| _read (L145)                                                     |   COVERED |
+| _check_tenant (L163)                                             |   COVERED |
+| parse (L206)                                                     |   COVERED |
+| check_page_required (L244)                                       |   COVERED |
+| load (L274)                                                      |   COVERED |
+| _all_fields (L286)                                               |   COVERED |
+| fields_for (L310)                                                |   COVERED |
+| features_for (L326)                                              |   COVERED |
+| public_fields (L340)                                             |   COVERED |
+| _blank (L359)                                                    |   COVERED |
+| validate_payload (L371)                                          |   COVERED |
+| bundle_part (L399)                                               |   COVERED |
+| etag (L415)                                                      |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/ids.py (module)                                             |   COVERED |
+| uuid7 (L17)                                                      |   COVERED |
+| lot_code (L26)                                                   |   COVERED |
+| batch_code (L40)                                                 |   COVERED |
+| superlot_code (L49)                                              |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/schemas.py (module)                                         |   COVERED |
+| Quantity (L20)                                                   |   COVERED |
+| SignedQuantity (L27)                                             |   COVERED |
+| GeoPoint (L33)                                                   |   COVERED |
+| ThreeClocks (L41)                                                |   COVERED |
+| ClientRef (L51)                                                  |   COVERED |
+| Page (L57)                                                       |   COVERED |
+| ErrorBody (L65)                                                  |   COVERED |
+| ErrorEnvelope (L73)                                              |   COVERED |
+| Address (L79)                                                    |   COVERED |
+| PracticeTags (L97)                                               |   COVERED |
+| Reconciliation (L109)                                            |   COVERED |
+| YieldCheck (L119)                                                |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/storage.py (module)                                         |   COVERED |
+| _client_for (L24)                                                |   COVERED |
+| client (L56)                                                     |   COVERED |
+| presign_put (L65)                                                |   COVERED |
+| presign_get (L103)                                               |   COVERED |
+| head (L121)                                                      |   COVERED |
+| get_stream (L142)                                                |   COVERED |
+| put_public (L157)                                                |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/task_names.py (module)                                      |   COVERED |
+|------------------------------------------------------------------|-----------|
+| core/time.py (module)                                            |   COVERED |
+| utcnow (L13)                                                     |   COVERED |
+| clock_skew (L22)                                                 |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/__init__.py (module)                                     |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/config/__init__.py (module)                              |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/config/router.py (module)                                |   COVERED |
+| _with_etag (L34)                                                 |   COVERED |
+| get_fields (L58)                                                 |   COVERED |
+| get_features (L98)                                               |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/__init__.py (module)                              |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/bundle_service.py (module)                        |   COVERED |
+| Scope (L62)                                                      |   COVERED |
+| plot_json (L72)                                                  |   COVERED |
+| crop_json (L94)                                                  |   COVERED |
+| input_json (L113)                                                |   COVERED |
+| village_json (L132)                                              |   COVERED |
+| farmer_json (L153)                                               |   COVERED |
+| public_asset_url (L173)                                          |   COVERED |
+| region_json (L186)                                               |   COVERED |
+| fingerprint (L212)                                               |   COVERED |
+| parse_since (L224)                                               |   COVERED |
+| changed_parts (L246)                                             |   COVERED |
+| _scope (L265)                                                    |   COVERED |
+| _farmer_filter (L284)                                            |   COVERED |
+| _plots (L297)                                                    |   COVERED |
+| _active_crops (L318)                                             |   COVERED |
+| _crops (L333)                                                    |   COVERED |
+| _inputs_query (L349)                                             |   COVERED |
+| _inputs (L368)                                                   |   COVERED |
+| _standards (L384)                                                |   COVERED |
+| _gi_region (L409)                                                |   COVERED |
+| _farmer_profile (L446)                                           |   COVERED |
+| _villages (L467)                                                 |   COVERED |
+| _fields (L492)                                                   |   COVERED |
+| _prompts (L512)                                                  |   COVERED |
+| _images (L527)                                                   |   COVERED |
+| _calendar (L554)                                                 |   COVERED |
+| _db_versions (L588)                                              |   COVERED |
+| _snapshot (L611)                                                 |   COVERED |
+| manifest (L637)                                                  |   COVERED |
+| part_body (L656)                                                 |   COVERED |
+| reference (L677)                                                 |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/evidence.py (module)                              |   COVERED |
+| object_key (L54)                                                 |   COVERED |
+| upload_instruction (L75)                                         |   COVERED |
+| _degrees (L102)                                                  |   COVERED |
+| read_exif (L116)                                                 |   COVERED |
+| exif_problems (L154)                                             |   COVERED |
+| webp_variant (L181)                                              |   COVERED |
+| _read_object (L206)                                              |   COVERED |
+| _public_url (L231)                                               |   COVERED |
+| signed_variants (L244)                                           |   COVERED |
+| verify (L267)                                                    |   COVERED |
+| make_variants (L321)                                             |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/models.py (module)                                |   COVERED |
+| Event (L25)                                                      |   COVERED |
+| EventVersion (L62)                                               |   COVERED |
+| EvidencePhoto (L118)                                             |   COVERED |
+| SyncCursor (L163)                                                |   COVERED |
+| ReferenceVersion (L184)                                          |   COVERED |
+| SyncMetric (L205)                                                |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/pull_service.py (module)                          |   COVERED |
+| encode_cursor (L47)                                              |   COVERED |
+| decode_cursor (L60)                                              |   COVERED |
+| merge_page (L82)                                                 |   COVERED |
+| is_photo_pending (L97)                                           |   COVERED |
+| _window (L111)                                                   |   COVERED |
+| _lot_json (L131)                                                 |   COVERED |
+| _intake_json (L157)                                              |   COVERED |
+| _flag_json (L179)                                                |   COVERED |
+| _notification_json (L203)                                        |   COVERED |
+| _changes (L223)                                                  |   COVERED |
+| _pending_photos (L298)                                           |   COVERED |
+| pull (L343)                                                      |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/router.py (module)                                |   COVERED |
+| list_lot_events (L44)                                            |   COVERED |
+| correct_event (L85)                                              |   COVERED |
+| undo_event (L120)                                                |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/schemas.py (module)                               |   COVERED |
+| PhotoIn (L41)                                                    |   COVERED |
+| EventVersionBase (L62)                                           |   COVERED |
+| EventVersionBase._consistent (L90)                               |   COVERED |
+| _type_field (L110)                                               |   COVERED |
+| LandPreparationVersion (L122)                                    |   COVERED |
+| NurseryVersion (L129)                                            |   COVERED |
+| SowingVersion (L136)                                             |   COVERED |
+| InputApplicationVersion (L143)                                   |   COVERED |
+| HarvestVersion (L150)                                            |   COVERED |
+| DryingVersion (L157)                                             |   COVERED |
+| PackingVersion (L164)                                            |   COVERED |
+| ProblemVersion (L171)                                            |   COVERED |
+| IntakeVersion (L178)                                             |   COVERED |
+| GradingVersion (L185)                                            |   COVERED |
+| FinalPackingVersion (L192)                                       |   COVERED |
+| CorrectionIn (L219)                                              |   COVERED |
+| UndoIn (L226)                                                    |   COVERED |
+| SyncMetricIn (L242)                                              |   COVERED |
+| SyncEntry (L255)                                                 |   COVERED |
+| SyncPushIn (L295)                                                |   COVERED |
+| PhotoUpload (L309)                                               |   COVERED |
+| SyncResult (L321)                                                |   COVERED |
+| SyncPushOut (L335)                                               |   COVERED |
+| PhotoRef (L342)                                                  |   COVERED |
+| PhotosConfirmIn (L348)                                           |   COVERED |
+| PhotoConfirmOut (L354)                                           |   COVERED |
+| EventPhotoOut (L363)                                             |   COVERED |
+| EventOut (L378)                                                  |   COVERED |
+| BundlePart (L397)                                                |   COVERED |
+| PartVersion (L413)                                               |   COVERED |
+| BundleManifest (L425)                                            |   COVERED |
+| ReferencePart (L433)                                             |   COVERED |
+| ReferenceOut (L439)                                              |   COVERED |
+| PullChange (L445)                                                |   COVERED |
+| PullOut (L455)                                                   |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/service.py (module)                               |   COVERED |
+| PendingPhoto (L97)                                               |   COVERED |
+| Written (L108)                                                   |   COVERED |
+| _LostRace (L118)                                                 |   COVERED |
+| validation_details (L125)                                        |   COVERED |
+| parse_version (L137)                                             |   COVERED |
+| check_owner (L155)                                               |   COVERED |
+| check_version_no (L170)                                          |   COVERED |
+| check_change (L185)                                              |   COVERED |
+| skew_hints (L221)                                                |   COVERED |
+| _point (L237)                                                    |   COVERED |
+| enqueue (L252)                                                   |   COVERED |
+| _check_subject (L274)                                            |   COVERED |
+| _existing (L314)                                                 |   COVERED |
+| _entered_remotely (L350)                                         |   COVERED |
+| _add_version (L371)                                              |   COVERED |
+| write_version (L551)                                             |   COVERED |
+| _finish (L598)                                                   |   COVERED |
+| _push_event_version (L633)                                       |   COVERED |
+| _push_reading (L655)                                             |   COVERED |
+| _push_plot (L678)                                                |   COVERED |
+| _consent_body (L707)                                             |   COVERED |
+| _push_consent (L729)                                             |   COVERED |
+| _push_flag_resolution (L752)                                     |   COVERED |
+| _push_farmer (L776)                                              |   COVERED |
+| _push_assist_session (L816)                                      |   COVERED |
+| _push_lot_intake (L846)                                          |   COVERED |
+| _rejected (L896)                                                 |   COVERED |
+| _entry_caller (L910)                                             |   COVERED |
+| _stamp_audit (L943)                                              |   COVERED |
+| push (L969)                                                      |   COVERED |
+| _store_metrics (L1013)                                           |   COVERED |
+| confirm_photos (L1044)                                           |   COVERED |
+| correct_event (L1098)                                            |   COVERED |
+| undo_event (L1122)                                               |   COVERED |
+| list_lot_events (L1169)                                          |   COVERED |
+| event_outs (L1205)                                               |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/sync_router.py (module)                           |   COVERED |
+| CappedRoute (L42)                                                |   COVERED |
+| CappedRoute.get_route_handler (L45)                              |   COVERED |
+| CappedRoute.get_route_handler.capped (L53)                       |   COVERED |
+| errors (L79)                                                     |   COVERED |
+| sync_push (L120)                                                 |   COVERED |
+| sync_photos_confirm (L146)                                       |   COVERED |
+| etag_matches (L167)                                              |   COVERED |
+| sync_bundle (L194)                                               |   COVERED |
+| sync_bundle_part (L218)                                          |   COVERED |
+| sync_reference (L258)                                            |   COVERED |
+| sync_pull (L300)                                                 |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/tasks.py (module)                                 |   COVERED |
+| verify_photo (L20)                                               |   COVERED |
+| make_variants (L49)                                              |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/payloads/__init__.py (module)                     |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/payloads/farm.py (module)                         |   COVERED |
+| Payload (L21)                                                    |   COVERED |
+| LandPreparationPayload (L27)                                     |   COVERED |
+| NurseryPayload (L36)                                             |   COVERED |
+| SowingPayload (L43)                                              |   COVERED |
+| InputApplicationPayload (L53)                                    |   COVERED |
+| HarvestPayload (L65)                                             |   COVERED |
+| DryingPayload (L72)                                              |   COVERED |
+| PackingPayload (L88)                                             |   COVERED |
+| ProblemPayload (L95)                                             |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/events/payloads/processing.py (module)                   |   COVERED |
+| IntakePayload (L19)                                              |   COVERED |
+| GradingPayload (L38)                                             |   COVERED |
+| FinalPackingPayload (L45)                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/identity/__init__.py (module)                            |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/identity/models.py (module)                              |   COVERED |
+| User (L24)                                                       |   COVERED |
+| Membership (L56)                                                 |   COVERED |
+| OtpChallenge (L66)                                               |   COVERED |
+| Device (L80)                                                     |   COVERED |
+| AssistSession (L99)                                              |   COVERED |
+| ConsentRecord (L117)                                             |   COVERED |
+| AuditLog (L142)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/identity/router.py (module)                              |   COVERED |
+| _is_web (L51)                                                    |   COVERED |
+| _deliver (L63)                                                   |   COVERED |
+| otp_request (L99)                                                |   COVERED |
+| otp_verify (L125)                                                |   COVERED |
+| pin_verify (L157)                                                |   COVERED |
+| pin_set (L200)                                                   |   COVERED |
+| refresh (L227)                                                   |   COVERED |
+| logout (L255)                                                    |   COVERED |
+| me (L276)                                                        |   COVERED |
+| assist_start (L293)                                              |   COVERED |
+| assist_end (L319)                                                |   COVERED |
+| consent_create (L342)                                            |   COVERED |
+| consent_list (L362)                                              |   COVERED |
+| consent_revoke (L383)                                            |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/identity/schemas.py (module)                             |   COVERED |
+| OtpRequestIn (L22)                                               |   COVERED |
+| OtpVerifyIn (L28)                                                |   COVERED |
+| SessionOut (L40)                                                 |   COVERED |
+| PinRequiredOut (L57)                                             |   COVERED |
+| PinIn (L76)                                                      |   COVERED |
+| PinChangeIn (L82)                                                |   COVERED |
+| RefreshIn (L90)                                                  |   COVERED |
+| UserOut (L98)                                                    |   COVERED |
+| MembershipOut (L109)                                             |   COVERED |
+| DeviceOut (L116)                                                 |   COVERED |
+| MeOut (L125)                                                     |   COVERED |
+| AssistStartIn (L133)                                             |   COVERED |
+| AssistEndIn (L143)                                               |   COVERED |
+| AssistSessionOut (L149)                                          |   COVERED |
+| ConsentIn (L159)                                                 |   COVERED |
+| ConsentOut (L173)                                                |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/identity/service.py (module)                             |   COVERED |
+| new_otp_code (L121)                                              |   COVERED |
+| hash_otp (L130)                                                  |   COVERED |
+| otp_request_wait (L151)                                          |   COVERED |
+| otp_outcome (L172)                                               |   COVERED |
+| pin_outcome (L195)                                               |   COVERED |
+| hash_pin (L221)                                                  |   COVERED |
+| pin_matches (L233)                                               |   COVERED |
+| new_refresh_token (L249)                                         |   COVERED |
+| hash_refresh (L261)                                              |   COVERED |
+| refresh_device_id (L273)                                         |   COVERED |
+| refresh_outcome (L289)                                           |   COVERED |
+| roles_of (L315)                                                  |   COVERED |
+| needs_pin (L328)                                                 |   COVERED |
+| _account (L344)                                                  |   COVERED |
+| _send_otp_sms (L377)                                             |   COVERED |
+| request_otp (L402)                                               |   COVERED |
+| _bind_device (L444)                                              |   COVERED |
+| _open_session (L475)                                             |   COVERED |
+| verify_otp (L522)                                                |   COVERED |
+| _check_pin (L591)                                                |   COVERED |
+| verify_pin (L623)                                                |   COVERED |
+| set_pin (L669)                                                   |   COVERED |
+| _sign_out (L699)                                                 |   COVERED |
+| refresh (L711)                                                   |   COVERED |
+| logout (L749)                                                    |   COVERED |
+| me (L768)                                                        |   COVERED |
+| _farmer_in_fpo (L799)                                            |   COVERED |
+| start_assist (L823)                                              |   COVERED |
+| start_assist_from_sync (L863)                                    |   COVERED |
+| end_assist (L897)                                                |   COVERED |
+| _consent_out (L929)                                              |   COVERED |
+| _check_writer (L941)                                             |   COVERED |
+| record_consent (L958)                                            |   COVERED |
+| list_consents (L1007)                                            |   COVERED |
+| revoke_consent (L1031)                                           |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/lots_batches/__init__.py (module)                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/lots_batches/models.py (module)                          |   COVERED |
+| Lot (L24)                                                        |   COVERED |
+| LotIntake (L49)                                                  |   COVERED |
+| current_intake (L83)                                             |   COVERED |
+| Batch (L93)                                                      |   COVERED |
+| BatchShare (L132)                                                |   COVERED |
+| BatchApproval (L161)                                             |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/lots_batches/router.py (module)                          |   COVERED |
+| _errors (L54)                                                    |   COVERED |
+| create_lot (L81)                                                 |   COVERED |
+| list_lots (L110)                                                 |   COVERED |
+| get_lot (L143)                                                   |   COVERED |
+| lot_qr (L171)                                                    |   COVERED |
+| mark_ready (L197)                                                |   COVERED |
+| create_intake (L249)                                             |   COVERED |
+| create_batch (L300)                                              |   COVERED |
+| list_batches (L329)                                              |   COVERED |
+| get_batch (L363)                                                 |   COVERED |
+| second_signoff (L389)                                            |   COVERED |
+| approve_grading (L429)                                           |   COVERED |
+| final_packing (L471)                                             |   COVERED |
+| publish (L515)                                                   |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/lots_batches/schemas.py (module)                         |   COVERED |
+| _must_be_kg (L28)                                                |   COVERED |
+| LotIn (L49)                                                      |   COVERED |
+| LotOut (L61)                                                     |   COVERED |
+| FlagBrief (L79)                                                  |   COVERED |
+| IntakeIn (L90)                                                   |   COVERED |
+| IntakeIn._reason_with_correction (L118)                          |   COVERED |
+| IntakeOut (L132)                                                 |   COVERED |
+| BatchIn (L155)                                                   |   COVERED |
+| BatchIn._distinct_lots (L168)                                    |   COVERED |
+| ShareOut (L182)                                                  |   COVERED |
+| GiBlockReason (L191)                                             |   COVERED |
+| BatchOut (L202)                                                  |   COVERED |
+| GradingApproveIn (L234)                                          |   COVERED |
+| FinalPackingIn (L240)                                            |   COVERED |
+| FinalPackingIn._dates_in_order (L248)                            |   COVERED |
+| PublishOut (L262)                                                |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/lots_batches/service.py (module)                         |   COVERED |
+| reason (L110)                                                    |   COVERED |
+| _blocks (L125)                                                   |   COVERED |
+| hold_reasons (L138)                                              |   COVERED |
+| reconcile (L165)                                                 |   COVERED |
+| reconcile.kg (L182)                                              |   COVERED |
+| _kg (L202)                                                       |   COVERED |
+| flag_briefs (L214)                                               |   COVERED |
+| lot_out (L226)                                                   |   COVERED |
+| intake_out (L252)                                                |   COVERED |
+| _refuse (L283)                                                   |   COVERED |
+| _unused_code (L308)                                              |   COVERED |
+| _lot_in_scope (L332)                                             |   COVERED |
+| _batch_in_scope (L360)                                           |   COVERED |
+| _page (L380)                                                     |   COVERED |
+| _approval (L406)                                                 |   COVERED |
+| _needs_second_signoff (L429)                                     |   COVERED |
+| batch_out (L448)                                                 |   COVERED |
+| create_lot (L500)                                                |   COVERED |
+| list_lots (L561)                                                 |   COVERED |
+| get_lot (L596)                                                   |   COVERED |
+| mark_ready (L613)                                                |   COVERED |
+| _farm_kg (L657)                                                  |   COVERED |
+| create_intake (L688)                                             |   COVERED |
+| create_intake_from_sync (L809)                                   |   COVERED |
+| _gi_check (L843)                                                 |   COVERED |
+| _batch_lots (L902)                                               |   COVERED |
+| create_batch (L919)                                              |   COVERED |
+| list_batches (L1034)                                             |   COVERED |
+| get_batch (L1060)                                                |   COVERED |
+| second_signoff (L1077)                                           |   COVERED |
+| approve_grading (L1106)                                          |   COVERED |
+| final_packing (L1170)                                            |   COVERED |
+| publish (L1225)                                                  |   COVERED |
+| enqueue_page_build (L1273)                                       |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/lots_batches/shares.py (module)                          |   COVERED |
+| split (L15)                                                      |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/notifications/__init__.py (module)                       |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/notifications/models.py (module)                         |   COVERED |
+| Notification (L19)                                               |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/notifications/providers.py (module)                      |   COVERED |
+| ProviderRefused (L20)                                            |   COVERED |
+| SmsProvider (L28)                                                |   COVERED |
+| SmsProvider.send (L31)                                           |   COVERED |
+| ConsoleProvider (L48)                                            |   COVERED |
+| ConsoleProvider.send (L51)                                       |   COVERED |
+| UnconfiguredProvider (L69)                                       |   COVERED |
+| UnconfiguredProvider.send (L73)                                  |   COVERED |
+| select_provider (L90)                                            |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/notifications/router.py (module)                         |   COVERED |
+| list_my_notifications (L31)                                      |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/notifications/schemas.py (module)                        |   COVERED |
+| NotificationOut (L16)                                            |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/notifications/service.py (module)                        |   COVERED |
+| deliver (L29)                                                    |   COVERED |
+| list_mine (L92)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/notifications/tasks.py (module)                          |   COVERED |
+| send (L23)                                                       |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/notifications/templates.py (module)                      |   COVERED |
+| redact (L55)                                                     |   COVERED |
+| render (L67)                                                     |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/partner_api/__init__.py (module)                         |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/partner_api/router.py (module)                           |   COVERED |
+| get_partner_batch (L30)                                          |   COVERED |
+| post_partner_benefit (L49)                                       |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/publishing/__init__.py (module)                          |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/publishing/builder.py (module)                           |   COVERED |
+| LotRows (L74)                                                    |   COVERED |
+| BatchRows (L99)                                                  |   COVERED |
+| load (L129)                                                      |   COVERED |
+| load.need (L144)                                                 |   COVERED |
+| kg (L247)                                                        |   COVERED |
+| photo_copies (L259)                                              |   COVERED |
+| _photo (L283)                                                    |   COVERED |
+| _quantity (L314)                                                 |   COVERED |
+| _event (L331)                                                    |   COVERED |
+| _sorted (L377)                                                   |   COVERED |
+| _place (L389)                                                    |   COVERED |
+| location_method (L415)                                           |   COVERED |
+| review_note (L427)                                               |   COVERED |
+| _lot (L442)                                                      |   COVERED |
+| _grade (L499)                                                    |   COVERED |
+| assemble (L539)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/publishing/models.py (module)                            |   COVERED |
+| PageBuild (L20)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/publishing/router.py (module)                            |   COVERED |
+| _gate (L41)                                                      |   COVERED |
+| rebuild (L67)                                                    |   COVERED |
+| list_builds (L99)                                                |   COVERED |
+| batch_qr (L134)                                                  |   COVERED |
+| batch_labels (L163)                                              |   COVERED |
+| public_page (L195)                                               |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/publishing/schemas.py (module)                           |   COVERED |
+| BuildOut (L14)                                                   |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/publishing/service.py (module)                           |   COVERED |
+| public_url (L52)                                                 |   COVERED |
+| qr_png (L64)                                                     |   COVERED |
+| labels_pdf (L78)                                                 |   COVERED |
+| _batch_in_scope (L106)                                           |   COVERED |
+| build_out (L129)                                                 |   COVERED |
+| rebuild (L153)                                                   |   COVERED |
+| list_builds (L192)                                               |   COVERED |
+| _write (L222)                                                    |   COVERED |
+| _invalidate (L261)                                               |   COVERED |
+| build_page (L285)                                                |   COVERED |
+| labels (L356)                                                    |   COVERED |
+| page_html (L392)                                                 |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/publishing/tasks.py (module)                             |   COVERED |
+| build_page (L26)                                                 |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/quality/__init__.py (module)                             |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/quality/grade_engine.py (module)                         |   COVERED |
+| Reading (L41)                                                    |   COVERED |
+| GradeResult (L56)                                                |   COVERED |
+| Violation (L72)                                                  |   COVERED |
+| rank (L81)                                                       |   COVERED |
+| _latest (L100)                                                   |   COVERED |
+| _counts_as_lab (L116)                                            |   COVERED |
+| compute (L134)                                                   |   COVERED |
+| declared_vs_computed (L225)                                      |   COVERED |
+| check_plausibility (L248)                                        |   COVERED |
+| check_trail (L278)                                               |   COVERED |
+| lot_gate (L319)                                                  |   COVERED |
+| yield_outcome (L338)                                             |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/quality/models.py (module)                               |   COVERED |
+| StandardsProfile (L30)                                           |   COVERED |
+| StandardsProfileVersion (L44)                                    |   COVERED |
+| Instrument (L64)                                                 |   COVERED |
+| QualityReading (L82)                                             |   COVERED |
+| GradeComputation (L136)                                          |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/quality/router.py (module)                               |   COVERED |
+| _errors (L50)                                                    |   COVERED |
+| list_standards_profiles (L68)                                    |   COVERED |
+| get_standards_profile_version (L100)                             |   COVERED |
+| create_standards_profile_version (L141)                          |   COVERED |
+| list_instruments (L176)                                          |   COVERED |
+| create_instrument (L212)                                         |   COVERED |
+| create_quality_reading (L257)                                    |   COVERED |
+| list_lot_readings (L287)                                         |   COVERED |
+| list_batch_readings (L320)                                       |   COVERED |
+| grade_batch (L367)                                               |   COVERED |
+| get_batch_grade (L398)                                           |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/quality/schemas.py (module)                              |   COVERED |
+| _Strict (L41)                                                    |   COVERED |
+| Range (L47)                                                      |   COVERED |
+| Range._ordered (L58)                                             |   COVERED |
+| Range.holds (L71)                                                |   COVERED |
+| StandardRef (L83)                                                |   COVERED |
+| Parameter (L96)                                                  |   COVERED |
+| LabCertifiedRequires (L161)                                      |   COVERED |
+| LotGate (L172)                                                   |   COVERED |
+| TrailRule (L183)                                                 |   COVERED |
+| YieldRule (L197)                                                 |   COVERED |
+| YieldRule._margins_ordered (L210)                                |   COVERED |
+| StandardsProfileRules (L224)                                     |   COVERED |
+| StandardsProfileRules._cross_check (L256)                        |   COVERED |
+| StandardsProfileRules.parameter (L293)                           |   COVERED |
+| StandardsProfileRules.pending_parameters (L304)                  |   COVERED |
+| StandardsProfileOut (L318)                                       |   COVERED |
+| ProfileVersionIn (L331)                                          |   COVERED |
+| ProfileVersionOut (L348)                                         |   COVERED |
+| InstrumentIn (L361)                                              |   COVERED |
+| InstrumentIn._dates_ordered (L377)                               |   COVERED |
+| InstrumentOut (L391)                                             |   COVERED |
+| QualityReadingIn (L398)                                          |   COVERED |
+| QualityReadingIn._subject_and_instrument (L436)                  |   COVERED |
+| QualityReadingOut (L452)                                         |   COVERED |
+| GradingIn (L478)                                                 |   COVERED |
+| ParameterResult (L492)                                           |   COVERED |
+| GradeOut (L519)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/quality/service.py (module)                              |   COVERED |
+| _page (L91)                                                      |   COVERED |
+| _rules (L124)                                                    |   COVERED |
+| latest_profile_version_for_crop (L139)                           |   COVERED |
+| _required_rules (L169)                                           |   COVERED |
+| yield_params_for_crop (L190)                                     |   COVERED |
+| yield_outcome_for_crop (L208)                                    |   COVERED |
+| list_profiles (L235)                                             |   COVERED |
+| get_profile_version (L284)                                       |   COVERED |
+| add_profile_version (L310)                                       |   COVERED |
+| create_profile_version (L377)                                    |   COVERED |
+| list_instruments (L427)                                          |   COVERED |
+| create_instrument (L459)                                         |   COVERED |
+| _load_lot (L487)                                                 |   COVERED |
+| _load_batch (L511)                                               |   COVERED |
+| _engine_reading (L534)                                           |   COVERED |
+| reading_out (L555)                                               |   COVERED |
+| _raise_violation (L568)                                          |   COVERED |
+| _parse_reading (L594)                                            |   COVERED |
+| _same_owner (L615)                                               |   COVERED |
+| _prior_readings (L633)                                           |   COVERED |
+| _check_instrument (L655)                                         |   COVERED |
+| _photo_ids (L693)                                                |   COVERED |
+| _enqueue_trail_override (L705)                                   |   COVERED |
+| create_reading (L730)                                            |   COVERED |
+| list_readings (L854)                                             |   COVERED |
+| lot_gate_passes (L889)                                           |   COVERED |
+| _check_declared (L918)                                           |   COVERED |
+| compute_grade_for_batch (L934)                                   |   COVERED |
+| grade_batch (L996)                                               |   COVERED |
+| latest_grade (L1033)                                             |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/quality/profiles/__init__.py (module)                    |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/quality/profiles/loader.py (module)                      |   COVERED |
+| read_profile (L25)                                               |   COVERED |
+| load_profile (L41)                                               |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/registry/__init__.py (module)                            |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/registry/geo.py (module)                                 |   COVERED |
+| GeoResult (L39)                                                  |   COVERED |
+| locate_point (L99)                                               |   COVERED |
+| event_within_plot (L129)                                         |   COVERED |
+| simplify_region (L161)                                           |   COVERED |
+| _checked (L187)                                                  |   COVERED |
+| parse_polygon (L205)                                             |   COVERED |
+| parse_multipolygon (L224)                                        |   COVERED |
+| _shape (L243)                                                    |   COVERED |
+| walked_area_acres (L261)                                         |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/registry/imports.py (module)                             |   COVERED |
+| template_columns (L52)                                           |   COVERED |
+| template_csv (L67)                                               |   COVERED |
+| parse_csv (L82)                                                  |   COVERED |
+| _field (L119)                                                    |   COVERED |
+| _run (L136)                                                      |   COVERED |
+| import_farmers (L177)                                            |   COVERED |
+| import_farmers.handle (L201)                                     |   COVERED |
+| import_villages (L224)                                           |   COVERED |
+| import_villages.handle (L245)                                    |   COVERED |
+| import_inputs (L264)                                             |   COVERED |
+| import_inputs.handle (L288)                                      |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/registry/models.py (module)                              |   COVERED |
+| Fpo (L41)                                                        |   COVERED |
+| Processor (L65)                                                  |   COVERED |
+| Village (L86)                                                    |   COVERED |
+| ProducerGroup (L103)                                             |   COVERED |
+| Farmer (L112)                                                    |   COVERED |
+| Plot (L149)                                                      |   COVERED |
+| PlotRevision (L204)                                              |   COVERED |
+| GiTag (L221)                                                     |   COVERED |
+| Crop (L232)                                                      |   COVERED |
+| GiRegionVersion (L250)                                           |   COVERED |
+| InputMaster (L289)                                               |   COVERED |
+| IdDocument (L309)                                                |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/registry/router.py (module)                              |   COVERED |
+| _feature (L75)                                                   |   COVERED |
+| _feature.gate (L85)                                              |   COVERED |
+| _finish (L104)                                                   |   COVERED |
+| list_fpos (L125)                                                 |   COVERED |
+| create_fpo (L140)                                                |   COVERED |
+| get_fpo (L162)                                                   |   COVERED |
+| list_processors (L183)                                           |   COVERED |
+| create_processor (L203)                                          |   COVERED |
+| list_villages (L221)                                             |   COVERED |
+| list_farmers (L252)                                              |   COVERED |
+| create_farmer (L308)                                             |   COVERED |
+| get_farmer (L331)                                                |   COVERED |
+| update_farmer (L350)                                             |   COVERED |
+| approve_farmer (L373)                                            |   COVERED |
+| reveal_phone (L399)                                              |   COVERED |
+| reject_farmer (L434)                                             |   COVERED |
+| list_farmer_plots (L458)                                         |   COVERED |
+| create_plot (L488)                                               |   COVERED |
+| get_plot (L521)                                                  |   COVERED |
+| correct_plot (L540)                                              |   COVERED |
+| list_crops (L569)                                                |   COVERED |
+| get_region (L586)                                                |   COVERED |
+| create_region_version (L610)                                     |   COVERED |
+| list_inputs (L636)                                               |   COVERED |
+| create_input (L651)                                              |   COVERED |
+| import_farmers (L677)                                            |   COVERED |
+| import_villages (L703)                                           |   COVERED |
+| import_inputs (L727)                                             |   COVERED |
+| import_template (L756)                                           |   COVERED |
+| create_id_document (L787)                                        |   COVERED |
+| list_producer_groups (L820)                                      |   COVERED |
+| create_producer_group (L844)                                     |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/registry/schemas.py (module)                             |   COVERED |
+| format_address (L40)                                             |   COVERED |
+| PolygonGeoJSON (L63)                                             |   COVERED |
+| MultiPolygonGeoJSON (L73)                                        |   COVERED |
+| _Out (L82)                                                       |   COVERED |
+| FpoIn (L91)                                                      |   COVERED |
+| FpoOut (L109)                                                    |   COVERED |
+| FpoOut.address_line (L134)                                       |   COVERED |
+| ProcessorIn (L143)                                               |   COVERED |
+| ProcessorOut (L155)                                              |   COVERED |
+| ProcessorOut.address_line (L168)                                 |   COVERED |
+| VillageOut (L177)                                                |   COVERED |
+| FarmerIn (L194)                                                  |   COVERED |
+| FarmerPatch (L229)                                               |   COVERED |
+| FarmerOut (L241)                                                 |   COVERED |
+| FarmerOut.address_line (L271)                                    |   COVERED |
+| FarmerPhoneOut (L280)                                            |   COVERED |
+| FarmerReject (L287)                                              |   COVERED |
+| PlotIn (L301)                                                    |   COVERED |
+| PlotCorrection (L341)                                            |   COVERED |
+| PlotCorrection._review_complete (L370)                           |   COVERED |
+| RegionCheckOut (L384)                                            |   COVERED |
+| PlotOut (L393)                                                   |   COVERED |
+| CropOut (L439)                                                   |   COVERED |
+| GiRegionVersionIn (L452)                                         |   COVERED |
+| GiRegionVersionOut (L485)                                        |   COVERED |
+| GiRegionOut (L501)                                               |   COVERED |
+| InputIn (L511)                                                   |   COVERED |
+| InputOut (L526)                                                  |   COVERED |
+| VillageIn (L544)                                                 |   COVERED |
+| ImportRowError (L557)                                            |   COVERED |
+| ImportReport (L565)                                              |   COVERED |
+| IdDocumentIn (L573)                                              |   COVERED |
+| IdDocumentUpload (L586)                                          |   COVERED |
+| ProducerGroupIn (L598)                                           |   COVERED |
+| ProducerGroupOut (L605)                                          |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/registry/service.py (module)                             |   COVERED |
+| encode_cursor (L138)                                             |   COVERED |
+| decode_cursor (L150)                                             |   COVERED |
+| _page (L176)                                                     |   COVERED |
+| to_acres (L192)                                                  |   COVERED |
+| area_gap (L213)                                                  |   COVERED |
+| location_status (L230)                                           |   COVERED |
+| _point_wkt (L255)                                                |   COVERED |
+| _pin (L267)                                                      |   COVERED |
+| _json_default (L281)                                             |   COVERED |
+| _snapshot (L296)                                                 |   COVERED |
+| _plot_out (L310)                                                 |   COVERED |
+| _is_super_admin (L362)                                           |   COVERED |
+| _require_super_admin (L375)                                      |   COVERED |
+| _farmer_in_scope (L389)                                          |   COVERED |
+| _plot_in_scope (L413)                                            |   COVERED |
+| fpo_code (L435)                                                  |   COVERED |
+| _new_farmer_code (L449)                                          |   COVERED |
+| list_fpos (L474)                                                 |   COVERED |
+| create_fpo (L490)                                                |   COVERED |
+| _address_json (L518)                                             |   COVERED |
+| list_processors (L530)                                           |   COVERED |
+| create_processor (L548)                                          |   COVERED |
+| list_villages (L571)                                             |   COVERED |
+| list_farmers (L620)                                              |   COVERED |
+| get_farmer (L665)                                                |   COVERED |
+| _address_with_village (L682)                                     |   COVERED |
+| create_farmer (L715)                                             |   COVERED |
+| create_farmer_from_sync (L791)                                   |   COVERED |
+| update_farmer (L823)                                             |   COVERED |
+| approve_farmer (L863)                                            |   COVERED |
+| _check_region (L895)                                             |   COVERED |
+| _check_gi_tag (L925)                                             |   COVERED |
+| _label (L939)                                                    |   COVERED |
+| create_plot (L951)                                               |   COVERED |
+| create_plot_from_sync (L1034)                                    |   COVERED |
+| get_plot (L1062)                                                 |   COVERED |
+| correct_plot (L1079)                                             |   COVERED |
+| enqueue_plot_check (L1154)                                       |   COVERED |
+| list_crops (L1176)                                               |   COVERED |
+| get_region (L1189)                                               |   COVERED |
+| region_source_ref (L1217)                                        |   COVERED |
+| create_region_version (L1229)                                    |   COVERED |
+| list_inputs (L1276)                                              |   COVERED |
+| create_input (L1296)                                             |   COVERED |
+| list_producer_groups (L1330)                                     |   COVERED |
+| create_producer_group (L1344)                                    |   COVERED |
+| create_id_document (L1367)                                       |   COVERED |
+| mask_phone (L1454)                                               |   COVERED |
+| farmer_out (L1466)                                               |   COVERED |
+| _account_phone (L1479)                                           |   COVERED |
+| _farmer_view (L1498)                                             |   COVERED |
+| farmer_search (L1511)                                            |   COVERED |
+| farmer_fields (L1533)                                            |   COVERED |
+| parse_fields (L1549)                                             |   COVERED |
+| _audit (L1569)                                                   |   COVERED |
+| reveal_phone (L1605)                                             |   COVERED |
+| _end_farmer_access (L1629)                                       |   COVERED |
+| reject_farmer (L1675)                                            |   COVERED |
+| list_farmer_plots (L1716)                                        |   COVERED |
+| _box (L1745)                                                     |   COVERED |
+| fpo_bbox (L1757)                                                 |   COVERED |
+| get_fpo (L1776)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/reporting/__init__.py (module)                           |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/reporting/models.py (module)                             |   COVERED |
+| ScanEvent (L16)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/reporting/router.py (module)                             |   COVERED |
+| get_dashboard (L65)                                              |   COVERED |
+| list_dashboard_farmers (L107)                                    |   COVERED |
+| search_audit_log (L167)                                          |   COVERED |
+| export_batch_audit (L229)                                        |   COVERED |
+| post_scan (L268)                                                 |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/reporting/schemas.py (module)                            |   COVERED |
+| Completeness (L20)                                               |   COVERED |
+| StageTile (L32)                                                  |   COVERED |
+| FlagCounts (L43)                                                 |   COVERED |
+| AreaStats (L51)                                                  |   COVERED |
+| AreaByVillage (L69)                                              |   COVERED |
+| AreaByBlock (L77)                                                |   COVERED |
+| LandArea (L83)                                                   |   COVERED |
+| FinishedBatch (L91)                                              |   COVERED |
+| FinishedGoods (L105)                                             |   COVERED |
+| Scans (L113)                                                     |   COVERED |
+| SyncHealthRow (L120)                                             |   COVERED |
+| Dashboard (L136)                                                 |   COVERED |
+| FarmerRow (L153)                                                 |   COVERED |
+| AuditRow (L171)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/reporting/service.py (module)                            |   COVERED |
+| Filters (L119)                                                   |   COVERED |
+| percent (L131)                                                   |   COVERED |
+| _acres (L146)                                                    |   COVERED |
+| _kg (L158)                                                       |   COVERED |
+| _ms (L170)                                                       |   COVERED |
+| main_quantity (L182)                                             |   COVERED |
+| csv_cell (L197)                                                  |   COVERED |
+| scrub (L211)                                                     |   COVERED |
+| _log_valkey_down (L227)                                          |   COVERED |
+| limit_scans (L236)                                               |   COVERED |
+| lot_complete (L271)                                              |   COVERED |
+| _place (L294)                                                    |   COVERED |
+| _scoped_lots (L314)                                              |   COVERED |
+| _progress (L338)                                                 |   COVERED |
+| _area_stats (L388)                                               |   COVERED |
+| _land_area (L408)                                                |   COVERED |
+| _land_area.grouped (L433)                                        |   COVERED |
+| _finished_goods (L463)                                           |   COVERED |
+| _sync_health (L520)                                              |   COVERED |
+| _sync_health.pct (L535)                                          |   COVERED |
+| dashboard (L577)                                                 |   COVERED |
+| farmer_fields (L629)                                             |   COVERED |
+| farmer_rows (L648)                                               |   COVERED |
+| _owned_by (L732)                                                 |   COVERED |
+| audit_rows (L765)                                                |   COVERED |
+| audit_csv (L799)                                                 |   COVERED |
+| record_scan (L864)                                               |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/__init__.py (module)                         |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/models.py (module)                           |   COVERED |
+| Flag (L22)                                                       |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/router.py (module)                           |   COVERED |
+| list_flags (L47)                                                 |   COVERED |
+| get_flag (L97)                                                   |   COVERED |
+| resolve_flag (L142)                                              |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/schemas.py (module)                          |   COVERED |
+| FlagOut (L19)                                                    |   COVERED |
+| FlagResolveIn (L50)                                              |   COVERED |
+| FlagResolutionEntry (L64)                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/service.py (module)                          |   COVERED |
+| dedupe_key (L86)                                                 |   COVERED |
+| assignee (L99)                                                   |   COVERED |
+| reopens (L115)                                                   |   COVERED |
+| store_flags (L131)                                               |   COVERED |
+| _sync_lot_hold (L200)                                            |   COVERED |
+| apply_hold (L216)                                                |   COVERED |
+| _active (L237)                                                   |   COVERED |
+| _point (L254)                                                    |   COVERED |
+| _region (L270)                                                   |   COVERED |
+| _overrides (L291)                                                |   COVERED |
+| _event_context (L308)                                            |   COVERED |
+| _kg (L345)                                                       |   COVERED |
+| _lot_context (L364)                                              |   COVERED |
+| _check_lot (L432)                                                |   COVERED |
+| _check_batch (L463)                                              |   COVERED |
+| run_gate_checks (L508)                                           |   COVERED |
+| check_lot (L541)                                                 |   COVERED |
+| check_event (L572)                                               |   COVERED |
+| check_plot (L603)                                                |   COVERED |
+| check_resolution (L647)                                          |   COVERED |
+| _scoped_flag (L671)                                              |   COVERED |
+| resolve_flag (L693)                                              |   COVERED |
+| resolve_from_sync (L729)                                         |   COVERED |
+| list_flags (L768)                                                |   COVERED |
+| get_flag (L816)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/tasks.py (module)                            |   COVERED |
+| _uuid (L18)                                                      |   COVERED |
+| check_event (L37)                                                |   COVERED |
+| check_plot (L65)                                                 |   COVERED |
+| check_lot (L85)                                                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/__init__.py (module)                   |   COVERED |
+| run_all (L52)                                                    |   COVERED |
+| codes (L65)                                                      |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/clock_skew.py (module)                 |   COVERED |
+| run (L20)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/context.py (module)                    |   COVERED |
+| FlagCandidate (L20)                                              |   COVERED |
+| PhotoFacts (L33)                                                 |   COVERED |
+| EventContext (L42)                                               |   COVERED |
+| LotEvent (L59)                                                   |   COVERED |
+| ReadingFacts (L68)                                               |   COVERED |
+| LotContext (L79)                                                 |   COVERED |
+| BatchContext (L101)                                              |   COVERED |
+| PlotContext (L114)                                               |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/event_location.py (module)             |   COVERED |
+| run (L19)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/event_order.py (module)                |   COVERED |
+| order_gaps (L19)                                                 |   COVERED |
+| run (L43)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/gps_quality.py (module)                |   COVERED |
+| run (L17)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/moisture_trail_override.py (module)    |   COVERED |
+| run (L16)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/photo_evidence.py (module)             |   COVERED |
+| run (L23)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/plot_checks.py (module)                |   COVERED |
+| run (L29)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/practice_tags.py (module)              |   COVERED |
+| derived_tags (L22)                                               |   COVERED |
+| practice_flags (L37)                                             |   COVERED |
+| run (L57)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/profile_incomplete.py (module)         |   COVERED |
+| run (L17)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/quantity_reconciliation.py (module)    |   COVERED |
+| _pct (L23)                                                       |   COVERED |
+| _lot (L36)                                                       |   COVERED |
+| _batch (L64)                                                     |   COVERED |
+| run (L107)                                                       |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/rules_flags/rules/yield_ceiling.py (module)              |   COVERED |
+| run (L17)                                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/storage_monitoring/__init__.py (module)                  |   COVERED |
+|------------------------------------------------------------------|-----------|
+| modules/storage_monitoring/router.py (module)                    |   COVERED |
+| post_probe (L29)                                                 |   COVERED |
+| post_probe_readings (L45)                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| seed/__init__.py (module)                                        |   COVERED |
+|------------------------------------------------------------------|-----------|
+| seed/demo.py (module)                                            |   COVERED |
+| Step (L104)                                                      |   COVERED |
+| LotSeed (L115)                                                   |   COVERED |
+| _kg (L127)                                                       |   COVERED |
+| _d (L139)                                                        |   COVERED |
+| _at (L245)                                                       |   COVERED |
+| packed_kg (L257)                                                 |   COVERED |
+| _gi_crop (L272)                                                  |   COVERED |
+| seed (L325)                                                      |   COVERED |
+| _lot (L405)                                                      |   COVERED |
+| _event (L527)                                                    |   COVERED |
+| _legacy_grading (L588)                                           |   COVERED |
+| main (L617)                                                      |   COVERED |
+|------------------------------------------------------------------|-----------|
+| worker/__init__.py (module)                                      |   COVERED |
+| MaskTaskArguments (L39)                                          |   COVERED |
+| MaskTaskArguments.filter (L46)                                   |   COVERED |
+| _fresh_engine_per_process (L77)                                  |   COVERED |
+| run_db_task (L90)                                                |   COVERED |
+| run_db_task._run (L111)                                          |   COVERED |
+|------------------------------------------------------------------|-----------|
+
+----------------------------------- Summary ------------------------------------
+| Name                                                 | Total | Miss | Cover | Cover% |
+|------------------------------------------------------|-------|------|-------|--------|
+| __init__.py                                          |     1 |    0 |     1 |   100% |
+| export_openapi.py                                    |     2 |    0 |     2 |   100% |
+| main.py                                              |    10 |    0 |    10 |   100% |
+| core/__init__.py                                     |     1 |    0 |     1 |   100% |
+| core/audit.py                                        |    10 |    0 |    10 |   100% |
+| core/auth.py                                         |    15 |    0 |    15 |   100% |
+| core/config.py                                       |     5 |    0 |     5 |   100% |
+| core/db.py                                           |     8 |    0 |     8 |   100% |
+| core/enums.py                                        |    32 |    0 |    32 |   100% |
+| core/errors.py                                       |    61 |    0 |    61 |   100% |
+| core/fieldconfig.py                                  |    24 |    0 |    24 |   100% |
+| core/ids.py                                          |     5 |    0 |     5 |   100% |
+| core/schemas.py                                      |    13 |    0 |    13 |   100% |
+| core/storage.py                                      |     8 |    0 |     8 |   100% |
+| core/task_names.py                                   |     1 |    0 |     1 |   100% |
+| core/time.py                                         |     3 |    0 |     3 |   100% |
+| modules/__init__.py                                  |     1 |    0 |     1 |   100% |
+| modules/config/__init__.py                           |     1 |    0 |     1 |   100% |
+| modules/config/router.py                             |     4 |    0 |     4 |   100% |
+| modules/events/__init__.py                           |     1 |    0 |     1 |   100% |
+| modules/events/bundle_service.py                     |    32 |    0 |    32 |   100% |
+| modules/events/evidence.py                           |    12 |    0 |    12 |   100% |
+| modules/events/models.py                             |     7 |    0 |     7 |   100% |
+| modules/events/pull_service.py                       |    13 |    0 |    13 |   100% |
+| modules/events/router.py                             |     4 |    0 |     4 |   100% |
+| modules/events/schemas.py                            |    36 |    0 |    36 |   100% |
+| modules/events/service.py                            |    37 |    0 |    37 |   100% |
+| modules/events/sync_router.py                        |    12 |    0 |    12 |   100% |
+| modules/events/tasks.py                              |     3 |    0 |     3 |   100% |
+| modules/events/payloads/__init__.py                  |     1 |    0 |     1 |   100% |
+| modules/events/payloads/farm.py                      |    10 |    0 |    10 |   100% |
+| modules/events/payloads/processing.py                |     4 |    0 |     4 |   100% |
+| modules/identity/__init__.py                         |     1 |    0 |     1 |   100% |
+| modules/identity/models.py                           |     8 |    0 |     8 |   100% |
+| modules/identity/router.py                           |    15 |    0 |    15 |   100% |
+| modules/identity/schemas.py                          |    17 |    0 |    17 |   100% |
+| modules/identity/service.py                          |    36 |    0 |    36 |   100% |
+| modules/lots_batches/__init__.py                     |     1 |    0 |     1 |   100% |
+| modules/lots_batches/models.py                       |     7 |    0 |     7 |   100% |
+| modules/lots_batches/router.py                       |    15 |    0 |    15 |   100% |
+| modules/lots_batches/schemas.py                      |    17 |    0 |    17 |   100% |
+| modules/lots_batches/service.py                      |    35 |    0 |    35 |   100% |
+| modules/lots_batches/shares.py                       |     2 |    0 |     2 |   100% |
+| modules/notifications/__init__.py                    |     1 |    0 |     1 |   100% |
+| modules/notifications/models.py                      |     2 |    0 |     2 |   100% |
+| modules/notifications/providers.py                   |     9 |    0 |     9 |   100% |
+| modules/notifications/router.py                      |     2 |    0 |     2 |   100% |
+| modules/notifications/schemas.py                     |     2 |    0 |     2 |   100% |
+| modules/notifications/service.py                     |     3 |    0 |     3 |   100% |
+| modules/notifications/tasks.py                       |     2 |    0 |     2 |   100% |
+| modules/notifications/templates.py                   |     3 |    0 |     3 |   100% |
+| modules/partner_api/__init__.py                      |     1 |    0 |     1 |   100% |
+| modules/partner_api/router.py                        |     3 |    0 |     3 |   100% |
+| modules/publishing/__init__.py                       |     1 |    0 |     1 |   100% |
+| modules/publishing/builder.py                        |    17 |    0 |    17 |   100% |
+| modules/publishing/models.py                         |     2 |    0 |     2 |   100% |
+| modules/publishing/router.py                         |     7 |    0 |     7 |   100% |
+| modules/publishing/schemas.py                        |     2 |    0 |     2 |   100% |
+| modules/publishing/service.py                        |    13 |    0 |    13 |   100% |
+| modules/publishing/tasks.py                          |     2 |    0 |     2 |   100% |
+| modules/quality/__init__.py                          |     1 |    0 |     1 |   100% |
+| modules/quality/grade_engine.py                      |    13 |    0 |    13 |   100% |
+| modules/quality/models.py                            |     6 |    0 |     6 |   100% |
+| modules/quality/router.py                            |    12 |    0 |    12 |   100% |
+| modules/quality/schemas.py                           |    28 |    0 |    28 |   100% |
+| modules/quality/service.py                           |    31 |    0 |    31 |   100% |
+| modules/quality/profiles/__init__.py                 |     1 |    0 |     1 |   100% |
+| modules/quality/profiles/loader.py                   |     3 |    0 |     3 |   100% |
+| modules/registry/__init__.py                         |     1 |    0 |     1 |   100% |
+| modules/registry/geo.py                              |    10 |    0 |    10 |   100% |
+| modules/registry/imports.py                          |    12 |    0 |    12 |   100% |
+| modules/registry/models.py                           |    13 |    0 |    13 |   100% |
+| modules/registry/router.py                           |    33 |    0 |    33 |   100% |
+| modules/registry/schemas.py                          |    36 |    0 |    36 |   100% |
+| modules/registry/service.py                          |    63 |    0 |    63 |   100% |
+| modules/reporting/__init__.py                        |     1 |    0 |     1 |   100% |
+| modules/reporting/models.py                          |     2 |    0 |     2 |   100% |
+| modules/reporting/router.py                          |     6 |    0 |     6 |   100% |
+| modules/reporting/schemas.py                         |    15 |    0 |    15 |   100% |
+| modules/reporting/service.py                         |    28 |    0 |    28 |   100% |
+| modules/rules_flags/__init__.py                      |     1 |    0 |     1 |   100% |
+| modules/rules_flags/models.py                        |     2 |    0 |     2 |   100% |
+| modules/rules_flags/router.py                        |     4 |    0 |     4 |   100% |
+| modules/rules_flags/schemas.py                       |     4 |    0 |     4 |   100% |
+| modules/rules_flags/service.py                       |    26 |    0 |    26 |   100% |
+| modules/rules_flags/tasks.py                         |     5 |    0 |     5 |   100% |
+| modules/rules_flags/rules/__init__.py                |     3 |    0 |     3 |   100% |
+| modules/rules_flags/rules/clock_skew.py              |     2 |    0 |     2 |   100% |
+| modules/rules_flags/rules/context.py                 |     9 |    0 |     9 |   100% |
+| modules/rules_flags/rules/event_location.py          |     2 |    0 |     2 |   100% |
+| modules/rules_flags/rules/event_order.py             |     3 |    0 |     3 |   100% |
+| modules/rules_flags/rules/gps_quality.py             |     2 |    0 |     2 |   100% |
+| modules/rules_flags/rules/moisture_trail_override.py |     2 |    0 |     2 |   100% |
+| modules/rules_flags/rules/photo_evidence.py          |     2 |    0 |     2 |   100% |
+| modules/rules_flags/rules/plot_checks.py             |     2 |    0 |     2 |   100% |
+| modules/rules_flags/rules/practice_tags.py           |     4 |    0 |     4 |   100% |
+| modules/rules_flags/rules/profile_incomplete.py      |     2 |    0 |     2 |   100% |
+| modules/rules_flags/rules/quantity_reconciliation.py |     5 |    0 |     5 |   100% |
+| modules/rules_flags/rules/yield_ceiling.py           |     2 |    0 |     2 |   100% |
+| modules/storage_monitoring/__init__.py               |     1 |    0 |     1 |   100% |
+| modules/storage_monitoring/router.py                 |     3 |    0 |     3 |   100% |
+| seed/__init__.py                                     |     1 |    0 |     1 |   100% |
+| seed/demo.py                                         |    13 |    0 |    13 |   100% |
+| worker/__init__.py                                   |     6 |    0 |     6 |   100% |
+|------------------------------------------------------|-------|------|-------|--------|
+| TOTAL                                                |  1024 |    0 |  1024 | 100.0% |
+--------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+exit=0

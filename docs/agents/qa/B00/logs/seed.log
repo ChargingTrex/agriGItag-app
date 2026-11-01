@@ -1,0 +1,12 @@
+$ make seed
+docker compose -f infra/docker-compose.yml exec api sh -c "alembic upgrade head && python -m agritrace.seed.demo"
+seed: wrote VIRUDHAI_SCFC_VINOBA_BHAVA_FPO, batch FGP8T4033HM7
+exit=0
+
+# second run (Makefile claims idempotent)
+$ make seed
+docker compose -f infra/docker-compose.yml exec api sh -c "alembic upgrade head && python -m agritrace.seed.demo"
+seed: already present: VIRUDHAI_SCFC_VINOBA_BHAVA_FPO, batch FGP8T4033HM7
+exit=0
+$ docker compose -f infra/docker-compose.yml exec api alembic current
+0004_lots_append_only (head)
