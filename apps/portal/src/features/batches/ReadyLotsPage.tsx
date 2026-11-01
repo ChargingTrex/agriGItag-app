@@ -66,9 +66,12 @@ function useLots(status: components['schemas']['LotStatus']) {
  * Farmer names for a set of farmer ids, one cached `GET /v1/farmers/{id}` each (the key FarmerPage uses).
  * Only `name` is read: no phone or ID field reaches this screen.
  * @param ids Farmer ids; duplicates are fetched once.
- * @returns Name per farmer id for the farmers loaded so far (a missing one shows its id prefix).
+ * @returns Name per farmer id for the farmers loaded so far (a missing one shows its id prefix); its `pending`
+ *   property is true while any name is still being read (P05 lots CSV waits for it).
  */
-export function useFarmerNames(ids: readonly string[]): (id: string) => string {
+export function useFarmerNames(
+  ids: readonly string[],
+): ((id: string) => string) & { pending: boolean } {
   const { api } = useAuth();
   // shortcut: one cached request per farmer (fine for a season's few dozen lots); use a batch read or names
   //   on `LotOut` if an FPO lists hundreds of lots at once.
@@ -81,7 +84,9 @@ export function useFarmerNames(ids: readonly string[]): (id: string) => string {
     })),
   });
   const names = new Map(unique.map((id, i) => [id, results[i]?.data?.name]));
-  return (id) => names.get(id) ?? `Farmer ${id.slice(0, 8)}`;
+  return Object.assign((id: string) => names.get(id) ?? `Farmer ${id.slice(0, 8)}`, {
+    pending: results.some((r) => r.isPending),
+  });
 }
 
 /**

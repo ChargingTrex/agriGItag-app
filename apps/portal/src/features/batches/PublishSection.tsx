@@ -1,13 +1,12 @@
 /**
  * The batch's public page: Publish (greyed with every unmet reason), the build progress (polls the builds list
- * until `built` or `failed`), then the public URL `/b/<code>`, the QR image, "Download labels" and a sandboxed
- * preview; below it the builds history with Rebuild for admins.
- * Serves: FR15 (publish and rebuild the public page), FR12 (QR to the public URL), FR62 (pack labels), FR63
- * (consumer page preview), D-007 (page built by a worker), plan §7.3 P04 (happy path → published + URL).
+ * until `built` or `failed`), then the public URL `/b/<code>`, the QR image and a sandboxed preview; below it the
+ * builds history with Rebuild for admins. Pack labels moved to src/features/exports/BatchExports.tsx (P05).
+ * Serves: FR15 (publish and rebuild the public page), FR12 (QR to the public URL), FR63 (consumer page preview),
+ * D-007 (page built by a worker), plan §7.3 P04 (happy path → published + URL).
  * Called by: BatchPage.tsx.
  */
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
 import LinearProgress from '@mui/material/LinearProgress';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
@@ -70,7 +69,7 @@ async function dataUrl(blob: Blob): Promise<string> {
 }
 
 /**
- * The live page of the batch: URL, QR, labels download and the preview.
+ * The live page of the batch: URL, QR and the preview.
  * @param props Component props.
  * @param props.batch The published batch.
  * @param props.build The newest `built` build (its number reloads the preview).
@@ -80,7 +79,7 @@ function LivePage({ batch, build }: { batch: BatchOut; build: BuildOut }) {
   const { api } = useAuth();
   const path = { batch_id: batch.id };
   const { url, preview } = pageUrls(batch.code);
-  // The QR and labels need the bearer token, so they are fetched, not linked.
+  // The QR needs the bearer token, so it is fetched, not linked.
   const qr = useQuery({
     queryKey: ['batches', batch.id, 'qr'],
     queryFn: async ({ signal }) =>
@@ -89,21 +88,6 @@ function LivePage({ batch, build }: { batch: BatchOut; build: BuildOut }) {
           api.GET('/v1/batches/{batch_id}/qr.png', { params: { path }, parseAs: 'blob', signal }),
         ),
       ),
-  });
-  const labels = useMutation({
-    mutationFn: () =>
-      unwrap(api.GET('/v1/batches/{batch_id}/labels.pdf', { params: { path }, parseAs: 'blob' })),
-    onSuccess: (blob) => {
-      const href = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = href;
-      a.download = `labels-${batch.code}.pdf`;
-      a.click();
-      // Some browsers start the download after the click handler returns; FileSaver.js waits 40 s too.
-      setTimeout(() => {
-        URL.revokeObjectURL(href);
-      }, 40_000);
-    },
   });
   return (
     <Stack spacing={2}>
@@ -118,17 +102,7 @@ function LivePage({ batch, build }: { batch: BatchOut; build: BuildOut }) {
           <img src={qr.data} width={160} height={160} alt={`QR code opening ${url}`} />
         )}
         {qr.isError && <Alert severity="error">{errorMessage(qr.error)}</Alert>}
-        <Button
-          variant="outlined"
-          disabled={labels.isPending}
-          onClick={() => {
-            labels.mutate();
-          }}
-        >
-          Download labels
-        </Button>
       </Stack>
-      {labels.isError && <GateReasons error={labels.error} />}
       <iframe
         key={build.build_no}
         title={`Preview of the public page of batch ${batch.code}`}
