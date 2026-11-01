@@ -1,7 +1,7 @@
 """Small tests for the parsing logic in the QA scripts.
 
-Covers benchmarks/collect.py, libraries-check.py, gate-readiness.py and the Flutter result parser in
-qa/robot/lib/agritrace_keywords.py.
+Covers benchmarks/collect.py, libraries-check.py, gate-readiness.py, and the Flutter result parser and the
+API/portal fixture builders (Q06, Q07) in qa/robot/lib/agritrace_keywords.py.
 
 Serves: plan §8 (benchmark judging), D-018 (ledger check), plan §9.1 (Flutter results, gate readiness),
 CLAUDE.md §4 ("new parser leaves one small test"). Callers: CI docs job and `pytest qa/tests -q`.
@@ -11,6 +11,7 @@ import importlib.util
 import json
 import os
 import pathlib
+import types
 
 import pytest
 
@@ -173,3 +174,44 @@ def test_api_body_builders_need_no_stack(monkeypatch: pytest.MonkeyPatch) -> Non
     ahead = keywords.datetime.fromisoformat(e["data"]["clocks"]["device_time"]) - keywords.datetime.now(keywords.UTC)
     assert 71.9 < ahead.total_seconds() / 3600 <= 72
     assert keywords.packing("20")["packed"] == {"value": 20, "unit": "kg"}
+
+
+def test_portal_fixtures_send_the_right_bodies(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Q07 keywords: `Packed Lot` pushes harvest before packing; `Grade Batch` sends no reading unless given one.
+
+    Args:
+        monkeypatch: pytest's attribute patcher (the HTTP calls are replaced by a recorder).
+    """
+    keywords = load("qa/robot/lib/agritrace_keywords.py")
+    sent = {}
+
+    def fake_call(method: str, path: str, phone: str, expect: int, **kw: dict) -> types.SimpleNamespace:
+        """Record the body sent to a path and answer like the API would for these fixtures.
+
+        Args:
+            method: HTTP method.
+            path: API path.
+            phone: caller.
+            expect: expected status.
+            **kw: request options (``json``).
+
+        Returns:
+            An object whose ``json()`` gives every pushed entry `accepted`, else echoes the body plus a lot id.
+        """
+        body = sent[path] = kw.get("json")
+        if path == "/sync/push":
+            reply = {"results": [{"status": "accepted"} for _ in body["entries"]]}
+        else:
+            reply = {**(body or {}), "id": "lot1", "code": "LOT1"}
+        return types.SimpleNamespace(status_code=200, json=lambda: reply)
+
+    monkeypatch.setattr(keywords, "call_api", fake_call)
+    monkeypatch.setattr(keywords, "_WORLD", {"crop": "c", "instrument": "i", "processor": "pr",
+                                             "plot": {"id": "p1", "pin": {"lat": 9.5, "lon": 78.1}}})
+    assert keywords.grade_batch("b1", "Standard")["readings"] == []
+    reading = keywords.grade_batch("b1", "Special", "10.5")["readings"][0]
+    assert (reading["stage"], reading["batch_id"], reading["measurement"]["value"]) == ("grading", "b1", "10.5")
+    keywords.packed_lot("50", harvest_kg="2000")
+    entries = sent["/sync/push"]["entries"]
+    assert [e["data"]["event_type"] for e in entries] == ["harvest", "packing"]
+    assert entries[1]["data"]["payload"]["quantity"] == {"value": 50, "unit": "kg"}

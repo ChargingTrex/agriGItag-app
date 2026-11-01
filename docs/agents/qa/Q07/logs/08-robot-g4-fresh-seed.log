@@ -1,0 +1,42 @@
+ 2:00  up 2 days,  1:32, 1 user, load averages: 10.08 16.49 17.44
+2026-11-01T20:30:21Z
+==============================================================================
+Portal                                                                        
+==============================================================================
+Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) and the P0...
+==============================================================================
+Portal Loads In A Headless Browser                                    | PASS |
+------------------------------------------------------------------------------
+Approving A Member Makes It Active Without Reload                     | PASS |
+------------------------------------------------------------------------------
+Phone Is Masked Except An Audited Reveal                              | PASS |
+------------------------------------------------------------------------------
+Reviewing A Held Lot Makes It Tickable In Create Batch                | PASS |
+------------------------------------------------------------------------------
+Required Review Fields Block Submit                                   | PASS |
+------------------------------------------------------------------------------
+Lots 100 200 20 kg Show Shares 31.25 62.5 6.25                        | PASS |
+------------------------------------------------------------------------------
+Out Of GI Lot Is Greyed With A Tooltip                                | PASS |
+------------------------------------------------------------------------------
+Create Batch Returns An Id And A QR                                   | PASS |
+------------------------------------------------------------------------------
+Batch Over Threshold Needs A Second Sign Off                          | PASS |
+------------------------------------------------------------------------------
+Declared Special Computed Standard Disables Approve With Reason       | PASS |
+------------------------------------------------------------------------------
+Missing Reading Disables Approve                                      | PASS |
+------------------------------------------------------------------------------
+Happy Path Publishes And Shows The URL                                | PASS |
+------------------------------------------------------------------------------
+Portal.Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) a... | PASS |
+12 tests, 12 passed, 0 failed
+==============================================================================
+Portal                                                                | PASS |
+12 tests, 12 passed, 0 failed
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/G4/report.html
+robot exit=0 wall=94 s
+ 2:01  up 2 days,  1:34, 1 user, load averages: 9.35 15.20 16.88

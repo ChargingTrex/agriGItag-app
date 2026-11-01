@@ -79,9 +79,11 @@ Reviewing A Held Lot Makes It Tickable In Create Batch
     Fill Text    internal:label=/^Note/    QA Robot: field visit confirmed the yield
     Click    role=button[name="Save review"]
     Wait For Elements State    text=/^Cleared on/    visible
+    # The worker re-derives gi_eligible after the review: wait for it on the server, then load the screen once.
+    # Not a reload loop: a reload during the portal's session-restore refresh signs the device out (Q07-1).
+    Wait Until Keyword Succeeds    90s    3s    Lot Should Be GI Eligible    ${held}[lot][id]
     Go To    ${PORTAL_BASE}/ready-lots
-    # The worker re-derives gi_eligible after the review; reload until the tick box is enabled.
-    Wait Until Keyword Succeeds    90s    3s    Enabled After Reload    role=checkbox[name="Tick lot ${held}[lot][code]"]
+    Get Element States    role=checkbox[name="Tick lot ${held}[lot][code]"]    contains    enabled
     Check Checkbox    role=checkbox[name="Tick lot ${held}[lot][code]"]
     Get Checkbox State    role=checkbox[name="Tick lot ${held}[lot][code]"]    ==    checked
     Uncheck Checkbox    role=checkbox[name="Tick lot ${held}[lot][code]"]
@@ -259,18 +261,29 @@ Portal As Admin
     ...    fresh seed has no PIN yet, so the form chooses ${OFFICE_PIN}). Later calls reuse that page, so a
     ...    run spends one admin OTP (the API allows 10 per phone per day). Tests call it before their API
     ...    fixtures: the API sign-in (`Login As`) can wait out the one-code-per-60 s limit, the form cannot.
-    ...    Fails: a sign-in step is not reached within the Browser timeout.
+    ...    Fails: a sign-in step is not reached within the Browser timeout, or an earlier test's sign-in
+    ...    failed (no retry: each attempt would spend another OTP).
     ...    Side effects: sets the suite variable ${ADMIN_PAGE}; on a fresh seed sets the admin's PIN.
     ${known}=    Get Variable Value    ${ADMIN_PAGE}
-    IF    $known is not None
+    IF    $known == "failed"
+        Fail    The portal sign-in failed in an earlier test; see that test.
+    ELSE IF    $known is not None
         Switch Page    ${known}    context=ALL    browser=ALL
         RETURN
     END
+    Set Suite Variable    ${ADMIN_PAGE}    failed
     New Browser    chromium    headless=True
     New Context    viewport={'width': 1280, 'height': 800}
     ${page}=    New Page    ${PORTAL_BASE}/
     Fill Text    internal:label="Mobile number"s    ${ADMIN}[3:]
     Click    role=button[name="Send code"]
+    ${sent}=    Run Keyword And Return Status
+    ...    Wait For Elements State    internal:label="SMS code"s    visible    timeout=10s
+    IF    not ${sent}
+        # One code per phone per 60 s (B02): a run right after another run waits it out once.
+        Sleep    61s
+        Click    role=button[name="Send code"]
+    END
     Fill Text    internal:label="SMS code"s    ${OTP_DEV_CODE}
     Click    role=button[name="Verify code"]
     Wait For Elements State    internal:label=/^(PIN|Choose a 4-digit PIN)$/    visible
@@ -282,7 +295,8 @@ Portal As Admin
     ELSE
         Fill Text    internal:label="PIN"s    ${OFFICE_PIN}
     END
-    Click    role=button[name="Sign in"]
+    # "Sign in", or "Save PIN and sign in" on the first sign-in (a quoted role name matches the whole name).
+    Click    role=button[name=/sign in$/i]
     Wait For Elements State    role=navigation[name="Main"]    visible
     Set Suite Variable    ${ADMIN_PAGE}    ${page}[page_id]
 
@@ -347,10 +361,10 @@ Phone Reveals
     ${count}=    Evaluate    sum(1 for row in $rows.json()["items"] if row["action"] == "farmer.phone_reveal")
     RETURN    ${count}
 
-Enabled After Reload
-    [Documentation]    Reload the page and assert an element is enabled (retried by Wait Until Keyword Succeeds).
-    ...    Args: ${selector} the element.
-    ...    Fails: the element is missing or still disabled after the Browser timeout.
-    [Arguments]    ${selector}
-    Reload
-    Get Element States    ${selector}    contains    enabled
+Lot Should Be GI Eligible
+    [Documentation]    Assert the server marks a lot `gi_eligible` (GET /v1/lots/{id} as the FPO admin).
+    ...    Args: ${lot_id} the lot.
+    ...    Fails: the lot is still not GI eligible (retry it with Wait Until Keyword Succeeds).
+    [Arguments]    ${lot_id}
+    ${lot}=    Call API    GET    /lots/${lot_id}    ${ADMIN}    200
+    Should Be True    ${lot.json()}[gi_eligible]    msg=lot ${lot_id} is not GI eligible yet
