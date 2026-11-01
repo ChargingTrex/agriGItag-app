@@ -1,0 +1,13 @@
+$ grep -c "^- \[x\]" CHECKLIST.md; grep -c "^- \[ \]" CHECKLIST.md (read-only equivalent of checklist-progress.py)
+69
+8
+Completion: 90 % (69/77 items)
+$ grep "^- \[ \]" CHECKLIST.md
+- [ ] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (1 roun
+- [ ] **Gate G3 signed** — readiness filed BLOCKED 2026-11-02 (Q01 not started: Go AVD; P05/P06/P08 Robot placeholders → Q07 r2; P06 lin
+- [ ] **Gate G4 signed** — readiness filed BLOCKED 2026-11-02 (P05/P06/P08 portal Robot placeholders + 2 page.robot placeholders → Q07 r
+- [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer
+- [ ] Q03 — Public page verification: W02 suite + backend-down serve from MinIO + old version retrieva — wave 7 — worker: Opus Verifie
+- [ ] Q04 — Backend verification: full pytest incl. e2e reference batch, locust p95, Schemathesis fuzz — wave 7 — worker: Opus Verifie
+- [ ] Q05 — Release gate: benchmark sweep → `docs/agents/qa/benchmarks.json`, rubric, G5 report — wave 7 — worker: — reviewer: —
+- [ ] **Gate G5 signed** (docs/agents/gates/G5.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-

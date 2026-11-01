@@ -1,5 +1,6 @@
 # Image for both the `api` (uvicorn) and `worker` (celery) containers.
-# Serves: D-004 (one package, two containers), D-001 (Python 3.12), plan §7 (d) (images pin Python 3.12).
+# Serves: D-004 (one package, two containers), D-001 (Python 3.12), plan §7 (d) (images pin Python 3.12),
+#   PLAN §8 BM-07 (uvicorn worker processes, B21).
 # Callers: infra/docker-compose.yml services `api` and `worker` (build context apps/api plus the named context
 #   `public-page` = apps/public-page, the page renderer B10 depends on by path). Plain docker build:
 #   `docker build --build-context public-page=apps/public-page apps/api`.
@@ -24,4 +25,10 @@ RUN uv sync --frozen --no-dev
 RUN useradd --create-home --uid 10001 app
 USER app
 EXPOSE 8000
+# B21 (Q04-3, BM-07): one uvicorn process saturated one core (CPU-bound in SQLAlchemy/asyncpg/pydantic, not
+# waiting on the DB), so the api runs 4 worker processes; uvicorn reads WEB_CONCURRENCY as its --workers
+# default, so a deploy sizes it to its vCPUs without a new image (celery ignores it). Each process has its own
+# DB pool (5 + 10 overflow). Budget: api processes x 15 + Celery worker concurrency (default = vCPU count, one
+# connection each) + headroom <= Postgres max_connections (100): here 4 x 15 + 12 = 72.
+ENV WEB_CONCURRENCY=4
 CMD ["uvicorn", "agritrace.main:app", "--host", "0.0.0.0", "--port", "8000"]

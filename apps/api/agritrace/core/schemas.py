@@ -3,18 +3,68 @@
 Serves: FR58 (quantities always carry units), Arch §Offline-first (three clocks, client UUIDs, D-005),
 plan §7.1 ground rules (error envelope), docs/api/conventions.md (cursor pages), FR53 (structured address),
 FR56 (practice tags), FR60 (per-lot reconciliation), FR68 (yield check) — the last four are the shapes of
-JSONB columns (`*.address`, `lots.practice_tags`, `lot_intakes.reconciliation`, `lot_intakes.yield_check`).
+JSONB columns (`*.address`, `lots.practice_tags`, `lot_intakes.reconciliation`, `lot_intakes.yield_check`);
+B21 / Q04-1, Q04-2 (`NoNulStr`, `INT32_MAX`, `has_nul`: values Postgres refuses are 422s, not 500s).
 Callers: `modules/*/schemas.py` (B01+), registry / lots_batches / rules_flags services (B03, B08, B09),
 `core.time`, `core.audit`, `core.errors` envelope docs, `agritrace.main`.
 """
 
 from decimal import Decimal
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AfterValidator, AwareDatetime, BaseModel, Field
 
 from agritrace.core.enums import PracticeTag
+
+INT32_MAX = 2**31 - 1  # Postgres INTEGER ceiling: the `le=` of every int that lands in an INTEGER column
+
+
+def has_nul(value: Any) -> bool:
+    """Tell whether JSON-like data holds a NUL character in any string or dict key.
+
+    Walks with an explicit stack, not recursion, so arbitrarily deep nesting cannot raise `RecursionError`
+    (B21-r1 P2-1).
+
+    Args:
+        value: a str, dict, list or scalar, as parsed from JSON.
+
+    Returns:
+        True when some string or key contains U+0000.
+    """
+    stack = [value]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            if "\x00" in item:
+                return True
+        elif isinstance(item, dict):  # JSON keys are always str
+            if any("\x00" in key for key in item):
+                return True
+            stack.extend(item.values())
+        elif isinstance(item, list):
+            stack.extend(item)
+    return False
+
+
+def _no_nul(value: str) -> str:
+    """Refuse a NUL character, which Postgres text and jsonb cannot store.
+
+    Args:
+        value: the string.
+
+    Returns:
+        The string unchanged.
+
+    Raises:
+        ValueError: it contains a NUL (U+0000).
+    """
+    if "\x00" in value:
+        raise ValueError("NUL (\\u0000) is not allowed")
+    return value
+
+
+NoNulStr = Annotated[str, AfterValidator(_no_nul)]
 
 
 class Quantity(BaseModel):

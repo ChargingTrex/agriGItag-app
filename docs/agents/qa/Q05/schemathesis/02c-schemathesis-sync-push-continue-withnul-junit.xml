@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites errors="0" failures="1" skipped="0" tests="1" time="10.840892">
+  <testsuite name="schemathesis" hostname="Arun-MaAC.local" errors="0" failures="1" skipped="0" tests="1" time="10.840892">
+    <testcase name="POST /v1/sync/push" time="10.840892">
+      <failure type="failure" message="ST202">1. Test Case ID: PaEGDN
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[422] Unprocessable Content:
+
+    `{"error":{"code":"validation_error","message":"The request has invalid or implausible values.","details":[{"loc":["header","x-assist-session"],"msg":"Input should be a valid UUID, invalid character: found `n` at 0","type":"uuid_parsing"}]}}`
+
+Reproduce with:
+
+    curl -X POST -H 'x-assist-session: [Filtered]' -H 'x-request-id: 0000000000000000000000000000000000000000000000000000000000000000' -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"app_version": "", "device_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "device_time": "2000-01-01T00:00:00Z", "entries": [], "metrics": []}' http://localhost:8000/v1/sync/push</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

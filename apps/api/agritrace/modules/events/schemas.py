@@ -7,7 +7,8 @@ Serves: FR3 (structured event fields), FR4 and Arch §Offline-first (sync envelo
 UUIDs), FR25/FR59 (corrections and undo as versions), FR26 (GPS at submission), FR61 (evidence photos),
 FR63 (lot timeline), backend-design.md §3 (binding sync protocol), plan §13 A3, A4, C2 (reference bundles with
 per-part delta), F1, D-005, D-011, D-014, D-016, D-031/D-032 (`farmer` and `assist_session` kinds, per-entry
-assist session), D-040 (`lot_intake` kind), D-042 (assist session per kind).
+assist session), D-040 (`lot_intake` kind), D-042 (assist session per kind); B21 (Q04-1, Q04-2: int32 bounds
+and no NUL in the envelope's own strings; NUL inside `entries[].data` is refused per entry by `service.push`).
 Callers: `events.router`, `events.sync_router`, `events.service`, `events.evidence`, `events.bundle_service`,
 `events.pull_service`; tests.
 """
@@ -20,7 +21,7 @@ from typing import Annotated, Any, Literal, Self
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 from agritrace.core.enums import ChangeKind, EventStatus, EventSubject, EventType, PhotoStatus
-from agritrace.core.schemas import ErrorBody, GeoPoint, ThreeClocks
+from agritrace.core.schemas import INT32_MAX, ErrorBody, GeoPoint, NoNulStr, ThreeClocks
 from agritrace.modules.events.payloads.farm import (
     DryingPayload,
     HarvestPayload,
@@ -67,7 +68,9 @@ class EventVersionBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     event_id: uuid.UUID = Field(description="Client id of the event, stable across its versions (D-005).")
-    version_no: int = Field(ge=1, description="1 for a new event; each later version must be max + 1.")
+    version_no: int = Field(
+        ge=1, le=INT32_MAX, description="1 for a new event; each later version must be max + 1."
+    )
     change_kind: Literal["create", "correct", "undo"] = Field(
         "create", description="`create` for version 1; `correct` (officer/admin) or `undo` (farmer) after."
     )
@@ -75,7 +78,9 @@ class EventVersionBase(BaseModel):
     lot_id: uuid.UUID | None = Field(None, description="Lot of a farm event; exactly one of lot/batch.")
     batch_id: uuid.UUID | None = Field(None, description="Batch of a processing event.")
     plot_id: uuid.UUID | None = Field(None, description="Plot where a farm event happened (FR69 GPS check).")
-    instance_no: int = Field(1, ge=1, description="1-based instance of this type on the subject (FR3).")
+    instance_no: int = Field(
+        1, ge=1, le=INT32_MAX, description="1-based instance of this type on the subject (FR3)."
+    )
     occurred_on: date = Field(description="Date the activity happened (or started), YYYY-MM-DD.")
     occurred_end_on: date | None = Field(None, description="End date of a span such as drying.")
     clocks: ThreeClocks = Field(description="Device and GPS clocks at capture; the server adds its own.")
@@ -231,7 +236,7 @@ class UndoIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     client_id: uuid.UUID = Field(description="Client id of the undo version (idempotency key, D-005).")
-    version_no: int = Field(ge=2, description="Current max version + 1.")
+    version_no: int = Field(ge=2, le=INT32_MAX, description="Current max version + 1.")
     reason_code: str | None = Field(
         None, max_length=64, description="Coded reason, e.g. `entered_by_mistake`."
     )
@@ -247,9 +252,11 @@ class SyncMetricIn(BaseModel):
     entry_client_id: uuid.UUID = Field(description="Client id of the entry measured.")
     saved_at: AwareDatetime = Field(description="When the entry was saved on the phone.")
     acked_at: AwareDatetime | None = Field(None, description="When the server acknowledged it, if known.")
-    photo_upload_ms: int | None = Field(None, ge=0, description="Total photo upload time in milliseconds.")
-    failures: int = Field(0, ge=0, description="Failed send attempts before success.")
-    network_type: str | None = Field(
+    photo_upload_ms: int | None = Field(
+        None, ge=0, le=INT32_MAX, description="Total photo upload time in milliseconds."
+    )
+    failures: int = Field(0, ge=0, le=INT32_MAX, description="Failed send attempts before success.")
+    network_type: NoNulStr | None = Field(
         None, max_length=16, description="Network at send time: 2g, 3g, lte, wifi."
     )
 
@@ -295,10 +302,14 @@ class SyncEntry(BaseModel):
 
 
 class SyncPushIn(BaseModel):
-    """Sync push envelope: at most 50 entries and 256 KB (backend-design.md §3, plan §13 A4)."""
+    """Sync push envelope: at most 50 entries and 256 KB (backend-design.md §3, plan §13 A4).
+
+    A telemetry value Postgres cannot store (NUL, int32 overflow) is a 422 for the whole envelope, by design:
+    the app's metrics come from fixed sources, so only a non-app client can send one; same rule as before B21.
+    """
 
     device_id: uuid.UUID = Field(description="Device id of the app; the token's device is what is stored.")
-    app_version: str = Field(max_length=32, description="App version, e.g. `1.0.3`.")
+    app_version: NoNulStr = Field(max_length=32, description="App version, e.g. `1.0.3`.")
     device_time: AwareDatetime = Field(description="Phone clock when the push was sent.")
     metrics: list[SyncMetricIn] = Field(
         default_factory=list, max_length=200, description="Telemetry rows to store in `sync_metrics`."

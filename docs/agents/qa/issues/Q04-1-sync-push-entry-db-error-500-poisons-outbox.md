@@ -30,3 +30,7 @@ R9 sends `[clean, instance_no=3000000000, clean]`, with the same result.
 ## Fix options (the Verifier does not fix)
 - Root cause, in shared code: in `push()`, turn an unmapped `DBAPIError` (asyncpg `DataError` family: `UntranslatableCharacterError`, `CharacterNotInRepertoireError`, `NumericValueOutOfRangeError`, int overflow) into a per-entry `rejected` with a registered code, e.g. `validation_error`, and let the batch continue.
 - Validate at the trust boundary as well: a shared Pydantic string type that rejects `\x00`, and `le=2**31-1` on every int that maps to an INTEGER column (`instance_no`, `version_no`, `failures`, `photo_upload_ms`, ...). Add one integration test per shape.
+
+## Resolution (B21, re-verified by Q05 2026-11-02)
+
+**Closed.** B21 rejects a NUL or an int32 overflow per entry at the push boundary, with a class-22 DB backstop. On the rebuilt shared stack (image `sha256:39b06091`, main `06b71f4`), R3 → `rejected`. R5 `[clean, NUL, clean]`, R9 `[clean, instance_no 3e9, clean]` and D1 (5,000 lists deep with a NUL) each → accepted/rejected/accepted with HTTP 200, and psql holds exactly the clean events. Schemathesis: 3 runs, 1,004 cases, 0 × 5xx. Evidence: `docs/agents/qa/Q05/logs/02*.txt`, `03-sync-push-probes.txt`; `docs/agents/qa/Q04.md` §"Re-verified after B21".

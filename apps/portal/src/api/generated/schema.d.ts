@@ -7715,6 +7715,9 @@ export interface components {
         /**
          * SyncPushIn
          * @description Sync push envelope: at most 50 entries and 256 KB (backend-design.md §3, plan §13 A4).
+         *
+         *     A telemetry value Postgres cannot store (NUL, int32 overflow) is a 422 for the whole envelope, by design:
+         *     the app's metrics come from fixed sources, so only a non-app client can send one; same rule as before B21.
          */
         SyncPushIn: {
             /**

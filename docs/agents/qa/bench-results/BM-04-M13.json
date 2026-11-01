@@ -1,0 +1,12 @@
+{
+ "id": "BM-04",
+ "metrics": {
+  "apk_arm64_mb": 30.03
+ },
+ "scope": "release arm64 APK, prod flavor, 31,483,764 bytes = 30.03 MiB (unit MiB, the D-002 budget unit). download_mb (AAB device download via bundletool get-size total) NOT MEASURED: bundletool CLI is a human step (TODO.md 'AAB download size')",
+ "commit": "371001d",
+ "env": "Orchestrator run, apps/mobile/tool/size_check.sh, Android Studio JBR",
+ "recorded_at": "2026-11-01T19:40:00+00:00",
+ "evidence": "docs/agents/qa/M13.md, M13/logs/01-size-check.log",
+ "copied_by": "Q05 from M13.md"
+}

@@ -26,3 +26,7 @@ Also seen in the fuzz run: `saved_at` years 0001 and 5383 were accepted and stor
 ## Fix options (the Verifier does not fix)
 - Bound the fields in `SyncMetricIn`/`SyncPushIn` (`le=2**31-1`, a no-NUL string type, plausible `saved_at`/`acked_at`). Each fix then becomes a 422 at the boundary. The same shared types fix Q04-1.
 - Or treat telemetry as best effort: store it in its own savepoint and drop bad rows with a log line, so a broken metric never fails a push.
+
+## Resolution (B21, re-verified by Q05 2026-11-02)
+
+**Closed.** A NUL in `app_version`/`network_type` and `failures`/`photo_upload_ms` above 2^31-1 now get 422 `validation_error` at the envelope (R1, R4, R6, R7), before any entry is written. The controls R2 and R8 (`failures` = 2147483647) get 200. Not covered: the plausibility of `saved_at` years 0001/5383. That is not a 5xx and is still listed in TODO. Evidence: `docs/agents/qa/Q05/logs/03-sync-push-probes.txt`.

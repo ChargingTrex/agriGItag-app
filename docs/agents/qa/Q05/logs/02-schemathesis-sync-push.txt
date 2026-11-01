@@ -1,0 +1,77 @@
+ 2:40  up 2 days,  2:12, 1 user, load averages: 24.41 18.41 12.75
+Sun Nov  1 21:10:25 UTC 2026
+06b71f4
+$ PYTHONPATH=docs/agents/qa/Q04 SCHEMATHESIS_HOOKS=st_auth Q04_PHONE=+919000000002 Q04_TOKENS=<scratch>/tokens.json uvx schemathesis==4.33.0 run packages/openapi/openapi.json -u http://localhost:8000 --include-path /v1/sync/push --checks all -n 200 --report junit,ndjson --report-dir <scratch>/st-02
+Schemathesis v4.33.0
+━━━━━━━━━━━━━━━━━━━━
+
+ ✅  Loaded specification from packages/openapi/openapi.json (in 0.80s)
+
+     Base URL:         http://localhost:8000
+     Specification:    Open API 3.1.0
+     Operations:       1 selected / 95 total
+
+ ✅  API capabilities:
+
+     Supports NULL byte in headers:                            ✘
+     Accepts backslash and control characters in URL paths:    ✓
+
+ ⏭   Examples (in 0.02s)
+
+     ⏭  1 skipped
+
+ ❌  Coverage (in 6.46s)
+
+     ❌ 1 failed
+
+ ✅  Fuzzing (in 24.13s)
+
+     ✅ 1 passed
+
+=================================== FAILURES ===================================
+______________________________ POST /v1/sync/push ______________________________
+1. Test Case ID: 3qNo07
+
+- ST202 Schema-valid request rejected
+
+    Valid data should have been accepted
+    Expected: 2xx, 3xx, 401, 403, 404, 409, 429, 5xx
+
+[422] Unprocessable Content:
+
+    `{"error":{"code":"validation_error","message":"The request has invalid or implausible values.","details":[{"loc":["header","x-assist-session"],"msg":"Input should be a valid UUID, invalid character: found `n` at 0","type":"uuid_parsing"}]}}`
+
+Reproduce with:
+
+    curl -X POST -H 'x-assist-session: [Filtered]' -H 'x-request-id: 0000000000000000000000000000000000000000000000000000000000000000' -H 'Authorization: [Filtered]' -H 'Content-Type: application/json' -d '{"app_version": "", "device_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd", "device_time": "2000-01-01T00:00:00Z", "entries": [], "metrics": []}' http://localhost:8000/v1/sync/push
+
+    st replay 3qNo07
+
+=================================== SUMMARY ====================================
+
+API Operations:
+  Selected: 1/95
+  Tested: 1
+
+Test Phases:
+  ⏭  Examples
+  ❌ Coverage
+  ✅ Fuzzing
+  ⏭  Stateful (not applicable)
+
+Failures:
+  ❌ ST202 Schema-valid request rejected: 1
+
+For more information, run `st explain ST202`.
+
+Test cases:
+  232 generated, 1 found 1 unique failure
+
+Reports:
+  - JUnit: /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/st-02/junit-20261102T024028Z.xml
+  - NDJSON: /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/st-02/ndjson-20261102T024028Z.ndjson
+
+Seed: 306601381588857019383163133574038049717
+
+============================= 1 failure in 31.44s ==============================
+exit=1

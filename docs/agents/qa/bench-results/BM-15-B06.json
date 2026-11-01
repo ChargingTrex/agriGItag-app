@@ -1,0 +1,11 @@
+{
+ "id": "BM-15",
+ "metrics": {
+  "server_records": 1
+ },
+ "commit": "321b852",
+ "env": "compose stack (Docker Desktop 29.3.1), live API + Celery worker; docs/agents/qa/B06/logs/03-live-b06.log",
+ "recorded_at": "2026-11-01T16:21:32+00:00",
+ "evidence": "docs/agents/qa/B06.md \u00a7 Benchmarks, B06/logs/05-benchmarks.log",
+ "copied_by": "Q05 from B06/bench/BM-15-B06.json"
+}

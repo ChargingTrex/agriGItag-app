@@ -1,0 +1,11 @@
+{
+ "id": "BM-10",
+ "metrics": {
+  "coverage_pct": 100
+ },
+ "scope": "infra/scripts/doc-coverage.py exit 0: interrogate 100 % apps/api and apps/public-page; flutter analyze with public_member_api_docs 'No issues found' apps/mobile; eslint-plugin-jsdoc (require-jsdoc/param/returns/throws as errors) apps/portal pass; DECISION ids 163/0 unknown; file headers 912/0 missing",
+ "commit": "b2b3a04",
+ "env": "host toolchains (uv api venv, Flutter, node)",
+ "recorded_at": "2026-11-01T21:04:30+00:00",
+ "evidence": "docs/agents/qa/Q05/logs/10-doc-coverage.txt, 11-interrogate-and-lint-config.txt"
+}
