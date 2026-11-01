@@ -10,10 +10,13 @@ Callers: a developer, by hand. Needs Docker (containers from tests/conftest.py `
 
 import statistics
 import time
+import uuid
+from collections.abc import Awaitable, Callable
 from datetime import UTC, date, datetime, timedelta
 
 import test_rules
 from sqlalchemy import insert, select, text, update
+from sqlalchemy.ext.asyncio import AsyncSession
 from test_rules import NOW, PIN, World
 
 from agritrace.core.db import get_sessionmaker
@@ -22,6 +25,7 @@ from agritrace.core.ids import uuid7
 from agritrace.modules.events.models import Event, EventVersion
 from agritrace.modules.lots_batches.models import Lot
 from agritrace.modules.rules_flags import rules, service
+from agritrace.modules.rules_flags.rules.context import LotContext
 
 migrated, world = test_rules.migrated, test_rules.world  # the seeding fixtures, shared with test_rules
 N = 1500
@@ -90,8 +94,8 @@ async def _seed(w: World) -> list[str]:
     return [e["id"] for e in events]
 
 
-async def _ms(fn, *args, runs: int = 5) -> str:  # type: ignore[no-untyped-def]
-    """Time an awaitable factory several times in fresh sessions.
+async def _ms(fn: Callable[..., Awaitable[object]], *args: object, runs: int = 15) -> str:
+    """Time an async function several times, each in a fresh session.
 
     Args:
         fn: async function taking a session first.
@@ -99,16 +103,18 @@ async def _ms(fn, *args, runs: int = 5) -> str:  # type: ignore[no-untyped-def]
         runs: how many timed runs (after one warm-up).
 
     Returns:
-        `median (min–max) ms`.
+        `wall median (min–max) ms, cpu median ms`; CPU is this process only (Python + driver, not Postgres).
     """
-    times = []
+    wall, cpu = [], []
     for _ in range(runs + 1):
         async with get_sessionmaker()() as s:
-            t = time.perf_counter()
+            t, c = time.perf_counter(), time.process_time()
             await fn(s, *args)
-            times.append((time.perf_counter() - t) * 1000)
-    timed = times[1:]
-    return f"{statistics.median(timed):.0f} ms ({min(timed):.0f}–{max(timed):.0f})"
+            wall.append((time.perf_counter() - t) * 1000)
+            cpu.append((time.process_time() - c) * 1000)
+    wall, cpu = wall[1:], cpu[1:]
+    spread = f"{min(wall):.0f}–{max(wall):.0f}"
+    return f"wall {statistics.median(wall):.0f} ms ({spread}), cpu {statistics.median(cpu):.0f} ms"
 
 
 async def test_bench_check_event_1500(world: World) -> None:
@@ -119,13 +125,28 @@ async def test_bench_check_event_1500(world: World) -> None:
     """
     ids = await _seed(world)
 
-    async def lot_context(s, lot_id):  # type: ignore[no-untyped-def]
-        """Load the lot context only."""
-        await service._lot_context(s, await s.get(Lot, lot_id))
+    async def lot_context(s: AsyncSession, lot_id: uuid.UUID) -> LotContext:
+        """Load the lot context only.
 
-    async def lot_rules(s, lot_id):  # type: ignore[no-untyped-def]
-        """Load the lot context and run the pure lot rules."""
-        rules.run_all(rules.LOT_RULES, await service._lot_context(s, await s.get(Lot, lot_id)))
+        Args:
+            s: session.
+            lot_id: the lot.
+
+        Returns:
+            The context.
+        """
+        lot = await s.get(Lot, lot_id)
+        assert lot is not None
+        return await service._lot_context(s, lot)
+
+    async def lot_rules(s: AsyncSession, lot_id: uuid.UUID) -> None:
+        """Load the lot context and run the pure lot rules.
+
+        Args:
+            s: session.
+            lot_id: the lot.
+        """
+        rules.run_all(rules.LOT_RULES, await lot_context(s, lot_id))
 
     print(f"\n[B22] {N} events in the lot")
     print("[B22] check_event (problem event, mid-lot):", await _ms(service.check_event, ids[N // 2]))
