@@ -23,7 +23,6 @@ import zxingcpp
 from agritrace_page import render
 from geoalchemy2 import WKTElement
 from PIL import Image
-from pydantic import ValidationError
 
 from agritrace.core import storage
 from agritrace.core.config import get_settings
@@ -428,13 +427,15 @@ def test_photos_use_public_webp_copies() -> None:
     )
 
 
-def test_missing_farming_type_is_refused_with_its_path() -> None:
-    """A required public field left empty fails validation naming the path, so the build is marked failed."""
+def test_plot_without_farming_type_builds_without_the_line() -> None:
+    """A plot without the optional farming type (plot.yaml) still publishes; its lot shows none (B10-1)."""
     rows = _rows()
-    rows.lots[0].plot.farming_type = None
-    with pytest.raises(ValidationError) as caught:
-        _build(rows)
-    assert any(e["loc"][-1] == "farming_type" for e in caught.value.errors())
+    assert "Farming type" in _build(rows)[0]  # the line is there when recorded
+    for lr in rows.lots:
+        lr.plot.farming_type = None
+    html, data = _build(rows)
+    assert [lot["farming_type"] for lot in data["lots"]] == [None] * len(rows.lots)
+    assert "Farming type" not in html and "Irrigated" not in html
 
 
 def test_qr_decodes_to_public_url() -> None:

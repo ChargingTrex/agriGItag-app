@@ -492,7 +492,19 @@ class PublicRecordInvalidError(AppError):
     )
 
 
+class RetryLaterError(AppError):
+    """Postgres aborted the transaction to break a deadlock or a serialization conflict (QA issue B08-2)."""
+
+    code, status, message_key = "retry_later", 503, "error.retry_later"
+    message = "The server was busy with a conflicting change; nothing was saved."
+    fix = "Send the same request again (same client_id) after `Retry-After` seconds."
+
+
 SQLSTATE_RESTRICT_VIOLATION = "23001"
+SQLSTATE_RETRYABLE = {
+    "40P01",
+    "40001",
+}  # deadlock_detected, serialization_failure: the transaction rolled back
 
 
 def append_only_error(exc: BaseException) -> AppendOnlyViolationError | None:
@@ -583,18 +595,24 @@ async def _http_error(request: Request, exc: Exception) -> JSONResponse:
 
 
 async def _db_error(request: Request, exc: Exception) -> JSONResponse:
-    """Render the append-only trigger's SQLSTATE 23001 as `append_only_violation`; hide every other error.
+    """Render SQLSTATE 23001 as `append_only_violation`, 40P01/40001 as `retry_later`; hide every other error.
 
     Args:
         request: the request (passed on to `_unhandled`).
         exc: a `sqlalchemy.exc.DBAPIError`.
 
     Returns:
-        409 `append_only_violation` envelope, or the `internal_error` envelope from `_unhandled`.
+        409 `append_only_violation`, 503 `retry_later` with `Retry-After: 1`, or the `internal_error`
+        envelope from `_unhandled`.
 
     Side effects:
-        Logs non-23001 errors with their traceback (through `_unhandled`).
+        Logs a WARNING for a retryable error; every other error with its traceback (through `_unhandled`).
     """
+    if getattr(getattr(exc, "orig", None), "sqlstate", None) in SQLSTATE_RETRYABLE:
+        log.warning(
+            "retryable database error on %s %s: %s", request.method, request.url.path, exc.__class__.__name__
+        )
+        return _envelope(503, RetryLaterError.code, RetryLaterError.message, headers={"Retry-After": "1"})
     mapped = append_only_error(exc)
     if mapped is None:
         return await _unhandled(request, exc)

@@ -542,6 +542,8 @@ async def _add_version(
                 "event_type": v.event_type.value,
                 "version_no": v.version_no,
                 "change_kind": v.change_kind,
+                # B20: the audit search shows why a correction or undo was made (P06); creates carry none.
+                **{k: r for k, r in (("reason_code", v.reason_code), ("reason_text", v.reason_text)) if r},
                 # The phone-declared EXIF lives here, append-only; the verify task fills the photo's
                 # exif_* columns with what it reads, so both are kept and neither is overwritten.
                 "photos": [p.model_dump(mode="json", exclude={"sha256", "size_bytes"}) for p in v.photos],

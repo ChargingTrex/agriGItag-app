@@ -445,6 +445,8 @@ async def test_farmer_correction_is_403_and_officer_correction_works(
 ) -> None:
     """Farmers get 403 on corrections; an officer's correction with a reason becomes version 2.
 
+    Its audit row names the actor and the reason code (P06 audit search, B20).
+
     Args:
         world: seeded FPO and client (fixture).
     """
@@ -465,6 +467,14 @@ async def test_farmer_correction_is_403_and_officer_correction_works(
     async with get_sessionmaker()() as s:
         event = await s.get(Event, uuid.UUID(event_id))
         assert event is not None and event.current_version_id == uuid.UUID(body["client_id"])
+        audit = (
+            await s.execute(select(AUDIT_LOG).where(AUDIT_LOG.c.entity_id == uuid.UUID(body["client_id"])))
+        ).one()
+    assert (audit.action, audit.actor_user_id, audit.diff["reason_code"]) == (
+        "event.correct",
+        w.officer,
+        "wrong_quantity",
+    )
 
 
 async def test_device_clock_three_days_ahead_is_stored_with_hint(world: tuple[World, AsyncClient]) -> None:
