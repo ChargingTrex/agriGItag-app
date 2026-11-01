@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-01T20:04:25+00:00",
+  "generated_at": "2026-11-01T21:20:04+00:00",
   "benchmarks": {
     "BM-01": {
       "title": "Time to log an event (3-tap harvest x10, Go AVD)",
@@ -79,99 +79,155 @@
     },
     "BM-04": {
       "title": "App size",
-      "status": "MISSING",
-      "result": null,
+      "status": "FAIL",
+      "result": {
+        "id": "BM-04",
+        "metrics": {
+          "apk_arm64_mb": 30.03
+        },
+        "scope": "release arm64 APK, prod flavor, 31,483,764 bytes = 30.03 MiB (unit MiB, the D-002 budget unit). download_mb (AAB device download via bundletool get-size total) NOT MEASURED: bundletool CLI is a human step (TODO.md 'AAB download size')",
+        "commit": "371001d",
+        "env": "Orchestrator run, apps/mobile/tool/size_check.sh, Android Studio JBR",
+        "recorded_at": "2026-11-01T19:40:00+00:00",
+        "evidence": "docs/agents/qa/M13.md, M13/logs/01-size-check.log",
+        "copied_by": "Q05 from M13.md",
+        "source": "docs/agents/qa/bench-results/BM-04-M13.json"
+      },
       "checks": [
         {
           "metric": "apk_arm64_mb",
-          "value": null,
+          "value": 30.03,
           "threshold": "<= 100",
-          "status": "MISSING"
+          "status": "PASS"
         },
         {
           "metric": "download_mb",
           "value": null,
           "threshold": "<= 30",
-          "status": "MISSING"
+          "status": "FAIL"
         }
       ]
     },
     "BM-05": {
       "title": "Traceability completeness",
-      "status": "MISSING",
-      "result": null,
+      "status": "PASS",
+      "result": {
+        "id": "BM-05",
+        "metrics": {
+          "demo_completeness_pct": 100.0,
+          "reference_problems_flagged": 9
+        },
+        "flags_by_name": {
+          "grading_loss_high": "1",
+          "ipm_without_pest_event": "3",
+          "practice_tag_contradiction": "3",
+          "quantity_mismatch": "3",
+          "yield_check_unavailable": "3"
+        },
+        "commit": "c0962da",
+        "env": "compose stack, live DB",
+        "recorded_at": "2026-11-01T17:32:42.346379+00:00",
+        "evidence": "docs/agents/qa/B11.md, B11/logs/benchmarks.log",
+        "copied_by": "Q05 from B11/bench/BM-05-B11.json",
+        "source": "docs/agents/qa/bench-results/BM-05-B11.json"
+      },
       "checks": [
         {
           "metric": "demo_completeness_pct",
-          "value": null,
+          "value": 100.0,
           "threshold": ">= 100",
-          "status": "MISSING"
+          "status": "PASS"
         },
         {
           "metric": "reference_problems_flagged",
-          "value": null,
+          "value": 9,
           "threshold": ">= 9",
-          "status": "MISSING"
+          "status": "PASS"
         }
       ]
     },
     "BM-06": {
       "title": "Sync idempotency (same outbox replayed 3x)",
-      "status": "MISSING",
-      "result": null,
+      "status": "PASS",
+      "result": {
+        "id": "BM-06",
+        "metrics": {
+          "row_count_delta": 0,
+          "photo_checksum_changes": 0
+        },
+        "commit": "321b852",
+        "env": "compose stack (Docker Desktop 29.3.1), live API + Celery worker; docs/agents/qa/B06/logs/03-live-b06.log",
+        "recorded_at": "2026-11-01T16:21:32+00:00",
+        "evidence": "docs/agents/qa/B06.md \u00a7 Benchmarks, B06/logs/05-benchmarks.log",
+        "copied_by": "Q05 from B06/bench/BM-06-B06.json",
+        "source": "docs/agents/qa/bench-results/BM-06-B06.json"
+      },
       "checks": [
         {
           "metric": "row_count_delta",
-          "value": null,
+          "value": 0,
           "threshold": "== 0",
-          "status": "MISSING"
+          "status": "PASS"
         },
         {
           "metric": "photo_checksum_changes",
-          "value": null,
+          "value": 0,
           "threshold": "== 0",
-          "status": "MISSING"
+          "status": "PASS"
         }
       ]
     },
     "BM-07": {
       "title": "API latency (locust, 50 users, sync + batch endpoints)",
-      "status": "FAIL",
+      "status": "PASS",
       "result": {
         "id": "BM-07",
         "metrics": {
-          "p95_ms": 2000,
-          "p50_ms": 430,
-          "p99_ms": 3700,
-          "rps": 25.71,
-          "failures": 0
+          "p95_ms": 230,
+          "p50_ms": 49,
+          "p99_ms": 1000,
+          "rps": 35.19,
+          "failures": 0,
+          "requests": 2097
         },
-        "scope": "rerun 1, identical profile; 4618 requests, 0 failures",
-        "commit": "a51d071",
-        "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
-        "recorded_at": "2026-11-01T19:53:25+00:00",
-        "evidence": "docs/agents/qa/Q04/logs/02b-locust-bm07-rerun1.txt, locust/bm07-rerun1_stats.csv, logs/03b-docker-stats-during-locust-rerun1.txt",
-        "source": "docs/agents/qa/bench-results/BM-07-Q04-rerun1.json"
+        "scope": "run 3 (21:17:57Z; declared the last run before it started); Celery queue 0 at start; sessions refreshed via /v1/auth/refresh; locust 2.47.0, docs/agents/qa/Q04/locustfile.py, 50 users (30 farmer sync + 20 staff reads), spawn 5/s, 60 s; numbers from the locust --only-summary table in the log (the _stats.csv is flushed a few requests earlier)",
+        "commit": "06b71f4",
+        "env": "shared compose stack 'agritrace', agritrace-api:dev sha256:39b06091 built 2026-11-01T21:04:37Z from main 06b71f4 (B21, WEB_CONCURRENCY=4: uvicorn master + 4 workers), LocalStack 4.14.0, 12 vCPU Docker; QA lots carry 1,110-1,725 events each",
+        "recorded_at": "2026-11-01T21:18:57+00:00",
+        "evidence": "docs/agents/qa/Q05/logs/05-locust-bm07-run3.txt, Q05/locust/bm07-run3_*.csv, Q05/logs/05b-docker-stats-bm07-run3.txt",
+        "source": "docs/agents/qa/bench-results/BM-07-Q05-run3.json"
       },
       "checks": [
         {
           "metric": "p95_ms",
-          "value": 2000,
+          "value": 230,
           "threshold": "<= 300",
-          "status": "FAIL"
+          "status": "PASS"
         }
       ]
     },
     "BM-08": {
       "title": "Grade engine correctness (PRD seed rows)",
-      "status": "MISSING",
-      "result": null,
+      "status": "PASS",
+      "result": {
+        "id": "BM-08",
+        "metrics": {
+          "seed_rows_pass_pct": 100
+        },
+        "scope": "65/65 table-driven grade-engine cases (tests/fixtures/grade_cases.json; chilli, turmeric, saffron, coffee)",
+        "commit": "321b852",
+        "env": "apps/api uv env, pytest tests/unit/test_grade_engine.py",
+        "recorded_at": "2026-11-01T16:16:00+00:00",
+        "evidence": "docs/agents/qa/B05.md \u00a7 BM-08, B05/logs/01-bm08-unit-grade-engine.log",
+        "copied_by": "Q05 from B05.md (no result file was written by B05)",
+        "source": "docs/agents/qa/bench-results/BM-08-B05.json"
+      },
       "checks": [
         {
           "metric": "seed_rows_pass_pct",
-          "value": null,
+          "value": 100,
           "threshold": ">= 100",
-          "status": "MISSING"
+          "status": "PASS"
         }
       ]
     },
@@ -201,14 +257,25 @@
     },
     "BM-10": {
       "title": "Doc coverage (interrogate / dart doc / eslint-jsdoc)",
-      "status": "MISSING",
-      "result": null,
+      "status": "PASS",
+      "result": {
+        "id": "BM-10",
+        "metrics": {
+          "coverage_pct": 100
+        },
+        "scope": "infra/scripts/doc-coverage.py exit 0: interrogate 100 % apps/api and apps/public-page; flutter analyze with public_member_api_docs 'No issues found' apps/mobile; eslint-plugin-jsdoc (require-jsdoc/param/returns/throws as errors) apps/portal pass; DECISION ids 163/0 unknown; file headers 912/0 missing",
+        "commit": "b2b3a04",
+        "env": "host toolchains (uv api venv, Flutter, node)",
+        "recorded_at": "2026-11-01T21:04:30+00:00",
+        "evidence": "docs/agents/qa/Q05/logs/10-doc-coverage.txt, 11-interrogate-and-lint-config.txt",
+        "source": "docs/agents/qa/bench-results/BM-10-Q05.json"
+      },
       "checks": [
         {
           "metric": "coverage_pct",
-          "value": null,
+          "value": 100,
           "threshold": ">= 100",
-          "status": "MISSING"
+          "status": "PASS"
         }
       ]
     },
@@ -278,14 +345,25 @@
     },
     "BM-15": {
       "title": "Same push replayed 5x",
-      "status": "MISSING",
-      "result": null,
+      "status": "PASS",
+      "result": {
+        "id": "BM-15",
+        "metrics": {
+          "server_records": 1
+        },
+        "commit": "321b852",
+        "env": "compose stack (Docker Desktop 29.3.1), live API + Celery worker; docs/agents/qa/B06/logs/03-live-b06.log",
+        "recorded_at": "2026-11-01T16:21:32+00:00",
+        "evidence": "docs/agents/qa/B06.md \u00a7 Benchmarks, B06/logs/05-benchmarks.log",
+        "copied_by": "Q05 from B06/bench/BM-15-B06.json",
+        "source": "docs/agents/qa/bench-results/BM-15-B06.json"
+      },
       "checks": [
         {
           "metric": "server_records",
-          "value": null,
+          "value": 1,
           "threshold": "== 1",
-          "status": "MISSING"
+          "status": "PASS"
         }
       ]
     },

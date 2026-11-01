@@ -1,0 +1,16 @@
+{
+ "id": "BM-07",
+ "metrics": {
+  "p95_ms": 380,
+  "p50_ms": 61,
+  "p99_ms": 3300,
+  "rps": 33.06,
+  "failures": 0,
+  "requests": 1976
+ },
+ "scope": "run 2 (21:13:35Z); Celery queue 0 at start; one host-wide ~5 s stall at t~46 s (api, worker and db CPU dropped together); Celery queue 1024 after; locust 2.47.0, docs/agents/qa/Q04/locustfile.py, 50 users (30 farmer sync + 20 staff reads), spawn 5/s, 60 s; numbers from the locust --only-summary table in the log (the _stats.csv is flushed a few requests earlier)",
+ "commit": "06b71f4",
+ "env": "shared compose stack 'agritrace', agritrace-api:dev sha256:39b06091 built 2026-11-01T21:04:37Z from main 06b71f4 (B21, WEB_CONCURRENCY=4: uvicorn master + 4 workers), LocalStack 4.14.0, 12 vCPU Docker; QA lots carry 1,110-1,725 events each",
+ "recorded_at": "2026-11-01T21:14:35+00:00",
+ "evidence": "docs/agents/qa/Q05/logs/04-locust-bm07-run2.txt, Q05/locust/bm07-run2_*.csv, Q05/logs/04b-docker-stats-bm07-run2.txt"
+}

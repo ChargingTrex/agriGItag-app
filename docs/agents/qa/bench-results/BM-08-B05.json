@@ -1,0 +1,12 @@
+{
+ "id": "BM-08",
+ "metrics": {
+  "seed_rows_pass_pct": 100
+ },
+ "scope": "65/65 table-driven grade-engine cases (tests/fixtures/grade_cases.json; chilli, turmeric, saffron, coffee)",
+ "commit": "321b852",
+ "env": "apps/api uv env, pytest tests/unit/test_grade_engine.py",
+ "recorded_at": "2026-11-01T16:16:00+00:00",
+ "evidence": "docs/agents/qa/B05.md \u00a7 BM-08, B05/logs/01-bm08-unit-grade-engine.log",
+ "copied_by": "Q05 from B05.md (no result file was written by B05)"
+}

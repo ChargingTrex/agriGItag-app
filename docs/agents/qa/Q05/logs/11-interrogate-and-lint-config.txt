@@ -1,0 +1,19 @@
+$ cd apps/api && .venv/bin/interrogate -c pyproject.toml agritrace
+RESULT: PASSED (minimum: 100.0%, actual: 100.0%)
+exit=0
+$ cd apps/public-page && interrogate
+RESULT: PASSED (minimum: 100.0%, actual: 100.0%)
+exit=0
+$ grep public_member_api_docs apps/mobile/analysis_options.yaml
+2:# documented, enforced by public_member_api_docs. The farmer no-free-text rule is tool/no_textfield_lint.sh
+23:    public_member_api_docs: true
+$ grep jsdoc apps/portal/eslint.config.*
+5:// DECISION D-018: typescript-eslint strictTypeChecked + eslint-plugin-jsdoc instead of a hand-written doc checker.
+8://   are exempt from require-jsdoc because a doc block on every lambda would bury the code.
+12:import jsdoc from 'eslint-plugin-jsdoc';
+35:  jsdoc.configs['flat/recommended-typescript-error'],
+38:      'jsdoc/require-jsdoc': [
+57:      'jsdoc/require-description': 'error',
+58:      'jsdoc/require-param': 'error',
+59:      'jsdoc/require-returns': 'error',
+60:      'jsdoc/require-throws': 'error',

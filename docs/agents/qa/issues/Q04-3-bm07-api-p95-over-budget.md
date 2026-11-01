@@ -25,3 +25,7 @@ Slowest names: `POST /v1/sync/push (new)` p95 2.9 to 4.4 s; `GET /v1/batches` p9
 - Run uvicorn with `--workers N` (or gunicorn with the uvicorn worker) in the compose image, and size the pool per worker. Record it as a DECISION if the pilot deploy differs.
 - Make `rules.check_event` incremental (only the rules the event type touches, not a full scan of the lot), or debounce per lot.
 - Rerun `docs/agents/qa/Q04/locustfile.py` on a quiet host after the image is rebuilt from main.
+
+## Resolution (B21 `WEB_CONCURRENCY=4`, re-verified by Q05 2026-11-02): budget met, still open as a flaky P2
+
+The test was the shared stack rebuilt from main `06b71f4` (1 uvicorn master + 4 workers), with Q04's locustfile, 50 users and 60 s. Run 1: p95 4200 ms, while the agritrace-q07 project restarted on the same host. Run 2: p95 380 ms, with one ~5 s stall across the whole host. **Run 3: p50 49 / p95 230 / p99 1000 ms, 35.2 RPS, 0 failures → PASS** (`docs/agents/qa/bench-results/BM-07-Q05-run3.json`, `Q05/logs/05-locust-bm07-run3.txt`). The budget was met only on the third run, so the rubric rerun rule keeps this as **P2: sensitive to host noise and to the rules backlog**. Each 60 s run leaves 400–1,000 `rules.check_event` tasks queued against lots of 1,100–1,725 events. The worker then runs at 400–590 % CPU and Postgres at 100–460 %. Remaining fix: the incremental `rules.check_event` (TODO, rules_flags). After that, rerun on the shared stack.

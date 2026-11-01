@@ -1,0 +1,36 @@
+Sun Nov  1 21:13:01 UTC 2026
+06b71f4
+$ python3 docs/agents/qa/Q05/probes.py <scratch>/tokens.json
+PASS  R1 NUL in app_version + metrics: HTTP 422 validation_error 
+PASS  R2 control: clean, no metrics: HTTP 200 [] 
+PASS  R3 NUL in event payload (jsonb): HTTP 200 ['rejected'] [None]
+PASS  R4 NUL in metrics network_type: HTTP 422 validation_error 
+PASS  R5 [clean, NUL, clean]: HTTP 200 ['accepted', 'rejected', 'accepted'] [None]
+PASS  R6 failures = 3e9: HTTP 422 validation_error 
+PASS  R7 photo_upload_ms = 3e9: HTTP 422 validation_error 
+PASS  R8 control failures = 2147483647: HTTP 200 [] 
+PASS  R9 [clean, instance_no 3e9, clean]: HTTP 200 ['accepted', 'rejected', 'accepted'] [None]
+PASS  D1 [clean, data 5000 lists deep + NUL, clean]: HTTP 200 ['accepted', 'rejected', 'accepted'] [None]
+PASS  D2 [data 5000 lists deep no NUL, clean]: HTTP 200 ['rejected', 'accepted'] [None]
+event ids (R5 x3, R9 x3, D1 x3, D2 x2, R3): ["01a198f5-66a5-7822-bd3f-4feb1b2ed2af", "01a198f5-66a5-788f-8437-de6559fe5d8d", "01a198f5-66a5-7c2f-8dcc-63dbb5cb93f0", "01a198f5-66a5-7b13-ab18-9613f076acbe", "01a198f5-66a5-7460-9384-2883d331737f", "01a198f5-66a5-7906-9820-e82ad6182d7a", "01a198f5-66a5-71fc-a2ff-5c1f83b4b1db", "01a198f5-66a5-7f20-9219-d4817318da64", "01a198f5-66a5-7744-b84e-91ae41787357", "01a198f5-66a5-7e7d-ba89-ea4f84edbe34", "01a198f5-66a5-7e83-95d4-c21940d93f7b", "01a198f5-66a5-7fe1-b533-012cd971c462"]
+exit=0
+$ psql: events by id for the probe ids, plus sync_metrics rows of the last 5 min
+                  id                  |        description         
+--------------------------------------+----------------------------
+ 01a198f5-66a5-71fc-a2ff-5c1f83b4b1db | Q05 probe D1 first (clean)
+ 01a198f5-66a5-7744-b84e-91ae41787357 | Q05 probe D1 third (clean)
+ 01a198f5-66a5-7e83-95d4-c21940d93f7b | Q05 probe D2 after (clean)
+ 01a198f5-66a5-7822-bd3f-4feb1b2ed2af | Q05 probe R5 first (clean)
+ 01a198f5-66a5-7c2f-8dcc-63dbb5cb93f0 | Q05 probe R5 third (clean)
+ 01a198f5-66a5-7b13-ab18-9613f076acbe | Q05 probe R9 first (clean)
+ 01a198f5-66a5-7906-9820-e82ad6182d7a | Q05 probe R9 third (clean)
+(7 rows)
+
+ERROR:  column "received_at" does not exist
+LINE 1: ..._last_5min, max(failures) from sync_metrics where received_a...
+                                                             ^
+ sync_metrics_total | r8_rows 
+--------------------+---------
+                131 |       5
+(1 row)
+

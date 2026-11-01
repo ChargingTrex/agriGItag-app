@@ -1,0 +1,4 @@
+Sun Nov  1 21:06:09 UTC 2026
+$ cd apps/api && uv run python ../../infra/scripts/gen-error-codes.py --check
+docs/api/error-codes.md is current (50 codes)
+exit=0
