@@ -1,0 +1,15 @@
+# 2026-11-01T16:07:51Z 21:37  up 1 day, 21:10, 1 user, load averages: 14.20 16.88 68.43
+$ (cd apps/api) uv run pytest tests/unit/test_rules_lot.py -v -p no:cacheprovider -rfE -k trail
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 26 items / 25 deselected / 1 selected
+
+tests/unit/test_rules_lot.py::test_trail_override_reading_and_profile_incomplete PASSED [100%]
+
+======================= 1 passed, 25 deselected in 0.97s =======================
+exit=0
+# 2026-11-01T16:07:55Z 21:37  up 1 day, 21:10, 1 user, load averages: 13.94 16.78 68.09

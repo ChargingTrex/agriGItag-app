@@ -1,0 +1,37 @@
+# 2026-11-01T16:06:32Z 21:36  up 1 day, 21:09, 1 user, load averages: 14.17 17.73 73.79
+$ (cd apps/api) uv run pytest tests/integration/test_quality.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 13 items
+
+tests/integration/test_quality.py::test_implausible_readings_are_rejected[over0-implausible_value] PASSED [  7%]
+tests/integration/test_quality.py::test_implausible_readings_are_rejected[over1-implausible_value] PASSED [ 15%]
+tests/integration/test_quality.py::test_implausible_readings_are_rejected[over2-unit_mismatch] PASSED [ 23%]
+tests/integration/test_quality.py::test_implausible_readings_are_rejected[over3-unknown_parameter] PASSED [ 30%]
+tests/integration/test_quality.py::test_implausible_readings_are_rejected[over4-source_not_allowed] PASSED [ 38%]
+tests/integration/test_quality.py::test_expired_instrument_is_rejected_and_valid_one_recorded PASSED [ 46%]
+tests/integration/test_quality.py::test_trail_rise_needs_a_reason_then_is_flagged PASSED [ 53%]
+tests/integration/test_quality.py::test_grading_declared_above_computed PASSED [ 61%]
+tests/integration/test_quality.py::test_grading_unknown_grade_and_incomplete PASSED [ 69%]
+tests/integration/test_quality.py::test_client_id_is_idempotent PASSED   [ 76%]
+tests/integration/test_quality.py::test_profile_versions_need_super_admin_and_allow_incomplete PASSED [ 84%]
+tests/integration/test_quality.py::test_other_fpo_lot_and_batch_are_not_found PASSED [ 92%]
+tests/integration/test_quality.py::test_farmer_cannot_touch_another_farmers_lot PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_quality.py::test_implausible_readings_are_rejected[over0-implausible_value]
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+tests/integration/test_quality.py::test_profile_versions_need_super_admin_and_allow_incomplete
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/agritrace/modules/quality/service.py:267: SADeprecationWarning: The Result.tuples() method is deprecated, Row now behaves like a tuple and can unpack types directly. (deprecated since: 2.1.0)
+    .tuples()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 13 passed, 2 warnings in 44.87s ========================
+exit=0
+# 2026-11-01T16:07:23Z 21:37  up 1 day, 21:09, 1 user, load averages: 16.17 17.44 70.16
