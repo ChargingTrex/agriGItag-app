@@ -1,4 +1,4 @@
-# Handover — AgriTrace build, state at 2026-11-02 02:40 IST (day 4: first live-stack day; wave 7 nearly done)
+# Handover — AgriTrace build, state at 2026-11-02 03:05 IST (day 4: first live-stack day; wave 7 — G5 extras in flight)
 
 Written for: whoever resumes the multi-agent build (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §6–§7 (audit follow-ups, gate blockers) and the decision-number ledger line.
 
@@ -7,7 +7,7 @@ Written for: whoever resumes the multi-agent build (human or the Orchestrator se
 | Area | State |
 |---|---|
 | Plan | `PLAN.md` (approved 2026-10-29); specs in `docs/agents/specs/`; rulings `docs/agents/gates/rulings-2026-10-31*.md` |
-| Progress | `CHECKLIST.md`: **88 % (68/77)**. Backend B00–B20 verified live; mobile M00–M16 merged + 812 tests green, APK 30.03 MiB (AAB download unmeasured: human step, TODO); portal P01–P11 and W03 verified live; Q02 PASS, Q03 CONDITIONAL (2 page.robot placeholders → Q07 r2), Q04 FAIL → B21 fixed it on its branch (BM-07 p95 280 ms; push 5xx → per-entry rejection) and is in BE/SEC review; Q06 Robot API 67/67 and Q07 portal Robot P01–P04 12/12 merged; Q07 round 2 (P05/P06/P08/P07 + public page placeholders, P06 line 5) in flight |
+| Progress | `CHECKLIST.md`: **88 % (69/78)**. All code WPs merged, reviewed and verified live except: Q01 (device work, needs a Go AVD), P06 line 5 + the remaining portal/public Robot placeholders (Q07 round 2 in flight), Q04 CONDITIONAL (BM-07 flaky under a rules backlog → B22 in flight), Q05 CONDITIONAL (`docs/agents/gates/G5-report.md`: 9 benchmarks PASS, 6 NOT RUN → Q01, AAB download = human bundletool step). B21 merged: push hardening + `WEB_CONCURRENCY=4`, BM-07 p95 230 ms on a quiet host |
 | Gates | **G0, G1, G2 SIGNED** (G2 on 2026-11-02 with the ruling that the 10 mobile Robot placeholders are Q01/G3 scope). **G3 BLOCKED** (Q01 device work + Go AVD; P05/P06/P08 Robot + P06 line 5 → Q07 r2; AAB figure). **G4 BLOCKED** (same portal placeholders + 2 page.robot + P06 line 5). G5 after Q05 (`docs/agents/gates/G*.md`) |
 | Audits | `docs/agents/audits/wave-0-2.md` (3 P1, 11 P2, 6 P3) and `waves-3-6.md` (2 P1, 5 P2, 9 P3). **All five P1s are fixed and merged** (M14, M16, P09); P2s fixed: M15, B18, B19; the rest are TODO §6/§7 lines |
 | Decisions | D-001…D-054 (D-049 unused; D-055–D-058 reserved, unused: B18/B19/P09/M16 needed no ADR) |
@@ -25,8 +25,10 @@ B00 (CONDITIONAL → PASS after B17), Q00 deferred lines closed, B01–B05, B06,
 
 | Agent | What | Resume |
 |---|---|---|
-| Q07 QA Lead (round 2) | remaining Robot placeholders: portal P05 ×2, P06 ×5 (incl. the P06 line-5 audit-reason re-check), P08 ×3, P07 ×2, public `page.robot` ×2, on an isolated compose project; branch `worktree-agent-ac14cb14a1f0ec7bc` (round 1 already merged) | merge → `gate-readiness G3/G4/G5` should list only Q01 mobile lines → Architect-Gate re-evaluates G3/G4 |
-| BE/SEC Reviewer of B21 | `worktree-agent-ac5367febd6d197aa` @ 8cd7944: NUL/int32 validation at the push boundary, per-entry DB-error rejection (SQLSTATE 22), telemetry 422, `WEB_CONCURRENCY=4` in the api Dockerfile (BM-07 p95 1900 → 280 ms) | on PASS: merge, re-export openapi (25 int32 maxima), `npm run gen:api`, Dart `tool/gen_api.sh`, `make up` (if BuildKit says "lease not found": `docker builder prune -af`), then Q05 |
+| Q07 QA Lead (round 2) | remaining Robot placeholders: portal P05 ×2, P06 ×5 (incl. the P06 line-5 audit-reason re-check), P08 ×3, P07 ×2, public `page.robot` ×2, on an isolated compose project; branch `worktree-agent-ac14cb14a1f0ec7bc` (round 1 merged) | merge → `gate-readiness G3/G4/G5` should list only Q01 mobile lines → Architect-Gate re-evaluates G3/G4 |
+| B22 Worker | `rules.check_event` proportional to the event, not the lot (projection queries / index / coalesced `check_lot`); target < 300 ms per check at 1,500 events (Q04-3) | BE review → merge → `make up` → BM-07 rerun with a backlog |
+| Audit Reviewer | `/ponytail-audit` of the wave-7 + hotfix code → `docs/agents/audits/wave-7.md`, TODO §8 | P1s → hotfix WPs before G5 |
+| SEC + DOCS Reviewer | ASVS L1 pass as one document `docs/agents/reviews/SEC-asvs-l1.md`; DOCS: coverage gates, DECISION/ADR index audit, README clean-clone check → `docs/agents/reviews/DOCS-g5.md` | README fixes are docs-only (Orchestrator applies); FAILs → G5 blockers |
 
 No other worktrees should exist (`git worktree list`). Shared-stack live checks are blocked by the admin OTP cap until ~21:49 IST; use an isolated project.
 
