@@ -1,0 +1,9 @@
+
+> @agritrace/portal@0.1.0 dev
+> vite --port 5173 --strictPort
+
+
+  VITE v8.3.5  ready in 555 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose

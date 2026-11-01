@@ -1,0 +1,15 @@
+23:21  up 1 day, 22:54, 1 user, load averages: 16.63 11.05 19.59
+29c40b8468aebde90684eb930426dffc0d112bd7
+==============================================================================
+Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) and the P07 chain...
+==============================================================================
+Portal Loads In A Headless Browser                                    | PASS |
+------------------------------------------------------------------------------
+Portal :: FPO admin portal acceptance (plan §7.3 P01-P08) and the ... | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/G1/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/G1/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/qa/robot/results/G1/report.html
+exit=0
+23:21  up 1 day, 22:54, 1 user, load averages: 16.16 11.20 19.49
