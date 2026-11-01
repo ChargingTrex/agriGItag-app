@@ -63,7 +63,8 @@ REVIEW_METHODS = {
     "field_visit": "field visit",
 }
 # YAML fields behind the W01 schema's required page fields, by entity (D-034 ruling): farm area, farming type
-# and the grade readings. They stay `public` and enabled for every tenant; `agritrace.main` passes this to
+# and the grade readings. Farming type may be empty (optional at capture, B20) but is never hidden. They stay
+# `public` and enabled for every tenant; `agritrace.main` passes this to
 # `fieldconfig.check_page_required` at start-up (core cannot import a module, D-004).
 PAGE_REQUIRED_FIELDS: dict[str, tuple[str, ...]] = {
     "plot": ("declared_area", "farming_type"),

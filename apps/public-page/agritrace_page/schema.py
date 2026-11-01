@@ -326,7 +326,13 @@ class Lot(BaseModel):
     share_pct: float = Field(
         ge=0, le=100, description="Lot's share of the procured quantity, % (FR60)."
     )
-    farming_type: Literal["irrigated", "rainfed"] = Field(description="Farming type (FR54).")
+    # DECISION D-017: farming type is optional at capture (config/fields/plot.yaml), so the page takes null
+    #   and leaves the line out; it stays always-public (D-034 PAGE_REQUIRED_FIELDS), never hidden by a tenant.
+    #   ADV: a plot captured without it no longer blocks publishing (B10-1); the YAML stays the one source.
+    #   COMPROMISE: a lot block may lack the farming-type line until the plot is completed.
+    farming_type: Literal["irrigated", "rainfed"] | None = Field(
+        None, description="Farming type (FR54); null when not recorded (optional in the plot YAML)."
+    )
     irrigation_source: Literal["well", "borewell", "canal", "tank"] | None = Field(
         None, description="Irrigation source (FR54); null for rainfed farms."
     )

@@ -116,7 +116,8 @@
 <dt>{{ t("quantity") }}</dt><dd>{{ qty(lot.quantity) }}</dd>
 <dt>{{ t("share") }}</dt><dd>{{ qty({"value": lot.share_pct, "unit": "%"}) }}</dd>
 <dt>{{ t("farm_area") }}</dt><dd>{{ qty(lot.farm_area) }}</dd>
-<dt>{{ t("farming_type") }}</dt><dd>{{ t("farming_type." ~ lot.farming_type) }}</dd>
+{% if lot.farming_type %}<dt>{{ t("farming_type") }}</dt><dd>{{ t("farming_type." ~ lot.farming_type) }}</dd>
+{% endif %}
 {% if lot.irrigation_source %}<dt>{{ t("irrigation_source") }}</dt><dd>{{ t("irrigation." ~ lot.irrigation_source) }}</dd>
 {% endif %}
 {% if lot.practice_tags %}<dt>{{ t("practices") }}</dt><dd><ul class="tags">{% for p in lot.practice_tags %}<li>{{ t("practice." ~ p) }}</li>{% endfor %}</ul></dd>
