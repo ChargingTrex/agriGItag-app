@@ -1,0 +1,206 @@
+# sign-in +919000000003 on device 9b422952-288a-4fb2-a22d-5bee6bfec0af
+$ POST http://localhost:8000/v1/auth/otp/request
+  body: {"phone":"+919000000003"}
+-> HTTP 204  etag=None
+  
+$ POST http://localhost:8000/v1/auth/otp/verify
+  body: {"phone":"+919000000003","code":"123456","device_id":"9b422952-288a-4fb2-a22d-5bee6bfec0af","platform":"android"}
+-> HTTP 200  etag=None
+  {"kind": "pin_required", "pin_token": "<redacted>", "expires_in": 300, "pin_set": true}
+$ POST http://localhost:8000/v1/auth/pin/verify
+  body: {"pin":"2468"}
+-> HTTP 200  etag=None
+  {"kind": "session", "access_token": "<redacted>", "refresh_token": "<redacted>", "expires_in": 900, "roles": ["qc_officer"], "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597"}
+# sign-in +919000000001 on device ed38fdf3-0665-4dac-839d-c0d2ca6fa76a
+$ POST http://localhost:8000/v1/auth/otp/request
+  body: {"phone":"+919000000001"}
+-> HTTP 204  etag=None
+  
+$ POST http://localhost:8000/v1/auth/otp/verify
+  body: {"phone":"+919000000001","code":"123456","device_id":"ed38fdf3-0665-4dac-839d-c0d2ca6fa76a","platform":"android"}
+-> HTTP 200  etag=None
+  {"kind": "pin_required", "pin_token": "<redacted>", "expires_in": 300, "pin_set": true}
+$ POST http://localhost:8000/v1/auth/pin/verify
+  body: {"pin":"2468"}
+-> HTTP 200  etag=None
+  {"kind": "session", "access_token": "<redacted>", "refresh_token": "<redacted>", "expires_in": 900, "roles": ["fpo_admin"], "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597"}
+# sign-in +919000000002 on device 7b80a208-2277-4306-98f5-15db4d3b9925
+$ POST http://localhost:8000/v1/auth/otp/request
+  body: {"phone":"+919000000002"}
+-> HTTP 204  etag=None
+  
+$ POST http://localhost:8000/v1/auth/otp/verify
+  body: {"phone":"+919000000002","code":"123456","device_id":"7b80a208-2277-4306-98f5-15db4d3b9925","platform":"android"}
+-> HTTP 200  etag=None
+  {"kind": "pin_required", "pin_token": "<redacted>", "expires_in": 300, "pin_set": true}
+$ POST http://localhost:8000/v1/auth/pin/verify
+  body: {"pin":"2468"}
+-> HTTP 200  etag=None
+  {"kind": "session", "access_token": "<redacted>", "refresh_token": "<redacted>", "expires_in": 900, "roles": ["field_officer"], "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597"}
+
+## run 1: pause 0 s between the packing push and the QC push
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a1985f-85b8-7fb2-8d20-63d1987939d2","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 race 1"}
+-> HTTP 201  etag=None
+  {"id": "01a1985f-85b8-7fb2-8d20-63d1987939d2", "code": "LOT63A82EA6", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 1", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"e6083e52-dce8-4b43-846e-d745c9e37a8b","app_version":"1.0.3","device_time":"2026-11-01T18:29:20.893921+00:00","entries":[{"client_id":"01a1985f-8b7e-7a68-8801-c083cd8afadb","kind":"event_version","data":{"event_id":"01a1985f-8b7d-77a2-ba0e-0e0d50bfdbad","version_no":1,"subject_type":"lot","lot_id":"01a1985f-85b8-7fb2-8d20-63d1987939d2","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"packing","instance_no":1,"occurred_on":"2026-10-29","payload":{"quantity":{"value":200,"unit":"kg"},"bags":8},"clocks":{"device_time":"2026-11-01T18:29:20.893301+00:00"},"gps":{"lat":9.5 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:29:21.163636Z", "results": [{"client_id": "01a1985f-8b7e-7a68-8801-c083cd8afadb", "status": "accepted", "server_id": "01a1985f-8b7e-7a68-8801-c083cd8afadb", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a1985f-8c8f-7a7c-bc20-88deddf10424","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:29:21.167755+00:00","lot_id":"01a1985f-85b8-7fb2-8d20-63d1987939d2"}
+-> HTTP 201  etag=None
+  {"id": "01a1985f-8c8f-7a7c-bc20-88deddf10424", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a1985f-85b8-7fb2-8d20-63d1987939d2", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T18:29:21.167755Z", "server_received_at": "2026-11-01T18:29:21.293945Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a1985f-85b8-7fb2-8d20-63d1987939d2/ready
+-> HTTP 200  etag=None
+  {"id": "01a1985f-85b8-7fb2-8d20-63d1987939d2", "code": "LOT63A82EA6", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 1", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T18:29:21.347271Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"037e29f8-496c-4d0c-a8a7-459f933ff9a3","app_version":"1.0.3","device_time":"2026-11-01T18:29:21.355275+00:00","entries":[{"client_id":"01a1985f-8d4b-7a3b-a3fd-993d61a24b7f","kind":"quality_reading","data":{"stage":"intake","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:29:21.355215+00:00","lot_id":"01a1985f-85b8-7fb2-8d20-63d1987939d2"}},{"client_id":"01a1985f-8d4c-70e0-9c08-f90574b77350","kind":"lot_intake","data":{"lot_id":"01a1985f-85b8-7fb2-8d20-63d1 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:29:21.492920Z", "results": [{"client_id": "01a1985f-8d4b-7a3b-a3fd-993d61a24b7f", "status": "accepted", "server_id": "01a1985f-8d4b-7a3b-a3fd-993d61a24b7f", "photo_uploads": [], "error": null}, {"client_id": "01a1985f-8d4c-70e0-9c08-f90574b77350", "status": "accepted", "server_id": "01a1985f-8d4c-70e0-9c08-f90574b77350", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted']
+  sql> select status||':'||coalesce(resolution_reason_code,'-')||' raised '||raised_at::time||' closed '||coalesce(resolved_at::time::text,'-') from flags where subject_id='01a1985f-85b8-7fb2-8d20-63d1987939d2' and rule_code='quantity_mismatch'
+  =>  'open:- raised 18:29:21.456558 closed -'
+
+## run 2: pause 0 s between the packing push and the QC push
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a1985f-ae05-7ede-b42f-9df312932e58","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 race 2"}
+-> HTTP 201  etag=None
+  {"id": "01a1985f-ae05-7ede-b42f-9df312932e58", "code": "LOTF7ADABF4", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 2", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"04b10886-2ef3-4b97-bbac-94472429ac04","app_version":"1.0.3","device_time":"2026-11-01T18:29:29.760031+00:00","entries":[{"client_id":"01a1985f-ae20-7581-8d85-7aca88c9cd4e","kind":"event_version","data":{"event_id":"01a1985f-ae1f-7eaf-af2f-75878c6b2744","version_no":1,"subject_type":"lot","lot_id":"01a1985f-ae05-7ede-b42f-9df312932e58","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"packing","instance_no":1,"occurred_on":"2026-10-29","payload":{"quantity":{"value":200,"unit":"kg"},"bags":8},"clocks":{"device_time":"2026-11-01T18:29:29.759978+00:00"},"gps":{"lat":9.5 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:29:29.789795Z", "results": [{"client_id": "01a1985f-ae20-7581-8d85-7aca88c9cd4e", "status": "accepted", "server_id": "01a1985f-ae20-7581-8d85-7aca88c9cd4e", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a1985f-ae42-71d5-8e7a-4b34128b8f57","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:29:29.794249+00:00","lot_id":"01a1985f-ae05-7ede-b42f-9df312932e58"}
+-> HTTP 201  etag=None
+  {"id": "01a1985f-ae42-71d5-8e7a-4b34128b8f57", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a1985f-ae05-7ede-b42f-9df312932e58", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T18:29:29.794249Z", "server_received_at": "2026-11-01T18:29:29.808443Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a1985f-ae05-7ede-b42f-9df312932e58/ready
+-> HTTP 200  etag=None
+  {"id": "01a1985f-ae05-7ede-b42f-9df312932e58", "code": "LOTF7ADABF4", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 2", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T18:29:29.839807Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"07ad0fe4-f4c1-422e-b0ac-aa5c73c4024d","app_version":"1.0.3","device_time":"2026-11-01T18:29:29.851876+00:00","entries":[{"client_id":"01a1985f-ae7b-7143-b7bc-e200b8a049b2","kind":"quality_reading","data":{"stage":"intake","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:29:29.851762+00:00","lot_id":"01a1985f-ae05-7ede-b42f-9df312932e58"}},{"client_id":"01a1985f-ae7c-719e-9876-4596c66e8833","kind":"lot_intake","data":{"lot_id":"01a1985f-ae05-7ede-b42f-9df3 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:29:29.947892Z", "results": [{"client_id": "01a1985f-ae7b-7143-b7bc-e200b8a049b2", "status": "accepted", "server_id": "01a1985f-ae7b-7143-b7bc-e200b8a049b2", "photo_uploads": [], "error": null}, {"client_id": "01a1985f-ae7c-719e-9876-4596c66e8833", "status": "accepted", "server_id": "01a1985f-ae7c-719e-9876-4596c66e8833", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted']
+  sql> select status||':'||coalesce(resolution_reason_code,'-')||' raised '||raised_at::time||' closed '||coalesce(resolved_at::time::text,'-') from flags where subject_id='01a1985f-ae05-7ede-b42f-9df312932e58' and rule_code='quantity_mismatch'
+  =>  'open:- raised 18:29:29.90983 closed -'
+
+## run 3: pause 0 s between the packing push and the QC push
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a1985f-ce66-7618-80c0-c8d8ef290739","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 race 3"}
+-> HTTP 201  etag=None
+  {"id": "01a1985f-ce66-7618-80c0-c8d8ef290739", "code": "LOT66B16D77", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 3", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"7a028ad9-453a-4b3a-a073-bbbbb25fcd37","app_version":"1.0.3","device_time":"2026-11-01T18:29:38.049010+00:00","entries":[{"client_id":"01a1985f-ce81-77ad-afd0-8684f3772e42","kind":"event_version","data":{"event_id":"01a1985f-ce80-7771-9d67-6e5c2a9992d7","version_no":1,"subject_type":"lot","lot_id":"01a1985f-ce66-7618-80c0-c8d8ef290739","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"packing","instance_no":1,"occurred_on":"2026-10-29","payload":{"quantity":{"value":200,"unit":"kg"},"bags":8},"clocks":{"device_time":"2026-11-01T18:29:38.048952+00:00"},"gps":{"lat":9.5 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:29:38.080008Z", "results": [{"client_id": "01a1985f-ce81-77ad-afd0-8684f3772e42", "status": "accepted", "server_id": "01a1985f-ce81-77ad-afd0-8684f3772e42", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a1985f-cea4-723b-b73a-781dee0052a9","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:29:38.084379+00:00","lot_id":"01a1985f-ce66-7618-80c0-c8d8ef290739"}
+-> HTTP 201  etag=None
+  {"id": "01a1985f-cea4-723b-b73a-781dee0052a9", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a1985f-ce66-7618-80c0-c8d8ef290739", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T18:29:38.084379Z", "server_received_at": "2026-11-01T18:29:38.094331Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a1985f-ce66-7618-80c0-c8d8ef290739/ready
+-> HTTP 200  etag=None
+  {"id": "01a1985f-ce66-7618-80c0-c8d8ef290739", "code": "LOT66B16D77", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 3", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T18:29:38.118637Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"2902125a-179c-491f-a584-3b7309471781","app_version":"1.0.3","device_time":"2026-11-01T18:29:38.129228+00:00","entries":[{"client_id":"01a1985f-ced1-7aac-a4a4-ad2cfb939097","kind":"quality_reading","data":{"stage":"intake","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:29:38.129163+00:00","lot_id":"01a1985f-ce66-7618-80c0-c8d8ef290739"}},{"client_id":"01a1985f-ced2-7a5a-88b9-ca6c70fa3c0e","kind":"lot_intake","data":{"lot_id":"01a1985f-ce66-7618-80c0-c8d8 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:29:38.214972Z", "results": [{"client_id": "01a1985f-ced1-7aac-a4a4-ad2cfb939097", "status": "accepted", "server_id": "01a1985f-ced1-7aac-a4a4-ad2cfb939097", "photo_uploads": [], "error": null}, {"client_id": "01a1985f-ced2-7a5a-88b9-ca6c70fa3c0e", "status": "accepted", "server_id": "01a1985f-ced2-7a5a-88b9-ca6c70fa3c0e", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted']
+  sql> select status||':'||coalesce(resolution_reason_code,'-')||' raised '||raised_at::time||' closed '||coalesce(resolved_at::time::text,'-') from flags where subject_id='01a1985f-ce66-7618-80c0-c8d8ef290739' and rule_code='quantity_mismatch'
+  =>  'open:- raised 18:29:38.184215 closed -'
+
+## run 4: pause 20 s between the packing push and the QC push
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a1985f-eea3-71e3-a53b-3df9f36079a4","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 race 4"}
+-> HTTP 201  etag=None
+  {"id": "01a1985f-eea3-71e3-a53b-3df9f36079a4", "code": "LOT07969A6D", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 4", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"04296042-c37d-4ca7-9cd3-772fd92ac0a2","app_version":"1.0.3","device_time":"2026-11-01T18:29:46.292752+00:00","entries":[{"client_id":"01a1985f-eeb5-75d7-84b0-7c244d405726","kind":"event_version","data":{"event_id":"01a1985f-eeb4-7c30-9892-992dd8049ae5","version_no":1,"subject_type":"lot","lot_id":"01a1985f-eea3-71e3-a53b-3df9f36079a4","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"packing","instance_no":1,"occurred_on":"2026-10-29","payload":{"quantity":{"value":200,"unit":"kg"},"bags":8},"clocks":{"device_time":"2026-11-01T18:29:46.292706+00:00"},"gps":{"lat":9.5 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:29:46.315966Z", "results": [{"client_id": "01a1985f-eeb5-75d7-84b0-7c244d405726", "status": "accepted", "server_id": "01a1985f-eeb5-75d7-84b0-7c244d405726", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19860-3cf4-7456-8126-55140dc2bbbb","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:30:06.324392+00:00","lot_id":"01a1985f-eea3-71e3-a53b-3df9f36079a4"}
+-> HTTP 201  etag=None
+  {"id": "01a19860-3cf4-7456-8126-55140dc2bbbb", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a1985f-eea3-71e3-a53b-3df9f36079a4", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T18:30:06.324392Z", "server_received_at": "2026-11-01T18:30:06.343126Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a1985f-eea3-71e3-a53b-3df9f36079a4/ready
+-> HTTP 200  etag=None
+  {"id": "01a1985f-eea3-71e3-a53b-3df9f36079a4", "code": "LOT07969A6D", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 4", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T18:30:06.373358Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"5e6d8d10-7eba-495b-a88e-017e6e47f88e","app_version":"1.0.3","device_time":"2026-11-01T18:30:06.382089+00:00","entries":[{"client_id":"01a19860-3d2d-7f20-8aa2-2d77197b5969","kind":"quality_reading","data":{"stage":"intake","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:30:06.381984+00:00","lot_id":"01a1985f-eea3-71e3-a53b-3df9f36079a4"}},{"client_id":"01a19860-3d2e-79a0-8123-8ee6f69f88c7","kind":"lot_intake","data":{"lot_id":"01a1985f-eea3-71e3-a53b-3df9 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:30:06.451939Z", "results": [{"client_id": "01a19860-3d2d-7f20-8aa2-2d77197b5969", "status": "accepted", "server_id": "01a19860-3d2d-7f20-8aa2-2d77197b5969", "photo_uploads": [], "error": null}, {"client_id": "01a19860-3d2e-79a0-8123-8ee6f69f88c7", "status": "accepted", "server_id": "01a19860-3d2e-79a0-8123-8ee6f69f88c7", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted']
+  sql> select status||':'||coalesce(resolution_reason_code,'-')||' raised '||raised_at::time||' closed '||coalesce(resolved_at::time::text,'-') from flags where subject_id='01a1985f-eea3-71e3-a53b-3df9f36079a4' and rule_code='quantity_mismatch'
+  =>  'open:- raised 18:30:06.432126 closed -'
+
+## run 5: pause 20 s between the packing push and the QC push
+$ POST http://localhost:8000/v1/lots
+  body: {"client_id":"01a19860-5cf6-7d75-9a0c-5f791c2d6d99","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","crop_id":"01a197e0-99b6-76ae-b6ac-d666725ef32e","season_label":"QA-B16 race 5"}
+-> HTTP 201  etag=None
+  {"id": "01a19860-5cf6-7d75-9a0c-5f791c2d6d99", "code": "LOT5908667A", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 5", "status": "open", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": null, "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"f3485150-e3b9-4bd9-b05e-058dcf34fac8","app_version":"1.0.3","device_time":"2026-11-01T18:30:14.531554+00:00","entries":[{"client_id":"01a19860-5d04-73f3-973e-546a27ba1a23","kind":"event_version","data":{"event_id":"01a19860-5d03-76e4-ad2f-96798f864809","version_no":1,"subject_type":"lot","lot_id":"01a19860-5cf6-7d75-9a0c-5f791c2d6d99","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"packing","instance_no":1,"occurred_on":"2026-10-30","payload":{"quantity":{"value":200,"unit":"kg"},"bags":8},"clocks":{"device_time":"2026-11-01T18:30:14.531512+00:00"},"gps":{"lat":9.5 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:30:14.553547Z", "results": [{"client_id": "01a19860-5d04-73f3-973e-546a27ba1a23", "status": "accepted", "server_id": "01a19860-5d04-73f3-973e-546a27ba1a23", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/quality-readings
+  body: {"client_id":"01a19860-ab3e-73b6-ac7e-32979a3e5be2","stage":"drying_end","parameter_code":"moisture","measurement":{"value":"10.0","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:30:34.558762+00:00","lot_id":"01a19860-5cf6-7d75-9a0c-5f791c2d6d99"}
+-> HTTP 201  etag=None
+  {"id": "01a19860-ab3e-73b6-ac7e-32979a3e5be2", "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597", "lot_id": "01a19860-5cf6-7d75-9a0c-5f791c2d6d99", "batch_id": null, "stage": "drying_end", "parameter_code": "moisture", "measurement": {"value": "10.0", "unit": "%"}, "method_ref": null, "source": "instrument", "instrument_id": "01a19822-8d02-7017-aae0-c9dfbe5da083", "calibration_due_on_at_time": "2027-08-28", "lab_name": null, "lab_nabl_no": null, "sample_id": null, "measured_by_user_id": "01a197e0-9a3e-772c-acc4-93407882f68b", "measured_at": "2026-11-01T18:30:34.558762Z", "server_received_at": "2026-11-01T18:30:34.572973Z", "reason_code": null, "profile_version_id": "01a197e0-9a12-75d1-8b28-7a634937e0f9"}
+$ POST http://localhost:8000/v1/lots/01a19860-5cf6-7d75-9a0c-5f791c2d6d99/ready
+-> HTTP 200  etag=None
+  {"id": "01a19860-5cf6-7d75-9a0c-5f791c2d6d99", "code": "LOT5908667A", "farmer_id": "56a622ff-6789-4ae0-9a65-775491f5d2cf", "plot_id": "01a19822-8d16-7299-a60c-63ac59dc79b2", "crop_id": "01a197e0-99b6-76ae-b6ac-d666725ef32e", "season_label": "QA-B16 race 5", "status": "ready_for_sale", "practice_tags": {"declared": [], "derived": [], "contradiction": false}, "harvested": null, "packed": null, "ready_at": "2026-11-01T18:30:34.605987Z", "gi_eligible": true, "gi_hold_reason": null}
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"8b32ee13-b028-428f-984b-72f80c7cda49","app_version":"1.0.3","device_time":"2026-11-01T18:30:34.616335+00:00","entries":[{"client_id":"01a19860-ab78-75f1-9a27-04370aee6b2f","kind":"quality_reading","data":{"stage":"intake","parameter_code":"moisture","measurement":{"value":"10.5","unit":"%"},"source":"instrument","instrument_id":"01a19822-8d02-7017-aae0-c9dfbe5da083","measured_at":"2026-11-01T18:30:34.616154+00:00","lot_id":"01a19860-5cf6-7d75-9a0c-5f791c2d6d99"}},{"client_id":"01a19860-ab79-7736-9f4f-c7adc5c8549f","kind":"lot_intake","data":{"lot_id":"01a19860-5cf6-7d75-9a0c-5f79 ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:30:34.699632Z", "results": [{"client_id": "01a19860-ab78-75f1-9a27-04370aee6b2f", "status": "accepted", "server_id": "01a19860-ab78-75f1-9a27-04370aee6b2f", "photo_uploads": [], "error": null}, {"client_id": "01a19860-ab79-7736-9f4f-c7adc5c8549f", "status": "accepted", "server_id": "01a19860-ab79-7736-9f4f-c7adc5c8549f", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted', 'accepted']
+  sql> select status||':'||coalesce(resolution_reason_code,'-')||' raised '||raised_at::time||' closed '||coalesce(resolved_at::time::text,'-') from flags where subject_id='01a19860-5cf6-7d75-9a0c-5f791c2d6d99' and rule_code='quantity_mismatch'
+  =>  'open:- raised 18:30:34.677559 closed -'
+
+## a later check on each lot (one `problem` event pushed by the officer): is the flag re-raised?
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"79f3f83f-309d-4255-85d0-9b89df8ea1d0","app_version":"1.0.3","device_time":"2026-11-01T18:30:42.778060+00:00","entries":[{"client_id":"01a19860-cb5a-7031-90c4-7d133d36ec4b","kind":"event_version","data":{"event_id":"01a19860-cb59-78e8-b94e-6400870758b7","version_no":1,"subject_type":"lot","lot_id":"01a1985f-85b8-7fb2-8d20-63d1987939d2","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"problem","instance_no":1,"occurred_on":"2026-11-02","payload":{"problem_type":"pest","description":"QA recheck"},"clocks":{"device_time":"2026-11-01T18:30:42.778000+00:00"},"gps":{"lat": ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:30:42.804099Z", "results": [{"client_id": "01a19860-cb5a-7031-90c4-7d133d36ec4b", "status": "accepted", "server_id": "01a19860-cb5a-7031-90c4-7d133d36ec4b", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"b9250814-39dd-4171-a2f8-92b4bfa531b5","app_version":"1.0.3","device_time":"2026-11-01T18:30:42.806889+00:00","entries":[{"client_id":"01a19860-cb77-7c42-8e19-b5bf13373b65","kind":"event_version","data":{"event_id":"01a19860-cb76-7c6b-8187-c5a6407b3d11","version_no":1,"subject_type":"lot","lot_id":"01a1985f-ae05-7ede-b42f-9df312932e58","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"problem","instance_no":1,"occurred_on":"2026-11-02","payload":{"problem_type":"pest","description":"QA recheck"},"clocks":{"device_time":"2026-11-01T18:30:42.806844+00:00"},"gps":{"lat": ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:30:42.826588Z", "results": [{"client_id": "01a19860-cb77-7c42-8e19-b5bf13373b65", "status": "accepted", "server_id": "01a19860-cb77-7c42-8e19-b5bf13373b65", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"f65c8f40-31de-4049-ba76-e346d229c649","app_version":"1.0.3","device_time":"2026-11-01T18:30:42.829284+00:00","entries":[{"client_id":"01a19860-cb8e-71c2-b34e-b649f859cb5c","kind":"event_version","data":{"event_id":"01a19860-cb8d-787d-b897-fb3ee4f1b150","version_no":1,"subject_type":"lot","lot_id":"01a1985f-ce66-7618-80c0-c8d8ef290739","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"problem","instance_no":1,"occurred_on":"2026-11-02","payload":{"problem_type":"pest","description":"QA recheck"},"clocks":{"device_time":"2026-11-01T18:30:42.829248+00:00"},"gps":{"lat": ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:30:42.853537Z", "results": [{"client_id": "01a19860-cb8e-71c2-b34e-b649f859cb5c", "status": "accepted", "server_id": "01a19860-cb8e-71c2-b34e-b649f859cb5c", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"929156ae-943b-4e46-b2b3-b3734dc2531c","app_version":"1.0.3","device_time":"2026-11-01T18:30:42.856277+00:00","entries":[{"client_id":"01a19860-cba9-72cb-8424-c7fa8180a567","kind":"event_version","data":{"event_id":"01a19860-cba8-7d53-8c60-7b1d5418bdce","version_no":1,"subject_type":"lot","lot_id":"01a1985f-eea3-71e3-a53b-3df9f36079a4","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"problem","instance_no":1,"occurred_on":"2026-11-02","payload":{"problem_type":"pest","description":"QA recheck"},"clocks":{"device_time":"2026-11-01T18:30:42.856241+00:00"},"gps":{"lat": ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:30:42.883758Z", "results": [{"client_id": "01a19860-cba9-72cb-8424-c7fa8180a567", "status": "accepted", "server_id": "01a19860-cba9-72cb-8424-c7fa8180a567", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+$ POST http://localhost:8000/v1/sync/push
+  body: {"device_id":"fecb8163-8972-49d9-b6b9-de295fcaa5ad","app_version":"1.0.3","device_time":"2026-11-01T18:30:42.886915+00:00","entries":[{"client_id":"01a19860-cbc7-72c6-a3cf-2d31ab3744a3","kind":"event_version","data":{"event_id":"01a19860-cbc6-7d0c-88f7-c0abf8ec152f","version_no":1,"subject_type":"lot","lot_id":"01a19860-5cf6-7d75-9a0c-5f791c2d6d99","plot_id":"01a19822-8d16-7299-a60c-63ac59dc79b2","event_type":"problem","instance_no":1,"occurred_on":"2026-11-02","payload":{"problem_type":"pest","description":"QA recheck"},"clocks":{"device_time":"2026-11-01T18:30:42.886841+00:00"},"gps":{"lat": ...
+-> HTTP 200  etag=None
+  {"server_time": "2026-11-01T18:30:42.914798Z", "results": [{"client_id": "01a19860-cbc7-72c6-a3cf-2d31ab3744a3", "status": "accepted", "server_id": "01a19860-cbc7-72c6-a3cf-2d31ab3744a3", "photo_uploads": [], "error": null}]}
+  statuses: ['accepted']
+  sql> select status from flags where subject_id='01a1985f-85b8-7fb2-8d20-63d1987939d2' and rule_code='quantity_mismatch'
+  =>  'open'
+  RESULT run 1 pause  0 s: after intake: open:- raised 18:29:21.456558 closed - | after a later event check: open
+  sql> select status from flags where subject_id='01a1985f-ae05-7ede-b42f-9df312932e58' and rule_code='quantity_mismatch'
+  =>  'open'
+  RESULT run 2 pause  0 s: after intake: open:- raised 18:29:29.90983 closed - | after a later event check: open
+  sql> select status from flags where subject_id='01a1985f-ce66-7618-80c0-c8d8ef290739' and rule_code='quantity_mismatch'
+  =>  'open'
+  RESULT run 3 pause  0 s: after intake: open:- raised 18:29:38.184215 closed - | after a later event check: open
+  sql> select status from flags where subject_id='01a1985f-eea3-71e3-a53b-3df9f36079a4' and rule_code='quantity_mismatch'
+  =>  'open'
+  RESULT run 4 pause 20 s: after intake: open:- raised 18:30:06.432126 closed - | after a later event check: open
+  sql> select status from flags where subject_id='01a19860-5cf6-7d75-9a0c-5f791c2d6d99' and rule_code='quantity_mismatch'
+  =>  'open'
+  RESULT run 5 pause 20 s: after intake: open:- raised 18:30:34.677559 closed - | after a later event check: open

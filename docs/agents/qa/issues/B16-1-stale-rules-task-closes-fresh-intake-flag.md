@@ -49,3 +49,5 @@ never saw the intake. Two checks of the same lot are not serialised.
   `run_gate_checks`, before reading its context, as `create_batch` already does for merges.
 - Or close only flags whose `raised_at` is older than the run's start (a run cannot close what it could not see).
 - Add an integration test that runs a stale `check_event` after an intake commits (two sessions).
+
+**Resolution (Orchestrator, 2026-11-02 00:30 IST, main 72c52b5 + B19):** live rerun of `live_b16_race.py` against the rebuilt stack: 5/5 runs (3 × no pause, 2 × 20 s) leave `quantity_mismatch` `open` after the intake and after a later check; log `../B16/logs/04-live-b16-race-after-B19.log`. Full backend suite on main 780/780.

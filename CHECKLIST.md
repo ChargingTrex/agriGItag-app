@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 69 % (49/71 items)
+Completion: 72 % (51/71 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -60,8 +60,8 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 
 - [x] B09 — Lots, intake, batches, gates — wave 5 — worker: Opus (2 rounds) — reviewer: BE FAIL r1 / PASS-PENDING-STACK r2 — verifier: PASS 8/8 (docs/agents/qa/B09.md; seeded shares 31.250/62.500/6.250 live, 2026-11-01)
 - [x] B15 — Backend gaps from B08 review and M09 (grading-loss split D-030, `farmer` push kind + `client_id` D-031, assist_session kind D-032) — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PASS (docs/agents/qa/B15.md; live push [farmer, assist_session, consent, plot] 4× accepted, replay 4× duplicate, timeout-then-sync → one farmer)
-- [ ] B16 — QC intake via sync (`lot_intake` push kind, `POST /intakes` for QC, processor default, moisture gate at intake; D-040), non-GI holds (D-041), assist_session_id per kind (D-042) — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: CONDITIONAL (docs/agents/qa/B16.md: all lines pass, live lot_intake 2× accepted + replay duplicate; P2 B16-1 stale rules run closes a fresh flag → fixed in B19; tick when B19 merges)
-- [ ] B19 — Stale rules run must not close a flag it could not see (B16-1 race in `store_flags`) — wave 6 hotfix — worker: Opus (2 rounds) — reviewer: BE FAIL r1 (deadlock + lock scope) → r2 exact fixes confirmed by Orchestrator — verifier: integration 53 + unit 623 on the branch; live race rerun + full suite on main running (merged 2026-11-01)
+- [x] B16 — QC intake via sync (`lot_intake` push kind, `POST /intakes` for QC, processor default, moisture gate at intake; D-040), non-GI holds (D-041), assist_session_id per kind (D-042) — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: CONDITIONAL → PASS 2026-11-02 (docs/agents/qa/B16.md; live lot_intake pushes OK; B16-1 race closed by B19, live rerun 5/5 open, log 04-live-b16-race-after-B19.log)
+- [x] B19 — Stale rules run must not close a flag it could not see (B16-1 race in `store_flags`) — wave 6 hotfix — worker: Opus (2 rounds) — reviewer: BE FAIL r1 (deadlock + lock scope) → r2 exact fixes confirmed by Orchestrator — verifier: integration 53 + unit 623 on the branch; main 780/780 after merge; live race script 5/5 open (2026-11-02)
 - [x] M08 — Sell QR, Money, History + Undo, Settings — wave 5 — worker: Opus (1 round + 2 micro-patches) — reviewer: MOB PASS r1 — verifier: Orchestrator-run suite PASS (660 on main); device checks → Q01
 - [x] M09 — Officer onboarding wizard (9 steps, consent audio, GPS ring, acre/cent stepper, boundary w — wave 5 — worker: Opus (2 rounds + micro-patch) — reviewer: MOB FAIL r1 / PASS r2 — verifier: Orchestrator-run suite (post-merge); device checks → Q01
 - [x] M10 — Officer home, assist mode, flags, moisture reading — wave 5 — worker: Opus (2 rounds) — reviewer: MOB/SEC FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (724 on main); device checks → Q01
