@@ -1857,6 +1857,24 @@ abstract class AppLocalizations {
   /// In ta, this message translates to:
   /// **'இந்தப் போனில் இன்னும் இல்லை: விவசாயி, எடை விவசாயியின் QR-இலிருந்து வந்தவை, சரிபார்க்கப்படவில்லை. சரிபார்க்க ஒத்திசையுங்கள்.'**
   String get qcLotUnverified;
+
+  /// Settings switch: phone reminders when a farm task is due (default on, M12). At most two words. Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'நினைவூட்டல்கள்'**
+  String get remindersToggle;
+
+  /// Asked once before the phone's notification permission prompt (Android 13+, iOS), answered with Yes / No (M12). Also its voice prompt id.
+  ///
+  /// In ta, this message translates to:
+  /// **'அறுவடை போன்ற அடுத்த வேலையைப் பதிவு செய்யும் நேரம் வந்தால் AgriTrace உங்களுக்கு நினைவூட்டும். நினைவூட்டல்களை அனுமதிக்கவா?'**
+  String get remindersRationale;
+
+  /// Title of a phone reminder (M12, FR7) at the task's due time; event is the event's name, e.g. Harvest. The body names the field.
+  ///
+  /// In ta, this message translates to:
+  /// **'பதிவு செய்யும் நேரம்: {event}'**
+  String reminderTitle(String event);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

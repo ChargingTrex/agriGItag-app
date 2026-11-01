@@ -11,6 +11,8 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // flutter_local_notifications (M12 reminders) needs core library desugaring for its java.time scheduling.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -46,4 +48,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Backports java.time for flutter_local_notifications on API 26+ (M12). GPL-2.0 with the Classpath Exception,
+    // accepted for this library only by the D-018 amendment of 2026-10-31 (docs/LIBRARIES.md row).
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
