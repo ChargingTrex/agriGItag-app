@@ -334,7 +334,7 @@ Four sections. The Orchestrator keeps this file current; reviewers and `/ponytai
 - [ ] B21 → rules_flags (BM-07 next step): `rules.check_event` re-reads every event of the lot (≈0.3 s fresh, ≈3 s at 1,000 events/lot), so the worker (300–560 % CPU) and Postgres now dominate the host under load; make it incremental (only the rules the event type touches) or debounce per lot.
 - [ ] B21 → B00/main: REST bodies outside `/v1/sync/push` (corrections, undo, registry, quality, intakes) still reach Postgres with a NUL or out-of-range value and give 500; add one `DataError` (SQLSTATE 22) → 422 `validation_error` handler in `main.py`, reusing `events.service._data_error`'s test.
 - [ ] B21 (Q04-2 remainder): `sync_metrics.saved_at`/`acked_at` accept any year (0001, 5383 seen); bound them to a plausible window if the telemetry dashboard needs it.
-- [ ] B21 → deploy: `WEB_CONCURRENCY=4` is baked into the api image; set it to the task's vCPU count at deploy (4 processes × 15 pool connections = 60).
+- [ ] B21 → deploy: `WEB_CONCURRENCY=4` is baked into the api image; set it to the task's vCPU count at deploy, keeping api processes × 15 + Celery worker concurrency (default = vCPU count) + headroom ≤ Postgres `max_connections` (100 by default; 4 × 15 + 12 = 72 on the Q04 host, a 16-vCPU host at 16 × 15 + 16 = 256 would need a lower WEB_CONCURRENCY or a bigger `max_connections`).
 
 ## 5. Manual steps for the user
 - [ ] Start Docker Desktop (needed for the compose stack and integration tests).

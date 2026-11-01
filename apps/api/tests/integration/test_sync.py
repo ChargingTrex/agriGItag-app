@@ -5,7 +5,8 @@ mixed batch #1/#3 accepted, #2 rejected; wrong checksum → `checksum_mismatch` 
 24 h → 409; farmer correction → 403; device clock +3 d → stored + `clock_skew` hint), presigned PUT with
 SHA-256 then confirm → verify → variants, confirm without upload → `missing`, audit rows for Core writes,
 SQLSTATE 23001 → `append_only_violation`, an object bigger than declared → `checksum_mismatch` (B18),
-a NUL payload and an int32-overflow `instance_no` reject only their entries (B21, Q04-1).
+a NUL payload and an int32-overflow `instance_no` reject only their entries, also through the Postgres
+class-22 backstop with the pre-check off; a 5,000-deep `data` is a per-entry rejection (B21, Q04-1, B21-r1).
 backend-design.md §3, D-005, D-011, FR61.
 Callers: pytest (`make test`); needs Docker (tests/conftest.py `stack`). The caller is injected by a
 dependency override; Celery's `send_task` is recorded (eager mode does not apply to tasks sent by name);
@@ -14,6 +15,7 @@ tasks are run in a thread (they open their own loop and NullPool engine, D-009).
 
 import asyncio
 import hashlib
+import json
 import secrets
 import subprocess
 import sys
@@ -42,6 +44,7 @@ from agritrace.core.db import get_sessionmaker
 from agritrace.core.enums import OrgKind, PinMethod, Role
 from agritrace.core.errors import AppendOnlyViolationError, append_only_error
 from agritrace.core.ids import lot_code, uuid7
+from agritrace.modules.events import service
 from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto
 from agritrace.modules.identity.models import User
 from agritrace.modules.lots_batches.models import Lot
@@ -635,3 +638,39 @@ async def test_nul_and_int32_overflow_reject_only_their_entries(world: tuple[Wor
     assert {results[0]["error"]["code"], results[2]["error"]["code"]} == {"validation_error"}
     refused = [uuid.UUID(nul["client_id"]), uuid.UUID(big["client_id"])]
     assert await count(EventVersion, EventVersion.id.in_(refused)) == 0
+
+
+async def test_postgres_data_error_rejects_only_its_entry(
+    world: tuple[World, AsyncClient], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With the NUL pre-check off, Postgres refuses the NUL (class 22): [NUL, clean] → rejected, accepted.
+
+    Args:
+        world: seeded FPO and client (fixture).
+        monkeypatch: switches `service.has_nul` off so the entry reaches the INSERT.
+    """
+    w, client = world
+    monkeypatch.setattr(service, "has_nul", lambda _: False)
+    nul = harvest(w, event_type="problem", payload={"problem_type": "pest", "description": "a\x00b"})
+    response = await client.post("/v1/sync/push", json=envelope(nul, harvest(w)))
+    assert response.status_code == 200
+    results = response.json()["results"]
+    assert [r["status"] for r in results] == ["rejected", "accepted"]
+    assert results[0]["error"]["code"] == "validation_error"
+    assert results[0]["error"]["details"][0]["type"] == "db_data_error"
+
+
+async def test_deeply_nested_data_rejects_only_its_entry(world: tuple[World, AsyncClient]) -> None:
+    """An entry whose `data` nests 5,000 lists deep (NUL at the bottom) is rejected, not a 500 (B21-r1 P2-1).
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    body = json.dumps(envelope(harvest(w), harvest(w, deep="__DEEP__"), harvest(w)))
+    deep = "[" * 5_000 + '"x\\u0000"' + "]" * 5_000  # built as text: json.dumps refuses this depth
+    content = body.replace('"__DEEP__"', deep)
+    headers = {"Content-Type": "application/json"}
+    response = await client.post("/v1/sync/push", content=content, headers=headers)
+    assert response.status_code == 200
+    assert [r["status"] for r in response.json()["results"]] == ["accepted", "rejected", "accepted"]

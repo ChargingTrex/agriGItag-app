@@ -10951,7 +10951,7 @@
         "type": "object"
       },
       "SyncPushIn": {
-        "description": "Sync push envelope: at most 50 entries and 256 KB (backend-design.md \u00a73, plan \u00a713 A4).",
+        "description": "Sync push envelope: at most 50 entries and 256 KB (backend-design.md \u00a73, plan \u00a713 A4).\n\nA telemetry value Postgres cannot store (NUL, int32 overflow) is a 422 for the whole envelope, by design:\nthe app's metrics come from fixed sources, so only a non-app client can send one; same rule as before B21.",
         "properties": {
           "app_version": {
             "description": "App version, e.g. `1.0.3`.",

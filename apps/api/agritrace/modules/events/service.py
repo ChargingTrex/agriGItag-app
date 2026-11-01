@@ -52,7 +52,7 @@ from agritrace.core.errors import (
     append_only_error,
 )
 from agritrace.core.ids import uuid7
-from agritrace.core.schemas import ErrorBody, GeoPoint, ThreeClocks, find_nul
+from agritrace.core.schemas import ErrorBody, GeoPoint, ThreeClocks, has_nul
 from agritrace.core.time import clock_skew, utcnow
 from agritrace.modules.events import evidence
 from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto, SyncCursor, SyncMetric
@@ -907,12 +907,12 @@ def _data_error(exc: DBAPIError) -> ValidationFailedError | None:
         exc: the database error of one entry.
 
     Returns:
-        `validation_error` for SQLSTATE class 22 (data exception: bad character, number out of range) or the
-        driver's own encoding error (asyncpg `DataError`, e.g. an int above int32); None for anything else
-        (connection loss, deadlock, a bug), which must stay a 500 so the phone retries the entry.
+        `validation_error` for SQLSTATE class 22 (data exception: bad character, number out of range,
+        including asyncpg's own bind-time encode errors such as an int above int32, reported as 22000); None
+        for anything else (connection loss, deadlock, a bug), which must stay a 500 so the phone retries.
     """
     sqlstate = getattr(exc.orig, "sqlstate", None) or ""
-    if not sqlstate.startswith("22") and not isinstance(exc.orig.__cause__, ValueError):
+    if not sqlstate.startswith("22"):
         return None
     msg = "a value is out of range or holds a character the database cannot store"
     return ValidationFailedError(details=[{"loc": ["data"], "msg": msg, "type": "db_data_error"}])
@@ -1018,9 +1018,9 @@ async def push(session: AsyncSession, user: CurrentUser, body: SyncPushIn) -> Sy
     for entry in body.entries:
         token = None
         try:
-            if (nul_at := find_nul(entry.data, ("data",))) is not None:
+            if has_nul(entry.data):
                 msg = "NUL (\\u0000) is not allowed"
-                raise ValidationFailedError(details=[{"loc": list(nul_at), "msg": msg, "type": "string_nul"}])
+                raise ValidationFailedError(details=[{"loc": ["data"], "msg": msg, "type": "string_nul"}])
             caller = await _entry_caller(session, user, entry)
             token = _stamp_audit(caller) if caller else None
             results.append(await HANDLERS[entry.kind](session, caller or user, entry, body.app_version))

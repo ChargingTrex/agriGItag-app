@@ -302,7 +302,11 @@ class SyncEntry(BaseModel):
 
 
 class SyncPushIn(BaseModel):
-    """Sync push envelope: at most 50 entries and 256 KB (backend-design.md §3, plan §13 A4)."""
+    """Sync push envelope: at most 50 entries and 256 KB (backend-design.md §3, plan §13 A4).
+
+    A telemetry value Postgres cannot store (NUL, int32 overflow) is a 422 for the whole envelope, by design:
+    the app's metrics come from fixed sources, so only a non-app client can send one; same rule as before B21.
+    """
 
     device_id: uuid.UUID = Field(description="Device id of the app; the token's device is what is stored.")
     app_version: NoNulStr = Field(max_length=32, description="App version, e.g. `1.0.3`.")

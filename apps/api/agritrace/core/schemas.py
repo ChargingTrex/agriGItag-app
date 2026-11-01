@@ -4,7 +4,7 @@ Serves: FR58 (quantities always carry units), Arch §Offline-first (three clocks
 plan §7.1 ground rules (error envelope), docs/api/conventions.md (cursor pages), FR53 (structured address),
 FR56 (practice tags), FR60 (per-lot reconciliation), FR68 (yield check) — the last four are the shapes of
 JSONB columns (`*.address`, `lots.practice_tags`, `lot_intakes.reconciliation`, `lot_intakes.yield_check`);
-B21 / Q04-1, Q04-2 (`NoNulStr`, `INT32_MAX`, `find_nul`: values Postgres refuses are 422s, not 500s).
+B21 / Q04-1, Q04-2 (`NoNulStr`, `INT32_MAX`, `has_nul`: values Postgres refuses are 422s, not 500s).
 Callers: `modules/*/schemas.py` (B01+), registry / lots_batches / rules_flags services (B03, B08, B09),
 `core.time`, `core.audit`, `core.errors` envelope docs, `agritrace.main`.
 """
@@ -20,25 +20,31 @@ from agritrace.core.enums import PracticeTag
 INT32_MAX = 2**31 - 1  # Postgres INTEGER ceiling: the `le=` of every int that lands in an INTEGER column
 
 
-def find_nul(value: Any, path: tuple[str | int, ...] = ()) -> tuple[str | int, ...] | None:
-    """Find the first string (or dict key) holding a NUL character in JSON-like data.
+def has_nul(value: Any) -> bool:
+    """Tell whether JSON-like data holds a NUL character in any string or dict key.
+
+    Walks with an explicit stack, not recursion, so arbitrarily deep nesting cannot raise `RecursionError`
+    (B21-r1 P2-1).
 
     Args:
         value: a str, dict, list or scalar, as parsed from JSON.
-        path: location of `value`, for the result.
 
     Returns:
-        The location of the first NUL, or None when there is none.
+        True when some string or key contains U+0000.
     """
-    if isinstance(value, str):
-        return path if "\x00" in value else None
-    items = value.items() if isinstance(value, dict) else enumerate(value) if isinstance(value, list) else ()
-    for key, item in items:
-        if isinstance(key, str) and "\x00" in key:
-            return (*path, key)
-        if (found := find_nul(item, (*path, key))) is not None:
-            return found
-    return None
+    stack = [value]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            if "\x00" in item:
+                return True
+        elif isinstance(item, dict):  # JSON keys are always str
+            if any("\x00" in key for key in item):
+                return True
+            stack.extend(item.values())
+        elif isinstance(item, list):
+            stack.extend(item)
+    return False
 
 
 def _no_nul(value: str) -> str:

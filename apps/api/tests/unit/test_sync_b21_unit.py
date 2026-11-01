@@ -114,7 +114,7 @@ async def test_data_error_rejects_its_entry_and_other_db_errors_raise(
 
 
 async def test_nul_in_entry_data_rejects_that_entry(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A NUL nested in `data` (here a list item) is that entry's `validation_error` at its location.
+    """A NUL nested in `data` (here a list item) is that entry's `validation_error` (`loc ["data"]`).
 
     Args:
         monkeypatch: replaces the metrics write.
@@ -125,7 +125,7 @@ async def test_nul_in_entry_data_rejects_that_entry(monkeypatch: pytest.MonkeyPa
     session: Any = _Session()
     out = await service.push(session, USER, body)
     assert out.results[0].status == "rejected" and out.results[0].error is not None
-    assert out.results[0].error.details[0]["loc"] == ["data", "payload", "tags", 1]
+    assert out.results[0].error.details[0]["loc"] == ["data"]
 
 
 @pytest.mark.parametrize(
