@@ -1,0 +1,40 @@
+ 0:04  up 1 day, 23:37, 1 user, load averages: 3.06 5.89 12.04
+
+Running 1 test using 1 worker
+
+[qa] sql> select id from fpos limit 1 => 01a1985b-ee4c-7aca-ac25-282a1f819f01
+[qa] sql> select id from batches where code='FGP8T4033HM7' => 01900000-0000-7000-8000-0000000b12aa
+[qa] sql> select f.name from farmers f join lots l on l.farmer_id=f.id join batch_shares s on s.lot_id=l.id where s.batch_id='01900000-0000-7000-8000-0000000b12aa' order by 1 => Karuppasamy P
+muthu murugan
+Selvi Ramasamy
+[qa] sql> select f.name, c.consent_type, c.revoked_at is null from consent_records c join farmers f on f.id=c.farmer_id order by 1,2 => Karuppasamy P|data_collection|t
+Karuppasamy P|public_name|t
+muthu murugan|data_collection|t
+muthu murugan|public_name|t
+Selvi Ramasamy|data_collection|t
+Selvi Ramasamy|public_name|t
+[qa] sql> select distinct l.farmer_id from lots l join batch_shares s on s.lot_id=l.id where s.batch_id='01900000-0000-7000-8000-0000000b12aa' => 01a1985b-ee86-7c59-9288-3d7b6196c6d7
+01a1985b-ef0a-75bb-9356-e5fc803105d7
+01a1985b-ef6b-7aee-9b7a-21ff3d36d69f
+[qa] assist {"id":"15b72a7c-d124-4608-99c5-fe3d81d190b6","officer_user_id":"01a1985b-ee44-7154-94e3-7daf5c2f3635","farmer_id":"01a1985b-ee86-7c59-9288-3d7b6196c6d7","started_at":"2026-11-01T18:34:35.275903Z","end
+[qa] consent 01a1985b-ee86-7c59-9288-3d7b6196c6d7 201 {"id":"7565355c-2dd8-4f58-881c-c7ab1a6f8f06","farmer_id":"01a1985b-ee86-7c59-9288-3d7b6196c6d7","consent_type":"public_name","consent_version":"v1","recording_ref":"QA verifier fixture","witnessed_by_
+[qa] assist {"id":"32a1ccef-2a2c-4fe0-bf11-a4a5a7515ae7","officer_user_id":"01a1985b-ee44-7154-94e3-7daf5c2f3635","farmer_id":"01a1985b-ef0a-75bb-9356-e5fc803105d7","started_at":"2026-11-01T18:34:35.342014Z","end
+[qa] consent 01a1985b-ef0a-75bb-9356-e5fc803105d7 201 {"id":"32babe79-7856-422f-a120-c6dbd15ee76f","farmer_id":"01a1985b-ef0a-75bb-9356-e5fc803105d7","consent_type":"public_name","consent_version":"v1","recording_ref":"QA verifier fixture","witnessed_by_
+[qa] assist {"id":"ff6360d4-a6fc-442c-91d0-8f832166ea1c","officer_user_id":"01a1985b-ee44-7154-94e3-7daf5c2f3635","farmer_id":"01a1985b-ef6b-7aee-9b7a-21ff3d36d69f","started_at":"2026-11-01T18:34:35.387275Z","end
+[qa] consent 01a1985b-ef6b-7aee-9b7a-21ff3d36d69f 201 {"id":"1fdddb8e-41b6-4be4-a828-e9e6e06faa20","farmer_id":"01a1985b-ef6b-7aee-9b7a-21ff3d36d69f","consent_type":"public_name","consent_version":"v1","recording_ref":"QA verifier fixture","witnessed_by_
+[qa] sql> update fpos set public_show_farmer_names=true where id='01a1985b-ee4c-7aca-ac25-282a1f819f01' => UPDATE 1
+[qa] sql> select max(build_no) from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' => 5
+[qa] sql> select coalesce(max(build_no),0)||':'||coalesce((select status from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' order by build_no desc limit 1),'') from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' => 6:queued
+[qa] sql> select coalesce(max(build_no),0)||':'||coalesce((select status from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' order by build_no desc limit 1),'') from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' => 6:built
+[qa] sql> update fpos set public_show_farmer_names=false where id='01a1985b-ee4c-7aca-ac25-282a1f819f01' => UPDATE 1
+[qa] sql> select max(build_no) from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' => 6
+[qa] sql> select coalesce(max(build_no),0)||':'||coalesce((select status from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' order by build_no desc limit 1),'') from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' => 7:queued
+[qa] sql> select coalesce(max(build_no),0)||':'||coalesce((select status from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' order by build_no desc limit 1),'') from page_builds where batch_id='01900000-0000-7000-8000-0000000b12aa' => 7:built
+[qa] preview opt-out off தொகுதி / Batch FGP8T4033HM7 விருதுநகர் சம்பா வத்தல் / VIRUDHUNAGAR SAMBA VATHAL ✓ புவிசார் எல்லை சரிபார்க்கப்பட்டது / GI boundary verified தொகுதி / Batch தொகுதி எண் / Batch code FGP8T4033HM7 ஒருங்கிணைந்த லாட் / Super-lot COMBO_LOT_6C1DCCFE தொகுதி அளவு / Batch quantity 20 kg கொள்முதல் அளவு / Procured quantity 320 kg லாட்கள் / Lots 3 புவிசார் குறியீடு / GI tag Virudhunagar Samba Vathal · GI 883 All 3 lot locations are inside the GI 883 production area. நிகழ்வுகள் / Events வேளாண் நிகழ்வுகள் / Farming events: 29 · செயலாக்க நிகழ்வுகள் / Processing events: 2 பொதி செய்த தேதி / Packed on 1 Nov 2026 இதற்கு முன் பயன்படுத்தவும் / Best before 31 Oct 2027 விருதுநகர் மாவட்டத்தின் மாதிரி வரைபடத்தில் லாட் கிராமங்கள் (புள்ளிகள், சுமார் 1 கி.மீ.) / Lot villages (dots, about 1 km) on a schematic outline of V
+[qa] preview opt-out on தொகுதி / Batch FGP8T4033HM7 விருதுநகர் சம்பா வத்தல் / VIRUDHUNAGAR SAMBA VATHAL ✓ புவிசார் எல்லை சரிபார்க்கப்பட்டது / GI boundary verified தொகுதி / Batch தொகுதி எண் / Batch code FGP8T4033HM7 ஒருங்கிணைந்த லாட் / Super-lot COMBO_LOT_6C1DCCFE தொகுதி அளவு / Batch quantity 20 kg கொள்முதல் அளவு / Procured quantity 320 kg லாட்கள் / Lots 3 புவிசார் குறியீடு / GI tag Virudhunagar Samba Vathal · GI 883 All 3 lot locations are inside the GI 883 production area. நிகழ்வுகள் / Events வேளாண் நிகழ்வுகள் / Farming events: 29 · செயலாக்க நிகழ்வுகள் / Processing events: 2 பொதி செய்த தேதி / Packed on 1 Nov 2026 இதற்கு முன் பயன்படுத்தவும் / Best before 31 Oct 2027 விருதுநகர் மாவட்டத்தின் மாதிரி வரைபடத்தில் லாட் கிராமங்கள் (புள்ளிகள், சுமார் 1 கி.மீ.) / Lot villages (dots, about 1 km) on a schematic outline of V
+[qa] FAIL P06 opt-out-reflected-in-preview-consented-batch: expect(received).toBeGreaterThan(expected) |  | Expected: > 0 | Received:   0
+RESULT FAIL P06 opt-out-reflected-in-preview-consented-batch :: expect(received).toBeGreaterThan(expected) |  | Expected: > 0 | Received:   0
+  ✓  1 [chromium] › repro/repro.spec.ts:84:1 › P06 opt-out on a consented batch; B10-1 repro (14.7s)
+
+  1 passed (16.6s)
+exit=0

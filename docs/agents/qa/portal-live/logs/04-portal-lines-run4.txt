@@ -1,0 +1,193 @@
+23:55  up 1 day, 23:28, 1 user, load averages: 22.07 15.32 18.79
+2026-11-01T18:25:33Z
+
+Running 1 test using 1 worker
+
+[qa] me {"user":{"id":"01a1985b-ee43-7f29-be39-af4a1bebd4c2","phone":"+919000000001","name":"Demo FPO Admin","name_local":null,"lang":"en","is_super_admin":true},"memberships":[{"fpo_id":"01a1985b-ee4c-7aca-ac25-282a1f819f01","role":"fpo_admin"}],"device":{"id":"f352d011-0485-475f-a477-ef847d47e31e","platfo
+[qa] sql> select e.event_type, count(distinct e.lot_id) from events e group by 1 order by 1 => drying|3
+grading|0
+harvest|3
+input_application|3
+land_preparation|3
+nursery|3
+packing|3
+sowing|3
+[qa] sql> select count(*) from lots => 3
+[qa] tiles Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs 3 done · 0 in progress · 0 not started Harvest 3 done · 0 in progress · 0 not started Drying 3 done · 0 in progress · 0 not started Packing 3 done · 0 in progress · 0 not started | db lots 3 | lots per event type drying|3
+grading|0
+harvest|3
+input_application|3
+land_preparation|3
+nursery|3
+packing|3
+sowing|3
+[qa] PASS P06 tiles-match-seed-counts: tiles: Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs 3 done · 0 in progress · 0 not started Harvest 3 done · 0 in progress · 0 not started Drying 3 done ; DB: 3 lots; lots per event type drying|3, grading|0, harvest|3, input_application|3, land_preparation|3, nursery|3, packing|3, sowing|3
+[qa] template header [
+  'name',
+  'name_local',
+  'phone',
+  'lang',
+  'gi_authorised_user_no',
+  'no_smartphone',
+  'village_lgd_code'
+] | shown [
+  'name',
+  'name_local',
+  'phone',
+  'lang',
+  'gi_authorised_user_no',
+  'no_smartphone',
+  'village_lgd_code'
+] | /config/fields farmer keys [
+  'name:text',
+  'name_local:text',
+  'phone:phone',
+  'lang:choice',
+  'village_id:id',
+  'address:address',
+  'gi_authorised_user_no:text',
+  'no_smartphone:boolean',
+  'photo_key:photo'
+]
+[qa] PASS P08 template-matches-config-fields: expected from /config/fields name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; template name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; screen name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; /config/fields farmer keys name:text|name_local:text|phone:phone|lang:choice|village_id:id|address:address|gi_authorised_user_no:text|no_smartphone:boolean|photo_key:photo
+[qa] PASS P08 villages-import-setup: two QA villages imported (setup for the P06 village filter)
+[qa] PASS P08 two-bad-rows-preview-red-with-codes: 2 rejected rows, codes field_required, import_row_invalid (all in error-codes.md); row background rgba(211, 47, 47, 0.1); "Rows that can be imported: 2 · Rows rejected: 2 (row 3, 5)"
+[qa] sql> select count(*) from farmers => 3
+[qa] sql> select count(*) from farmers => 5
+[qa] sql> select name||':'||status from farmers where name like 'QA % 62cf' order by name => QA Alpha 62cf:pending
+QA Beta 62cf:pending
+[qa] PASS P08 confirm-creates-only-valid-rows: farmers 3 -> 5; created: QA Alpha 62cf:pending, QA Beta 62cf:pending
+[qa] sql> select id from farmers where name='QA Alpha 62cf' => 01a1985c-4ab5-79b4-8c78-14ed6faac350
+[qa] sql> select id from farmers where name='QA Beta 62cf' => 01a1985c-4ae1-7599-ab69-ef2184949a84
+[qa] sql> select status from farmers where id='01a1985c-4ab5-79b4-8c78-14ed6faac350' => active
+[qa] PASS P01 approve-active-without-reload: QA Alpha 62cf left "Waiting for approval" and shows Active in "All members"; window marker survived (no reload); DB: active
+[qa] sql> select count(*) from audit_log where entity_id='01a1985c-4ab5-79b4-8c78-14ed6faac350' and action like '%phone%' => 1
+[qa] farmer page text BACK TO MEMBERS
+QA Alpha 62cf
+Active
+
+Farmer code: F933983
+
+Address: QA Village Alpha, QA Block One, QA Taluk, Virudhunagar, Tamil Nadu, 626001
+
+GI status: Not registered as a GI authorised user
+
+Approved on 1 Nov 2026
+
+Plots
+"Add another plot" is done in the mobile app by the farmer or field officer, because the pin is taken on the field.
+[qa] FAIL P01 phone-masked-except-audited-reveal: a Reveal control on the farmer page |  | expect(received).toBeGreaterThan(expected) |  | Expected: > 0 | Received:   0
+[qa] push accepted
+[qa] sql> select code from lots where id='bacdfacc-56cd-4295-912a-9d2af92bb177' => LOT34451B5A
+[qa] lot QA X1 LOT34451B5A bacdfacc-56cd-4295-912a-9d2af92bb177
+[qa] push accepted
+[qa] sql> select code from lots where id='7cb4146d-f872-41ac-80ac-b027a88f395f' => LOT2C047495
+[qa] lot QA X2 LOT2C047495 7cb4146d-f872-41ac-80ac-b027a88f395f
+[qa] push accepted
+[qa] sql> select code from lots where id='8c6091e6-e54b-4335-bf31-249b9b7f66a4' => LOTD9420803
+[qa] lot QA X3 LOTD9420803 8c6091e6-e54b-4335-bf31-249b9b7f66a4
+[qa] push accepted,accepted
+[qa] sql> select code from lots where id='f7d20d4b-7b70-4852-be74-98249fc99df6' => LOT49B62704
+[qa] lot QA H yield hold LOT49B62704 f7d20d4b-7b70-4852-be74-98249fc99df6
+[qa] push accepted,accepted
+[qa] sql> select code from lots where id='e3ed2fff-0fa4-4461-b3de-cad3ed08b4a1' => LOTB86C7E89
+[qa] lot QA H2 yield hold LOTB86C7E89 e3ed2fff-0fa4-4461-b3de-cad3ed08b4a1
+[qa] push accepted
+[qa] sql> select code from lots where id='2a515c9b-eccb-425a-a1f8-5a860e25750d' => LOT5646CC76
+[qa] lot QA O outside GI LOT5646CC76 2a515c9b-eccb-425a-a1f8-5a860e25750d
+[qa] push accepted
+[qa] sql> select code from lots where id='5d9eff3c-5446-4655-90c2-a9732c939508' => LOT650BFC0B
+[qa] lot QA O2 outside GI LOT650BFC0B 5d9eff3c-5446-4655-90c2-a9732c939508
+[qa] push accepted
+[qa] sql> select code from lots where id='4d11e2eb-18ee-44c3-9042-c9862fd94183' => LOT47121FC4
+[qa] lot QA Y declared above LOT47121FC4 4d11e2eb-18ee-44c3-9042-c9862fd94183
+[qa] push accepted
+[qa] sql> select code from lots where id='6c287b05-0706-463d-ad96-82dbacb90502' => LOT990BF912
+[qa] lot QA M missing reading LOT990BF912 6c287b05-0706-463d-ad96-82dbacb90502
+[qa] push accepted
+[qa] sql> select code from lots where id='974f0c84-e331-4f5d-b283-9b73b829392a' => LOTE69F75A2
+[qa] lot QA T threshold LOTE69F75A2 974f0c84-e331-4f5d-b283-9b73b829392a
+[qa] push accepted,accepted
+[qa] sql> select code from lots where id='42a6850a-3b5b-4bee-94a7-cd56ae7bb407' => LOT6ED0B3E3
+[qa] lot QA Z correction LOT6ED0B3E3 42a6850a-3b5b-4bee-94a7-cd56ae7bb407
+[qa] sql> select count(*) from flags where status='open' and rule_code='yield_over_ceiling' and (subject_id in ('f7d20d4b-7b70-4852-be74-98249fc99df6','e3ed2fff-0fa4-4461-b3de-cad3ed08b4a1','bb583f5b-9efe-48c1-a731-1438446aca9e')) => 2
+[qa] sql> select count(*) from flags where status='open' and rule_code='plot_outside_gi_region' and subject_id='810d6470-32e2-4cf1-92a0-89ed617663e6' => 1
+[qa] sql> select rule_code, subject_type, severity, status from flags where status='open' and subject_id in ('f7d20d4b-7b70-4852-be74-98249fc99df6','e3ed2fff-0fa4-4461-b3de-cad3ed08b4a1','bb583f5b-9efe-48c1-a731-1438446aca9e','810d6470-32e2-4cf1-92a0-89ed617663e6','2a515c9b-eccb-425a-a1f8-5a860e25750d','5d9eff3c-5446-4655-90c2-a9732c939508') order by 1 => plot_outside_gi_region|plot|hold|open
+yield_check_unavailable|lot|info|open
+yield_check_unavailable|lot|info|open
+yield_over_ceiling|lot|hold|open
+yield_over_ceiling|lot|hold|open
+[qa] sql> select code, status, packed_kg, gi_eligible, gi_hold_reason from lots where id in ('bacdfacc-56cd-4295-912a-9d2af92bb177','7cb4146d-f872-41ac-80ac-b027a88f395f','8c6091e6-e54b-4335-bf31-249b9b7f66a4','f7d20d4b-7b70-4852-be74-98249fc99df6','e3ed2fff-0fa4-4461-b3de-cad3ed08b4a1','2a515c9b-eccb-425a-a1f8-5a860e25750d','5d9eff3c-5446-4655-90c2-a9732c939508','4d11e2eb-18ee-44c3-9042-c9862fd94183','6c287b05-0706-463d-ad96-82dbacb90502','974f0c84-e331-4f5d-b283-9b73b829392a','42a6850a-3b5b-4bee-94a7-cd56ae7bb407') order by code => LOT2C047495|received|200.000|t|
+LOT34451B5A|received|100.000|t|
+LOT47121FC4|received|100.000|t|
+LOT49B62704|received|50.000|f|flags: yield_over_ceiling
+LOT5646CC76|received|30.000|t|
+LOT650BFC0B|received|25.000|t|
+LOT6ED0B3E3|received|45.000|t|
+LOT990BF912|received|60.000|t|
+LOTB86C7E89|received|40.000|f|flags: yield_over_ceiling
+LOTD9420803|received|20.000|t|
+LOTE69F75A2|received|1100.000|t|
+[qa] PASS P06 village-filter-updates-tiles-and-table: tiles before: Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs  || after (QA Village Alpha): Stage progress (lots) Done In progress Not started Land prep 0 done · 0 in progress · 5 not started Nursery 0 done · 0 in progress · 5 not started Sowing 0 done · 0 in progress · 5 not started Inputs ; farmer table rows 3 -> 1 (QA Alpha 62cf)
+[qa] PASS P06 column-toggle-persists: Village unchecked, page reloaded: still unchecked and the column absent; localStorage [["agritrace.dashboard.columns.01a1985b-ee4c-7aca-ac25-282a1f819f01","[\"code\",\"name\",\"block\",\"status\",\"plots\",\"declared_area\",\"walked_area\",\"lots\",\"lots_complete\"]"]]
+[qa] PASS P03 shares-31.25-62.5-6.25: shares 31.250 % / 62.500 % / 6.250 % for LOT34451B5A, LOT2C047495, LOTD9420803 (100/200/20 kg); "3 lots ticked, total 320 kg"
+[qa] PASS P03 out-of-GI-greyed-with-tooltip: checkbox disabled, aria-label "Lot LOT5646CC76: Outside the GI region. It can only go into a non-GI batch."; tooltip "Outside the GI region. It can only go into a non-GI batch."; row text colour rgba(0, 0, 0, 0.6)
+[qa] PASS P03 create-id-and-qr: batch 9M6AGYTA7VXR (e83daf94-45f4-42d7-97a6-f97b37be1960); "Batch ID and QR" section shows the ID; the QR appears after publish (checked under P04 happy path)
+[qa] PASS P03 threshold-second-signoff-state: 1100 kg batch > 1000 kg threshold: "Waiting for a second admin" + Sign off disabled ("Sign off: You created this batch; a different FPO admin must give the second sign-off.")
+[qa] sql> select status from flags where id='01a1985c-67cc-7b7b-be24-9b4e9646bd34' => open
+[qa] PASS P02 required-fields-block-submit: Save review with no outcome/reason: "Choose a reason." shown, flag 01a1985c-67cc-7b7b-be24-9b4e9646bd34 still open
+[qa] sql> select gi_eligible from lots where id='f7d20d4b-7b70-4852-be74-98249fc99df6' => t
+[qa] sql> select gi_eligible from lots where id='f7d20d4b-7b70-4852-be74-98249fc99df6' => t
+[qa] PASS P02 review-held-lot-cleared-tickable-in-P03: flag cleared; lot LOT49B62704 gi_eligible=t; tick box enabled and tickable on Ready lots
+[qa] grading Y 201 {"id":"01a1985c-a693-7ffa-9b1d-ea835f99bf22","batch_id":"c0faf9f0-8461-46a7-b373-6efbcdd6f931","profile_version_id":"01a1985b-ee22-7873-b9f0-5eddac97f38b","computed_grade":"Standard","declared_grade":"Special","status":"declared_above_computed","lab_certified":false,"per_parameter":{"moisture":{"par
+[qa] PASS P04 declared-Special-computed-Standard-approve-disabled: grading 201; Approve grading disabled, reason "Approve grading: Declared grade Special is above the computed grade Standard: correct the readings, re-test or lower the declared grade."
+[qa] PASS P04 missing-reading-approve-disabled: grading with readings [] -> 201 {"id":"01a1985c-ad12-7155-bc5b-c0eca26a1997","batch_id":"90e19ec9-b5d8-4a70-a30c-fe9e7d2cc615","profile_version_id":"01a1985b-ee22-7873-b9f0-5eddac97f38b","computed_grade":null,"declared_grade":"Stand; Approve grading disabled, reason "Approve grading: A required quality reading is missing: moisture."
+[qa] grading X 201
+[qa] sql> select status from batches where id='e83daf94-45f4-42d7-97a6-f97b37be1960' => published
+[qa] PASS P04 happy-path-published-and-URL: published; URL http://localhost:5183/b/9M6AGYTA7VXR after 5.0 s; QR images 1; DB published
+[qa] PASS P04 non-GI-D041-holds-are-warnings-GI-grey: switch text present (1); non-GI batch grading 201, chip shown, warnings ["Yield above the ceiling: allowed in a non-GI batch","Plot outside the GI region: allowed in a non-GI batch"], Approve enabled; GI batch with O2: Approve disabled "Approve grading: Open hold flag: Plot outside the GI region"
+[qa] PASS P05 labels-batchId-pdf: downloaded labels-9M6AGYTA7VXR.pdf (%PDF-...)
+[qa] lots csv head ﻿lot_code,farmer_name,harvested,harvested_unit,farm_packed,farm_packed_unit,received,received_unit,final_packed_share_derived,final_packed_share_derived_unit,share,share_unit
+LOT2C047495,QA Alpha 62cf,,,200.000,kg,200.000,kg,200,kg,62.500,%
+LOT34451B5A,QA Alpha 62cf,,,100.000,kg,100.000,kg,100,kg,31.250,%
+LOTD9420803,QA Alpha 62cf,,,20.000,kg,20.000,kg,20,kg,6.250,%
+
+[qa] audit csv head ﻿subject_type,subject_code,event_id,event_type,version_id,version_no,change_kind,occurred_on,occurred_end_on,device_time,server_received_at,entered_by,entered_by_name,on_behalf_of_farmer_id,assist_session_id,entered_remotely,is_system_generated,reason_code,reason_text,quantity,unit,payload
+lot,LOTD9420803,3cf29fd9-02d4-4145-a4df-aef9266ba02b,packing,f05b7a42-78d0-44ba-a199-200c3f51ec06,1,create,2026-10-27,,2026-11-01T18:25:54.258000+00:00,2026-11-01T18:25:54.280236+00:00,01a1985b-ee44-7154-94e3-7daf5c2f3635,Demo Field Officer,,,False,False,,,20,kg,"{""bags"": 2, ""quantity"": {""unit"": ""kg"
+[qa] PASS P05 csv-unit-on-every-quantity: batch-9M6AGYTA7VXR-lots.csv: ﻿lot_code,farmer_name,harvested,harvested_unit,farm_packed,farm_packed_unit,received,received_unit,final_packed_share_derived,final_packed_share_derived_unit,share,share_unit || audit-9M6AGYTA7VXR.csv: ﻿subject_type,subject_code,event_id,event_type,version_id,version_no,change_kind,occurred_on,occurred_end_on,device_time,server_received_at,entered_by,entered_by_name,on_behalf_of_farmer_id,assist_session_id,entered_remotely,is_system_generated,reason_code,reason_text,quantity,unit,payload || farmers-VIRUDHAI_SCFC_VINOBA_BHAVA_FPO-2026-11-01.csv: ﻿code,name,block,status,plots,declared_area,declared_area_unit,walked_area,walked_area_unit,lots,lots_complete
+[qa] correction 200 {"client_id":"744fa542-f087-4334-b225-379923ac8975","status":"accepted","server_id":"744fa542-f087-4334-b225-379923ac8975","photo_uploads":[],"error":null}
+[qa] sql> select entity_type||'|'||entity_id||'|'||action||'|'||coalesce(actor_user_id::text,'') from audit_log where action like 'event.correct%' order by created_at desc limit 1 => event_versions|744fa542-f087-4334-b225-379923ac8975|event.correct|01a1985b-ee44-7154-94e3-7daf5c2f3635
+[qa] FAIL P06 audit-search-correction-actor-and-reason: expect(received).toMatch(expected) |  | Expected pattern: /wrong_quantity|scale re-read/ | Received string:  "When Actor Action Entity Changes 1 Nov 2026, 23:56 01a1985b-ee44-7154-94e3-7daf5c2f3635 event.correct event_versions 744fa542-f087-4334-b225-379923ac8975 photos: [] event id: 9ee472b6-c653-41c4-a25f-18039def7d7a event type: harvest version no: 2 change kind: correct Reason: not in the audit log yet; see the entry history on the lot."
+[qa] sql> update fpos set public_show_farmer_names=false where id='01a1985b-ee4c-7aca-ac25-282a1f819f01' => UPDATE 1
+[qa] sql> select status from page_builds where batch_id='e83daf94-45f4-42d7-97a6-f97b37be1960' order by build_no desc limit 1 => built
+[qa] preview before தொகுதி / Batch 9M6AGYTA7VXR விருதுநகர் சம்பா வத்தல் / VIRUDHUNAGAR SAMBA VATHAL ✓ புவிசார் எல்லை சரிபார்க்கப்பட்டது / GI boundary verified தொகுதி / Batch தொகுதி எண் / Batch code 9M6AGYTA7VXR ஒருங்கிணைந்த லாட் / Super-lot COMBO_LOT_C9C71066 தொகுதி அளவு / Batch quantity 320 kg கொள்முதல் அளவு / Procured quantity 320 kg லாட்கள் / Lots 3 புவிசார் குறியீடு / GI tag Virudhunagar Samba Vathal · GI 883 All 3 lot locations are inside the GI 883 production area. நிகழ்வுகள் / Events வேளாண் நிகழ்வுகள் / Farming events: 6 · செயலாக்க நிகழ்வுகள் / Processing events: 2 பொதி செய்த தேதி / Packed on 1 Nov 2026 இத
+[qa] preview after தொகுதி / Batch 9M6AGYTA7VXR விருதுநகர் சம்பா வத்தல் / VIRUDHUNAGAR SAMBA VATHAL ✓ புவிசார் எல்லை சரிபார்க்கப்பட்டது / GI boundary verified தொகுதி / Batch தொகுதி எண் / Batch code 9M6AGYTA7VXR ஒருங்கிணைந்த லாட் / Super-lot COMBO_LOT_C9C71066 தொகுதி அளவு / Batch quantity 320 kg கொள்முதல் அளவு / Procured quantity 320 kg லாட்கள் / Lots 3 புவிசார் குறியீடு / GI tag Virudhunagar Samba Vathal · GI 883 All 3 lot locations are inside the GI 883 production area. நிகழ்வுகள் / Events வேளாண் நிகழ்வுகள் / Farming events: 6 · செயலாக்க நிகழ்வுகள் / Processing events: 2 பொதி செய்த தேதி / Packed on 1 Nov 2026 இத
+[qa] PASS P06 opt-out-reflected-in-preview: before: names.a shown=false ("Farmer 1" true); after opt-out + Rebuild: names.a shown=false, "Farmer 1" true; Settings switch checked
+RESULT PASS P06 tiles-match-seed-counts :: tiles: Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs 3 done · 0 in progress · 0 not started Harvest 3 done · 0 in progress · 0 not started Drying 3 done ; DB: 3 lots; lots per event type drying|3, grading|0, harvest|3, input_application|3, land_preparation|3, nursery|3, packing|3, sowing|3
+RESULT PASS P08 template-matches-config-fields :: expected from /config/fields name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; template name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; screen name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; /config/fields farmer keys name:text|name_local:text|phone:phone|lang:choice|village_id:id|address:address|gi_authorised_user_no:text|no_smartphone:boolean|photo_key:photo
+RESULT PASS P08 villages-import-setup :: two QA villages imported (setup for the P06 village filter)
+RESULT PASS P08 two-bad-rows-preview-red-with-codes :: 2 rejected rows, codes field_required, import_row_invalid (all in error-codes.md); row background rgba(211, 47, 47, 0.1); "Rows that can be imported: 2 · Rows rejected: 2 (row 3, 5)"
+RESULT PASS P08 confirm-creates-only-valid-rows :: farmers 3 -> 5; created: QA Alpha 62cf:pending, QA Beta 62cf:pending
+RESULT PASS P01 approve-active-without-reload :: QA Alpha 62cf left "Waiting for approval" and shows Active in "All members"; window marker survived (no reload); DB: active
+RESULT FAIL P01 phone-masked-except-audited-reveal :: a Reveal control on the farmer page |  | expect(received).toBeGreaterThan(expected) |  | Expected: > 0 | Received:   0
+RESULT PASS P06 village-filter-updates-tiles-and-table :: tiles before: Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs  || after (QA Village Alpha): Stage progress (lots) Done In progress Not started Land prep 0 done · 0 in progress · 5 not started Nursery 0 done · 0 in progress · 5 not started Sowing 0 done · 0 in progress · 5 not started Inputs ; farmer table rows 3 -> 1 (QA Alpha 62cf)
+RESULT PASS P06 column-toggle-persists :: Village unchecked, page reloaded: still unchecked and the column absent; localStorage [["agritrace.dashboard.columns.01a1985b-ee4c-7aca-ac25-282a1f819f01","[\"code\",\"name\",\"block\",\"status\",\"plots\",\"declared_area\",\"walked_area\",\"lots\",\"lots_complete\"]"]]
+RESULT PASS P03 shares-31.25-62.5-6.25 :: shares 31.250 % / 62.500 % / 6.250 % for LOT34451B5A, LOT2C047495, LOTD9420803 (100/200/20 kg); "3 lots ticked, total 320 kg"
+RESULT PASS P03 out-of-GI-greyed-with-tooltip :: checkbox disabled, aria-label "Lot LOT5646CC76: Outside the GI region. It can only go into a non-GI batch."; tooltip "Outside the GI region. It can only go into a non-GI batch."; row text colour rgba(0, 0, 0, 0.6)
+RESULT PASS P03 create-id-and-qr :: batch 9M6AGYTA7VXR (e83daf94-45f4-42d7-97a6-f97b37be1960); "Batch ID and QR" section shows the ID; the QR appears after publish (checked under P04 happy path)
+RESULT PASS P03 threshold-second-signoff-state :: 1100 kg batch > 1000 kg threshold: "Waiting for a second admin" + Sign off disabled ("Sign off: You created this batch; a different FPO admin must give the second sign-off.")
+RESULT PASS P02 required-fields-block-submit :: Save review with no outcome/reason: "Choose a reason." shown, flag 01a1985c-67cc-7b7b-be24-9b4e9646bd34 still open
+RESULT PASS P02 review-held-lot-cleared-tickable-in-P03 :: flag cleared; lot LOT49B62704 gi_eligible=t; tick box enabled and tickable on Ready lots
+RESULT PASS P04 declared-Special-computed-Standard-approve-disabled :: grading 201; Approve grading disabled, reason "Approve grading: Declared grade Special is above the computed grade Standard: correct the readings, re-test or lower the declared grade."
+RESULT PASS P04 missing-reading-approve-disabled :: grading with readings [] -> 201 {"id":"01a1985c-ad12-7155-bc5b-c0eca26a1997","batch_id":"90e19ec9-b5d8-4a70-a30c-fe9e7d2cc615","profile_version_id":"01a1985b-ee22-7873-b9f0-5eddac97f38b","computed_grade":null,"declared_grade":"Stand; Approve grading disabled, reason "Approve grading: A required quality reading is missing: moisture."
+RESULT PASS P04 happy-path-published-and-URL :: published; URL http://localhost:5183/b/9M6AGYTA7VXR after 5.0 s; QR images 1; DB published
+RESULT PASS P04 non-GI-D041-holds-are-warnings-GI-grey :: switch text present (1); non-GI batch grading 201, chip shown, warnings ["Yield above the ceiling: allowed in a non-GI batch","Plot outside the GI region: allowed in a non-GI batch"], Approve enabled; GI batch with O2: Approve disabled "Approve grading: Open hold flag: Plot outside the GI region"
+RESULT PASS P05 labels-batchId-pdf :: downloaded labels-9M6AGYTA7VXR.pdf (%PDF-...)
+RESULT PASS P05 csv-unit-on-every-quantity :: batch-9M6AGYTA7VXR-lots.csv: ﻿lot_code,farmer_name,harvested,harvested_unit,farm_packed,farm_packed_unit,received,received_unit,final_packed_share_derived,final_packed_share_derived_unit,share,share_unit || audit-9M6AGYTA7VXR.csv: ﻿subject_type,subject_code,event_id,event_type,version_id,version_no,change_kind,occurred_on,occurred_end_on,device_time,server_received_at,entered_by,entered_by_name,on_behalf_of_farmer_id,assist_session_id,entered_remotely,is_system_generated,reason_code,reason_text,quantity,unit,payload || farmers-VIRUDHAI_SCFC_VINOBA_BHAVA_FPO-2026-11-01.csv: ﻿code,name,block,status,plots,declared_area,declared_area_unit,walked_area,walked_area_unit,lots,lots_complete
+RESULT FAIL P06 audit-search-correction-actor-and-reason :: expect(received).toMatch(expected) |  | Expected pattern: /wrong_quantity|scale re-read/ | Received string:  "When Actor Action Entity Changes 1 Nov 2026, 23:56 01a1985b-ee44-7154-94e3-7daf5c2f3635 event.correct event_versions 744fa542-f087-4334-b225-379923ac8975 photos: [] event id: 9ee472b6-c653-41c4-a25f-18039def7d7a event type: harvest version no: 2 change kind: correct Reason: not in the audit log yet; see the entry history on the lot."
+RESULT PASS P06 opt-out-reflected-in-preview :: before: names.a shown=false ("Farmer 1" true); after opt-out + Rebuild: names.a shown=false, "Farmer 1" true; Settings switch checked
+  ✓  1 [chromium] › live/portal-lines.spec.ts:83:1 › P01-P06, P08 live lines (59.0s)
+
+  1 passed (1.0m)
+exit=0 wall=65 s
+23:56  up 1 day, 23:29, 1 user, load averages: 14.16 14.17 18.10

@@ -30,3 +30,26 @@
 11:26:45 PM [vite] (client) page reload playwright-report/trace/uiMode.html
 11:26:45 PM [vite] (client) page reload playwright-report/index.html
 11:26:45 PM [vite] (client) page reload playwright-report/index.html
+11:32:41 PM [vite] (client) page reload src/api/generated/error-messages.ts
+11:33:45 PM [vite] (client) page reload playwright-report/index.html
+11:33:45 PM [vite] (client) page reload playwright-report/trace/index.html
+11:33:45 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:33:45 PM [vite] (client) page reload playwright-report/trace/uiMode.html
+11:33:45 PM [vite] (client) page reload playwright-report/index.html
+11:33:45 PM [vite] (client) page reload playwright-report/trace/index.html
+11:33:45 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:33:45 PM [vite] (client) page reload playwright-report/trace/uiMode.html
+11:33:45 PM [vite] (client) page reload playwright-report/index.html
+11:33:45 PM [vite] (client) page reload playwright-report/index.html
+11:34:29 PM [vite] (client) page reload playwright-report/index.html
+11:34:29 PM [vite] (client) page reload playwright-report/trace/index.html
+11:34:29 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:34:29 PM [vite] (client) page reload playwright-report/trace/uiMode.html
+11:34:29 PM [vite] (client) page reload playwright-report/index.html
+11:34:29 PM [vite] (client) page reload playwright-report/trace/index.html
+11:34:30 PM [vite] (client) page reload playwright-report/trace/snapshot.html
+11:34:30 PM [vite] (client) page reload playwright-report/trace/uiMode.html
+11:34:30 PM [vite] (client) page reload playwright-report/index.html
+11:34:30 PM [vite] (client) page reload playwright-report/index.html
+11:36:25 PM [vite] (client) hmr update /src/auth/AuthProvider.tsx
+11:36:25 PM [vite] (client) hmr update /src/auth/AuthProvider.tsx, /src/auth/LoginPage.tsx

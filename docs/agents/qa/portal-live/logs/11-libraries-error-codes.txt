@@ -1,0 +1,10 @@
+check   apps/api/pyproject.toml: 32 dependencies, ok
+check   apps/public-page/pyproject.toml: 7 dependencies, ok
+check   apps/mobile/pubspec.yaml: 28 dependencies, ok
+check   apps/portal/package.json: 37 dependencies, ok
+check   apps/public-page/package.json: 2 dependencies, ok
+check   qa/robot/requirements.txt: 7 dependencies, ok
+libraries-check: PASS (171 ledger rows)
+exit=0
+docs/api/error-codes.md is stale; run `make error-codes` and commit it
+exit=1

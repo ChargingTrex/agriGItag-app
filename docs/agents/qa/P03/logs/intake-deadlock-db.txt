@@ -1,0 +1,7 @@
+2026-11-01 18:16:42.202 UTC [239] ERROR:  deadlock detected
+2026-11-01 18:16:42.202 UTC [239] DETAIL:  Process 239 waits for ShareLock on transaction 888; blocked by process 357.
+	Process 357 waits for ShareLock on transaction 887; blocked by process 239.
+	Process 239: INSERT INTO flags (id, fpo_id, subject_type, subject_id, rule_code, severity, details, dedupe_key, status, assigned_role, raised_at, resolved_by, resolution_reason_code, resolution_note, resolved_at) VALUES ($1::UUID, $2::UUID, $3, $4::UUID, $5::VARCHAR, $6, $7::JSONB, $8::VARCHAR, $9, $10, $11::TIMESTAMP WITH TIME ZONE, $12::UUID, $13::VARCHAR, $14::VARCHAR, $15::TIMESTAMP WITH TIME ZONE) RETURNING flags.created_at, flags.updated_at
+	Process 357: UPDATE lots SET gi_eligible=$1::BOOLEAN, gi_hold_reason=$2::VARCHAR, updated_at=now() WHERE lots.id = $3::UUID
+2026-11-01 18:16:42.202 UTC [239] HINT:  See server log for query details.
+2026-11-01 18:16:42.202 UTC [239] CONTEXT:  while inserting index tuple (2,5) in relation "uq_flags_dedupe_key"

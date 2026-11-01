@@ -1,0 +1,170 @@
+{
+ "tag": "62cf",
+ "codeX": "9M6AGYTA7VXR",
+ "batchX": "e83daf94-45f4-42d7-97a6-f97b37be1960",
+ "batchT": "269bf005-cd40-4ed5-be92-474aa7ef04bf",
+ "batchN": "f8743bc3-2358-4ac6-bf7c-0b51ed02bec4",
+ "results": [
+  {
+   "wp": "P06",
+   "line": "tiles-match-seed-counts",
+   "result": "PASS",
+   "detail": "tiles: Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs 3 done · 0 in progress · 0 not started Harvest 3 done · 0 in progress · 0 not started Drying 3 done ; DB: 3 lots; lots per event type drying|3, grading|0, harvest|3, input_application|3, land_preparation|3, nursery|3, packing|3, sowing|3",
+   "shot": "P06/shots/tiles-match-seed-counts_en.png"
+  },
+  {
+   "wp": "P08",
+   "line": "template-matches-config-fields",
+   "result": "PASS",
+   "detail": "expected from /config/fields name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; template name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; screen name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; /config/fields farmer keys name:text|name_local:text|phone:phone|lang:choice|village_id:id|address:address|gi_authorised_user_no:text|no_smartphone:boolean|photo_key:photo",
+   "shot": "P08/shots/template-matches-config-fields_en.png"
+  },
+  {
+   "wp": "P08",
+   "line": "villages-import-setup",
+   "result": "PASS",
+   "detail": "two QA villages imported (setup for the P06 village filter)",
+   "shot": "P08/shots/villages-import-setup_en.png"
+  },
+  {
+   "wp": "P08",
+   "line": "two-bad-rows-preview-red-with-codes",
+   "result": "PASS",
+   "detail": "2 rejected rows, codes field_required, import_row_invalid (all in error-codes.md); row background rgba(211, 47, 47, 0.1); \"Rows that can be imported: 2 · Rows rejected: 2 (row 3, 5)\"",
+   "shot": "P08/shots/two-bad-rows-preview-red-with-codes_en.png"
+  },
+  {
+   "wp": "P08",
+   "line": "confirm-creates-only-valid-rows",
+   "result": "PASS",
+   "detail": "farmers 3 -> 5; created: QA Alpha 62cf:pending, QA Beta 62cf:pending",
+   "shot": "P08/shots/confirm-creates-only-valid-rows_en.png"
+  },
+  {
+   "wp": "P01",
+   "line": "approve-active-without-reload",
+   "result": "PASS",
+   "detail": "QA Alpha 62cf left \"Waiting for approval\" and shows Active in \"All members\"; window marker survived (no reload); DB: active",
+   "shot": "P01/shots/approve-active-without-reload_en.png"
+  },
+  {
+   "wp": "P01",
+   "line": "phone-masked-except-audited-reveal",
+   "result": "FAIL",
+   "detail": "a Reveal control on the farmer page |  | \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m |  | Expected: > \u001b[32m0\u001b[39m | Received:   \u001b[31m0\u001b[39m",
+   "shot": "P01/shots/phone-masked-except-audited-reveal_en.png"
+  },
+  {
+   "wp": "P06",
+   "line": "village-filter-updates-tiles-and-table",
+   "result": "PASS",
+   "detail": "tiles before: Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs  || after (QA Village Alpha): Stage progress (lots) Done In progress Not started Land prep 0 done · 0 in progress · 5 not started Nursery 0 done · 0 in progress · 5 not started Sowing 0 done · 0 in progress · 5 not started Inputs ; farmer table rows 3 -> 1 (QA Alpha 62cf)",
+   "shot": "P06/shots/village-filter-updates-tiles-and-table_en.png"
+  },
+  {
+   "wp": "P06",
+   "line": "column-toggle-persists",
+   "result": "PASS",
+   "detail": "Village unchecked, page reloaded: still unchecked and the column absent; localStorage [[\"agritrace.dashboard.columns.01a1985b-ee4c-7aca-ac25-282a1f819f01\",\"[\\\"code\\\",\\\"name\\\",\\\"block\\\",\\\"status\\\",\\\"plots\\\",\\\"declared_area\\\",\\\"walked_area\\\",\\\"lots\\\",\\\"lots_complete\\\"]\"]]",
+   "shot": "P06/shots/column-toggle-persists_en.png"
+  },
+  {
+   "wp": "P03",
+   "line": "shares-31.25-62.5-6.25",
+   "result": "PASS",
+   "detail": "shares 31.250 % / 62.500 % / 6.250 % for LOT34451B5A, LOT2C047495, LOTD9420803 (100/200/20 kg); \"3 lots ticked, total 320 kg\"",
+   "shot": "P03/shots/shares-31.25-62.5-6.25_en.png"
+  },
+  {
+   "wp": "P03",
+   "line": "out-of-GI-greyed-with-tooltip",
+   "result": "PASS",
+   "detail": "checkbox disabled, aria-label \"Lot LOT5646CC76: Outside the GI region. It can only go into a non-GI batch.\"; tooltip \"Outside the GI region. It can only go into a non-GI batch.\"; row text colour rgba(0, 0, 0, 0.6)",
+   "shot": "P03/shots/out-of-GI-greyed-with-tooltip_en.png"
+  },
+  {
+   "wp": "P03",
+   "line": "create-id-and-qr",
+   "result": "PASS",
+   "detail": "batch 9M6AGYTA7VXR (e83daf94-45f4-42d7-97a6-f97b37be1960); \"Batch ID and QR\" section shows the ID; the QR appears after publish (checked under P04 happy path)",
+   "shot": "P03/shots/create-id-and-qr_en.png"
+  },
+  {
+   "wp": "P03",
+   "line": "threshold-second-signoff-state",
+   "result": "PASS",
+   "detail": "1100 kg batch > 1000 kg threshold: \"Waiting for a second admin\" + Sign off disabled (\"Sign off: You created this batch; a different FPO admin must give the second sign-off.\")",
+   "shot": "P03/shots/threshold-second-signoff-state_en.png"
+  },
+  {
+   "wp": "P02",
+   "line": "required-fields-block-submit",
+   "result": "PASS",
+   "detail": "Save review with no outcome/reason: \"Choose a reason.\" shown, flag 01a1985c-67cc-7b7b-be24-9b4e9646bd34 still open",
+   "shot": "P02/shots/required-fields-block-submit_en.png"
+  },
+  {
+   "wp": "P02",
+   "line": "review-held-lot-cleared-tickable-in-P03",
+   "result": "PASS",
+   "detail": "flag cleared; lot LOT49B62704 gi_eligible=t; tick box enabled and tickable on Ready lots",
+   "shot": "P02/shots/review-held-lot-cleared-tickable-in-P03_en.png"
+  },
+  {
+   "wp": "P04",
+   "line": "declared-Special-computed-Standard-approve-disabled",
+   "result": "PASS",
+   "detail": "grading 201; Approve grading disabled, reason \"Approve grading: Declared grade Special is above the computed grade Standard: correct the readings, re-test or lower the declared grade.\"",
+   "shot": "P04/shots/declared-Special-computed-Standard-approve-disabled_en.png"
+  },
+  {
+   "wp": "P04",
+   "line": "missing-reading-approve-disabled",
+   "result": "PASS",
+   "detail": "grading with readings [] -> 201 {\"id\":\"01a1985c-ad12-7155-bc5b-c0eca26a1997\",\"batch_id\":\"90e19ec9-b5d8-4a70-a30c-fe9e7d2cc615\",\"profile_version_id\":\"01a1985b-ee22-7873-b9f0-5eddac97f38b\",\"computed_grade\":null,\"declared_grade\":\"Stand; Approve grading disabled, reason \"Approve grading: A required quality reading is missing: moisture.\"",
+   "shot": "P04/shots/missing-reading-approve-disabled_en.png"
+  },
+  {
+   "wp": "P04",
+   "line": "happy-path-published-and-URL",
+   "result": "PASS",
+   "detail": "published; URL http://localhost:5183/b/9M6AGYTA7VXR after 5.0 s; QR images 1; DB published",
+   "shot": "P04/shots/happy-path-published-and-URL_en.png"
+  },
+  {
+   "wp": "P04",
+   "line": "non-GI-D041-holds-are-warnings-GI-grey",
+   "result": "PASS",
+   "detail": "switch text present (1); non-GI batch grading 201, chip shown, warnings [\"Yield above the ceiling: allowed in a non-GI batch\",\"Plot outside the GI region: allowed in a non-GI batch\"], Approve enabled; GI batch with O2: Approve disabled \"Approve grading: Open hold flag: Plot outside the GI region\"",
+   "shot": "P04/shots/non-GI-D041-holds-are-warnings-GI-grey_en.png"
+  },
+  {
+   "wp": "P05",
+   "line": "labels-batchId-pdf",
+   "result": "PASS",
+   "detail": "downloaded labels-9M6AGYTA7VXR.pdf (%PDF-...)",
+   "shot": "P05/shots/labels-batchId-pdf_en.png"
+  },
+  {
+   "wp": "P05",
+   "line": "csv-unit-on-every-quantity",
+   "result": "PASS",
+   "detail": "batch-9M6AGYTA7VXR-lots.csv: ﻿lot_code,farmer_name,harvested,harvested_unit,farm_packed,farm_packed_unit,received,received_unit,final_packed_share_derived,final_packed_share_derived_unit,share,share_unit || audit-9M6AGYTA7VXR.csv: ﻿subject_type,subject_code,event_id,event_type,version_id,version_no,change_kind,occurred_on,occurred_end_on,device_time,server_received_at,entered_by,entered_by_name,on_behalf_of_farmer_id,assist_session_id,entered_remotely,is_system_generated,reason_code,reason_text,quantity,unit,payload || farmers-VIRUDHAI_SCFC_VINOBA_BHAVA_FPO-2026-11-01.csv: ﻿code,name,block,status,plots,declared_area,declared_area_unit,walked_area,walked_area_unit,lots,lots_complete",
+   "shot": "P05/shots/csv-unit-on-every-quantity_en.png"
+  },
+  {
+   "wp": "P06",
+   "line": "audit-search-correction-actor-and-reason",
+   "result": "FAIL",
+   "detail": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m |  | Expected pattern: \u001b[32m/wrong_quantity|scale re-read/\u001b[39m | Received string:  \u001b[31m\"When Actor Action Entity Changes 1 Nov 2026, 23:56 01a1985b-ee44-7154-94e3-7daf5c2f3635 event.correct event_versions 744fa542-f087-4334-b225-379923ac8975 photos: [] event id: 9ee472b6-c653-41c4-a25f-18039def7d7a event type: harvest version no: 2 change kind: correct Reason: not in the audit log yet; see the entry history on the lot.\"\u001b[39m",
+   "shot": "P06/shots/audit-search-correction-actor-and-reason_en.png"
+  },
+  {
+   "wp": "P06",
+   "line": "opt-out-reflected-in-preview",
+   "result": "PASS",
+   "detail": "before: names.a shown=false (\"Farmer 1\" true); after opt-out + Rebuild: names.a shown=false, \"Farmer 1\" true; Settings switch checked",
+   "shot": "P06/shots/opt-out-reflected-in-preview_en.png"
+  }
+ ]
+}

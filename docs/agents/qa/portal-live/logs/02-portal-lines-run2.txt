@@ -1,0 +1,121 @@
+23:46  up 1 day, 23:18, 1 user, load averages: 6.17 19.05 24.34
+2026-11-01T18:16:23Z
+
+Running 1 test using 1 worker
+
+[qa] me {"user":{"id":"01a19853-8d12-73b1-b32b-b99217cb9a94","phone":"+919000000001","name":"Demo FPO Admin","name_local":null,"lang":"en","is_super_admin":true},"memberships":[{"fpo_id":"01a19853-8d15-782c-96d9-bafaedd20605","role":"fpo_admin"}],"device":{"id":"c8bf4f6d-3c49-4a39-a32a-c325a0a3d871","platfo
+[qa] sql> select e.event_type, count(distinct e.lot_id) from events e group by 1 order by 1 => drying|3
+grading|0
+harvest|3
+input_application|3
+land_preparation|3
+nursery|3
+packing|3
+sowing|3
+[qa] sql> select count(*) from lots => 3
+[qa] tiles Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs 3 done · 0 in progress · 0 not started Harvest 3 done · 0 in progress · 0 not started Drying 3 done · 0 in progress · 0 not started Packing 3 done · 0 in progress · 0 not started | db lots 3 | lots per event type drying|3
+grading|0
+harvest|3
+input_application|3
+land_preparation|3
+nursery|3
+packing|3
+sowing|3
+[qa] PASS P06 tiles-match-seed-counts: tiles: Stage progress (lots) Done In progress Not started Land prep 3 done · 0 in progress · 0 not started Nursery 3 done · 0 in progress · 0 not started Sowing 3 done · 0 in progress · 0 not started Inputs 3 done · 0 in progress · 0 not started Harvest 3 done · 0 in progress · 0 not started Drying 3 done ; DB: 3 lots; lots per event type drying|3, grading|0, harvest|3, input_application|3, land_preparation|3, nursery|3, packing|3, sowing|3
+[qa] template header [
+  'name',
+  'name_local',
+  'phone',
+  'lang',
+  'gi_authorised_user_no',
+  'no_smartphone',
+  'village_lgd_code'
+] | shown [
+  'name',
+  'name_local',
+  'phone',
+  'lang',
+  'gi_authorised_user_no',
+  'no_smartphone',
+  'village_lgd_code'
+] | /config/fields farmer keys [
+  'name:text',
+  'name_local:text',
+  'phone:phone',
+  'lang:choice',
+  'village_id:id',
+  'address:address',
+  'gi_authorised_user_no:text',
+  'no_smartphone:boolean',
+  'photo_key:photo'
+]
+[qa] PASS P08 template-matches-config-fields: expected from /config/fields name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; template name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; screen name|name_local|phone|lang|gi_authorised_user_no|no_smartphone|village_lgd_code; /config/fields farmer keys name:text|name_local:text|phone:phone|lang:choice|village_id:id|address:address|gi_authorised_user_no:text|no_smartphone:boolean|photo_key:photo
+[qa] PASS P08 villages-import-setup: two QA villages imported (setup for the P06 village filter)
+[qa] PASS P08 two-bad-rows-preview-red-with-codes: 2 rejected rows, codes field_required, import_row_invalid (all in error-codes.md); row background rgba(211, 47, 47, 0.1); "Rows that can be imported: 2 · Rows rejected: 2 (row 3, 5)"
+[qa] sql> select count(*) from farmers => 3
+[qa] sql> select count(*) from farmers => 5
+[qa] sql> select name||':'||status from farmers where name like 'QA % 752b' order by name => QA Alpha 752b:pending
+QA Beta 752b:pending
+[qa] PASS P08 confirm-creates-only-valid-rows: farmers 3 -> 5; created: QA Alpha 752b:pending, QA Beta 752b:pending
+[qa] sql> select id from farmers where name='QA Alpha 752b' => 01a19853-dbd7-7187-9489-b5c063d4f90b
+[qa] sql> select id from farmers where name='QA Beta 752b' => 01a19853-dbf8-73bc-ae23-9c1fcff49ab4
+[qa] sql> select status from farmers where id='01a19853-dbd7-7187-9489-b5c063d4f90b' => active
+[qa] PASS P01 approve-active-without-reload: QA Alpha 752b left "Waiting for approval" and shows Active in "All members"; window marker survived (no reload); DB: active
+[qa] sql> select count(*) from audit_log where entity_id='01a19853-dbd7-7187-9489-b5c063d4f90b' and action like '%phone%' => 1
+[qa] farmer page text BACK TO MEMBERS
+QA Alpha 752b
+Active
+
+Farmer code: F0449B6
+
+Address: QA Village Alpha, QA Block One, QA Taluk, Virudhunagar, Tamil Nadu, 626001
+
+GI status: Not registered as a GI authorised user
+
+Approved on 1 Nov 2026
+
+Plots
+"Add another plot" is done in the mobile app by the farmer or field officer, because the pin is taken on the field.
+[qa] FAIL P01 phone-masked-except-audited-reveal: a Reveal control on the farmer page |  | expect(received).toBeGreaterThan(expected) |  | Expected: > 0 | Received:   0
+[qa] push accepted
+[qa] sql> select code from lots where id='c20fe7f9-de14-4291-a50a-90e9e19012ad' => LOTFF15F629
+[qa] lot QA X1 LOTFF15F629 c20fe7f9-de14-4291-a50a-90e9e19012ad
+[qa] push accepted
+[qa] sql> select code from lots where id='c9c5ff4e-bf3d-4fb5-b2f8-6905d32f9fb7' => LOT0D191257
+[qa] lot QA X2 LOT0D191257 c9c5ff4e-bf3d-4fb5-b2f8-6905d32f9fb7
+[qa] push accepted
+[qa] sql> select code from lots where id='1b732452-3087-4212-9f79-388e8f87bd66' => LOT9EA92C7E
+[qa] lot QA X3 LOT9EA92C7E 1b732452-3087-4212-9f79-388e8f87bd66
+[qa] push accepted,accepted
+  ✘  1 [chromium] › live/portal-lines.spec.ts:83:1 › P01-P06, P08 live lines (15.3s)
+
+
+  1) [chromium] › live/portal-lines.spec.ts:83:1 › P01-P06, P08 live lines ─────────────────────────
+
+    Error: http://localhost:5183/v1/intakes -> 500 {"error":{"code":"internal_error","message":"Something went wrong on the server.","details":null}}
+
+      29 |   const r = await p;
+      30 |   const t = await r.text();
+    > 31 |   if (!r.ok()) throw new Error(`${r.url()} -> ${r.status()} ${t.slice(0, 600)}`);
+         |                      ^
+      32 |   return t ? JSON.parse(t) : {};
+      33 | }
+      34 |
+        at j (/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/live/portal-lines.spec.ts:31:22)
+        at lot (/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/live/portal-lines.spec.ts:335:5)
+        at /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/live/portal-lines.spec.ts:345:13
+
+    Error Context: out-live2/portal-lines-P01-P06-P08-live-lines-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    out-live2/portal-lines-P01-P06-P08-live-lines-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace out-live2/portal-lines-P01-P06-P08-live-lines-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › live/portal-lines.spec.ts:83:1 › P01-P06, P08 live lines ──────────────────────────
+exit=1 wall=20 s
+23:46  up 1 day, 23:19, 1 user, load averages: 6.35 18.27 23.94

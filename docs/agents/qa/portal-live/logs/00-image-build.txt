@@ -1,0 +1,204 @@
+23:37  up 1 day, 23:09, 1 user, load averages: 13.11 25.26 23.86
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.34kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 ...
+
+#3 [context public-page] load .dockerignore
+#3 transferring public-page: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load metadata for ghcr.io/astral-sh/uv:0.12.1
+#4 DONE 3.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 4.0s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 196B 0.0s done
+#5 DONE 0.0s
+
+#6 [context public-page] load from client
+#6 DONE 0.0s
+
+#7 [context public-page] load from client
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 DONE 0.0s
+
+#9 FROM ghcr.io/astral-sh/uv:0.12.1@sha256:cf4eedcaa81655197f625739489effcbe71b61ceb1506f332c3facae5deceded
+#9 resolve ghcr.io/astral-sh/uv:0.12.1@sha256:cf4eedcaa81655197f625739489effcbe71b61ceb1506f332c3facae5deceded 0.1s done
+#9 DONE 0.1s
+
+#10 [stage-0  1/13] FROM docker.io/library/python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159
+#10 resolve docker.io/library/python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159 0.1s done
+#10 DONE 0.1s
+
+#7 [context public-page] load from client
+#7 transferring public-page: 1.30kB 0.0s done
+#7 DONE 0.0s
+
+#11 [stage-0  2/13] COPY --from=ghcr.io/astral-sh/uv:0.12.1 /uv /usr/local/bin/uv
+#11 CACHED
+
+#12 [stage-0  3/13] WORKDIR /app
+#12 CACHED
+
+#13 [stage-0  4/13] COPY --from=public-page pyproject.toml README.md /public-page/
+#13 DONE 0.1s
+
+#6 [context public-page] load from client
+#6 transferring public-page: 41.17kB 0.0s done
+#6 DONE 0.1s
+
+#8 [internal] load build context
+#8 transferring context: 144.93kB 0.1s done
+#8 DONE 0.1s
+
+#14 [stage-0  5/13] COPY --from=public-page agritrace_page /public-page/agritrace_page
+#14 DONE 0.1s
+
+#15 [stage-0  6/13] COPY pyproject.toml uv.lock .python-version ./
+#15 DONE 0.1s
+
+#16 [stage-0  7/13] RUN uv sync --frozen --no-dev --no-install-project
+#16 3.489 Using CPython 3.12.16 interpreter at: /usr/local/bin/python3.12
+#16 3.490 Creating virtual environment at: .venv
+#16 3.725    Building agritrace-page @ file:///public-page
+#16 4.837 Downloading uvloop (4.3MiB)
+#16 4.851 Downloading asyncpg (3.6MiB)
+#16 4.861 Downloading pydantic-core (2.1MiB)
+#16 4.975 Downloading botocore (15.4MiB)
+#16 4.984 Downloading pyproj (9.6MiB)
+#16 4.990 Downloading brotli (1.4MiB)
+#16 4.998 Downloading numpy (16.0MiB)
+#16 5.002 Downloading pillow (6.8MiB)
+#16 5.026 Downloading shapely (2.2MiB)
+#16 5.031 Downloading sqlalchemy (4.5MiB)
+#16 13.76  Downloaded brotli
+#16 16.49  Downloaded pydantic-core
+#16 16.77  Downloaded shapely
+#16 20.10       Built agritrace-page @ file:///public-page
+#16 22.11  Downloaded asyncpg
+#16 22.30  Downloaded sqlalchemy
+#16 22.30  Downloaded uvloop
+#16 24.61  Downloaded pillow
+#16 26.64  Downloaded pyproj
+#16 32.10  Downloaded numpy
+#16 32.40  Downloaded botocore
+#16 32.41 Prepared 68 packages in 28.79s
+#16 66.96 Installed 68 packages in 34.64s
+#16 95.79 Bytecode compiled 2617 files in 28.74s
+#16 95.79  + agritrace-page==0.1.0 (from file:///public-page)
+#16 95.79  + alembic==1.20.1
+#16 95.79  + amqp==5.4.1
+#16 95.79  + annotated-doc==0.0.5
+#16 95.79  + annotated-types==0.8.0
+#16 95.79  + anyio==4.15.1
+#16 95.79  + argon2-cffi==25.1.0
+#16 95.79  + argon2-cffi-bindings==26.1.0
+#16 95.79  + asyncpg==0.32.0
+#16 95.79  + billiard==4.3.1
+#16 95.79  + boto3==1.43.121
+#16 95.79  + botocore==1.43.121
+#16 95.79  + brotli==1.2.1
+#16 95.79  + brotli-asgi==1.7.0
+#16 95.79  + celery==5.6.3
+#16 95.79  + certifi==2026.10.23
+#16 95.79  + cffi==2.1.1
+#16 95.79  + click==8.5.0
+#16 95.79  + click-didyoumean==0.3.1
+#16 95.79  + click-plugins==1.1.1.2
+#16 95.79  + click-repl==0.4.1
+#16 95.79  + fastapi==0.162.0
+#16 95.79  + geoalchemy2==0.20.0
+#16 95.79  + greenlet==3.5.6
+#16 95.79  + h11==0.16.0
+#16 95.79  + httpcore==1.0.9
+#16 95.79  + httptools==0.9.0
+#16 95.79  + httpx==0.28.1
+#16 95.79  + idna==3.20
+#16 95.79  + jinja2==3.1.6
+#16 95.79  + jmespath==1.1.0
+#16 95.79  + kombu==5.7.0rc1
+#16 95.79  + mako==1.4.3
+#16 95.79  + markupsafe==3.0.4
+#16 95.79  + numpy==2.5.4
+#16 95.79  + opentelemetry-api==1.45.1
+#16 95.79  + packaging==26.3
+#16 95.79  + pillow==13.0.0
+#16 95.79  + prompt-toolkit==3.0.53
+#16 95.79  + pycparser==3.12
+#16 95.79  + pydantic==2.14.1
+#16 95.79  + pydantic-core==2.50.1
+#16 95.79  + pydantic-settings==2.16.2
+#16 95.79  + pyjwt==2.15.1
+#16 95.79  + pyproj==3.8.0
+#16 95.79  + python-dateutil==2.9.0.post0
+#16 95.79  + python-dotenv==1.2.4
+#16 95.79  + python-multipart==0.0.32
+#16 95.80  + pyyaml==6.0.3
+#16 95.80  + qrcode==8.2
+#16 95.80  + redis==8.1.0
+#16 95.80  + s3transfer==0.19.3
+#16 95.80  + shapely==2.2.0
+#16 95.80  + six==1.17.0
+#16 95.80  + sqlalchemy==2.1.6
+#16 95.80  + starlette==1.10.0
+#16 95.80  + typing-extensions==4.16.0
+#16 95.80  + typing-inspection==0.4.4
+#16 95.80  + tzdata==2026.4
+#16 95.80  + tzlocal==5.4.5
+#16 95.80  + urllib3==2.8.0
+#16 95.80  + uuid6==2025.0.1
+#16 95.80  + uvicorn==0.54.0
+#16 95.80  + uvloop==0.23.0
+#16 95.80  + vine==5.1.0
+#16 95.80  + watchfiles==1.3.0
+#16 95.80  + wcwidth==0.9.4
+#16 95.80  + websockets==17.3
+#16 DONE 96.4s
+
+#17 [stage-0  8/13] COPY agritrace ./agritrace
+#17 DONE 0.9s
+
+#18 [stage-0  9/13] COPY alembic ./alembic
+#18 DONE 0.1s
+
+#19 [stage-0 10/13] COPY alembic.ini ./
+#19 DONE 0.1s
+
+#20 [stage-0 11/13] COPY config ./config
+#20 DONE 0.1s
+
+#21 [stage-0 12/13] RUN uv sync --frozen --no-dev
+#21 1.240    Building agritrace @ file:///app
+#21 2.863       Built agritrace @ file:///app
+#21 2.880 Prepared 1 package in 1.64s
+#21 2.902 Installed 1 package in 16ms
+#21 4.655 Bytecode compiled 2617 files in 1.75s
+#21 4.655  + agritrace==0.1.0 (from file:///app)
+#21 DONE 4.7s
+
+#22 [stage-0 13/13] RUN useradd --create-home --uid 10001 app
+#22 DONE 0.5s
+
+#23 exporting to image
+#23 exporting layers
+#23 exporting layers 51.6s done
+#23 exporting manifest sha256:e2f646b526bb9074373ff8c01ebb580bcb63cf929816bf40fe224e3fcc89d601 0.0s done
+#23 exporting config sha256:b2cb813eb1bce311a8e853a9efa7e402155aaaa534ad7f162d3213fcc987ca9a 0.0s done
+#23 exporting attestation manifest sha256:7beed70221b25f5782f3529151419d350e25206aae9b5d20090d7d839505b131 0.1s done
+#23 exporting manifest list sha256:eceb070a86df35fc1025416281a074a2d73c5f091b65c41084a7e4156f153eb1
+#23 exporting manifest list sha256:eceb070a86df35fc1025416281a074a2d73c5f091b65c41084a7e4156f153eb1 0.0s done
+#23 naming to docker.io/library/agritrace-api:qa-verifier done
+#23 unpacking to docker.io/library/agritrace-api:qa-verifier
+#23 unpacking to docker.io/library/agritrace-api:qa-verifier 31.0s done
+#23 DONE 83.0s
+exit=0 wall=194 s
+23:40  up 1 day, 23:12, 1 user, load averages: 36.37 41.45 31.72

@@ -1,0 +1,30 @@
+ 0:14  up 1 day, 23:47, 1 user, load averages: 5.66 4.25 7.74
+HEAD 9f532de
+
+ RUN  v5.0.5 /Users/fi-it/Documents/projects/agriGitag/apps/portal
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+
+ Test Files  15 passed (15)
+      Tests  135 passed (135)
+   Start at  00:14:48
+   Duration  72.50s (tests 56%, import 20%, environment 18%, setup 6%, transform 1%)
+
+    Isolate  15 workers spawned · ~1.01s startup each (spawn + environment, per file)
+             at least ~14.11s faster with isolate: false — reuses workers across files instead of one per file
+
+vitest exit=0 wall=74 s
+
+> @agritrace/portal@0.1.0 lint
+> eslint . --max-warnings 0 && prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+lint exit=0
+
+> @agritrace/portal@0.1.0 typecheck
+> tsc -b
+
+typecheck exit=0
+ 0:16  up 1 day, 23:49, 1 user, load averages: 6.13 4.81 7.57

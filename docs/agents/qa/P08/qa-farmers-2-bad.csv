@@ -1,0 +1,5 @@
+name,name_local,phone,lang,gi_authorised_user_no,no_smartphone,village_lgd_code
+QA Alpha 62cf,,+919000000801,,,,990001
+,,+919000000802,,,,990001
+QA Beta 62cf,,+919000000803,,,,990002
+QA BadPhone 62cf,,12345,,,,990002

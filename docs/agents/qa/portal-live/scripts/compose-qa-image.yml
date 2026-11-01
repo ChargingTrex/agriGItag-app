@@ -1,0 +1,7 @@
+# Verifier scratch override: the isolated QA stack runs the API image built from current main under its own tag,
+# so the shared stack's agritrace-api:dev is not retagged.
+services:
+  api:
+    image: agritrace-api:qa-verifier
+  worker:
+    image: agritrace-api:qa-verifier

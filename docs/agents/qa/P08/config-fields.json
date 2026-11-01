@@ -1,0 +1,1128 @@
+{
+ "event_drying": [
+  {
+   "name": "phase",
+   "type": "choice",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Start or done",
+    "ta": "தொடக்கம் அல்லது முடிவு"
+   },
+   "stage": "drying",
+   "core": false
+  },
+  {
+   "name": "quantity",
+   "type": "quantity",
+   "required": false,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Quantity spread",
+    "ta": "உலர வைத்த அளவு"
+   },
+   "stage": "drying",
+   "core": false
+  },
+  {
+   "name": "moisture_reading_id",
+   "type": "id",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Moisture reading",
+    "ta": "ஈரப்பதம் அளவீடு"
+   },
+   "stage": "drying",
+   "core": false
+  }
+ ],
+ "event_final_packing": [
+  {
+   "name": "quantity",
+   "type": "quantity",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Packed weight",
+    "ta": "பொதி எடை"
+   },
+   "stage": "packing",
+   "core": false
+  },
+  {
+   "name": "pack_size",
+   "type": "quantity",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Pack size",
+    "ta": "பொதி அளவு"
+   },
+   "stage": "packing",
+   "core": false
+  },
+  {
+   "name": "packs",
+   "type": "integer",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Packs",
+    "ta": "பொதிகள்"
+   },
+   "stage": "packing",
+   "core": false
+  },
+  {
+   "name": "avg_sale_price_per_kg",
+   "type": "number",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Average sale price per kg",
+    "ta": "சராசரி கிலோ விற்பனை விலை"
+   },
+   "stage": "packing",
+   "core": false
+  }
+ ],
+ "event_grading": [
+  {
+   "name": "quantity",
+   "type": "quantity",
+   "required": false,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Graded weight",
+    "ta": "தரம் பிரித்த எடை"
+   },
+   "stage": "grading",
+   "core": false
+  },
+  {
+   "name": "declared_grade",
+   "type": "text",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Grade",
+    "ta": "தரம்"
+   },
+   "stage": "grading",
+   "core": false
+  }
+ ],
+ "event_harvest": [
+  {
+   "name": "quantity",
+   "type": "quantity",
+   "required": true,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Quantity",
+    "ta": "அளவு"
+   },
+   "stage": "harvest",
+   "core": false
+  },
+  {
+   "name": "bags",
+   "type": "integer",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Bags",
+    "ta": "மூட்டைகள்"
+   },
+   "stage": "harvest",
+   "core": false
+  }
+ ],
+ "event_input_application": [
+  {
+   "name": "input_id",
+   "type": "id",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Product",
+    "ta": "பொருள்"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "input_name",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Product name (not in list)",
+    "ta": "பொருளின் பெயர் (பட்டியலில் இல்லை)"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "quantity",
+   "type": "quantity",
+   "required": true,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Quantity",
+    "ta": "அளவு"
+   },
+   "stage": "cultivation",
+   "core": false
+  }
+ ],
+ "event_intake": [
+  {
+   "name": "processor_id",
+   "type": "id",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Processor",
+    "ta": "பதப்படுத்துபவர்"
+   },
+   "stage": "intake",
+   "core": false
+  },
+  {
+   "name": "received",
+   "type": "quantity",
+   "required": true,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Received weight",
+    "ta": "பெற்ற எடை"
+   },
+   "stage": "intake",
+   "core": false
+  },
+  {
+   "name": "price_per_kg",
+   "type": "number",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Price per kg",
+    "ta": "கிலோ விலை"
+   },
+   "stage": "intake",
+   "core": false
+  },
+  {
+   "name": "moisture_reading_id",
+   "type": "id",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Moisture reading",
+    "ta": "ஈரப்பதம் அளவீடு"
+   },
+   "stage": "intake",
+   "core": false
+  }
+ ],
+ "event_land_preparation": [
+  {
+   "name": "cultivated_area",
+   "type": "quantity",
+   "required": false,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Area prepared",
+    "ta": "தயார் செய்த பரப்பு"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "last_ploughed_on",
+   "type": "date",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Last ploughed on",
+    "ta": "கடைசியாக உழுத தேதி"
+   },
+   "stage": "cultivation",
+   "core": false
+  }
+ ],
+ "event_nursery": [
+  {
+   "name": "seed_variety",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Seed variety",
+    "ta": "விதை ரகம்"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "nursery_area",
+   "type": "quantity",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Nursery area",
+    "ta": "நாற்றங்கால் பரப்பு"
+   },
+   "stage": "cultivation",
+   "core": false
+  }
+ ],
+ "event_packing": [
+  {
+   "name": "quantity",
+   "type": "quantity",
+   "required": true,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Quantity",
+    "ta": "அளவு"
+   },
+   "stage": "packing",
+   "core": false
+  },
+  {
+   "name": "bags",
+   "type": "integer",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Bags",
+    "ta": "மூட்டைகள்"
+   },
+   "stage": "packing",
+   "core": false
+  }
+ ],
+ "event_problem": [
+  {
+   "name": "problem_type",
+   "type": "choice",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Problem",
+    "ta": "பிரச்சனை"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "description",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Description",
+    "ta": "விவரம்"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "affected_area",
+   "type": "quantity",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Area affected",
+    "ta": "பாதிக்கப்பட்ட பரப்பு"
+   },
+   "stage": "cultivation",
+   "core": false
+  }
+ ],
+ "event_sowing": [
+  {
+   "name": "seed_variety",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Seed variety",
+    "ta": "விதை ரகம்"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "method",
+   "type": "choice",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Direct seeding or transplanting",
+    "ta": "நேரடி விதைப்பு அல்லது நடவு"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "sown_area",
+   "type": "quantity",
+   "required": false,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Area sown",
+    "ta": "விதைத்த பரப்பு"
+   },
+   "stage": "cultivation",
+   "core": false
+  }
+ ],
+ "farmer": [
+  {
+   "name": "name",
+   "type": "text",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Name",
+    "ta": "பெயர்"
+   },
+   "stage": "onboarding",
+   "core": true
+  },
+  {
+   "name": "name_local",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Name in Tamil",
+    "ta": "தமிழில் பெயர்"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "phone",
+   "type": "phone",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Mobile number",
+    "ta": "கைபேசி எண்"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "lang",
+   "type": "choice",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Language",
+    "ta": "மொழி"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "village_id",
+   "type": "id",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Village",
+    "ta": "கிராமம்"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "address",
+   "type": "address",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Address",
+    "ta": "முகவரி"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "gi_authorised_user_no",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "GI authorised user number",
+    "ta": "புவிசார் குறியீடு பயனர் எண்"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "no_smartphone",
+   "type": "boolean",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "No smartphone",
+    "ta": "திறன்பேசி இல்லை"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "photo_key",
+   "type": "photo",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Farmer photo",
+    "ta": "விவசாயி புகைப்படம்"
+   },
+   "stage": "onboarding",
+   "core": false
+  }
+ ],
+ "input": [
+  {
+   "name": "name_en",
+   "type": "text",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Product name",
+    "ta": "பொருளின் பெயர் (ஆங்கிலம்)"
+   },
+   "stage": "master_data",
+   "core": true
+  },
+  {
+   "name": "name_local",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Product name in Tamil",
+    "ta": "பொருளின் பெயர்"
+   },
+   "stage": "master_data",
+   "core": false
+  },
+  {
+   "name": "manufacturer",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Manufacturer",
+    "ta": "தயாரிப்பாளர்"
+   },
+   "stage": "master_data",
+   "core": false
+  },
+  {
+   "name": "category",
+   "type": "choice",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Category",
+    "ta": "வகை"
+   },
+   "stage": "master_data",
+   "core": true
+  },
+  {
+   "name": "unit",
+   "type": "text",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Unit",
+    "ta": "அலகு"
+   },
+   "stage": "master_data",
+   "core": true
+  },
+  {
+   "name": "pack_size",
+   "type": "number",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Pack size",
+    "ta": "பை அளவு"
+   },
+   "stage": "master_data",
+   "core": false
+  },
+  {
+   "name": "photo_key",
+   "type": "photo",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Product photo",
+    "ta": "பொருளின் படம்"
+   },
+   "stage": "master_data",
+   "core": false
+  }
+ ],
+ "lot": [
+  {
+   "name": "plot_id",
+   "type": "id",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Plot",
+    "ta": "நிலம்"
+   },
+   "stage": "cultivation",
+   "core": true
+  },
+  {
+   "name": "crop_id",
+   "type": "id",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Crop",
+    "ta": "பயிர்"
+   },
+   "stage": "cultivation",
+   "core": true
+  },
+  {
+   "name": "season_label",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Season",
+    "ta": "பருவம்"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "practice_tags_declared",
+   "type": "choice",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Farming practice",
+    "ta": "விவசாய முறை"
+   },
+   "stage": "cultivation",
+   "core": false
+  },
+  {
+   "name": "price_per_kg",
+   "type": "number",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Price per kg",
+    "ta": "கிலோ விலை"
+   },
+   "stage": "intake",
+   "core": false
+  }
+ ],
+ "plot": [
+  {
+   "name": "client_id",
+   "type": "id",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Plot id",
+    "ta": "நில அடையாள எண்"
+   },
+   "stage": "onboarding",
+   "core": true
+  },
+  {
+   "name": "farmer_id",
+   "type": "id",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Farmer",
+    "ta": "விவசாயி"
+   },
+   "stage": "onboarding",
+   "core": true
+  },
+  {
+   "name": "code",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Plot code",
+    "ta": "நிலக் குறியீடு"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "gi_tag_id",
+   "type": "id",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "GI crop",
+    "ta": "புவிசார் குறியீடு பயிர்"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "pin",
+   "type": "point",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Plot location",
+    "ta": "நில இருப்பிடம்"
+   },
+   "stage": "onboarding",
+   "core": true
+  },
+  {
+   "name": "pin_method",
+   "type": "choice",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "How the location was taken",
+    "ta": "இருப்பிடம் எடுத்த முறை"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "device_time",
+   "type": "datetime",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Phone time",
+    "ta": "கைபேசி நேரம்"
+   },
+   "stage": "onboarding",
+   "core": true
+  },
+  {
+   "name": "gps_time",
+   "type": "datetime",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "GPS time",
+    "ta": "ஜிபிஎஸ் நேரம்"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "declared_area",
+   "type": "quantity",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Land size",
+    "ta": "நில அளவு"
+   },
+   "stage": "onboarding",
+   "core": true
+  },
+  {
+   "name": "land_record_ref",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Survey / patta number",
+    "ta": "சர்வே / பட்டா எண்"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "walked_boundary",
+   "type": "polygon",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Walked boundary",
+    "ta": "நடந்து அளந்த எல்லை"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "farming_type",
+   "type": "choice",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Irrigated or rainfed",
+    "ta": "பாசனம் அல்லது மானாவாரி"
+   },
+   "stage": "onboarding",
+   "core": false
+  },
+  {
+   "name": "irrigation_source",
+   "type": "choice",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Water source",
+    "ta": "நீர் ஆதாரம்"
+   },
+   "stage": "onboarding",
+   "core": false
+  }
+ ],
+ "quality_reading": [
+  {
+   "name": "stage",
+   "type": "choice",
+   "required": true,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Stage",
+    "ta": "நிலை"
+   },
+   "stage": "intake",
+   "core": true
+  },
+  {
+   "name": "parameter_code",
+   "type": "choice",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Parameter",
+    "ta": "அளவுரு"
+   },
+   "stage": "intake",
+   "core": true
+  },
+  {
+   "name": "measurement",
+   "type": "quantity",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Value",
+    "ta": "அளவு"
+   },
+   "stage": "intake",
+   "core": true
+  },
+  {
+   "name": "source",
+   "type": "choice",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Measured by",
+    "ta": "அளந்த முறை"
+   },
+   "stage": "intake",
+   "core": true
+  },
+  {
+   "name": "method_ref",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Test method",
+    "ta": "சோதனை முறை"
+   },
+   "stage": "intake",
+   "core": false
+  },
+  {
+   "name": "instrument_id",
+   "type": "id",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Instrument",
+    "ta": "கருவி"
+   },
+   "stage": "intake",
+   "core": false
+  },
+  {
+   "name": "lab_name",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "Laboratory",
+    "ta": "ஆய்வகம்"
+   },
+   "stage": "grading",
+   "core": false
+  },
+  {
+   "name": "lab_nabl_no",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "partner",
+   "label": {
+    "en": "NABL number",
+    "ta": "என்ஏபிஎல் எண்"
+   },
+   "stage": "grading",
+   "core": false
+  },
+  {
+   "name": "sample_id",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Sample id",
+    "ta": "மாதிரி எண்"
+   },
+   "stage": "grading",
+   "core": false
+  },
+  {
+   "name": "certificate_photo_id",
+   "type": "photo",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Lab certificate photo",
+    "ta": "ஆய்வகச் சான்றிதழ் படம்"
+   },
+   "stage": "grading",
+   "core": false
+  },
+  {
+   "name": "evidence_photo_id",
+   "type": "photo",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Reading photo",
+    "ta": "அளவீட்டுப் படம்"
+   },
+   "stage": "intake",
+   "core": false
+  },
+  {
+   "name": "reason_code",
+   "type": "choice",
+   "required": false,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "Reason",
+    "ta": "காரணம்"
+   },
+   "stage": "intake",
+   "core": false
+  }
+ ],
+ "village": [
+  {
+   "name": "lgd_code",
+   "type": "text",
+   "required": true,
+   "enabled": true,
+   "visibility": "internal",
+   "label": {
+    "en": "LGD village code",
+    "ta": "எல்ஜிடி கிராமக் குறியீடு"
+   },
+   "stage": "master_data",
+   "core": true
+  },
+  {
+   "name": "name_en",
+   "type": "text",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Village name",
+    "ta": "கிராமத்தின் பெயர் (ஆங்கிலம்)"
+   },
+   "stage": "master_data",
+   "core": true
+  },
+  {
+   "name": "name_local",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Village name in Tamil",
+    "ta": "கிராமத்தின் பெயர்"
+   },
+   "stage": "master_data",
+   "core": false
+  },
+  {
+   "name": "block",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Block",
+    "ta": "ஒன்றியம்"
+   },
+   "stage": "master_data",
+   "core": false
+  },
+  {
+   "name": "taluk",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "Taluk",
+    "ta": "வட்டம்"
+   },
+   "stage": "master_data",
+   "core": false
+  },
+  {
+   "name": "district",
+   "type": "text",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "District",
+    "ta": "மாவட்டம்"
+   },
+   "stage": "master_data",
+   "core": true
+  },
+  {
+   "name": "state",
+   "type": "text",
+   "required": true,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "State",
+    "ta": "மாநிலம்"
+   },
+   "stage": "master_data",
+   "core": true
+  },
+  {
+   "name": "pincode",
+   "type": "text",
+   "required": false,
+   "enabled": true,
+   "visibility": "public",
+   "label": {
+    "en": "PIN code",
+    "ta": "அஞ்சல் குறியீடு"
+   },
+   "stage": "master_data",
+   "core": false
+  }
+ ]
+}

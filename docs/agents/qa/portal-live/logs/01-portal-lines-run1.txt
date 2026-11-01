@@ -1,0 +1,194 @@
+23:42  up 1 day, 23:14, 1 user, load averages: 18.29 32.75 29.53
+2026-11-01T18:12:16Z
+
+Running 1 test using 1 worker
+
+[qa] me {"user":{"id":"01a1984f-c42b-77c8-aaa9-35e9452665f3","phone":"+919000000001","name":"Demo FPO Admin","name_local":null,"lang":"en","is_super_admin":true},"memberships":[{"fpo_id":"01a1984f-c432-7480-b425-6be00585da61","role":"fpo_admin"}],"device":{"id":"300aa9c7-beb8-4ec3-af2d-4e2bf9ca0bc7","platfo
+ERROR:  column v.lot_id does not exist
+LINE 1: select e.event_type, count(distinct v.lot_id) from events e ...
+                                            ^
+HINT:  Perhaps you meant to reference the column "e.lot_id".
+[qa] FAIL P06 tiles-match-seed-counts: Command failed: docker exec agritrace-p07qa-db-1 psql -U agritrace -d agritrace -Atc "select e.event_type, count(distinct v.lot_id) from events e join event_versions v on v.event_id=e.id group by 1 order by 1" | ERROR:  column v.lot_id does not exist | LINE 1: select e.event_type, count(distinct v.lot_id) from events e ... |                                             ^ | HINT:  Perhaps you meant to reference the column "e.lot_id". | 
+[qa] template header [
+  'name',
+  'name_local',
+  'phone',
+  'lang',
+  'gi_authorised_user_no',
+  'no_smartphone',
+  'village_lgd_code'
+] | shown [
+  'name',
+  'name_local',
+  'phone',
+  'lang',
+  'gi_authorised_user_no',
+  'no_smartphone',
+  'village_lgd_code'
+] | /config/fields farmer keys [
+  'name',
+  'name_local',
+  'phone',
+  'lang',
+  'village_id',
+  'address',
+  'gi_authorised_user_no',
+  'no_smartphone',
+  'photo_key'
+]
+[qa] FAIL P08 template-matches-config-fields: template columns missing from /config/fields: village_lgd_code |  | expect(received).toEqual(expected) // deep equality |  | - Expected  - 1 | + Received  + 3
+[qa] PASS P08 villages-import-setup: two QA villages imported (setup for the P06 village filter)
+[qa] PASS P08 two-bad-rows-preview-red-with-codes: 2 rejected rows, codes field_required, import_row_invalid (all in error-codes.md); row background rgba(211, 47, 47, 0.1); "Rows that can be imported: 2 · Rows rejected: 2 (row 3, 5)"
+[qa] sql> select count(*) from farmers => 3
+[qa] sql> select count(*) from farmers => 5
+[qa] sql> select name||':'||status from farmers where name like 'QA % 65d0' order by name => QA Alpha 65d0:pending
+QA Beta 65d0:pending
+[qa] PASS P08 confirm-creates-only-valid-rows: farmers 3 -> 5; created: QA Alpha 65d0:pending, QA Beta 65d0:pending
+[qa] sql> select id from farmers where name='QA Alpha 65d0' => 01a19850-3257-7d9c-bce7-db8c8c358700
+[qa] sql> select id from farmers where name='QA Beta 65d0' => 01a19850-328e-7358-91c7-3ae7bb4f54b6
+[qa] sql> select status from farmers where id='01a19850-3257-7d9c-bce7-db8c8c358700' => active
+[qa] PASS P01 approve-active-without-reload: QA Alpha 65d0 left "Waiting for approval" and shows Active in "All members"; window marker survived (no reload); DB: active
+[qa] sql> select count(*) from audit_log where entity_id='01a19850-3257-7d9c-bce7-db8c8c358700' and action like '%phone%' => 1
+[qa] farmer page text BACK TO MEMBERS
+QA Alpha 65d0
+Active
+
+Farmer code: FC056AB
+
+Address: QA Village Alpha, QA Block One, QA Taluk, Virudhunagar, Tamil Nadu, 626001
+
+GI status: Not registered as a GI authorised user
+
+Approved on 1 Nov 2026
+
+Plots
+"Add another plot" is done in the mobile app by the farmer or field officer, because the pin is taken on the field.
+[qa] FAIL P01 phone-masked-except-audited-reveal: a Reveal control on the farmer page |  | expect(received).toBeGreaterThan(expected) |  | Expected: > 0 | Received:   0
+[qa] push accepted
+[qa] sql> select code from lots where id='acb934c4-8d3c-48ad-8b25-a49fcca39fc8' => LOTB52A20C7
+[qa] lot QA X1 LOTB52A20C7 acb934c4-8d3c-48ad-8b25-a49fcca39fc8
+[qa] push accepted
+[qa] sql> select code from lots where id='d1491e53-3efe-475f-88ce-e1a8b7ff17d3' => LOT3E07FC60
+[qa] lot QA X2 LOT3E07FC60 d1491e53-3efe-475f-88ce-e1a8b7ff17d3
+[qa] push accepted
+[qa] sql> select code from lots where id='4386e53e-b44b-45f6-ad90-99d14b053942' => LOT288C2ED8
+[qa] lot QA X3 LOT288C2ED8 4386e53e-b44b-45f6-ad90-99d14b053942
+[qa] push accepted,accepted
+[qa] sql> select code from lots where id='ad0ed5c4-2dbe-4ac5-9b52-cf08fc7da15e' => LOT1EF53EC7
+[qa] lot QA H yield hold LOT1EF53EC7 ad0ed5c4-2dbe-4ac5-9b52-cf08fc7da15e
+[qa] push accepted,accepted
+[qa] sql> select code from lots where id='cf410ae9-229b-427f-a4ea-7cc50a87f692' => LOTDE793AF6
+[qa] lot QA H2 yield hold LOTDE793AF6 cf410ae9-229b-427f-a4ea-7cc50a87f692
+[qa] push accepted
+[qa] sql> select code from lots where id='32a01a02-146e-4b70-a77a-b993511d81fe' => LOT9DDF2A3C
+[qa] lot QA O outside GI LOT9DDF2A3C 32a01a02-146e-4b70-a77a-b993511d81fe
+[qa] push accepted
+[qa] sql> select code from lots where id='a30a5e2b-fffa-4f9e-8dc7-e0b29568fada' => LOT3E961DC6
+[qa] lot QA O2 outside GI LOT3E961DC6 a30a5e2b-fffa-4f9e-8dc7-e0b29568fada
+[qa] push accepted
+[qa] sql> select code from lots where id='9d701d23-43b3-4309-8bc9-a3216594e850' => LOTACC67F0D
+[qa] lot QA Y declared above LOTACC67F0D 9d701d23-43b3-4309-8bc9-a3216594e850
+[qa] push accepted
+[qa] sql> select code from lots where id='9b07b491-1ff3-4878-958b-4527bbf237eb' => LOT8A2596A7
+[qa] lot QA M missing reading LOT8A2596A7 9b07b491-1ff3-4878-958b-4527bbf237eb
+[qa] push accepted
+[qa] sql> select code from lots where id='463e3042-c50b-4141-9bbd-121ad4055d30' => LOT00B1B040
+[qa] lot QA T threshold LOT00B1B040 463e3042-c50b-4141-9bbd-121ad4055d30
+[qa] push accepted,accepted
+[qa] sql> select code from lots where id='66178530-b6a5-4d09-b81a-6cb227bbf713' => LOT98249F7C
+[qa] lot QA Z correction LOT98249F7C 66178530-b6a5-4d09-b81a-6cb227bbf713
+[qa] sql> select count(*) from flags where status='open' and rule_code='yield_over_ceiling' and (subject_id in ('ad0ed5c4-2dbe-4ac5-9b52-cf08fc7da15e','cf410ae9-229b-427f-a4ea-7cc50a87f692','19677567-8762-456e-a89e-ef9993c53c5a')) => 2
+[qa] sql> select count(*) from flags where status='open' and rule_code='plot_outside_gi_region' and subject_id='684e6b76-f107-4935-9900-d180d957eb31' => 1
+[qa] sql> select rule_code, subject_type, severity, status from flags where status='open' and subject_id in ('ad0ed5c4-2dbe-4ac5-9b52-cf08fc7da15e','cf410ae9-229b-427f-a4ea-7cc50a87f692','19677567-8762-456e-a89e-ef9993c53c5a','684e6b76-f107-4935-9900-d180d957eb31','32a01a02-146e-4b70-a77a-b993511d81fe','a30a5e2b-fffa-4f9e-8dc7-e0b29568fada') order by 1 => plot_outside_gi_region|plot|hold|open
+yield_check_unavailable|lot|info|open
+yield_check_unavailable|lot|info|open
+yield_over_ceiling|lot|hold|open
+yield_over_ceiling|lot|hold|open
+[qa] sql> select code, status, packed_kg, gi_eligible, gi_hold_reason from lots where id in ('acb934c4-8d3c-48ad-8b25-a49fcca39fc8','d1491e53-3efe-475f-88ce-e1a8b7ff17d3','4386e53e-b44b-45f6-ad90-99d14b053942','ad0ed5c4-2dbe-4ac5-9b52-cf08fc7da15e','cf410ae9-229b-427f-a4ea-7cc50a87f692','32a01a02-146e-4b70-a77a-b993511d81fe','a30a5e2b-fffa-4f9e-8dc7-e0b29568fada','9d701d23-43b3-4309-8bc9-a3216594e850','9b07b491-1ff3-4878-958b-4527bbf237eb','463e3042-c50b-4141-9bbd-121ad4055d30','66178530-b6a5-4d09-b81a-6cb227bbf713') order by code => LOT00B1B040|received|1100.000|t|
+LOT1EF53EC7|received|50.000|f|flags: yield_over_ceiling
+LOT288C2ED8|received|20.000|t|
+LOT3E07FC60|received|200.000|t|
+LOT3E961DC6|received|25.000|t|
+LOT8A2596A7|received|60.000|t|
+LOT98249F7C|received|45.000|t|
+LOT9DDF2A3C|received|30.000|t|
+LOTACC67F0D|received|100.000|t|
+LOTB52A20C7|received|100.000|t|
+LOTDE793AF6|received|40.000|f|flags: yield_over_ceiling
+[qa] FAIL P06 village-filter-updates-tiles-and-table: locator.selectOption: Error: strict mode violation: getByLabel('Block') resolved to 2 elements: |     1) <select id=":r29:" aria-invalid="false" class="MuiNativeSelect-select MuiNativeSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-vci4z6-MuiNativeSelect-root-MuiNativeSelect-select-MuiInputBase-input-MuiOutlinedInput-input">…</select> aka getByLabel('Block').first() |     2) <input checked type="checkbox" data-indeterminate="false" class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"/> aka getByRole('checkbox', { name: 'Block' }) |  | Call log: |   - waiting for getByLabel('Block')
+[qa] FAIL P06 column-toggle-persists: locator.selectOption: Error: strict mode violation: getByLabel('Village') resolved to 2 elements: |     1) <select id=":r2b:" aria-invalid="false" class="MuiNativeSelect-select MuiNativeSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-vci4z6-MuiNativeSelect-root-MuiNativeSelect-select-MuiInputBase-input-MuiOutlinedInput-input">…</select> aka getByLabel('Village').first() |     2) <input checked type="checkbox" data-indeterminate="false" class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"/> aka getByRole('checkbox', { name: 'Village' }) |  | Call log: |   - waiting for getByLabel('Village')
+[qa] PASS P03 shares-31.25-62.5-6.25: shares 31.250 % / 62.500 % / 6.250 % for LOTB52A20C7, LOT3E07FC60, LOT288C2ED8 (100/200/20 kg); "3 lots ticked, total 320 kg"
+[qa] PASS P03 out-of-GI-greyed-with-tooltip: checkbox disabled, aria-label "Lot LOT9DDF2A3C: Outside the GI region. It can only go into a non-GI batch."; tooltip "Outside the GI region. It can only go into a non-GI batch."; row text colour rgba(0, 0, 0, 0.6)
+[qa] FAIL P03 create-id-and-qr: expect(locator).toBeVisible() failed |  | Locator: getByRole('heading', { name: /^Batch / }) | Expected: visible | Error: strict mode violation: getByRole('heading', { name: /^Batch / }) resolved to 2 elements: |     1) <h1 class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root">Batch 247VSC80V82C</h1> aka getByRole('heading', { name: 'Batch 247VSC80V82C' })
+[qa] FAIL P03 threshold-second-signoff-state: expect(locator).toBeVisible() failed |  | Locator: getByRole('heading', { name: /^Batch / }) | Expected: visible | Error: strict mode violation: getByRole('heading', { name: /^Batch / }) resolved to 2 elements: |     1) <h1 class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root">Batch 7NBTW3W7WE6K</h1> aka getByRole('heading', { name: 'Batch 7NBTW3W7WE6K' })
+[qa] FAIL P02 required-fields-block-submit: expect(locator).toBeVisible() failed |  | Locator: getByRole('table', { name: 'Flags' }).getByRole('row').filter({ hasText: 'LOT1EF53EC7' }).filter({ hasText: /yield|Yield/ }).first() | Expected: visible | Timeout: 15000ms | Error: element(s) not found
+[qa] FAIL P02 review-held-lot-cleared-tickable-in-P03: locator.selectOption: Timeout 30000ms exceeded. | Call log: |   - waiting for getByLabel(/^Outcome/) | 
+[qa] grading Y 201 {"id":"01a19851-36ec-7100-93bf-f68bd70aadb0","batch_id":"7d62b471-60f0-4e8a-bbde-f9f653af0638","profile_version_id":"01a1984f-c41b-7e39-8b41-2ca8c9d4f784","computed_grade":"Standard","declared_grade":"Special","status":"declared_above_computed","lab_certified":false,"per_parameter":{"moisture":{"par
+[qa] PASS P04 declared-Special-computed-Standard-approve-disabled: grading 201; Approve grading disabled, reason "Approve grading: Declared grade Special is above the computed grade Standard: correct the readings, re-test or lower the declared grade."
+[qa] FAIL P04 missing-reading-approve-disabled: no Approve grading button; grading with readings [] -> 201 {"id":"01a19851-41b5-798d-8af0-8b3062b61d9a","batch_id":"12a56f36-2611-4ddb-aa6c-2f6b494a6307","profile_version_id":"01a1984f-c41b-7e39-8b41-2ca8c9d4f784","computed_grade":null,"declared_grade":"Stand; page: Batch KPW1XY95QR8V Created GI verified Total 60 kg Processor VIRUDHAI_SCFC_VINOBA_BHAVA_FPO Batch ID and QR Batch ID: KPW1XY95QR8V (super lot COMBO_LOT_7B86344D) Reference 12a56f36-2611-4ddb-aa6c-2f6b494a6307. The QR code opens the public page at /b/KPW1XY95QR8V; it appears under Public page once the batch is published. Farmer shares Farmer Received Share Farmer 01a19850 60 kg 100.000 % Grading Final packing Packed quantity (kg) Packed quantity (kg) ​ Pack date Pack date ​ Best before Best before ​ SIGN OFF FINAL PACKING The grading has not been approved. Checking hold flags… Public p
+[qa] grading X 404
+[qa] FAIL P04 happy-path-published-and-URL: expect(locator).toBeVisible() failed |  | Locator: getByLabel('Graded quantity (kg)') | Expected: visible | Timeout: 15000ms | Error: element(s) not found
+[qa] FAIL P04 non-GI-D041-holds-are-warnings-GI-grey: expect(locator).toBeVisible() failed |  | Locator: getByRole('heading', { name: /^Batch / }) | Expected: visible | Error: strict mode violation: getByRole('heading', { name: /^Batch / }) resolved to 2 elements: |     1) <h1 class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root">Batch 4YBEB7NFH6WH</h1> aka getByRole('heading', { name: 'Batch 4YBEB7NFH6WH' })
+[qa] FAIL P05 labels-batchId-pdf: locator.click: Timeout 30000ms exceeded. | Call log: |   - waiting for getByRole('button', { name: 'Download labels' }) | 
+[qa] FAIL P05 csv-unit-on-every-quantity: locator.click: Test ended. | Call log: |   - waiting for getByRole('button', { name: 'Download lots CSV' }) | 
+[qa] FAIL P06 audit-search-correction-actor-and-reason: apiRequestContext.post: Target page, context or browser has been closed
+[qa] FAIL P06 opt-out-reflected-in-preview: page.goto: Target page, context or browser has been closed
+RESULT FAIL P06 tiles-match-seed-counts :: Command failed: docker exec agritrace-p07qa-db-1 psql -U agritrace -d agritrace -Atc "select e.event_type, count(distinct v.lot_id) from events e join event_versions v on v.event_id=e.id group by 1 order by 1" | ERROR:  column v.lot_id does not exist | LINE 1: select e.event_type, count(distinct v.lot_id) from events e ... |                                             ^ | HINT:  Perhaps you meant to reference the column "e.lot_id". | 
+RESULT FAIL P08 template-matches-config-fields :: template columns missing from /config/fields: village_lgd_code |  | expect(received).toEqual(expected) // deep equality |  | - Expected  - 1 | + Received  + 3
+RESULT PASS P08 villages-import-setup :: two QA villages imported (setup for the P06 village filter)
+RESULT PASS P08 two-bad-rows-preview-red-with-codes :: 2 rejected rows, codes field_required, import_row_invalid (all in error-codes.md); row background rgba(211, 47, 47, 0.1); "Rows that can be imported: 2 · Rows rejected: 2 (row 3, 5)"
+RESULT PASS P08 confirm-creates-only-valid-rows :: farmers 3 -> 5; created: QA Alpha 65d0:pending, QA Beta 65d0:pending
+RESULT PASS P01 approve-active-without-reload :: QA Alpha 65d0 left "Waiting for approval" and shows Active in "All members"; window marker survived (no reload); DB: active
+RESULT FAIL P01 phone-masked-except-audited-reveal :: a Reveal control on the farmer page |  | expect(received).toBeGreaterThan(expected) |  | Expected: > 0 | Received:   0
+RESULT FAIL P06 village-filter-updates-tiles-and-table :: locator.selectOption: Error: strict mode violation: getByLabel('Block') resolved to 2 elements: |     1) <select id=":r29:" aria-invalid="false" class="MuiNativeSelect-select MuiNativeSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-vci4z6-MuiNativeSelect-root-MuiNativeSelect-select-MuiInputBase-input-MuiOutlinedInput-input">…</select> aka getByLabel('Block').first() |     2) <input checked type="checkbox" data-indeterminate="false" class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"/> aka getByRole('checkbox', { name: 'Block' }) |  | Call log: |   - waiting for getByLabel('Block')
+RESULT FAIL P06 column-toggle-persists :: locator.selectOption: Error: strict mode violation: getByLabel('Village') resolved to 2 elements: |     1) <select id=":r2b:" aria-invalid="false" class="MuiNativeSelect-select MuiNativeSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-vci4z6-MuiNativeSelect-root-MuiNativeSelect-select-MuiInputBase-input-MuiOutlinedInput-input">…</select> aka getByLabel('Village').first() |     2) <input checked type="checkbox" data-indeterminate="false" class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"/> aka getByRole('checkbox', { name: 'Village' }) |  | Call log: |   - waiting for getByLabel('Village')
+RESULT PASS P03 shares-31.25-62.5-6.25 :: shares 31.250 % / 62.500 % / 6.250 % for LOTB52A20C7, LOT3E07FC60, LOT288C2ED8 (100/200/20 kg); "3 lots ticked, total 320 kg"
+RESULT PASS P03 out-of-GI-greyed-with-tooltip :: checkbox disabled, aria-label "Lot LOT9DDF2A3C: Outside the GI region. It can only go into a non-GI batch."; tooltip "Outside the GI region. It can only go into a non-GI batch."; row text colour rgba(0, 0, 0, 0.6)
+RESULT FAIL P03 create-id-and-qr :: expect(locator).toBeVisible() failed |  | Locator: getByRole('heading', { name: /^Batch / }) | Expected: visible | Error: strict mode violation: getByRole('heading', { name: /^Batch / }) resolved to 2 elements: |     1) <h1 class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root">Batch 247VSC80V82C</h1> aka getByRole('heading', { name: 'Batch 247VSC80V82C' })
+RESULT FAIL P03 threshold-second-signoff-state :: expect(locator).toBeVisible() failed |  | Locator: getByRole('heading', { name: /^Batch / }) | Expected: visible | Error: strict mode violation: getByRole('heading', { name: /^Batch / }) resolved to 2 elements: |     1) <h1 class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root">Batch 7NBTW3W7WE6K</h1> aka getByRole('heading', { name: 'Batch 7NBTW3W7WE6K' })
+RESULT FAIL P02 required-fields-block-submit :: expect(locator).toBeVisible() failed |  | Locator: getByRole('table', { name: 'Flags' }).getByRole('row').filter({ hasText: 'LOT1EF53EC7' }).filter({ hasText: /yield|Yield/ }).first() | Expected: visible | Timeout: 15000ms | Error: element(s) not found
+RESULT FAIL P02 review-held-lot-cleared-tickable-in-P03 :: locator.selectOption: Timeout 30000ms exceeded. | Call log: |   - waiting for getByLabel(/^Outcome/) | 
+RESULT PASS P04 declared-Special-computed-Standard-approve-disabled :: grading 201; Approve grading disabled, reason "Approve grading: Declared grade Special is above the computed grade Standard: correct the readings, re-test or lower the declared grade."
+RESULT FAIL P04 missing-reading-approve-disabled :: no Approve grading button; grading with readings [] -> 201 {"id":"01a19851-41b5-798d-8af0-8b3062b61d9a","batch_id":"12a56f36-2611-4ddb-aa6c-2f6b494a6307","profile_version_id":"01a1984f-c41b-7e39-8b41-2ca8c9d4f784","computed_grade":null,"declared_grade":"Stand; page: Batch KPW1XY95QR8V Created GI verified Total 60 kg Processor VIRUDHAI_SCFC_VINOBA_BHAVA_FPO Batch ID and QR Batch ID: KPW1XY95QR8V (super lot COMBO_LOT_7B86344D) Reference 12a56f36-2611-4ddb-aa6c-2f6b494a6307. The QR code opens the public page at /b/KPW1XY95QR8V; it appears under Public page once the batch is published. Farmer shares Farmer Received Share Farmer 01a19850 60 kg 100.000 % Grading Final packing Packed quantity (kg) Packed quantity (kg) ​ Pack date Pack date ​ Best before Best before ​ SIGN OFF FINAL PACKING The grading has not been approved. Checking hold flags… Public p
+RESULT FAIL P04 happy-path-published-and-URL :: expect(locator).toBeVisible() failed |  | Locator: getByLabel('Graded quantity (kg)') | Expected: visible | Timeout: 15000ms | Error: element(s) not found
+RESULT FAIL P04 non-GI-D041-holds-are-warnings-GI-grey :: expect(locator).toBeVisible() failed |  | Locator: getByRole('heading', { name: /^Batch / }) | Expected: visible | Error: strict mode violation: getByRole('heading', { name: /^Batch / }) resolved to 2 elements: |     1) <h1 class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root">Batch 4YBEB7NFH6WH</h1> aka getByRole('heading', { name: 'Batch 4YBEB7NFH6WH' })
+RESULT FAIL P05 labels-batchId-pdf :: locator.click: Timeout 30000ms exceeded. | Call log: |   - waiting for getByRole('button', { name: 'Download labels' }) | 
+RESULT FAIL P05 csv-unit-on-every-quantity :: locator.click: Test ended. | Call log: |   - waiting for getByRole('button', { name: 'Download lots CSV' }) | 
+RESULT FAIL P06 audit-search-correction-actor-and-reason :: apiRequestContext.post: Target page, context or browser has been closed
+RESULT FAIL P06 opt-out-reflected-in-preview :: page.goto: Target page, context or browser has been closed
+  ✘  1 [chromium] › live/portal-lines.spec.ts:83:1 › P01-P06, P08 live lines (2.3m)
+
+
+  1) [chromium] › live/portal-lines.spec.ts:83:1 › P01-P06, P08 live lines ─────────────────────────
+
+    TimeoutError: page.waitForEvent: Timeout 30000ms exceeded while waiting for event "download"
+    =========================== logs ===========================
+    waiting for event "download"
+    ============================================================
+
+      569 |   await line(page, 'P05', 'labels-batchId-pdf', async () => {
+      570 |     await page.goto(`/batches/${batchX}`);
+    > 571 |     const dl = page.waitForEvent('download');
+          |                     ^
+      572 |     await page.getByRole('button', { name: 'Download labels' }).click();
+      573 |     const d = await dl;
+      574 |     const name = d.suggestedFilename();
+        at /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/live/portal-lines.spec.ts:571:21
+        at /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/live/portal-lines.spec.ts:64:16
+        at line (/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/live/portal-lines.spec.ts:60:3)
+        at /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/pw/live/portal-lines.spec.ts:569:3
+
+    Error Context: out-live1/portal-lines-P01-P06-P08-live-lines-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    out-live1/portal-lines-P01-P06-P08-live-lines-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace out-live1/portal-lines-P01-P06-P08-live-lines-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › live/portal-lines.spec.ts:83:1 › P01-P06, P08 live lines ──────────────────────────
+exit=1 wall=144 s
+23:44  up 1 day, 23:17, 1 user, load averages: 11.57 24.69 26.77
