@@ -3,7 +3,7 @@ id | set | class | input | rc | rules | result | linter summary
 01 | r2 | L | Farmer contact 98765 43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 02 | r2 | L | +91 98765 43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 03 | r2 | L | 98765-43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
-04 | r2 | L | 09876543210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
+04 | r2 | L | 0XXXXXXXXXX | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 05 | r2 | L | 0091 98765 43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 06 | r2 | L | (987) 654-3210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 07 | r2 | L | 98765.43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
@@ -21,7 +21,7 @@ FP2 | r2 | G | prose 'mobile app' | 0 | - | pass | privacy-lint: 0 hit(s) in 1 f
 FP3 | r2 | G | UUID | 0 | - | pass | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
 FP4 | r2 | G | sha256 evidence URL | 0 | - | pass | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
 FP5 | r2 | G | 10-digit lot code in URL path | 0 | - | pass | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
-X01 | r2 | L | wa.me/919876543210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
+X01 | r2 | L | wa.me/91XXXXXXXXXX | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 X02 | r2 | L | api.whatsapp.com/send?phone= | 1 | phone,sensitive_label | caught | privacy-lint: 2 hit(s) in 1 file(s) scanned, 0 non-text skipped
 X03 | r2 | L | Survey Number 123/4A | 1 | sensitive_label | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 X04 | r2 | L | Patta No. 452 | 1 | sensitive_label | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
@@ -33,11 +33,11 @@ X09 | r2 | L | 98765<U+202F>43210 | 1 | phone | caught | privacy-lint: 1 hit(s) 
 X10 | r2 | OS | 9.5598061° N, 78.1335214° E | 0 | - | slipped (accepted open) | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
 X11 | r2 | OS | DMS 9°33'35.3"N 78°08'00.7"E | 0 | - | slipped (accepted open) | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
 X12 | r2 | OS | GPS 9.5598061 78.1335214 | 0 | - | slipped (accepted open) | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
-X13 | r2 | L | export.csv Ramu,9876543210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
+X13 | r2 | L | export.csv Ramu,XXXXXXXXXX | 1 | phone | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
 X14 | r2 | L | feed.ndjson lat 7 dp | 1 | coordinate_precision | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
 X15 | r2 | L | JSON string "9.5598061,78.1335214" | 1 | coordinate_precision | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
 X16 | r2 | L | JSON number phone | 1 | phone | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
-X17 | r2 | OS | example.org/farmer/9876543210 | 0 | - | slipped (accepted open) | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
+X17 | r2 | OS | example.org/farmer/XXXXXXXXXX | 0 | - | slipped (accepted open) | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
 X18 | r2 | L | tel:+91 98765 43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 X19 | r2 | L | <th>Survey no.</th><td>123/4A</td> | 1 | sensitive_label | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 X20 | r2 | L | maps/@9.5598061,78.1335214,17z | 1 | coordinate_precision | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
@@ -72,11 +72,11 @@ R18 | r3 | L | R.S. No. 45/2 | 1 | sensitive_label | caught | privacy-lint: 1 hi
 R19 | r3 | L | Re-survey No. 45/2 | 1 | sensitive_label | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 R20 | r3 | L | 98765&ndash;43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 R21 | r3 | L | feed.jsonl lat 7 dp | 1 | coordinate_precision | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
-R22 | r3 | L | farmer.vcf TEL:+919876543210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
+R22 | r3 | L | farmer.vcf TEL:+91XXXXXXXXXX | 1 | phone | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
 R23 | r3 | L | app.js.map sourcesContent phone | 1 | phone | caught | privacy-lint: 1 hit(s) in 2 file(s) scanned, 0 non-text skipped
-R24 | r3 | L | farm.yaml phone: 9876543210 | 1 | phone,sensitive_label | caught | privacy-lint: 2 hit(s) in 2 file(s) scanned, 0 non-text skipped
+R24 | r3 | L | farm.yaml phone: XXXXXXXXXX | 1 | phone,sensitive_label | caught | privacy-lint: 2 hit(s) in 2 file(s) scanned, 0 non-text skipped
 R25 | r3 | L | 98765<U+2212>43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
-R26 | r3 | OS | t.me/+919876543210 | 0 | - | slipped (accepted open) | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
+R26 | r3 | OS | t.me/+91XXXXXXXXXX | 0 | - | slipped (accepted open) | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
 R27 | r3 | L | S.F.No.123/4A | 1 | sensitive_label | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 R28 | r3 | L | Patta #452 | 1 | sensitive_label | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 p3-4 | r3 | G | Sy. No. of plots: 3 | 0 | - | pass | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
@@ -93,8 +93,8 @@ G10 | r3 | G | chat.whatsapp.com invite | 0 | - | pass | privacy-lint: 0 hit(s) 
 V01 | vx | L | +91-98765-43210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 V02 | vx | L | +91 9876 543 210 | 1 | phone | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 V03 | vx | L | Aadhaar with spaces 2345 6789 0123 | 1 | aadhaar,sensitive_label | caught | privacy-lint: 2 hit(s) in 1 file(s) scanned, 0 non-text skipped
-V04 | vx | L | கைபேசி 9876543210 | 1 | phone,sensitive_label | caught | privacy-lint: 2 hit(s) in 1 file(s) scanned, 0 non-text skipped
-V05 | vx | L | JSON "phone": "+919876543210" | 1 | phone,sensitive_label | caught | privacy-lint: 2 hit(s) in 2 file(s) scanned, 0 non-text skipped
+V04 | vx | L | கைபேசி XXXXXXXXXX | 1 | phone,sensitive_label | caught | privacy-lint: 2 hit(s) in 1 file(s) scanned, 0 non-text skipped
+V05 | vx | L | JSON "phone": "+91XXXXXXXXXX" | 1 | phone,sensitive_label | caught | privacy-lint: 2 hit(s) in 2 file(s) scanned, 0 non-text skipped
 V06 | vx | L | data-lat attribute 7 dp | 1 | coordinate_precision | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
 V07 | vx | L | lat=..&lng=.. query 6 dp | 0 | - | SLIPPED (unexpected) | privacy-lint: 0 hit(s) in 1 file(s) scanned, 0 non-text skipped
 V08 | vx | L | <dt>Patta</dt><dd>452</dd> | 1 | sensitive_label | caught | privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped

@@ -1,0 +1,55 @@
+ 3:29  up 2 days,  3:01, 1 user, load averages: 5.50 8.33 8.84
+2026-11-01T21:59:03Z
+==============================================================================
+Publishing & Identity                                                         
+==============================================================================
+Publishing & Identity.Publishing :: Publishing the static batch page (plan ...
+==============================================================================
+Published Objects Exist With Matching Generation                      | PASS |
+------------------------------------------------------------------------------
+Page HTML Has No Phone Survey Number Or Temp Uploads                  | PASS |
+------------------------------------------------------------------------------
+Revoked Name Consent Shows Farmer 2                                   | PASS |
+------------------------------------------------------------------------------
+Correction Creates A New Build And Keeps Old Versions                 | PASS |
+------------------------------------------------------------------------------
+QR Decodes To The Public Batch URL                                    | PASS |
+------------------------------------------------------------------------------
+Events Are Listed In Ascending Date Order                             | PASS |
+------------------------------------------------------------------------------
+Completeness Equals Lots With All Mandatory Events Over Lots          | PASS |
+------------------------------------------------------------------------------
+100 Scans Per Minute Returns 429                                      | PASS |
+------------------------------------------------------------------------------
+Audit CSV Has A Row Per Version With Entered By And Assist Session    | PASS |
+------------------------------------------------------------------------------
+Partner API Returns 501 Not Implemented Pilot                         | PASS |
+------------------------------------------------------------------------------
+Publishing & Identity.Publishing :: Publishing the static batch pa... | PASS |
+10 tests, 10 passed, 0 failed
+==============================================================================
+Publishing & Identity.Identity :: Identity: OTP login, roles, tenant scope,...
+==============================================================================
+OTP Request Twice In 60 s Returns 429                                 | PASS |
+------------------------------------------------------------------------------
+Five Wrong OTP Codes Lock The Challenge With 409                      | PASS |
+------------------------------------------------------------------------------
+Farmer Calling GET Flags Gets 403                                     | PASS |
+------------------------------------------------------------------------------
+Assist Header Sets On Behalf Of Farmer                                | PASS |
+------------------------------------------------------------------------------
+Consent Writes Audit Row With Officer As Actor                        | PASS |
+------------------------------------------------------------------------------
+Logout Revokes Refresh Token And Refresh Returns 401                  | PASS |
+------------------------------------------------------------------------------
+Publishing & Identity.Identity :: Identity: OTP login, roles, tena... | PASS |
+6 tests, 6 passed, 0 failed
+==============================================================================
+Publishing & Identity                                                 | PASS |
+16 tests, 16 passed, 0 failed
+==============================================================================
+Output:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/api-check/output.xml
+Log:     /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/api-check/log.html
+Report:  /Users/fi-it/Documents/projects/agriGitag/.claude/worktrees/agent-ac14cb14a1f0ec7bc/qa/robot/results/api-check/report.html
+robot exit=0 wall=17 s
+ 3:29  up 2 days,  3:01, 1 user, load averages: 5.35 8.12 8.75

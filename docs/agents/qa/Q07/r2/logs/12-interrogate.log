@@ -15,42 +15,44 @@
 | _var (L246)                                           |              COVERED |
 | _http (L263)                                          |              COVERED |
 | _sign_in (L277)                                       |              COVERED |
-| login_as (L311)                                       |              COVERED |
-| call_api (L345)                                       |              COVERED |
-| days_ago (L376)                                       |              COVERED |
-| new_phone (L388)                                      |              COVERED |
-| new_farmer (L397)                                     |              COVERED |
-| start_assist (L426)                                   |              COVERED |
-| new_consent (L445)                                    |              COVERED |
-| new_plot (L470)                                       |              COVERED |
-| new_lot (L501)                                        |              COVERED |
-| new_instrument (L523)                                 |              COVERED |
-| qa_world (L543)                                       |              COVERED |
-| moisture (L567)                                       |              COVERED |
-| event (L588)                                          |              COVERED |
-| push (L613)                                           |              COVERED |
-| received_lot (L637)                                   |              COVERED |
-| receive (L664)                                        |              COVERED |
-| packed_lot (L686)                                     |              COVERED |
-| grade_batch (L720)                                    |              COVERED |
-| fix_reference_batch (L742)                            |              COVERED |
-| fix_reference_batch.entry (L762)                      |              COVERED |
-| unitless_quantities (L796)                            |              COVERED |
-| template_csv (L817)                                   |              COVERED |
-| unitless_quantity_columns (L838)                      |              COVERED |
-| unitless_quantity_columns.number (L860)               |              COVERED |
-| packing (L885)                                        |              COVERED |
-| new_batch (L897)                                      |              COVERED |
-| flags_of (L918)                                       |              COVERED |
-| wait_for_flag (L936)                                  |              COVERED |
-| wait_for_build (L960)                                 |              COVERED |
-| drain_pull (L984)                                     |              COVERED |
-| _compose (L1006)                                      |              COVERED |
-| compose (L1023)                                       |              COVERED |
-| s3_get (L1043)                                        |              COVERED |
-| s3_versions (L1065)                                   |              COVERED |
-| s3_put (L1085)                                        |              COVERED |
-| decode_qr (L1107)                                     |              COVERED |
+| login_as (L313)                                       |              COVERED |
+| call_api (L347)                                       |              COVERED |
+| days_ago (L381)                                       |              COVERED |
+| new_phone (L393)                                      |              COVERED |
+| require_dev_otp (L406)                                |              COVERED |
+| page_leaks_any_user_phone (L424)                      |              COVERED |
+| new_farmer (L451)                                     |              COVERED |
+| start_assist (L480)                                   |              COVERED |
+| new_consent (L499)                                    |              COVERED |
+| new_plot (L524)                                       |              COVERED |
+| new_lot (L555)                                        |              COVERED |
+| new_instrument (L577)                                 |              COVERED |
+| qa_world (L597)                                       |              COVERED |
+| moisture (L621)                                       |              COVERED |
+| event (L642)                                          |              COVERED |
+| push (L667)                                           |              COVERED |
+| received_lot (L691)                                   |              COVERED |
+| receive (L718)                                        |              COVERED |
+| packed_lot (L740)                                     |              COVERED |
+| grade_batch (L774)                                    |              COVERED |
+| fix_reference_batch (L796)                            |              COVERED |
+| fix_reference_batch.entry (L816)                      |              COVERED |
+| unitless_quantities (L850)                            |              COVERED |
+| template_csv (L871)                                   |              COVERED |
+| unitless_quantity_columns (L892)                      |              COVERED |
+| unitless_quantity_columns.number (L914)               |              COVERED |
+| packing (L939)                                        |              COVERED |
+| new_batch (L951)                                      |              COVERED |
+| flags_of (L972)                                       |              COVERED |
+| wait_for_flag (L990)                                  |              COVERED |
+| wait_for_build (L1014)                                |              COVERED |
+| drain_pull (L1038)                                    |              COVERED |
+| _compose (L1060)                                      |              COVERED |
+| compose (L1077)                                       |              COVERED |
+| s3_get (L1097)                                        |              COVERED |
+| s3_versions (L1119)                                   |              COVERED |
+| s3_put (L1139)                                        |              COVERED |
+| decode_qr (L1161)                                     |              COVERED |
 |-------------------------------------------------------|----------------------|
 | scripts/gate-readiness.py (module)                    |              COVERED |
 | checklist_gates (L27)                                 |              COVERED |
@@ -61,8 +63,8 @@
 ----------------------------------- Summary ------------------------------------
 | Name                                 |   Total |   Miss |   Cover |   Cover% |
 |--------------------------------------|---------|--------|---------|----------|
-| robot/lib/agritrace_keywords.py      |      49 |      0 |      49 |     100% |
+| robot/lib/agritrace_keywords.py      |      51 |      0 |      51 |     100% |
 | scripts/gate-readiness.py            |       4 |      0 |       4 |     100% |
 |--------------------------------------|---------|--------|---------|----------|
-| TOTAL                                |      53 |      0 |      53 |   100.0% |
+| TOTAL                                |      55 |      0 |      55 |   100.0% |
 --------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
