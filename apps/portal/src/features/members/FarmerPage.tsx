@@ -1,7 +1,9 @@
 /**
- * Farmer detail: profile, onboarding status (approve when pending), GI authorised-user status, the farmer's
- * plots with their GI location status, and a link to the open flags on those plots.
- * Serves: FR8 (approval), FR62 (GI authorised-user number), FR70 (flags of the farmer's plots), Dataflow
+ * Farmer detail: profile, masked mobile number with an audited "Reveal" for FPO admins, onboarding status
+ * (approve when pending), GI authorised-user status, the farmer's plots with their GI location status, and a
+ * link to the open flags on those plots.
+ * Serves: FR8 (approval), FR62 (GI authorised-user number), FR70 (flags of the farmer's plots), P01 acceptance
+ * "phone masked except audited reveal" (B14 `phone_masked`, `GET /v1/farmers/{id}/phone`; P10), Dataflow
  * Stage 0, plan §7.3 P01 (farmer detail) and P02 (link to open flags), gap analysis "Multiple farm lands per
  * farmer" (B14 `GET /v1/farmers/{id}/plots`). Called by: src/AppRoutes.tsx (`/members/:farmerId`).
  */
@@ -12,7 +14,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
 import { unwrap } from '../../api/client';
 import { errorMessage } from '../../api/errors';
@@ -34,8 +36,17 @@ export const shortDate = (iso: string) =>
  */
 export function FarmerPage() {
   const { farmerId = '' } = useParams();
-  const { api } = useAuth();
+  const { api, session } = useAuth();
   const approve = useApproveFarmer();
+  // Same role as the server's check (B14: FPO admin only); the server writes the audit row on every call.
+  const canReveal = session?.roles.includes('fpo_admin') === true;
+  // Held only in this mutation, never in the query cache, so the number is gone once the page is left.
+  const reveal = useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.GET('/v1/farmers/{farmer_id}/phone', { params: { path: { farmer_id: farmerId } } }),
+      ),
+  });
   const farmer = useQuery({
     queryKey: ['farmers', 'detail', farmerId],
     queryFn: ({ signal }) =>
@@ -58,6 +69,8 @@ export function FarmerPage() {
   if (farmer.isPending) return <LinearProgress aria-label="Loading farmer" />;
   if (farmer.isError) return <Alert severity="error">{errorMessage(farmer.error)}</Alert>;
   const f = farmer.data;
+  // The page component stays mounted when the route moves to another farmer.
+  const revealed = reveal.data?.farmer_id === f.id ? reveal.data.phone : null;
 
   return (
     <Stack spacing={3}>
@@ -76,6 +89,22 @@ export function FarmerPage() {
         <Stack spacing={1}>
           <Typography>Farmer code: {f.code}</Typography>
           <Typography>Address: {f.address_line || 'Not given'}</Typography>
+          {f.phone_masked && (
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+              <Typography>Mobile: {revealed ?? f.phone_masked}</Typography>
+              {canReveal && !revealed && (
+                <Button
+                  disabled={reveal.isPending}
+                  onClick={() => {
+                    reveal.mutate();
+                  }}
+                >
+                  Reveal number
+                </Button>
+              )}
+            </Stack>
+          )}
+          {reveal.isError && <Alert severity="error">{errorMessage(reveal.error)}</Alert>}
           <Typography>
             GI status:{' '}
             {f.gi_authorised_user_no
