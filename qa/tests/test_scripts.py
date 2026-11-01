@@ -153,5 +153,23 @@ def test_gate_readiness_reads_checklist_and_flags_placeholders() -> None:
     assert gate.resolve(["G0"], gates) == {"B00", "Q00"}
     assert gate.resolve(["G1"], gates) >= {"B00", "Q00", "B01", "W01"}
     assert gate.main(["G0"]) == 0
-    assert gate.main(["B02"]) == 1  # identity.robot is all placeholders until B02 merges
+    assert gate.main(["B02"]) == 0  # identity.robot made real by Q06
+    assert gate.main(["M02"]) == 1  # mobile network suites stay placeholders until Q01
     assert gate.main(["X99"]) == 2
+
+
+def test_api_body_builders_need_no_stack(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Q06 keywords: settings fall back to the environment outside Robot; event clocks and fixes shift as asked.
+
+    Args:
+        monkeypatch: pytest's environment patcher.
+    """
+    keywords = load("qa/robot/lib/agritrace_keywords.py")
+    monkeypatch.setenv("API_BASE", "http://example.test/v1")
+    assert keywords._var("API_BASE", "unused") == "http://example.test/v1"
+    plot = {"id": "p1", "pin": {"lat": 9.5, "lon": 78.1}}
+    e = keywords.event("l1", plot, "harvest", "2026-10-20", lat_shift="0.0054", clock_shift_hours=72)
+    assert e["kind"] == "event_version" and e["data"]["gps"]["lat"] == pytest.approx(9.5054)
+    ahead = keywords.datetime.fromisoformat(e["data"]["clocks"]["device_time"]) - keywords.datetime.now(keywords.UTC)
+    assert 71.9 < ahead.total_seconds() / 3600 <= 72
+    assert keywords.packing("20")["packed"] == {"value": 20, "unit": "kg"}
