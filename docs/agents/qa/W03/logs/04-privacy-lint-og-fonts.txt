@@ -1,0 +1,15 @@
+canaries: every users.phone on the QA stack, with and without +91 (32 args)
+privacy-lint: 0 hit(s) in 2 file(s) scanned, 0 non-text skipped
+exit=0
+
+== OG/meta tags
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>விருதுநகர் சம்பா வத்தல் / VIRUDHUNAGAR SAMBA VATHAL · GI 883 · 9M6AGYTA7VXR</title>
+<meta name="description" content="இந்தப் புவிசார் குறியீடு பெற்ற தொகுதியின் பண்ணை முதல் பொதி வரையிலான பதிவு: பண்ணைகள், வேளாண் நிகழ்வுகள், தரம், இணக்க விவரங்கள். / Farm-to-pack record of this GI-tagged batch: farms, farming events, grade and compliance details.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="விருதுநகர் சம்பா வத்தல் / VIRUDHUNAGAR SAMBA VATHAL · GI 883 · 9M6AGYTA7VXR">
+<meta property="og:description" content="இந்தப் புவிசார் குறியீடு பெற்ற தொகுதியின் பண்ணை முதல் பொதி வரையிலான பதிவு: பண்ணைகள், வேளாண் நிகழ்வுகள், தரம், இணக்க விவரங்கள். / Farm-to-pack record of this GI-tagged batch: farms, farming events, grade and compliance details.">
+== font-face / external fonts / stylesheet links
+0

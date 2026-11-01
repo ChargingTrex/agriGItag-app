@@ -1,0 +1,29 @@
+[
+  {
+    "url": "http://localhost:4576/public-pages/batches/9M6AGYTA7VXR/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/lhci/3g/localhost-public_pages_batches_9M6AGYTA7VXR_index_html-2026_11_01_18_40_32.report.html",
+    "jsonPath": "/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/lhci/3g/localhost-public_pages_batches_9M6AGYTA7VXR_index_html-2026_11_01_18_40_32.report.json",
+    "summary": {
+      "performance": 0.92
+    }
+  },
+  {
+    "url": "http://localhost:4576/public-pages/batches/9M6AGYTA7VXR/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/lhci/3g/localhost-public_pages_batches_9M6AGYTA7VXR_index_html-2026_11_01_18_40_48.report.html",
+    "jsonPath": "/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/lhci/3g/localhost-public_pages_batches_9M6AGYTA7VXR_index_html-2026_11_01_18_40_48.report.json",
+    "summary": {
+      "performance": 0.98
+    }
+  },
+  {
+    "url": "http://localhost:4576/public-pages/batches/9M6AGYTA7VXR/index.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/lhci/3g/localhost-public_pages_batches_9M6AGYTA7VXR_index_html-2026_11_01_18_41_01.report.html",
+    "jsonPath": "/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/lhci/3g/localhost-public_pages_batches_9M6AGYTA7VXR_index_html-2026_11_01_18_41_01.report.json",
+    "summary": {
+      "performance": 0.98
+    }
+  }
+]

@@ -1,0 +1,23 @@
+ 0:10  up 1 day, 23:42, 1 user, load averages: 2.48 3.90 9.01
+Mon Nov  2 00:10:25 IST 2026
+✅  .lighthouseci/ directory writable
+✅  Configuration file found
+✅  Chrome installation found
+Healthcheck passed!
+
+Running Lighthouse 3 time(s) on http://localhost:4576/public-pages/batches/9M6AGYTA7VXR/index.html
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Done running Lighthouse!
+
+Checking assertions against 1 URL(s), 3 total run(s)
+
+All results processed!
+
+Dumping 3 reports to disk at /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/lhci/3g...
+Done writing reports to disk.
+
+Done running autorun.
+exit=0
+ 0:11  up 1 day, 23:43, 1 user, load averages: 3.83 4.04 8.76

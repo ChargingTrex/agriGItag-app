@@ -1,0 +1,6 @@
+3g 6_11_01_18_40_32 perf 0.92 LCP_ms 1978 total_bytes 19666
+3g 6_11_01_18_40_48 perf 0.98 LCP_ms 1718 total_bytes 19666
+3g 6_11_01_18_41_01 perf 0.98 LCP_ms 1743 total_bytes 19666
+4g 6_11_01_18_41_17 perf 1 LCP_ms 548 total_bytes 19666
+4g 6_11_01_18_41_31 perf 1 LCP_ms 528 total_bytes 19666
+4g 6_11_01_18_41_44 perf 1 LCP_ms 570 total_bytes 19666

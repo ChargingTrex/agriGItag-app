@@ -1,0 +1,14 @@
+
+Running 1 test using 1 worker
+
+W03 tamil {"fontsLoaded":0,"bodyFont":"system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans Tamil\", \"Noto Sans\", sans-serif","taSpans":80,"taWidth":241.46875} requests ["http://localhost:4576/public-pages/batches/9M6AGYTA7VXR/index.html"]
+W03 print {"bg":"rgb(255, 255, 255)","color":"rgb(0, 0, 0)"}
+W03 unavailable unknown robots noindex text தொகுதிப் பக்கம் கிடைக்கவில்லை / Batch page not available இந்தக் குறியீட்டில் எந்தத் தொகுதியும் இல்லை. QR-க்குக் கீழே அச்சிடப்பட்ட குறியீட்டைச் சரிபார்த்து மீண்டும் ஸ்கேன் செய்யவும். / No batch has this code. Check the code printed under the QR and scan again.
+W03 unavailable unpublished robots noindex text தொகுதிப் பக்கம் கிடைக்கவில்லை / Batch page not available இந்தத் தொகுதிப் பக்கம் இன்னும் வெளியிடப்படவில்லை. பின்னர் மீண்டும் ஸ்கேன் செய்யவும். / This batch page is not published yet. Please scan again later. தொகுதி எண் / Batch code: 9M6AGYTA7VXR
+W03 unavailable withdrawn robots noindex text தொகுதிப் பக்கம் கிடைக்கவில்லை / Batch page not available இந்தத் தொகுதிப் பக்கத்தை உற்பத்தியாளர் திரும்பப் பெற்றுள்ளார். / The producer has withdrawn this batch page. தொகுதி எண் / Batch code: 9M6AGYTA7VXR
+W03 live 404 for unknown code 404 <?xml version='1.0' encoding='utf-8'?>
+<Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><RequestId>29964b62-99ee-4c37-b6ae-a4a929655409</RequestId><Key>batches/NOPE0000
+  ✓  1 [chromium] › w03/w03.spec.ts:10:1 › W03 live page, print, Tamil, unavailable (1.1s)
+
+  1 passed (2.5s)
+exit=0
