@@ -4,7 +4,9 @@ Covers: OTP rate limit and lock, unknown phones, farmer session and office PIN s
 (`GET /v1/flags` as a farmer), assist header, consent audit row, refresh rotation and reuse, logout, web
 cookie transport, and the SMS enqueue rule around `OTP_DEV_CODE`; round 2 (review B02-r1): PIN hash redacted
 in audit, current PIN for a change, super-admin PIN step, cookie-only refresh, stale tokens after a new
-sign-in, guessed refresh tokens, `device_in_use`, the OTP daily cap and no device id in consent responses.
+sign-in, guessed refresh tokens, `device_in_use`, the OTP daily cap and no device id in consent responses;
+B23: `session_expired` after `SESSION_MAX_DAYS`, `POST /v1/devices/{id}/revoke` scoping and audit, and a NUL
+in a REST body answering 422 (wave-7 P3).
 
 Serves: B02 acceptance (docs/agents/acceptance/B02.md), FR1, FR14, FR24, FR25, FR41, CLAUDE.md §6,
 D-005, D-022, D-024.
@@ -33,7 +35,7 @@ from agritrace.core.enums import OrgKind, Role
 from agritrace.core.time import utcnow
 from agritrace.main import create_app
 from agritrace.modules.identity import service
-from agritrace.modules.identity.models import AuditLog, Membership, OtpChallenge, User
+from agritrace.modules.identity.models import AuditLog, Device, Membership, OtpChallenge, User
 from agritrace.modules.registry.models import Farmer, Fpo
 
 pytestmark = pytest.mark.integration
@@ -608,3 +610,115 @@ async def test_consent_response_carries_no_device_id(api: AsyncClient) -> None:
     }
     r = await api.post("/v1/consents", json=body, headers=_bearer(session))
     assert r.status_code == 201 and "device_id" not in r.json()
+
+
+# ---------------------------------------------------------------- B23 (SEC P1-1) and wave-7 P3 (B21)
+
+
+async def _age_sign_in(refresh_token: str, days: int) -> uuid.UUID:
+    """Move a device's last sign-in back in time.
+
+    Args:
+        refresh_token: a refresh token of the device (its prefix names the device).
+        days: how many days ago the sign-in happened.
+
+    Returns:
+        The device id.
+
+    Side effects:
+        Commits the new `signed_in_at`.
+    """
+    device_id = service.refresh_device_id(refresh_token)
+    assert device_id is not None
+    async with get_sessionmaker()() as s:
+        device = await s.get(Device, device_id)
+        assert device is not None
+        device.signed_in_at = utcnow() - timedelta(days=days)
+        await s.commit()
+    return device_id
+
+
+async def test_refresh_after_session_max_days_is_session_expired(api: AsyncClient) -> None:
+    """B23: a sign-in 31 days old refreshes to 401 `session_expired` and revokes the device; 29 days is fine.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FARMER)
+    old = await _otp(api, seed["phone"])
+    device_id = await _age_sign_in(old["refresh_token"], 31)
+    r = await api.post("/v1/auth/refresh", json={"refresh_token": old["refresh_token"]})
+    assert (r.status_code, r.json()["error"]["code"]) == (401, "session_expired")
+    async with get_sessionmaker()() as s:
+        device = await s.get(Device, device_id)
+    assert device is not None and device.revoked_at is not None and device.refresh_token_hash is None
+
+    recent = await _otp(api, await _new_phone(seed["user"]))
+    await _age_sign_in(recent["refresh_token"], 29)
+    r = await api.post("/v1/auth/refresh", json={"refresh_token": recent["refresh_token"]})
+    assert r.status_code == 200 and r.json()["kind"] == "session"
+
+
+async def test_device_revoke_is_scoped_and_audited(api: AsyncClient) -> None:
+    """B23: an FPO admin revokes a member's device (refresh 401, audit row); other FPO 404; farmer 403.
+
+    Args:
+        api: the client.
+    """
+    admin = await _seed(Role.FPO_ADMIN)
+    admin_session = await _officer_session(api, admin)
+    member_phone = _phone()
+    async with get_sessionmaker()() as s:
+        member = User(phone=member_phone, name="Member")
+        s.add(member)
+        await s.flush()
+        s.add(Membership(user_id=member.id, fpo_id=admin["fpo"], role=Role.FARMER))
+        await s.commit()
+    member_session = await _otp(api, member_phone)
+    member_device = service.refresh_device_id(member_session["refresh_token"])
+    outsider = await _seed(Role.FARMER)
+    outsider_session = await _otp(api, outsider["phone"])
+    outsider_device = service.refresh_device_id(outsider_session["refresh_token"])
+    admin_device = service.refresh_device_id(admin_session["refresh_token"])
+
+    r = await api.post(f"/v1/devices/{admin_device}/revoke", headers=_bearer(member_session))
+    assert (r.status_code, r.json()["error"]["code"]) == (403, "forbidden")
+    r = await api.post(f"/v1/devices/{outsider_device}/revoke", headers=_bearer(admin_session))
+    assert (r.status_code, r.json()["error"]["code"]) == (404, "not_found")
+
+    revoke = f"/v1/devices/{member_device}/revoke"
+    r = await api.post(revoke, json={"reason": "phone lost"}, headers=_bearer(admin_session))
+    assert r.status_code == 204, r.text
+    r = await api.post("/v1/auth/refresh", json={"refresh_token": member_session["refresh_token"]})
+    assert (r.status_code, r.json()["error"]["code"]) == (401, "unauthorized")
+    async with get_sessionmaker()() as s:
+        query = select(AuditLog).where(AuditLog.entity_type == "devices", AuditLog.entity_id == member_device)
+        row = (await s.scalars(query)).one()
+    assert (row.action, row.actor_user_id) == ("device.revoke", admin["user"])
+    assert row.diff["reason"] == "phone lost"
+
+    # The device's own user may revoke it too, without a body (e.g. from another phone).
+    own = await api.post(f"/v1/devices/{outsider_device}/revoke", headers=_bearer(outsider_session))
+    assert own.status_code == 204
+    r = await api.post("/v1/auth/refresh", json={"refresh_token": outsider_session["refresh_token"]})
+    assert r.status_code == 401
+
+
+async def test_nul_in_a_rest_body_is_validation_error_not_500(api: AsyncClient) -> None:
+    """Wave-7 P3 (B21): a NUL Postgres refuses (SQLSTATE 22021) in a plain REST body is 422, not 500.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FARMER)
+    session = await _otp(api, seed["phone"])
+    body = {
+        "client_id": str(uuid.uuid4()),
+        "farmer_id": str(seed["farmer"]),
+        "consent_type": "public_name",
+        "consent_version": "v1\x00ta",
+        "given_at": "2026-03-04T08:12:10+05:30",
+    }
+    r = await api.post("/v1/consents", json=body, headers=_bearer(session))
+    assert (r.status_code, r.json()["error"]["code"]) == (422, "validation_error")
+    assert r.json()["error"]["details"][0]["type"] == "db_data_error"

@@ -7,7 +7,8 @@ database; the async functions below apply them to the identity tables.
 Serves: FR1 (OTP sign-in), FR14 (roles), FR24 (tenant scoping), FR41 (consent), Arch §Security and privacy
 (device-bound session, office PIN, consent with witness), UserFlows §Onboarding a farmer steps 1–2,
 UserFlows §Log in once, CLAUDE.md §6 (assist mode recorded), D-005, D-022, D-024; B14 r2 (a farmer rejected
-by the FPO gets `account_inactive` after a correct code); B15 (assist sessions arriving by sync push, D-032).
+by the FPO gets `account_inactive` after a correct code); B15 (assist sessions arriving by sync push, D-032);
+B23 / SEC P1-1, ASVS 3.3.2 (absolute session lifetime `session_expired`, device revocation route).
 Callers: identity router (B02); other modules may call the names in `__all__` (D-004);
 tests/unit/test_identity_*.py, tests/integration/test_identity.py.
 """
@@ -25,12 +26,12 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 from geoalchemy2 import WKTElement
 from pydantic import ValidationError
-from sqlalchemy import select
+from sqlalchemy import insert, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import task_names
-from agritrace.core.audit import AuditContext, set_audit_context
+from agritrace.core.audit import AUDIT_LOG, AuditContext, set_audit_context
 from agritrace.core.auth import (
     ACCESS_TTL,
     PIN_TOKEN_TTL,
@@ -57,6 +58,7 @@ from agritrace.core.errors import (
     PinLockedError,
     RateLimitedError,
     RefreshReusedError,
+    SessionExpiredError,
     UnauthorizedError,
     ValidationFailedError,
 )
@@ -94,6 +96,7 @@ __all__ = [
     "refresh",
     "request_otp",
     "revoke_consent",
+    "revoke_device",
     "set_pin",
     "start_assist",
     "start_assist_from_sync",
@@ -723,10 +726,12 @@ async def refresh(session: AsyncSession, token: str) -> SessionOut:
             longer sign in. An unknown token for a known device changes nothing.
         RefreshReusedError: the token this device rotated out last (`refresh_reused`, 401); the device is
             signed out so neither copy works any more.
+        SessionExpiredError: the current token, but the device's last OTP/PIN sign-in is older than
+            `SESSION_MAX_DAYS` (`session_expired`, 401); the device is signed out.
         sqlalchemy.exc.SQLAlchemyError: passed through from the database.
 
     Side effects:
-        Stores the new refresh hash, or revokes the device on reuse. Commits.
+        Stores the new refresh hash, or revokes the device on reuse or an expired sign-in. Commits.
     """
     device_id = refresh_device_id(token)
     device = await session.get(Device, device_id, with_for_update=True) if device_id else None
@@ -736,11 +741,20 @@ async def refresh(session: AsyncSession, token: str) -> SessionOut:
         device.refresh_token_hash, device.previous_refresh_token_hash, device.revoked_at is not None, token
     )
     account = await _account(session, user_id=device.user_id) if outcome == "ok" else None
-    if outcome in ("reused", "ok") and account is None:
+    # DECISION D-024 (amended 2026-11-02, B23): a sign-in lives at most SESSION_MAX_DAYS, however often it
+    #   refreshes; checked only for the current token, so a guessed one still changes nothing. A device never
+    #   stamped with `signed_in_at` (rows older than migration 0002) counts as expired: fail closed.
+    #   ADV: ASVS 3.3.2 L1; a lost phone is signed out within 30 days even if nobody revokes it.
+    #   COMPROMISE: farmers repeat the SMS code once a month, mid-season too.
+    max_age = timedelta(days=get_settings().session_max_days)
+    expired = outcome == "ok" and (device.signed_in_at is None or utcnow() - device.signed_in_at > max_age)
+    if outcome in ("reused", "ok") and (account is None or expired):
         _sign_out(device)
         await session.commit()
     if outcome == "reused":
         raise RefreshReusedError()
+    if expired:
+        raise SessionExpiredError()
     if account is None:
         raise UnauthorizedError()
     return await _open_session(session, *account, device, sign_in=False)
@@ -763,6 +777,57 @@ async def logout(session: AsyncSession, caller: CurrentUser) -> None:
     if device is not None:
         _sign_out(device)
         await session.commit()
+
+
+async def revoke_device(
+    session: AsyncSession, caller: CurrentUser, device_id: uuid.UUID, reason: str | None
+) -> None:
+    """Sign a lost or stolen device out: its user's own call, or an FPO admin's for a member (D-024, B23).
+
+    Args:
+        session: database session.
+        caller: the signed-in caller.
+        device_id: the device to sign out.
+        reason: why, for the audit trail; optional.
+
+    Raises:
+        NotFoundError: unknown device, or its user holds no membership in the caller's FPO.
+        ForbiddenError: another member's device and the caller is not an FPO admin.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+
+    Side effects:
+        Sets `revoked_at` and clears the refresh hashes (unless already revoked), so the device's next
+        request and refresh are 401; inserts an `audit_log` row `device.revoke`; commits.
+    """
+    device = await session.get(Device, device_id, with_for_update=True)
+    if device is None:
+        raise NotFoundError()
+    if device.user_id != caller.user_id:
+        member = select(Membership.id).where(
+            Membership.user_id == device.user_id, Membership.fpo_id == caller.fpo_id
+        )
+        if await session.scalar(member.limit(1)) is None:
+            raise NotFoundError()
+        if caller.role != Role.FPO_ADMIN:
+            raise ForbiddenError()
+    if device.revoked_at is None:
+        _sign_out(device)
+    # Device is not `Audited` (refresh rotation would flood the log), so this action writes its own row.
+    await session.execute(
+        insert(AUDIT_LOG).values(
+            id=uuid7(),
+            at=utcnow(),
+            actor_user_id=caller.user_id,
+            on_behalf_of_farmer_id=caller.on_behalf_of_farmer_id,
+            assist_session_id=caller.assist_session_id,
+            device_id=caller.device_id,
+            action="device.revoke",
+            entity_type="devices",
+            entity_id=device.id,
+            diff={"user_id": str(device.user_id), "reason": reason},
+        )
+    )
+    await session.commit()
 
 
 async def me(session: AsyncSession, caller: CurrentUser) -> MeOut:

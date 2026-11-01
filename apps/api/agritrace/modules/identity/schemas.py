@@ -95,6 +95,14 @@ class RefreshIn(BaseModel):
     )
 
 
+class DeviceRevokeIn(BaseModel):
+    """Sign a lost or stolen device out (B23); the body may be omitted."""
+
+    reason: str | None = Field(
+        None, max_length=500, description="Why the device is signed out (e.g. `phone lost`); audited."
+    )
+
+
 class UserOut(BaseModel):
     """The signed-in user's own profile."""
 

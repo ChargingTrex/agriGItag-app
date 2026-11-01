@@ -50,6 +50,7 @@ from agritrace.core.errors import (
     UndoWindowClosedError,
     ValidationFailedError,
     append_only_error,
+    data_error,
 )
 from agritrace.core.ids import uuid7
 from agritrace.core.schemas import ErrorBody, GeoPoint, ThreeClocks, has_nul
@@ -900,24 +901,6 @@ HANDLERS: dict[str, Handler] = {
 NO_ASSIST_KINDS = frozenset({"farmer", "flag_resolution", "assist_session", "lot_intake"})
 
 
-def _data_error(exc: DBAPIError) -> ValidationFailedError | None:
-    """Recognise a value Postgres or the driver refuses for this entry alone.
-
-    Args:
-        exc: the database error of one entry.
-
-    Returns:
-        `validation_error` for SQLSTATE class 22 (data exception: bad character, number out of range,
-        including asyncpg's own bind-time encode errors such as an int above int32, reported as 22000); None
-        for anything else (connection loss, deadlock, a bug), which must stay a 500 so the phone retries.
-    """
-    sqlstate = getattr(exc.orig, "sqlstate", None) or ""
-    if not sqlstate.startswith("22"):
-        return None
-    msg = "a value is out of range or holds a character the database cannot store"
-    return ValidationFailedError(details=[{"loc": ["data"], "msg": msg, "type": "db_data_error"}])
-
-
 def _rejected(client_id: uuid.UUID, error: AppError) -> SyncResult:
     """Build a rejected entry result.
 
@@ -1029,7 +1012,7 @@ async def push(session: AsyncSession, user: CurrentUser, body: SyncPushIn) -> Sy
             results.append(_rejected(entry.client_id, e))
         except DBAPIError as e:
             await session.rollback()
-            if (mapped := append_only_error(e) or _data_error(e)) is None:
+            if (mapped := append_only_error(e) or data_error(e)) is None:
                 raise
             results.append(_rejected(entry.client_id, mapped))
         finally:
