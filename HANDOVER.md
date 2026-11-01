@@ -1,62 +1,61 @@
-# Handover — AgriTrace build, end of day 2026-10-31 (18:50 IST; user stopped the day with three workers mid-flight)
+# Handover — AgriTrace build, state at 2026-11-02 00:40 IST (day 4: first live-stack day)
 
-Written for: whoever resumes the multi-agent build (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §5 and the "Architect-Gate queue" / decision-ledger lines.
+Written for: whoever resumes the multi-agent build (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §6–§7 (audit follow-ups, gate blockers) and the decision-number ledger line.
 
 ## 1. Where things stand
 
 | Area | State |
 |---|---|
-| Plan | `PLAN.md` (approved 2026-10-29); binding specs in `docs/agents/specs/`; rulings in `docs/agents/gates/rulings-2026-10-31.md` and `rulings-2026-10-31b.md` |
-| Progress | `CHECKLIST.md`: **36 % (23/64)** ticked; **25 more packages are merged on main but wait only for the Docker stack** (their reviewer verdicts are PASS-PENDING-STACK); 3 packages in flight; Q01–Q05 not started |
-| Decisions | `DECISIONS.md` D-001 … D-053 (D-049 unused; D-018 amended twice: MPL-2.0 build/transitive, GPL-2.0 with Classpath Exception for `desugar_jdk_libs`) |
-| Follow-ups | `TODO.md` (~300 lines, grouped; the decision-number ledger line pre-assigns numbers to in-flight branches) |
-| Agent protocol | `docs/agents/{roles,checkpoint-protocol,qa-rubric}.md`; every review in `docs/agents/reviews/<WP>-r<n>.md`, every worker report in `docs/agents/reports/<WP>.md` |
-| Gates | G0–G4 all unsigned: every gate needs the stack run first (see §2) |
-| Remote | **none yet.** No `origin` is configured and no GitHub repo exists; the Orchestrator's attempt to create a private `ChargingTrex/agriGitag` and push was denied by the permission classifier. Human step: `gh repo create ChargingTrex/agriGitag --private --source . --remote origin --push`, then `git push origin worktree-agent-a0f7bf849398faf5a worktree-agent-af029d14158299b86 worktree-agent-a94b72ad04155d510` |
-| Main | `git log` ~286 commits; backend 617 unit tests / 768 collected; mobile 793 tests; portal 120 Vitest; public page 76 pytest; 49 error codes; migrations 0001–0004 single head; OpenAPI, TS and Dart clients regenerated after the last backend merge |
+| Plan | `PLAN.md` (approved 2026-10-29); specs in `docs/agents/specs/`; rulings `docs/agents/gates/rulings-2026-10-31*.md` |
+| Progress | `CHECKLIST.md`: **72 % (51/71)**. Every backend package B00–B19 is **verified on the live stack** (`docs/agents/qa/B*.md`); every mobile package M00–M16 is merged, reviewed and green on main (device runs → Q01); portal P01–P08 and W03 are merged and reviewed, their live-API verification is **in flight** (see §2) |
+| Gates | **G0 SIGNED** 2026-11-01 (`docs/agents/gates/G0.md`). **G1 BLOCKED** only by the P00 Robot headless-browser test never having run (the WEB Verifier is running it). G2–G5 unsigned |
+| Audits | `docs/agents/audits/wave-0-2.md` (3 P1, 11 P2, 6 P3) and `waves-3-6.md` (2 P1, 5 P2, 9 P3). **All five P1s are fixed and merged** (M14, M16, P09); P2s fixed: M15, B18, B19; the rest are TODO §6/§7 lines |
+| Decisions | D-001…D-054 (D-049 unused; D-055–D-058 reserved, unused: B18/B19/P09/M16 needed no ADR) |
+| Main | 391 commits; backend 623 unit / 780 total (full suite green on the live stack); mobile 812 tests, analyzer clean; portal 135 Vitest, bundle 243 KB gz; public page 76 pytest; qa/tests 109; 49 error codes; migrations 0001–0004; OpenAPI, TS and Dart clients regenerated and byte-identical after the last backend merge (B18) |
+| Remote | **none.** No `origin`; creating `ChargingTrex/agriGitag` and pushing was denied by the permission classifier. Human step: `gh repo create ChargingTrex/agriGitag --private --source . --remote origin --push` |
+| Stack | Docker Desktop up (engine 29.3.1); compose stack running from main @ 72c52b5+ (api/worker rebuilt after B19), seeded (reference batch `FGP8T4033HM7` untouched; Verifiers added QA farmers +919000000091/92/151/152, staff PINs 2468 for +919000000001 and +919000000003, QA batches incl. published `GQ6QTKYZYVEP`). **DB on host port 5433** via git-ignored `infra/.env` (Homebrew Postgres owns 5432) |
 
-### Merged to `main` today (2026-10-31), in order
-B07, B08, B09, B10, B11, B15, B16 (backend); M02, M07, M08, M09, M10 (+ follow-up), M11, M12 (mobile); P02, P03, P04, P06, P08 (portal); W03 (public page); B12 (seed, e2e, `make clients`). Plus the three Architect-Gate rulings batches (D-030–D-032, D-040–D-043) and D-033–D-053 from workers.
+### Merged today (2026-11-01), in order
+P05, P07, M13 (yesterday's in-flight branches) → B17 (first live-stack fixes) → M15 → B18 → P09 → M14+M16 → B19. Reviews for every one in `docs/agents/reviews/`; reports in `docs/agents/reports/`.
 
-### In flight at hand-over (worktrees under `.claude/worktrees/`; each worker was told at 18:45 to commit a WIP and stop)
+### Verified live today
+B00 (CONDITIONAL → PASS after B17), Q00 deferred lines closed, B01–B05, B06, B13, B14, B07, B08 (B08-r2 filed), B09, B15, B16 (CONDITIONAL → PASS after B19), B10, B11, B12 (e2e with the ruling flag set; both clients compile). The three G5-condition pushes (`lot_intake`, `farmer`+`assist_session`+`consent`+`plot`, timeout-then-sync) succeeded live. BM-05, BM-06, BM-08, BM-09, BM-15 met.
 
-| WP | Branch / state at 18:48 | Tomorrow |
+## 2. In flight at hand-over
+
+| Agent | What | Resume |
 |---|---|---|
-| P05 labels PDF + CSV exports | `worktree-agent-a0f7bf849398faf5a` @ `33c3de0` (WIP `8dffe31`: main merged, `readColumns` reused, P2-1 and P3-2..P3-7 done; lint, typecheck and the 11 exports tests pass; NOT yet run: full suite, build+size, gen:check — the round-2 report section waits for them). Review `docs/agents/reviews/P05-r1.md`: PASS, 1 P2 (derived `packed_share` column must be labelled derived + recorded `harvested`/`farm_packed` columns; D-051 wording) + P3s (disable lots CSV until names load, BOM on the audit CSV, spaced phone pattern in the privacy test, Tamil whole-file test, FR9 header, long comments) | `git log`/`git status` in the worktree; if the WIP commit exists, resume the worker with "finish the P05 micro-patch" (agent id in `docs/agents/reports/P05.md` is not stored: spawn a fresh worker if the session is new); on completion Orchestrator confirms the P2 and merges (`AppRoutes.tsx` conflict with P06 by hand) |
-| P07 Playwright chain + axe | `worktree-agent-af029d14158299b86` @ `844119b` (WIP code `7b55cbe` + report with "State at 2026-10-31 close"; Vitest ran after hand-back: **1 failed / 119 passed**, failing test not identified — fix before review): mock-mode chain `e2e/chain.spec.ts` passed twice in one process (18.6 s / 15.4 s alone; ~60 s each under load), axe 0 serious on 17 screens, four real contrast fixes in the portal theme/chips/greyed rows, `E2E_LIVE=1` mode written (not run), CI portal job installs Chromium and runs `npm run e2e` (timeout 25 min), `PORTAL_URL` renamed `E2E_BASE_URL`, D-052 recorded; Vitest after the theme changes has 1 failure (likely the theme colours or the `ReadyLotsPage` row colour); one P01 plot-map Playwright test flaked under load | resume/respawn the worker to find and fix the 1 failing Vitest test (`npm test -- --no-file-parallelism`) and the full Playwright suite once; then WEB review (check the contrast fixes and the raised Playwright timeouts) → merge; live chain = Verifier (`make up && make seed && cd apps/portal && E2E_LIVE=1 npm run e2e`) |
-| M13 hardening & release | `worktree-agent-a94b72ad04155d510` @ `f2ae24b` (WIP code commit `49416be` + report; NOT ready for review: full suite stopped at 366 passed / 14 failed — photo-capture widget tests, likely the new free-space check in `camera_step` `_shoot`; no APK/AAB size measured yet; see `docs/agents/reports/M13.md` "State at 2026-10-31 close"). Brief: APK/AAB size + shrinking, deferred imports for officer/QC, low-storage purge, WorkManager registration test, min-version sheet, D-029 user-switch clearing of pulled rows, rejected-packing `ready_for_sale` fix, Drift v3 dropping Session token columns, unawaited-future error handlers | same: check for the WIP commit and `docs/agents/reports/M13.md`; resume/respawn to finish; MOB review → merge; then the mobile tree is complete and Q01 can start once an AVD and the stack exist |
+| WEB Verifier (one Opus agent) | P00 Robot `Portal Loads In A Headless Browser` (G1 blocker) → `docs/agents/qa/P00.md` section; P07 live chain `E2E_LIVE=1` twice without reseed; P01–P06, P08 live-API acceptance lines with screenshots; W03 Lighthouse 3G on a published page; writes `docs/agents/qa/P0x.md`, `W03.md` | If the session is new: check `git log -- docs/agents/qa/P0*` and `docs/agents/qa/W03.md`; respawn for whatever is missing (brief: same as `docs/agents/qa-rubric.md`, portal in live mode via `VITE_API_BASE_URL`, do not touch the reference batch) |
 
-If a worktree shows uncommitted files and no WIP commit tomorrow, the agent died before committing: inspect `git diff` there, keep what is coherent as a WIP commit yourself, then respawn with the acceptance file and that diff as the starting point.
+No worktrees are open (`git worktree list` = main only). If the WEB Verifier's report exists: tick the P rows, resume the Architect-Gate for G1 (its brief: `docs/agents/gates/G1.md` conditions; P00 Robot PASS clears the block), then open G2 (`docs/agents/gates/G2.md`: B02–B08, B13, B14 verified ✓; M01–M07 ✓; P01–P04 live ✓ pending; audits: all P1 closed on main; Robot API suites must be un-`not-ready`-tagged and run — TODO line "Robot API suites still tagged not-ready").
 
-## 2. Blockers only a human can clear (do these first)
+## 3. Next steps (in order)
 
-1. **Docker Desktop reset** (Troubleshoot → Clean / Purge data, then start). Everything below has never executed on a stack: ~190 backend integration tests, the 2 e2e tests, `make seed`, the Robot suites, Lighthouse on a quiet host, the portal live chain. After the reset, run Verifiers in this order (each one Opus agent, rubric in `docs/agents/qa-rubric.md`): B00 → B01 → B05 → B03 → B02 → B06 → B13 → B14 → B04 → B07 → B08 → B09 → B15 → B16 → B10 → B11 → B12 (`make seed` + e2e) → then sign G0, G1, G2. Expect a batch of asyncpg/PostGIS typing fixes on the first live `make test`.
-2. **Kill stale processes**: `pkill -f graphifyy` (misspelled MCP package in `~/.claude` config; fix the spelling) and `uv cache clean`; the CodeGraph watchers (`~/.codegraph/.../node`, one per worktree) die when worktrees are pruned. Load averages reached 950 on 12 cores during the afternoon; the Flutter test runs are the cost.
-3. **Disk**: 11 GB free. Flutter release builds (M13 size check) need several GB.
-4. **Product confirmations still open**: GI 883 taluk list from GI Journal 200; 3-dp public map rounding; the 15 % `grading_loss_warn_pct` default (D-030); farm area and grade readings are now `public` in the field YAML (D-034 ruling) — confirm with the FPO.
-5. **Firebase/APNs** (M12): project, config files, APNs key and entitlement are human steps; the API has no device-token endpoint yet (`push_notifications` flag off).
+1. Portal/public-page Verifier report → tick P01–P08, W03 → G1 sign → G2 gate agent (also writes `docs/agents/audits/` nothing new; the two audits exist) → G3/G4 need the same plus M13 size.
+2. **M13 size measurement** on a quiet host: `cd apps/mobile && tool/size_check.sh` (bundletool shim per `docs/agents/reports/M13.md`; needs ~3 GB disk, 25+ min; host must not be running Lighthouse). Budgets: APK ≤ 100 MiB hard / 40 warn, AAB download ≤ 30 MiB.
+3. Wave 7 Verifiers: Q01 (needs an Android Go AVD: API 27, 2 GB, 2 cores, 720×1280 — none exists; `Medium_Phone_API_36.1` only), Q02 (portal: Vitest coverage ≥ 80 % in features + the P07 live chain), Q03 (public page backend-down serve from S3 + old version retrievable), Q04 (locust p95 BM-07, Schemathesis fuzz on `/sync/push`), Q05 (benchmark sweep → `docs/agents/qa/benchmarks.json`, G5 report).
+4. Open P2/P3 follow-ups from the audits and Verifiers are all in `TODO.md` §4, §6, §7 with owners.
 
-## 3. Resume procedure (Orchestrator)
+## 4. Blockers only a human can clear
 
-1. `git status` clean on `main`; `git worktree list` shows the three in-flight branches.
-2. For each in-flight WP: if its report exists, spawn/resume the reviewer; on PASS confirm the exact fixes yourself when the reviewer specified them, otherwise a round 2 with the same reviewer (resume by `SendMessage`); merge with `git merge --no-ff`.
-3. After any backend merge: `cd apps/api && uv run python -m agritrace.export_openapi && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py && uv run pytest tests/unit -q && uv run lint-imports`, then `cd ../portal && npm run gen:api`, then `cd ../mobile && JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" tool/gen_api.sh` (slow under load; run in the background). After any mobile merge: `flutter analyze --fatal-infos && flutter test -x golden -x perf`. After any portal merge: `npm ci` once if `axe-core` is missing, then `npm run typecheck && npm test -- --no-file-parallelism`.
-4. Conflicts: `CHANGELOG.md`/`TODO.md`/`docs/LIBRARIES.md` keep both sides (LIBRARIES: union the files column of a same-row conflict; `DECISIONS.md`: rows in number order); generated files (`openapi.json`, `error-codes.md`, clients) take main's then regenerate; **code files by hand** then lint/typecheck/tests before committing.
-5. Bookkeeping per merge: tick/annotate `CHECKLIST.md`, `python3 infra/scripts/checklist-progress.py`, CHANGELOG status suffix, TODO lines from the review, `codegraph sync .`, `git worktree remove -f -f` + `git branch -d`.
-6. Then wave 7: Q01–Q05 Verifiers (need the stack and the Go AVD), the `/ponytail-audit` per wave (`docs/agents/audits/wave-<n>.md`, none written yet — waves 3–6 are owed), gates G0–G5.
+1. **Git remote / push** (see §1).
+2. **Android Go AVD** for Q01 (system-image download, several GB; disk has ~8 GB free).
+3. **Product confirmations still open**: GI 883 taluk list from GI Journal 200; 3-dp public map rounding; 15 % `grading_loss_warn_pct` default (D-030); farm area and grade readings `public` in the field YAML (D-034); the Sell-QR compromise on shared phones (D-029 amendment in M13: the next user sees the previous farmer's ready lot until intake).
+4. **Firebase/APNs** (M12): project, config files, APNs key and entitlement; the API has no device-token endpoint (`push_notifications` off).
+5. **Docker Desktop**: healthy now; if it dies again see the memory note (orphan `com.apple.Virtualization` process; truncated containerd snapshots fixed with `ctr` from a helper container; GUI "Clean / Purge data" refused to the agent).
 
-## 4. Decisions and rulings today that future work must respect
+## 5. Resume procedure (Orchestrator)
 
-- D-030 grading-loss split; D-031 `farmer` push kind + `FarmerIn.client_id`; D-032 `assist_session` push kind + per-entry `assist_session_id`; D-040 `lot_intake` push kind (QC receives a lot; processor default; moisture gate at intake); D-041 GI-only holds (`plot_outside_gi_region`, `yield_over_ceiling`) do not block non-GI batches; D-042 assist context per kind; D-043 "Log" counts as navigation, next-task card is the 3 (+1) path.
-- D-033 intake corrections (pre-batch versions; post-batch void path owed by B10/B11); D-034 page-required fields are `public` and tenant YAML cannot narrow them; D-035 Sell QR `sig` is a checksum; D-044 assist mode is the `/assist/:farmerId` route scope; D-045 schematic map thumbnail; D-046 local reminders; D-047 in-house CSV reader; D-048 seed by direct inserts + real `create_batch`; D-050 `VITE_PUBLIC_BASE_URL`; D-051 per-lot packed kg derived from shares.
-- **G5 conditions added**: B15 + M02 r2 + M09 r2 merged before any field device runs onboarding/assist (done); B16 + M11 r2 merged before any device runs QC intake (done); the Verifier must still push `lot_intake`, `farmer` and `assist_session` to a live server.
-- Process: decision numbers are assigned by the Orchestrator in the TODO ledger (four workers picked D-044 the same afternoon); the Orchestrator's own `/ponytail-review` passes on merged M10, W03, M08, B11, B12, P06 produced a merged M10 follow-up and four TODO lines.
+1. `git status` clean on `main`; `docker info` ok; `curl localhost:8000/v1/healthz` → `{db,redis,s3: ok}` (else `make up`; DB port 5433 is already in `infra/.env`).
+2. Hotfix WPs come from Verifier P2 issues (`docs/agents/qa/issues/`) and audit findings: one Opus Worker per WP in a worktree, declared paths, then BE/MOB/WEB(+SEC) Reviewer with `ponytail:ponytail-review`; exact reviewer fixes are confirmed by the Orchestrator, new logic goes back to the same reviewer (SendMessage). Decision numbers come from the TODO ledger (next free: D-055).
+3. After any backend merge: `cd apps/api && uv run python -m agritrace.export_openapi && JWT_SECRET=x uv run python ../../infra/scripts/gen-error-codes.py && uv run pytest tests/unit -q -p no:cacheprovider && uv run lint-imports`, then `cd ../portal && npm run gen:api`, then `cd ../mobile && JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" tool/gen_api.sh`; **rebuild the stack** (`make up`) so live checks run main's code. After any mobile merge: `flutter analyze --fatal-infos && flutter test -x perf -j 1` (~40 min under load, 8 min quiet). After any portal merge: `npm run typecheck && npm test -- --no-file-parallelism`.
+4. Conflicts: CHANGELOG/TODO/LIBRARIES keep both sides (`python3` regex keep-both is fine for these three); DECISIONS rows in number order; generated files take main's then regenerate; **code by hand**.
+5. Bookkeeping per merge: CHECKLIST row + `python3 infra/scripts/checklist-progress.py`, CHANGELOG suffix, TODO lines, `codegraph sync .`, `git worktree remove -f -f` + `git branch -d`. Keep G0 = exactly {B00, Q00} in CHECKLIST (qa/tests asserts it); hotfix rows live under the section of the WP they fix or under G5.
 
-## 5. Known risks going into tomorrow
+## 6. Risks going forward
 
-- ~190 integration tests, the e2e, `make seed` and every Robot suite have never run. The first stack run will find typing and fixture issues; budget a day.
-- Shared-phone data: on user switch M02 clears the cursor and bundles but the previous user's pulled lots/plots/farmers/tasks/flags stay until M13 lands (in flight); reminders (M12) and Sell/Money read them.
-- `ready_for_sale` kept by the pull can outlive a rejected packing (fix in M13's brief).
-- Dashboard completeness ignores plot-level events logged before a lot existed (TODO from the B11 review); `make seed` re-run after a refused batch dies on the staff phone index (TODO from the B12 review).
-- `batch_quantity_unattributed`/`grading_loss_high` 15 % default, the `nm` and `desugar_jdk_libs` licences, and the `mobile_scanner` ML Kit size are all accepted with notes; M13 measures the APK.
-- Goldens are macOS-recorded; the Lighthouse 3G gate fails under heavy host load (W03 has ~300 ms margin).
+- Robot API suites (`qa/robot/api/*.robot` except healthz) have never run and several are tagged `not-ready`; G2 requires them green.
+- APK/AAB size unmeasured (M13); mobile device checks (cold start, WorkManager firing, storage prompt, clock jump, user switch mid-sync) all wait for Q01.
+- Publish answers 202 before the page build succeeds (TODO P3); a privacy-lint false positive now fails a page build (B18, by design).
+- Celery `visibility_timeout` default (TODO); `check_event`/`verify_photo` tasks never retry on failure (B19 report).
+- Host load from unrelated apps (WhatsApp at 300 % CPU) made every suite 3–5× slower; Lighthouse 3G has ~300 ms margin.
