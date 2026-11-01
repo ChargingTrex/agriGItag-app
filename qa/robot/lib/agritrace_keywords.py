@@ -9,10 +9,11 @@ S3, the api image) through `docker compose`. The request sequences are the Verif
 (docs/agents/qa/B0x.md evidence, B06/logs/live_common.py, B09/logs/qa_live.py), not a second copy of the
 pytest integration suites.
 Serves: plan §9.1 (Robot suites drive Flutter integration tests and adb; API suites per acceptance line),
-§13 (BM-11..BM-16), §7.5 Q01 (offline/online matrix), §7.5 Q06 (Robot API suites), §7.4 W01/W02
+§13 (BM-11..BM-16), §7.5 Q01 (offline/online matrix), §7.5 Q06 (Robot API suites), §7.5 Q07 (portal suite:
+the same fixtures plus packed lots and QC grading, so the browser tests only drive the UI), §7.4 W01/W02
 (public page FR-58, FR-61, FR-63).
 Callers: qa/robot/resources/common.resource (imported as a library), qa/robot/api/*.robot,
-qa/robot/mobile/*.robot, qa/robot/public/page.robot.
+qa/robot/mobile/*.robot, qa/robot/public/page.robot, qa/robot/portal/portal.robot.
 Each public function is a keyword: `load_network_profiles` is `Load Network Profiles` in Robot.
 """
 
@@ -393,12 +394,13 @@ def new_phone() -> str:
     return f"+9197{random.randrange(10**8):08d}"
 
 
-def new_farmer(name: str = "QA Robot Farmer", phone: str | None = None) -> dict:
+def new_farmer(name: str = "QA Robot Farmer", phone: str | None = None, approve: bool | str = True) -> dict:
     """Onboard, approve and record data consent for a farmer in the demo FPO (as the FPO admin).
 
     Args:
         name: display name (also the canary the public-page checks search for).
         phone: phone to use; a random one by default.
+        approve: False leaves the farmer `pending` with no consent (the portal's approval line, P01).
 
     Returns:
         ``{"id", "user_id", "phone", "name"}``.
@@ -407,11 +409,13 @@ def new_farmer(name: str = "QA Robot Farmer", phone: str | None = None) -> dict:
         AssertionError: any call failed.
 
     Side effects:
-        Creates a farmer, its user and a `data_collection` consent.
+        Creates a farmer and its user; when approved, also a `data_collection` consent.
     """
     phone = phone or new_phone()
     f = call_api("POST", "/farmers", ADMIN, 201, json={"name": name, "phone": phone, "lang": "en",
                                                        "client_id": str(uuid.uuid4()), "address": ADDRESS}).json()
+    if str(approve).lower() == "false":
+        return {"id": f["id"], "user_id": f["user_id"], "phone": phone, "name": name}
     call_api("POST", f"/farmers/{f['id']}/approve", ADMIN, 200)
     new_consent(f["id"], "data_collection", start_assist(f["id"]))
     return {"id": f["id"], "user_id": f["user_id"], "phone": phone, "name": name}
@@ -675,6 +679,62 @@ def receive(lot_id: str, kg: str, sale_date: str | None = None) -> dict:
     return call_api("POST", "/intakes", ADMIN, 201, json={
         "client_id": str(uuid.uuid4()), "lot_id": lot_id, "processor_id": qa_world()["processor"],
         "sale_date": sale_date or days_ago(0), "received": {"value": str(kg), "unit": "kg"}}).json()
+
+
+def packed_lot(kg: int | str, plot: dict | None = None, harvest_kg: int | str | None = None) -> dict:
+    """Open a lot, push its packing (and optional harvest) event as the field officer, then receive it (P03/P04).
+
+    The portal's Ready lots screen previews shares from the packed weight, so every portal lot carries a
+    packing event of the same kilograms it is received with.
+
+    Args:
+        kg: packed and received kilograms.
+        plot: PlotOut body; default the QA main plot.
+        harvest_kg: harvested kilograms, pushed 20 days back; 2000 on a 1-acre plot raises the
+            `yield_over_ceiling` hold (P02).
+
+    Returns:
+        The LotOut body (``id``, ``code``, ``packed``, ``gi_eligible``...), read after the intake.
+
+    Raises:
+        AssertionError: an event was not accepted or a call failed.
+
+    Side effects:
+        Creates a lot, its events, a moisture reading and an intake; the worker runs the rules on them.
+    """
+    plot = plot or qa_world()["plot"]
+    lot = new_lot(plot)
+    entries = [event(lot, plot, "packing", days_ago(5), {"quantity": {"value": int(kg), "unit": "kg"}, "bags": 2})]
+    if harvest_kg:
+        entries.insert(0, event(lot, plot, "harvest", days_ago(20),
+                                {"quantity": {"value": int(harvest_kg), "unit": "kg"}, "bags": 10}))
+    results = push(OFFICER, *entries)
+    if any(r["status"] != "accepted" for r in results):
+        raise AssertionError(f"events of lot {lot} not accepted: {results}")
+    received_lot(str(kg), plot, lot_id=lot)
+    return call_api("GET", f"/lots/{lot}", ADMIN, 200).json()
+
+
+def grade_batch(batch_id: str, declared_grade: str, moisture_pct: str | None = None) -> dict:
+    """Grade a batch as the seeded QC officer (POST /v1/batches/{id}/grading, 201).
+
+    Args:
+        batch_id: the batch.
+        declared_grade: e.g. ``Special`` or ``Standard``.
+        moisture_pct: one inline grading moisture reading in percent; None sends none (P04 "missing reading").
+
+    Returns:
+        The grading body (``computed_grade``...).
+
+    Raises:
+        AssertionError: the grading was not recorded.
+
+    Side effects:
+        Records the grading (and its reading); the batch's grading gate is recomputed.
+    """
+    readings = [moisture(moisture_pct, "grading", batch_id=batch_id)] if moisture_pct else []
+    return call_api("POST", f"/batches/{batch_id}/grading", QC, 201,
+                    json={"declared_grade": declared_grade, "readings": readings}).json()
 
 
 def packing(kg: int | str) -> dict:
