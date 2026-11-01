@@ -40,6 +40,7 @@ import 'package:agritrace_api/src/model/crop_out.dart';
 import 'package:agritrace_api/src/model/dashboard.dart';
 import 'package:agritrace_api/src/model/data.dart';
 import 'package:agritrace_api/src/model/device_out.dart';
+import 'package:agritrace_api/src/model/device_revoke_in.dart';
 import 'package:agritrace_api/src/model/drying_payload.dart';
 import 'package:agritrace_api/src/model/drying_version.dart';
 import 'package:agritrace_api/src/model/error_body.dart';
@@ -258,6 +259,7 @@ part 'serializers.g.dart';
   Dashboard,
   Data,
   DeviceOut,
+  DeviceRevokeIn,
   DryingPayload,
   DryingVersion,
   ErrorBody,
@@ -716,6 +718,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(String)]),
         () => ListBuilder<String>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(DeviceOut)]),
+        () => ListBuilder<DeviceOut>(),
       )
       ..add(const OneOfSerializer())
       ..add(const AnyOfSerializer())

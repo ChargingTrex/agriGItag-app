@@ -96,6 +96,8 @@ Class | Method | HTTP request | Description
 [*IdentityApi*](doc/IdentityApi.md) | [**consentCreateV1ConsentsPost**](doc/IdentityApi.md#consentcreatev1consentspost) | **POST** /v1/consents | Consent Create
 [*IdentityApi*](doc/IdentityApi.md) | [**consentListV1FarmersFarmerIdConsentsGet**](doc/IdentityApi.md#consentlistv1farmersfarmeridconsentsget) | **GET** /v1/farmers/{farmer_id}/consents | Consent List
 [*IdentityApi*](doc/IdentityApi.md) | [**consentRevokeV1ConsentsConsentIdRevokePost**](doc/IdentityApi.md#consentrevokev1consentsconsentidrevokepost) | **POST** /v1/consents/{consent_id}/revoke | Consent Revoke
+[*IdentityApi*](doc/IdentityApi.md) | [**deviceListV1UsersUserIdDevicesGet**](doc/IdentityApi.md#devicelistv1usersuseriddevicesget) | **GET** /v1/users/{user_id}/devices | Device List
+[*IdentityApi*](doc/IdentityApi.md) | [**deviceRevokeV1DevicesDeviceIdRevokePost**](doc/IdentityApi.md#devicerevokev1devicesdeviceidrevokepost) | **POST** /v1/devices/{device_id}/revoke | Device Revoke
 [*IdentityApi*](doc/IdentityApi.md) | [**logoutV1AuthLogoutPost**](doc/IdentityApi.md#logoutv1authlogoutpost) | **POST** /v1/auth/logout | Logout
 [*IdentityApi*](doc/IdentityApi.md) | [**meV1MeGet**](doc/IdentityApi.md#mev1meget) | **GET** /v1/me | Me
 [*IdentityApi*](doc/IdentityApi.md) | [**otpRequestV1AuthOtpRequestPost**](doc/IdentityApi.md#otprequestv1authotprequestpost) | **POST** /v1/auth/otp/request | Otp Request
@@ -200,6 +202,7 @@ Class | Method | HTTP request | Description
  - [Dashboard](doc/Dashboard.md)
  - [Data](doc/Data.md)
  - [DeviceOut](doc/DeviceOut.md)
+ - [DeviceRevokeIn](doc/DeviceRevokeIn.md)
  - [DryingPayload](doc/DryingPayload.md)
  - [DryingVersion](doc/DryingVersion.md)
  - [ErrorBody](doc/ErrorBody.md)

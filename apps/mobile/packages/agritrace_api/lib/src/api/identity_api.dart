@@ -14,6 +14,8 @@ import 'package:agritrace_api/src/model/assist_session_out.dart';
 import 'package:agritrace_api/src/model/assist_start_in.dart';
 import 'package:agritrace_api/src/model/consent_in.dart';
 import 'package:agritrace_api/src/model/consent_out.dart';
+import 'package:agritrace_api/src/model/device_out.dart';
+import 'package:agritrace_api/src/model/device_revoke_in.dart';
 import 'package:agritrace_api/src/model/error_envelope.dart';
 import 'package:agritrace_api/src/model/me_out.dart';
 import 'package:agritrace_api/src/model/otp_request_in.dart';
@@ -24,6 +26,7 @@ import 'package:agritrace_api/src/model/pin_in.dart';
 import 'package:agritrace_api/src/model/refresh_in.dart';
 import 'package:agritrace_api/src/model/response_otp_verify_v1_auth_otp_verify_post.dart';
 import 'package:agritrace_api/src/model/session_out.dart';
+import 'package:built_collection/built_collection.dart';
 
 class IdentityApi {
   final Dio _dio;
@@ -535,6 +538,182 @@ class IdentityApi {
     );
   }
 
+  /// Device List
+  /// List a user&#39;s devices (signed out ones included), newest first, to pick the one to revoke.  Args:     user_id: the user.     user: the caller (the user themself, or an FPO admin of the user&#39;s FPO).     session: database session.  Returns:     The user&#39;s devices.  Raises:     UnauthorizedError: not signed in.     ForbiddenError: another member and the caller is not an FPO admin.     NotFoundError: the user is outside the caller&#39;s FPO.
+  ///
+  /// Parameters:
+  /// * [userId]
+  /// * [xAssistSession] - Open assist session id (field officer entering data for a farmer).
+  /// * [xRequestId] - Client request id, copied to audit rows.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [BuiltList<DeviceOut>] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<BuiltList<DeviceOut>>> deviceListV1UsersUserIdDevicesGet({
+    required String userId,
+    String? xAssistSession,
+    String? xRequestId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/users/{user_id}/devices'.replaceAll(
+        '{' r'user_id' '}',
+        encodeQueryParameter(_serializers, userId, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        r'x-assist-session': xAssistSession,
+        r'x-request-id': xRequestId,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'AccessToken',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    BuiltList<DeviceOut>? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(BuiltList, [FullType(DeviceOut)]),
+            ) as BuiltList<DeviceOut>;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<BuiltList<DeviceOut>>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Device Revoke
+  /// Sign a lost or stolen device out: the user&#39;s own device, or (FPO admin) any member&#39;s device.  Afterwards its access tokens and its refresh token answer 401. Revoking a signed-out device again is a no-op that is still audited.  Args:     device_id: the device.     user: the caller (the device&#39;s user, or an FPO admin of the device user&#39;s FPO).     session: database session.     body: optional reason, kept in the audit trail.  Raises:     UnauthorizedError: not signed in.     ForbiddenError: another member&#39;s device and the caller is not an FPO admin.     NotFoundError: unknown device, or outside the caller&#39;s FPO.  Side effects:     Revokes the device; writes the &#x60;device.revoke&#x60; audit row.
+  ///
+  /// Parameters:
+  /// * [deviceId]
+  /// * [xAssistSession] - Open assist session id (field officer entering data for a farmer).
+  /// * [xRequestId] - Client request id, copied to audit rows.
+  /// * [deviceRevokeIn]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future]
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<void>> deviceRevokeV1DevicesDeviceIdRevokePost({
+    required String deviceId,
+    String? xAssistSession,
+    String? xRequestId,
+    DeviceRevokeIn? deviceRevokeIn,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/devices/{device_id}/revoke'.replaceAll(
+        '{' r'device_id' '}',
+        encodeQueryParameter(_serializers, deviceId, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'x-assist-session': xAssistSession,
+        r'x-request-id': xRequestId,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'AccessToken',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(DeviceRevokeIn);
+      _bodyData = deviceRevokeIn == null
+          ? null
+          : _serializers.serialize(deviceRevokeIn, specifiedType: _type);
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return _response;
+  }
+
   /// Logout
   /// Sign this device out: its refresh token and access tokens stop working.  Args:     user: the signed-in caller.     response: the outgoing response (the web refresh cookie is cleared).     session: database session.  Raises:     UnauthorizedError: not signed in.  Side effects:     Revokes the device; deletes the refresh cookie.
   ///
@@ -1021,7 +1200,7 @@ class IdentityApi {
   }
 
   /// Refresh
-  /// Rotate the refresh token and get a new 15-minute access token.  Mobile sends &#x60;refresh_token&#x60; in the body; the portal (&#x60;X-Client: web&#x60;) relies on the httpOnly cookie. A token read from the cookie is always answered through the cookie. Presenting the token rotated out last signs the device out (&#x60;refresh_reused&#x60;).  Args:     body: the refresh token (mobile) or nothing (web).     request: the incoming request (cookie and &#x60;X-Client&#x60;).     response: the outgoing response (new cookie for web).     session: database session.  Returns:     A new session; the old refresh token is now invalid.  Raises:     UnauthorizedError: no or unknown token, signed-out device.     RefreshReusedError: reuse of a rotated token.
+  /// Rotate the refresh token and get a new 15-minute access token.  Mobile sends &#x60;refresh_token&#x60; in the body; the portal (&#x60;X-Client: web&#x60;) relies on the httpOnly cookie. A token read from the cookie is always answered through the cookie. Presenting the token rotated out last signs the device out (&#x60;refresh_reused&#x60;).  Args:     body: the refresh token (mobile) or nothing (web).     request: the incoming request (cookie and &#x60;X-Client&#x60;).     response: the outgoing response (new cookie for web).     session: database session.  Returns:     A new session; the old refresh token is now invalid.  Raises:     UnauthorizedError: no or unknown token, signed-out device.     RefreshReusedError: reuse of a rotated token.     SessionExpiredError: the device&#39;s sign-in is older than &#x60;SESSION_MAX_DAYS&#x60; (device signed out).
   ///
   /// Parameters:
   /// * [refreshIn]

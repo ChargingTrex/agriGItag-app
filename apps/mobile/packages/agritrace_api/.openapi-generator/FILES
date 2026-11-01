@@ -28,6 +28,7 @@ doc/CropOut.md
 doc/Dashboard.md
 doc/Data.md
 doc/DeviceOut.md
+doc/DeviceRevokeIn.md
 doc/DryingPayload.md
 doc/DryingVersion.md
 doc/ErrorBody.md
@@ -277,6 +278,7 @@ lib/src/model/dashboard.dart
 lib/src/model/data.dart
 lib/src/model/date.dart
 lib/src/model/device_out.dart
+lib/src/model/device_revoke_in.dart
 lib/src/model/drying_payload.dart
 lib/src/model/drying_version.dart
 lib/src/model/error_body.dart

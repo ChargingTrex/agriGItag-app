@@ -14,6 +14,8 @@ Method | HTTP request | Description
 [**consentCreateV1ConsentsPost**](IdentityApi.md#consentcreatev1consentspost) | **POST** /v1/consents | Consent Create
 [**consentListV1FarmersFarmerIdConsentsGet**](IdentityApi.md#consentlistv1farmersfarmeridconsentsget) | **GET** /v1/farmers/{farmer_id}/consents | Consent List
 [**consentRevokeV1ConsentsConsentIdRevokePost**](IdentityApi.md#consentrevokev1consentsconsentidrevokepost) | **POST** /v1/consents/{consent_id}/revoke | Consent Revoke
+[**deviceListV1UsersUserIdDevicesGet**](IdentityApi.md#devicelistv1usersuseriddevicesget) | **GET** /v1/users/{user_id}/devices | Device List
+[**deviceRevokeV1DevicesDeviceIdRevokePost**](IdentityApi.md#devicerevokev1devicesdeviceidrevokepost) | **POST** /v1/devices/{device_id}/revoke | Device Revoke
 [**logoutV1AuthLogoutPost**](IdentityApi.md#logoutv1authlogoutpost) | **POST** /v1/auth/logout | Logout
 [**meV1MeGet**](IdentityApi.md#mev1meget) | **GET** /v1/me | Me
 [**otpRequestV1AuthOtpRequestPost**](IdentityApi.md#otprequestv1authotprequestpost) | **POST** /v1/auth/otp/request | Otp Request
@@ -254,6 +256,101 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **deviceListV1UsersUserIdDevicesGet**
+> BuiltList<DeviceOut> deviceListV1UsersUserIdDevicesGet(userId, xAssistSession, xRequestId)
+
+Device List
+
+List a user's devices (signed out ones included), newest first, to pick the one to revoke.  Args:     user_id: the user.     user: the caller (the user themself, or an FPO admin of the user's FPO).     session: database session.  Returns:     The user's devices.  Raises:     UnauthorizedError: not signed in.     ForbiddenError: another member and the caller is not an FPO admin.     NotFoundError: the user is outside the caller's FPO.
+
+### Example
+```dart
+import 'package:agritrace_api/api.dart';
+
+final api = AgritraceApi().getIdentityApi();
+final String userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String xAssistSession = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Open assist session id (field officer entering data for a farmer).
+final String xRequestId = xRequestId_example; // String | Client request id, copied to audit rows.
+
+try {
+    final response = api.deviceListV1UsersUserIdDevicesGet(userId, xAssistSession, xRequestId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling IdentityApi->deviceListV1UsersUserIdDevicesGet: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **String**|  | 
+ **xAssistSession** | **String**| Open assist session id (field officer entering data for a farmer). | [optional] 
+ **xRequestId** | **String**| Client request id, copied to audit rows. | [optional] 
+
+### Return type
+
+[**BuiltList&lt;DeviceOut&gt;**](DeviceOut.md)
+
+### Authorization
+
+[AccessToken](../README.md#AccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **deviceRevokeV1DevicesDeviceIdRevokePost**
+> deviceRevokeV1DevicesDeviceIdRevokePost(deviceId, xAssistSession, xRequestId, deviceRevokeIn)
+
+Device Revoke
+
+Sign a lost or stolen device out: the user's own device, or (FPO admin) any member's device.  Afterwards its access tokens and its refresh token answer 401. Revoking a signed-out device again is a no-op that is still audited.  Args:     device_id: the device.     user: the caller (the device's user, or an FPO admin of the device user's FPO).     session: database session.     body: optional reason, kept in the audit trail.  Raises:     UnauthorizedError: not signed in.     ForbiddenError: another member's device and the caller is not an FPO admin.     NotFoundError: unknown device, or outside the caller's FPO.  Side effects:     Revokes the device; writes the `device.revoke` audit row.
+
+### Example
+```dart
+import 'package:agritrace_api/api.dart';
+
+final api = AgritraceApi().getIdentityApi();
+final String deviceId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final String xAssistSession = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Open assist session id (field officer entering data for a farmer).
+final String xRequestId = xRequestId_example; // String | Client request id, copied to audit rows.
+final DeviceRevokeIn deviceRevokeIn = ; // DeviceRevokeIn | 
+
+try {
+    api.deviceRevokeV1DevicesDeviceIdRevokePost(deviceId, xAssistSession, xRequestId, deviceRevokeIn);
+} on DioException catch (e) {
+    print('Exception when calling IdentityApi->deviceRevokeV1DevicesDeviceIdRevokePost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **deviceId** | **String**|  | 
+ **xAssistSession** | **String**| Open assist session id (field officer entering data for a farmer). | [optional] 
+ **xRequestId** | **String**| Client request id, copied to audit rows. | [optional] 
+ **deviceRevokeIn** | [**DeviceRevokeIn**](DeviceRevokeIn.md)|  | [optional] 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[AccessToken](../README.md#AccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -526,7 +623,7 @@ Name | Type | Description  | Notes
 
 Refresh
 
-Rotate the refresh token and get a new 15-minute access token.  Mobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie. A token read from the cookie is always answered through the cookie. Presenting the token rotated out last signs the device out (`refresh_reused`).  Args:     body: the refresh token (mobile) or nothing (web).     request: the incoming request (cookie and `X-Client`).     response: the outgoing response (new cookie for web).     session: database session.  Returns:     A new session; the old refresh token is now invalid.  Raises:     UnauthorizedError: no or unknown token, signed-out device.     RefreshReusedError: reuse of a rotated token.
+Rotate the refresh token and get a new 15-minute access token.  Mobile sends `refresh_token` in the body; the portal (`X-Client: web`) relies on the httpOnly cookie. A token read from the cookie is always answered through the cookie. Presenting the token rotated out last signs the device out (`refresh_reused`).  Args:     body: the refresh token (mobile) or nothing (web).     request: the incoming request (cookie and `X-Client`).     response: the outgoing response (new cookie for web).     session: database session.  Returns:     A new session; the old refresh token is now invalid.  Raises:     UnauthorizedError: no or unknown token, signed-out device.     RefreshReusedError: reuse of a rotated token.     SessionExpiredError: the device's sign-in is older than `SESSION_MAX_DAYS` (device signed out).
 
 ### Example
 ```dart

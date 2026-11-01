@@ -15,6 +15,10 @@ class _$DeviceOut extends DeviceOut {
   final DateTime? lastSeenAt;
   @override
   final String platform;
+  @override
+  final DateTime? revokedAt;
+  @override
+  final DateTime? signedInAt;
 
   factory _$DeviceOut([void Function(DeviceOutBuilder)? updates]) =>
       (DeviceOutBuilder()..update(updates))._build();
@@ -23,7 +27,9 @@ class _$DeviceOut extends DeviceOut {
       {this.appVersion,
       required this.id,
       this.lastSeenAt,
-      required this.platform})
+      required this.platform,
+      this.revokedAt,
+      this.signedInAt})
       : super._();
   @override
   DeviceOut rebuild(void Function(DeviceOutBuilder) updates) =>
@@ -39,7 +45,9 @@ class _$DeviceOut extends DeviceOut {
         appVersion == other.appVersion &&
         id == other.id &&
         lastSeenAt == other.lastSeenAt &&
-        platform == other.platform;
+        platform == other.platform &&
+        revokedAt == other.revokedAt &&
+        signedInAt == other.signedInAt;
   }
 
   @override
@@ -49,6 +57,8 @@ class _$DeviceOut extends DeviceOut {
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, lastSeenAt.hashCode);
     _$hash = $jc(_$hash, platform.hashCode);
+    _$hash = $jc(_$hash, revokedAt.hashCode);
+    _$hash = $jc(_$hash, signedInAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -59,7 +69,9 @@ class _$DeviceOut extends DeviceOut {
           ..add('appVersion', appVersion)
           ..add('id', id)
           ..add('lastSeenAt', lastSeenAt)
-          ..add('platform', platform))
+          ..add('platform', platform)
+          ..add('revokedAt', revokedAt)
+          ..add('signedInAt', signedInAt))
         .toString();
   }
 }
@@ -83,6 +95,14 @@ class DeviceOutBuilder implements Builder<DeviceOut, DeviceOutBuilder> {
   String? get platform => _$this._platform;
   set platform(String? platform) => _$this._platform = platform;
 
+  DateTime? _revokedAt;
+  DateTime? get revokedAt => _$this._revokedAt;
+  set revokedAt(DateTime? revokedAt) => _$this._revokedAt = revokedAt;
+
+  DateTime? _signedInAt;
+  DateTime? get signedInAt => _$this._signedInAt;
+  set signedInAt(DateTime? signedInAt) => _$this._signedInAt = signedInAt;
+
   DeviceOutBuilder() {
     DeviceOut._defaults(this);
   }
@@ -94,6 +114,8 @@ class DeviceOutBuilder implements Builder<DeviceOut, DeviceOutBuilder> {
       _id = $v.id;
       _lastSeenAt = $v.lastSeenAt;
       _platform = $v.platform;
+      _revokedAt = $v.revokedAt;
+      _signedInAt = $v.signedInAt;
       _$v = null;
     }
     return this;
@@ -120,6 +142,8 @@ class DeviceOutBuilder implements Builder<DeviceOut, DeviceOutBuilder> {
           lastSeenAt: lastSeenAt,
           platform: BuiltValueNullFieldError.checkNotNull(
               platform, r'DeviceOut', 'platform'),
+          revokedAt: revokedAt,
+          signedInAt: signedInAt,
         );
     replace(_$result);
     return _$result;

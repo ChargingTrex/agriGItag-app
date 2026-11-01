@@ -289,6 +289,7 @@ export interface paths {
          *     Raises:
          *         UnauthorizedError: no or unknown token, signed-out device.
          *         RefreshReusedError: reuse of a rotated token.
+         *         SessionExpiredError: the device's sign-in is older than `SESSION_MAX_DAYS` (device signed out).
          */
         post: operations["refresh_v1_auth_refresh_post"];
         delete?: never;
@@ -740,6 +741,43 @@ export interface paths {
         get: operations["list_dashboard_farmers_v1_dashboard_fpo__fpo_id__farmers_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/{device_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Device Revoke
+         * @description Sign a lost or stolen device out: the user's own device, or (FPO admin) any member's device.
+         *
+         *     Afterwards its access tokens and its refresh token answer 401. Revoking a signed-out device again is
+         *     a no-op that is still audited.
+         *
+         *     Args:
+         *         device_id: the device.
+         *         user: the caller (the device's user, or an FPO admin of the device user's FPO).
+         *         session: database session.
+         *         body: optional reason, kept in the audit trail.
+         *
+         *     Raises:
+         *         UnauthorizedError: not signed in.
+         *         ForbiddenError: another member's device and the caller is not an FPO admin.
+         *         NotFoundError: unknown device, or outside the caller's FPO.
+         *
+         *     Side effects:
+         *         Revokes the device; writes the `device.revoke` audit row.
+         */
+        post: operations["device_revoke_v1_devices__device_id__revoke_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1903,6 +1941,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/users/{user_id}/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Device List
+         * @description List a user's devices (signed out ones included), newest first, to pick the one to revoke.
+         *
+         *     Args:
+         *         user_id: the user.
+         *         user: the caller (the user themself, or an FPO admin of the user's FPO).
+         *         session: database session.
+         *
+         *     Returns:
+         *         The user's devices.
+         *
+         *     Raises:
+         *         UnauthorizedError: not signed in.
+         *         ForbiddenError: another member and the caller is not an FPO admin.
+         *         NotFoundError: the user is outside the caller's FPO.
+         */
+        get: operations["device_list_v1_users__user_id__devices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/villages": {
         parameters: {
             query?: never;
@@ -2689,6 +2760,27 @@ export interface components {
              * @description `android`, `ios` or `web`.
              */
             platform: string;
+            /**
+             * Revoked At
+             * @description When it was signed out; null while signed in.
+             */
+            revoked_at?: string | null;
+            /**
+             * Signed In At
+             * @description Last OTP/PIN sign-in; the session ends `SESSION_MAX_DAYS` after it.
+             */
+            signed_in_at?: string | null;
+        };
+        /**
+         * DeviceRevokeIn
+         * @description Sign a lost or stolen device out (B23); the body may be omitted.
+         */
+        DeviceRevokeIn: {
+            /**
+             * Reason
+             * @description Why the device is signed out (e.g. `phone lost`); audited.
+             */
+            reason?: string | null;
         };
         /**
          * DryingPayload
@@ -8450,7 +8542,7 @@ export interface operations {
                     "application/json": components["schemas"]["SessionOut"];
                 };
             };
-            /** @description `unauthorized` (signed out) or `refresh_reused` (device revoked). */
+            /** @description `unauthorized` (signed out), `refresh_reused` (device revoked) or `session_expired` (sign-in older than `SESSION_MAX_DAYS`, device revoked). */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -9673,6 +9765,58 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    device_revoke_v1_devices__device_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DeviceRevokeIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `forbidden`: another member's device and the caller is not an FPO admin. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `not_found`: unknown device, or its user is outside the caller's FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error */
             default: {
@@ -12565,6 +12709,56 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    device_list_v1_users__user_id__devices_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceOut"][];
+                };
+            };
+            /** @description `forbidden`: another member and the caller is not an FPO admin. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `not_found`: the user is outside the caller's FPO. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error */
             default: {

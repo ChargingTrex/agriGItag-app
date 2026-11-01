@@ -50,6 +50,7 @@ export 'package:agritrace_api/src/model/crop_out.dart';
 export 'package:agritrace_api/src/model/dashboard.dart';
 export 'package:agritrace_api/src/model/data.dart';
 export 'package:agritrace_api/src/model/device_out.dart';
+export 'package:agritrace_api/src/model/device_revoke_in.dart';
 export 'package:agritrace_api/src/model/drying_payload.dart';
 export 'package:agritrace_api/src/model/drying_version.dart';
 export 'package:agritrace_api/src/model/error_body.dart';
