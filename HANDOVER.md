@@ -1,4 +1,4 @@
-# Handover — AgriTrace build, state at 2026-11-02 03:55 IST (end of day 4: first live-stack day; wave 7 complete except device work)
+# Handover — AgriTrace build, state at 2026-11-02 03:55 IST (end of day 4: first live-stack day; wave 7 complete except device work; G5 signed CONDITIONAL)
 
 Written for: whoever resumes the multi-agent build (human or the Orchestrator session). Read this, then `CHECKLIST.md`, then `TODO.md` §4, §6–§8 (follow-ups with owners) and the decision-number ledger line.
 
@@ -8,7 +8,7 @@ Written for: whoever resumes the multi-agent build (human or the Orchestrator se
 |---|---|
 | Plan | `PLAN.md` (approved 2026-10-29); specs `docs/agents/specs/`; rulings `docs/agents/gates/rulings-2026-10-31*.md`; gate rulings inside `docs/agents/gates/G2.md`–`G4.md` |
 | Progress | `CHECKLIST.md`: **94 % (75/80)** before the G5 signature. Every work package is merged, reviewed and verified on the live stack except **Q01** (device checks on an Android Go emulator — not started, no AVD exists). Hotfix WPs added and closed today: B17–B23, M14–M16, P09–P11, D01, Q06, Q07 |
-| Gates | **G0, G1, G2, G4 SIGNED.** **G3 BLOCKED** on two human-gated items only: Q01 (offline matrix, 3-tap ≤ 60 s, cold start, WorkManager, storage prompt, BM-01/02/11–15) and the AAB download size (needs the bundletool CLI jar; arm64 APK 30.03 MiB already meets the D-002 budget — PLAN §3's literal "APK < 30 MB" is the superseded source-doc figure). **G5**: the Architect-Gate is writing `docs/agents/gates/G5.md`, expected **CONDITIONAL** on Q01 + the human list in §4 (Q05 report: `docs/agents/gates/G5-report.md`) |
+| Gates | **G0, G1, G2, G4 SIGNED.** **G3 BLOCKED** on two human-gated items only: Q01 (offline matrix, 3-tap ≤ 60 s, cold start, WorkManager, storage prompt, BM-01/02/11–15) and the AAB download size (needs the bundletool CLI jar; arm64 APK 30.03 MiB already meets the D-002 budget — PLAN §3's literal "APK < 30 MB" is the superseded source-doc figure). **G5 signed CONDITIONAL** (e79949f, `docs/agents/gates/G5.md`): backend, portal and public page are the pilot candidate; conditions A = Q01 on a Go AVD (incl. AAB ≤ 30 MiB), B = BM-07 first-run pass on main after B22/B23 (→ Q04 PASS), C = the human list in §4 |
 | Audits | `docs/agents/audits/wave-0-2.md`, `waves-3-6.md`, `wave-7.md`: all P1s fixed and merged (M14, M16, P09); wave-7 P2 (phones in committed Robot evidence) fixed in Q07 r2; remaining P2/P3 in TODO §6–§8 |
 | Security / docs | `docs/agents/reviews/SEC-asvs-l1.md` (ASVS L1 as one document: 2 FAILs → closed by B23 and D01; 16 PARTIALs → `docs/ops/deployment-checklist.md`); `docs/agents/reviews/DOCS-g5.md` (coverage 100 % in all three languages; README fixed by D01); `docs/ops/dpdp-data-subject-runbook.md` (export/erasure; needs B24 routes and an Architect-Gate ruling on redacting copies in append-only tables) |
 | Decisions | D-001…D-054 (D-049 unused; D-055–D-064 reserved and unused — the hotfixes needed no new ADRs; D-017, D-018, D-024, D-029, D-034 amended today). Next free number: **D-055** |
@@ -21,19 +21,14 @@ P05, P07, M13 → B17 → M15 → B18 → P09 → M14+M16 → B19 → B20 → P1
 
 ## 2. In flight at hand-over
 
-| Agent | What | Resume |
-|---|---|---|
-| Architect-Gate | writing `docs/agents/gates/G5.md` (expected CONDITIONAL) | if the file is missing: respawn an Architect-Gate with the brief "evaluate G5 per PLAN §3/§10 step 4 from `G5-report.md`, SEC/DOCS reviews, three audits; CONDITIONAL on Q01 + the human list"; then tick the G5 row in CHECKLIST with its status |
-
-No worktrees are open (`git worktree list` = main only); no stray compose projects or images; disk 8.9 GB free.
+Nothing. No agents running, no worktrees open (`git worktree list` = main only), no stray compose projects or images; disk 8.9 GB free; stack healthy on :8000.
 
 ## 3. Next steps (in order)
 
-1. Record G5's status in CHECKLIST (`python3 infra/scripts/checklist-progress.py`).
-2. **Human blockers (§4)** — Q01 cannot start without an Android Go AVD; the AAB figure needs the bundletool CLI jar; the repo needs a remote.
-3. **Q01** (one Opus Verifier once an AVD exists): Go profile API 27 / 2 GB / 2 cores / 720×1280 (`qa/README.md`, `docs/agents/qa-rubric.md`); run `qa/robot/mobile/*.robot` (offline matrix, BM-11..15 network profiles), BM-01 (3-tap ≤ 60 s), BM-02, cold start < 3 s, WorkManager 15-min firing, storage prompt + purge, clock jump (M16), user switch mid-sync (M16), release smoke on the APK; then G3 and the G5 condition close.
-4. Follow-up WPs queued in TODO (Architect-Gate queue / owners): **B24** export/erase endpoints + `otp_challenges` purge (runbook); **P12** portal device-management screen (list + revoke); B13 per-row DataError on CSV import; B14 shared `_audit` helper; D-005 ruling on redacting copies of PII in append-only tables; `check_event` flags-index note (B22); Celery `visibility_timeout`; `S. No.` linter gap; ID-document presign size.
-5. Pilot deployment: `docs/ops/deployment-checklist.md` (every SEC PARTIAL), a real SMS provider (`ENV=prod` refuses to start without one), Firebase/APNs, CloudFront invalidation.
+1. **Human blockers (§4)** — Q01 cannot start without an Android Go AVD; the AAB figure needs the bundletool CLI jar; the repo needs a remote.
+2. **Q01** (one Opus Verifier once an AVD exists): Go profile API 27 / 2 GB / 2 cores / 720×1280 (`qa/README.md`, `docs/agents/qa-rubric.md`); run `qa/robot/mobile/*.robot` (offline matrix, BM-11..15 network profiles), BM-01 (3-tap ≤ 60 s), BM-02, cold start < 3 s, WorkManager 15-min firing, storage prompt + purge, clock jump (M16), user switch mid-sync (M16), release smoke on the APK; then G3 and the G5 condition close.
+3. Follow-up WPs queued in TODO (Architect-Gate queue / owners): **B24** export/erase endpoints + `otp_challenges` purge (runbook); **P12** portal device-management screen (list + revoke); B13 per-row DataError on CSV import; B14 shared `_audit` helper; D-005 ruling on redacting copies of PII in append-only tables; `check_event` flags-index note (B22); Celery `visibility_timeout`; `S. No.` linter gap; ID-document presign size.
+4. Pilot deployment: `docs/ops/deployment-checklist.md` (every SEC PARTIAL), a real SMS provider (`ENV=prod` refuses to start without one), Firebase/APNs, CloudFront invalidation.
 
 ## 4. Blockers only a human can clear
 
