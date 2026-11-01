@@ -1,0 +1,49 @@
+# Rerun after a Verifier script bug (httpx multipart request printed before read) stopped run 05a at the dry-run import; that dry run wrote nothing.
+$ cd apps/api && QA_ON_URL=http://localhost:8001/v1 uv run python ../../docs/agents/qa/B13/logs/live_b13.py
+== 1. /v1/config/fields for the demo FPO: plot.soil_type
+$ GET http://localhost:8000/v1/config/fields
+-> HTTP 200  etag="7bda9be563294bc7"
+  {"event_drying": [{"name": "phase", "type": "choice", "required": false, "enabled": true, "visibility": "internal", "label": {"en": "Start or done", "ta": "\u0ba4\u0bca\u0b9f\u0b95\u0bcd\u0b95\u0bae\u0bcd \u0b85\u0bb2\u0bcd\u0bb2\u0ba4\u0bc1 \u0bae\u0bc1\u0b9f\u0bbf\u0bb5\u0bc1"}, "stage": "drying", ...
+  plot fields: ['client_id', 'farmer_id', 'code', 'gi_tag_id', 'pin', 'pin_method', 'device_time', 'gps_time', 'declared_area', 'land_record_ref', 'walked_boundary', 'farming_type', 'irrigation_source']
+RESULT line1 (demo FPO): soil_type entries in /config/fields plot: []
+  If-None-Match with that ETag -> HTTP 304
+
+== 2a. flag off (compose API, repo config): POST /farmers/{id}/id-documents -> 404
+$ GET http://localhost:8000/v1/config/features
+-> HTTP 200  etag="35775ef05cbe5ebd"
+  {"id_document_capture": false, "farmer_pin_login": false, "producer_groups": false, "boundary_walk": true, "second_signoff_threshold_kg": 1000, "wifi_only_photos_default": false, "sync_push_max_entries": 50, "sync_push_max_bytes": 262144, "otp_daily_cap": 10, "grading_loss_warn_pct": 15}
+$ POST http://localhost:8000/v1/farmers/56a622ff-6789-4ae0-9a65-775491f5d2cf/id-documents
+  body: {"doc_type":"aadhaar","content_type":"image/jpeg","sha256":"0000000000000000000000000000000000000000000000000000000000000000","size_bytes":1000}
+-> HTTP 404  etag=None
+  {"error": {"code": "feature_disabled", "message": "This feature is not switched on for your FPO.", "details": {"feature": "id_document_capture"}}}
+RESULT line2 off: HTTP 404 code=feature_disabled
+
+== 2b. flag on (second container http://localhost:8001/v1, same image, tenant file with id_document_capture: true)
+$ GET http://localhost:8001/v1/config/features
+-> HTTP 200  etag="21a6fad00378dac5"
+  {"id_document_capture": true, "farmer_pin_login": false, "producer_groups": false, "boundary_walk": true, "second_signoff_threshold_kg": 1000, "wifi_only_photos_default": false, "sync_push_max_entries": 50, "sync_push_max_bytes": 262144, "otp_daily_cap": 10, "grading_loss_warn_pct": 15}
+$ POST http://localhost:8001/v1/farmers/56a622ff-6789-4ae0-9a65-775491f5d2cf/id-documents
+  body: {"doc_type":"aadhaar","content_type":"image/jpeg","sha256":"0000000000000000000000000000000000000000000000000000000000000000","size_bytes":1000}
+-> HTTP 422  etag=None
+  {"error": {"code": "validation_error", "message": "The request has invalid or implausible values.", "details": [{"loc": ["body", "consent_record_id"], "msg": "Field required", "type": "missing"}]}}
+RESULT line2 on: HTTP 422 code=validation_error (not 404: route exposed)
+
+== 3. CSV with 2 bad rows -> 200, accepted n-2, rejected [{row, code}], no partial writes
+  sql> select count(*) from inputs_master where name_en like 'QA Verifier%'
+  =>  '0'
+$ POST http://localhost:8000/v1/imports/inputs?dry_run=true (multipart file inputs.csv, 5 data rows)
+-> HTTP 200
+  {"dry_run":true,"accepted":3,"rejected":[{"row":3,"code":"field_required","field":"unit"},{"row":5,"code":"import_row_invalid","field":"category"}]}
+RESULT line3 dry_run=true: HTTP 200 accepted=3 rejected=[(3, 'field_required'), (5, 'import_row_invalid')]
+  sql> select count(*) from inputs_master where name_en like 'QA Verifier%'
+  =>  '0'
+$ POST http://localhost:8000/v1/imports/inputs?dry_run=false (multipart file inputs.csv, 5 data rows)
+-> HTTP 200
+  {"dry_run":false,"accepted":3,"rejected":[{"row":3,"code":"field_required","field":"unit"},{"row":5,"code":"import_row_invalid","field":"category"}]}
+RESULT line3 dry_run=false: HTTP 200 accepted=3 rejected=[(3, 'field_required'), (5, 'import_row_invalid')]
+  sql> select count(*) from inputs_master where name_en like 'QA Verifier%'
+  =>  '3'
+  sql> select name_en from inputs_master where name_en like 'QA Verifier%' order by 1
+  =>  'QA Verifier Trichoderma\nQA Verifier Urea\nQA Verifier Vermicompost'
+  rows before=0
+exit=0

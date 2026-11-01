@@ -1,0 +1,55 @@
+$ uv run pytest tests/unit/test_fieldconfig_loader.py tests/unit/test_fieldconfig_routes.py tests/unit/test_imports_csv.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 43 items
+
+tests/unit/test_fieldconfig_loader.py::test_shipped_config_is_valid PASSED [  2%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[fields/plot.yaml-{name: soil_type, type: text-{name: soil_type, type: txt-fields.13.type] PASSED [  4%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[fields/farmer.yaml-{name: phone,-{name: phone, colour: red,-Extra inputs] PASSED [  6%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[fields/lot.yaml-entity: lot-entity: lots-must equal the file name] PASSED [  9%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[features.yaml-producer_groups: false-producer_groups: maybe-producer_groups] PASSED [ 11%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[features.yaml-otp_daily_cap: 10-otp_daily_cap: 10\nnew_flag: true-new_flag] PASSED [ 13%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml-soil_type:-soil_typ:-fields.plot.soil_typ: unknown field] PASSED [ 16%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml-  plot:-  farmers:-fields.farmers: unknown entity] PASSED [ 18%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml-    soil_type:-    pin:-core field cannot be disabled] PASSED [ 20%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml-fpo_code: VIRUDHAI-fpo_code: OTHER_VIRUDHAI-must equal the file name] PASSED [ 23%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml-boundary_walk: true-boundary_walk: [-cannot read YAML] PASSED [ 25%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml-fields:\n-fields:\n  farmer:\n    phone:\n      visibility: public\n-fields.farmer.phone: visibility may only be narrowed] PASSED [ 27%]
+tests/unit/test_fieldconfig_loader.py::test_invalid_yaml_is_refused_with_the_file_and_key[tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml-  plot:\n    soil_type:-  village:\n    pincode:-fields.village: shared] PASSED [ 30%]
+tests/unit/test_fieldconfig_loader.py::test_app_refuses_to_start_on_invalid_yaml PASSED [ 32%]
+tests/unit/test_fieldconfig_loader.py::test_tenant_disables_soil_type_for_that_fpo_only PASSED [ 34%]
+tests/unit/test_fieldconfig_loader.py::test_features_and_public_fields PASSED [ 37%]
+tests/unit/test_fieldconfig_loader.py::test_tenant_overrides_grading_loss_limit PASSED [ 39%]
+tests/unit/test_fieldconfig_loader.py::test_app_refuses_tenant_hiding_a_page_required_field PASSED [ 41%]
+tests/unit/test_fieldconfig_loader.py::test_public_fields_honour_tenant_hiding PASSED [ 44%]
+tests/unit/test_fieldconfig_loader.py::test_validate_payload[plot-REQ_FPO-data0-None-expected0] PASSED [ 46%]
+tests/unit/test_fieldconfig_loader.py::test_validate_payload[plot-REQ_FPO-data1-field_required-None] PASSED [ 48%]
+tests/unit/test_fieldconfig_loader.py::test_validate_payload[plot-REQ_FPO-data2-field_required-None] PASSED [ 51%]
+tests/unit/test_fieldconfig_loader.py::test_validate_payload[plot-VIRUDHAI_SCFC_VINOBA_BHAVA_FPO-data3-None-expected3] PASSED [ 53%]
+tests/unit/test_fieldconfig_loader.py::test_validate_payload[farmer-None-data4-field_unknown-None] PASSED [ 55%]
+tests/unit/test_fieldconfig_loader.py::test_validate_payload[event_harvest-None-data5-None-expected5] PASSED [ 58%]
+tests/unit/test_fieldconfig_loader.py::test_validate_payload[event_harvest-None-data6-field_required-None] PASSED [ 60%]
+tests/unit/test_fieldconfig_routes.py::test_config_fields_follow_the_callers_tenant_with_etag PASSED [ 62%]
+tests/unit/test_fieldconfig_routes.py::test_config_features PASSED       [ 65%]
+tests/unit/test_fieldconfig_routes.py::test_flagged_routes_are_404_feature_disabled_when_off PASSED [ 67%]
+tests/unit/test_fieldconfig_routes.py::test_flagged_routes_are_exposed_when_on PASSED [ 69%]
+tests/unit/test_fieldconfig_routes.py::test_import_over_2_mb_is_413_before_any_row_work PASSED [ 72%]
+tests/unit/test_fieldconfig_routes.py::test_import_template_matches_config_fields PASSED [ 74%]
+tests/unit/test_imports_csv.py::test_parse_csv_handles_bom_blank_lines_and_line_numbers PASSED [ 76%]
+tests/unit/test_imports_csv.py::test_parse_csv_ignores_trailing_commas PASSED [ 79%]
+tests/unit/test_imports_csv.py::test_parse_csv_refuses_whole_files[raw0-import_too_large] PASSED [ 81%]
+tests/unit/test_imports_csv.py::test_parse_csv_refuses_whole_files[raw1-import_too_large] PASSED [ 83%]
+tests/unit/test_imports_csv.py::test_parse_csv_refuses_whole_files[\xff\xfen\x00a\x00m\x00e\x00_\x00e\x00n\x00\n\x00U\x00r\x00e\x00a\x00\n\x00-validation_error] PASSED [ 86%]
+tests/unit/test_imports_csv.py::test_parse_csv_refuses_whole_files[-validation_error] PASSED [ 88%]
+tests/unit/test_imports_csv.py::test_parse_csv_refuses_whole_files[a,b\n1,2,3\n-validation_error] PASSED [ 90%]
+tests/unit/test_imports_csv.py::test_two_bad_rows_give_n_minus_2_accepted_and_row_codes PASSED [ 93%]
+tests/unit/test_imports_csv.py::test_unknown_column_is_rejected_per_row_for_forbid_entities PASSED [ 95%]
+tests/unit/test_imports_csv.py::test_templates_follow_the_tenant_config PASSED [ 97%]
+tests/unit/test_imports_csv.py::test_farmer_code_is_redrawn_on_collision PASSED [100%]
+
+============================= 43 passed in 11.95s ==============================
+exit=0

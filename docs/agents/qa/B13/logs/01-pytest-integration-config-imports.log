@@ -1,0 +1,25 @@
+22:45  up 1 day, 22:17, 1 user, load averages: 44.73 213.50 152.87
+$ cd apps/api && uv run pytest tests/integration/test_config_imports.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 5 items
+
+tests/integration/test_config_imports.py::test_migration_0003_applies_and_alembic_check_is_clean PASSED [ 20%]
+tests/integration/test_config_imports.py::test_inputs_import_dry_run_commit_and_rerun PASSED [ 40%]
+tests/integration/test_config_imports.py::test_villages_then_farmers_import PASSED [ 60%]
+tests/integration/test_config_imports.py::test_plot_gi_tag_is_stored_and_preferred PASSED [ 80%]
+tests/integration/test_config_imports.py::test_config_endpoints_for_the_demo_tenant PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_config_imports.py::test_migration_0003_applies_and_alembic_check_is_clean
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 5 passed, 1 warning in 38.85s =========================
+exit=0
+22:45  up 1 day, 22:18, 1 user, load averages: 25.28 184.71 145.38

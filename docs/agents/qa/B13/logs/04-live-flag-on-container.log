@@ -1,0 +1,9 @@
+$ docker run -d --rm --name qa-b13-flag-on --network agritrace_default --env-file <compose api env> -v <scratch>/cfg-on:/app/config:ro -p 8001:8000 agritrace-api:dev
+# <scratch>/cfg-on = apps/api/config copy; diff:
+diff -r /Users/fi-it/Documents/projects/agriGitag/apps/api/config/tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/cfg-on/tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml
+6a7
+>   id_document_capture: true
+67db608973a0347f39441c9eeecc93f036370eeb873f83a412930cdf3954cffe
+$ curl localhost:8001/v1/healthz
+{"db":"ok","redis":"ok","s3":"ok"}
+$ docker rm -f qa-b13-flag-on  (stopped after the B13 live run)

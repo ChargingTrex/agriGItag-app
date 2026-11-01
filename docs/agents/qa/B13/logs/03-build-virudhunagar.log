@@ -1,0 +1,23 @@
+Sun Nov  1 17:16:28 UTC 2026
+# inputs: geoBoundaries gbOpen IND ADM3/ADM2 @ 9469f09, downloaded to the scratchpad; sha256:
+8bef6929fd65432e7dc775e7c44473e84efff064ebddbfd6b834e6291546db40  geoBoundaries-IND-ADM2.geojson
+f9c38b47f2b8755af59d30bb846f66d0823aba127872668ccc2fa9f0dc3cd48f  geoBoundaries-IND-ADM3.geojson
+$ uv run python ../../infra/scripts/gi_boundary/build_virudhunagar.py --subdistricts <scratch>/geoBoundaries-IND-ADM3.geojson --districts <scratch>/geoBoundaries-IND-ADM2.geojson --source-url https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM3/geoBoundaries-IND-ADM3.geojson --licence ODbL-1.0 --out <scratch>/gi883
+{"file": "/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/geo/gi883/gi_region_v0.geojson", "bytes": 40812, "vertices": 2128, "licence": "ODbL-1.0", "attribution": "Boundary data © geoBoundaries contributors, ODbL-1.0; derived region shared under ODbL-1.0", "share_alike": true, "confidence": "district_derived", "built_at": "2026-11-01T17:16:38+00:00", "district": "Virudhunagar", "tolerance_buffer_m": 150.0, "version_no": 0, "source_ref": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM3/geoBoundaries-IND-ADM3.geojson (geoBoundaries-IND-ADM3.geojson sha256:f9c38b47f2b8755a) via infra/scripts/gi_boundary/build_virudhunagar.py; district dissolve", "taluks": ["Aruppukkottai", "Kariapatti", "Rajapalayam", "Sattur", "Sivakasi", "Srivilliputhur", "Tiruchuli", "Vembakottai", "Virudhunagar", "Watrap"], "taluks_confirmed": true}
+{"file": "/private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/geo/gi883/gi_region_v1.geojson", "bytes": 33280, "vertices": 1565, "licence": "ODbL-1.0", "attribution": "Boundary data © geoBoundaries contributors, ODbL-1.0; derived region shared under ODbL-1.0", "share_alike": true, "confidence": "district_derived", "built_at": "2026-11-01T17:16:38+00:00", "district": "Virudhunagar", "tolerance_buffer_m": 150.0, "version_no": 1, "source_ref": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM3/geoBoundaries-IND-ADM3.geojson (geoBoundaries-IND-ADM3.geojson sha256:f9c38b47f2b8755a) via infra/scripts/gi_boundary/build_virudhunagar.py; union of GI taluks", "taluks": ["Sattur", "Aruppukottai", "Tiruchuli"], "taluks_confirmed": false}
+exit=0
+$ build_virudhunagar.py --check-point 9.559806,78.133521 --file <scratch>/gi883/gi_region_v0.geojson
+(9.559806, 78.133521) is inside of gi_region_v0.geojson v0
+exit=0
+$ build_virudhunagar.py --check-point 9.559806,78.133521 --file <scratch>/gi883/gi_region_v1.geojson
+(9.559806, 78.133521) is inside of gi_region_v1.geojson v1
+exit=0
+$ inspect outputs (geometry type, properties, shapely covers)
+gi_region_v0.geojson features: 1 geometry: MultiPolygon covers(78.133521 9.559806): True size_bytes: 40812
+  source_ref: https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM3/geoBoundaries-IND-ADM3.geojson (geoBoundaries-IND-ADM3.geojson sha256:f9c38b47f2b8755a) via infra/scripts/gi_boundary/build_virudhunagar.py; district dissolve
+  licence: ODbL-1.0 | attribution: Boundary data © geoBoundaries contributors, ODbL-1.0; derived region shared under ODbL-1.0
+  other: {'share_alike': True, 'confidence': 'district_derived', 'built_at': '2026-11-01T17:16:38+00:00', 'district': 'Virudhunagar', 'tolerance_buffer_m': 150.0, 'version_no': 0, 'taluks': ['Aruppukkottai', 'Kariapatti', 'Rajapalayam', 'Sattur', 'Sivakasi', 'Srivilliputhur', 'Tiruchuli', 'Vembakottai', 'Virudhunagar', 'Watrap'], 'taluks_confirmed': True}
+gi_region_v1.geojson features: 1 geometry: MultiPolygon covers(78.133521 9.559806): True size_bytes: 33280
+  source_ref: https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/IND/ADM3/geoBoundaries-IND-ADM3.geojson (geoBoundaries-IND-ADM3.geojson sha256:f9c38b47f2b8755a) via infra/scripts/gi_boundary/build_virudhunagar.py; union of GI taluks
+  licence: ODbL-1.0 | attribution: Boundary data © geoBoundaries contributors, ODbL-1.0; derived region shared under ODbL-1.0
+  other: {'share_alike': True, 'confidence': 'district_derived', 'built_at': '2026-11-01T17:16:38+00:00', 'district': 'Virudhunagar', 'tolerance_buffer_m': 150.0, 'version_no': 1, 'taluks': ['Sattur', 'Aruppukottai', 'Tiruchuli'], 'taluks_confirmed': False}

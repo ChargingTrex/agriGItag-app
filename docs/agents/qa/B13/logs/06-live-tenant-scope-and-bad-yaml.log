@@ -1,0 +1,42 @@
+== line 1, other FPO: the running compose api container resolves plot fields per FPO code (repo config)
+$ docker exec agritrace-api-1 python -c '<print soil_type spec for the demo FPO, another FPO code, and no tenant>'
+VIRUDHAI_SCFC_VINOBA_BHAVA_FPO -> soil_type enabled=False required=False; listed by fields_for (served by /config/fields): False
+SOME_OTHER_FPO -> soil_type enabled=True required=False; listed by fields_for (served by /config/fields): True
+None -> soil_type enabled=True required=False; listed by fields_for (served by /config/fields): True
+exit=0
+
+== line 5: same image, tenant file failing its schema (enabled: maybe) -> the app refuses to start
+# <scratch>/cfg-bad diff against apps/api/config:
+diff -r /Users/fi-it/Documents/projects/agriGitag/apps/api/config/tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/cfg-bad/tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml
+10c10
+<       enabled: false
+---
+>       enabled: maybe
+$ docker run -d --name qa-b13-bad-yaml --network agritrace_default --env-file <compose api env> -v <scratch>/cfg-bad:/app/config:ro agritrace-api:dev   (default CMD: uvicorn agritrace.main:app); then docker wait / docker logs
+container running after wait: false, exit code: 3
+--- docker logs qa-b13-bad-yaml (last 25 lines)
+    async with self.lifespan_context(app) as maybe_state:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/app/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 248, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/app/agritrace/main.py", line 167, in _validate_config_at_boot
+    fieldconfig.check_page_required(fieldconfig.load(), PAGE_REQUIRED_FIELDS)
+                                    ^^^^^^^^^^^^^^^^^^
+  File "/app/agritrace/core/fieldconfig.py", line 283, in load
+    return parse(CONFIG_DIR)
+           ^^^^^^^^^^^^^^^^^
+  File "/app/agritrace/core/fieldconfig.py", line 238, in parse
+    raise ConfigInvalid(f"{path}: {e}") from e
+agritrace.core.fieldconfig.ConfigInvalid: /app/config/tenants/VIRUDHAI_SCFC_VINOBA_BHAVA_FPO.yaml: 1 validation error for TenantConfig
+fields.plot.soil_type.enabled
+  Input should be a valid boolean, unable to interpret input [type=bool_parsing, input_value='maybe', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.14/v/bool_parsing
+
+ERROR:    Application startup failed. Exiting.
