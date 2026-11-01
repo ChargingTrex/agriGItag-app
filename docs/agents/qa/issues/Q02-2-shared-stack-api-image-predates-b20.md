@@ -33,3 +33,5 @@ Rebuild and restart the shared stack's app services from main when no other Veri
 `0004_lots_append_only`). Then re-run P06 line 5 in the portal (see Q02.md "Still open") once an admin OTP is
 available again. The admin hit the 10/day cap at 01:28 IST; the oldest of those codes leaves the 24 h window at
 21:49 IST on 2026-11-02.
+
+**Resolution (Orchestrator, 2026-11-02 01:45 IST):** `docker builder prune -af` cleared the stuck BuildKit lease; `docker compose build api worker` + `up -d --wait api worker` succeeded; `agritrace-api:dev` created 2026-11-01T20:10:59Z, `retry_later` present in the container, healthz ok. The P06 line-5 portal search re-check still waits for an admin session (OTP cap reached for the day on the shared stack); Q05 runs it on a fresh isolated stack.
