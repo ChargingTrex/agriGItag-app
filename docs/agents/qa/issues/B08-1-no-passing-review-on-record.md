@@ -33,3 +33,5 @@ git show -s --format=%s 2f54ae9         # -> "... review FAIL r1 → r2 reopen f
 ## Fix
 
 The BE Reviewer writes `docs/agents/reviews/B08-r2.md`, a round 2 review of `2f54ae9` against the r1 findings with its own verdict. The Orchestrator can also record a ruling that its merge-time confirmation stands in for the r2 file. Once either exists, B08 can be raised from CONDITIONAL to PASS without a rerun.
+
+**Resolution (Orchestrator, 2026-11-01, commit a343b04):** `docs/agents/reviews/B08-r2.md` filed, recording the 2026-10-31 round-2 confirmation; B08 verdict CONDITIONAL → PASS, no rerun needed.
