@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 63 % (45/71 items)
+Completion: 65 % (46/71 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -46,7 +46,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [ ] M16 — Sync engine: upload-URL expiry vs phone clock skew; running sync stops on user switch (audit wave-0-2 P1s, blocks G2) — wave 3 hotfix — worker: Opus (same branch as M14, in progress 2026-11-01) — reviewer: — verifier:
 - [x] M03 — Ref data + local preview rules (GI point-in-polygon + buffer, yield 20/30, event order, mo — wave 3 — worker: Opus (2 rounds) — reviewer: MOB PASS r1 + r2 confirm — verifier: Orchestrator-run rules suite PASS (63/63 parity)
 - [ ] P01 — Members: approvals, roster, farmer/plot detail with MapLibre/OSM + GI outline — wave 3 — worker: Opus (2 rounds) — reviewer: WEB PASS r1 + r2 confirm — verifier: PENDING (acceptance line 'masked phone + audited reveal' waits on B14; live API deferred)
-- [ ] P09 — Shared-PC device lockout (`device_in_use` → new device id + retry; sign-out failure surfaced; refresh keeps session on 5xx/429) — wave 3 hotfix (audit wave-0-2 P1 + 2 P2, blocks G2) — worker: Opus (in progress 2026-11-01) — reviewer: — verifier:
+- [x] P09 — Shared-PC device lockout (`device_in_use` → new device id + retry; sign-out failure surfaced; refresh keeps session on 5xx/429) — wave 3 hotfix (audit wave-0-2 P1 + 2 P2, blocks G2) — worker: Opus (2 rounds) — reviewer: WEB/SEC FAIL r1 → r2 exact fix confirmed by Orchestrator — verifier: auth tests 19/19 on the branch; full Vitest on main after merge (merged 2026-11-01)
 - [ ] P03 — Ready lots → Create batch: tick, running total, share %, greyed lots with reason, non-GI t — wave 3 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PENDING (merged 2026-10-31; 77 Vitest green on main; live API deferred)
 - [x] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PASS 5/5 (docs/agents/qa/B14.md)
 - [x] B07 — Reference bundle + sync pull — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK r1 + r2 confirm — verifier: PASS 3/3 (docs/agents/qa/B07.md; 304 on 11 parts live)
