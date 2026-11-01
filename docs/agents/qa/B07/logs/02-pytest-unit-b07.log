@@ -1,0 +1,40 @@
+$ uv run pytest tests/unit/test_bundle_service.py tests/unit/test_pull_service.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 28 items
+
+tests/unit/test_bundle_service.py::test_crops_part_matches_golden_shape PASSED [  3%]
+tests/unit/test_bundle_service.py::test_inputs_part_matches_golden_shape PASSED [  7%]
+tests/unit/test_bundle_service.py::test_plots_part_matches_golden_shape PASSED [ 10%]
+tests/unit/test_bundle_service.py::test_calendar_part_matches_golden_shape PASSED [ 14%]
+tests/unit/test_bundle_service.py::test_images_list_only_inputs_with_pictures_on_public_bucket PASSED [ 17%]
+tests/unit/test_bundle_service.py::test_gi_region_simplifies_further_until_under_50_kb PASSED [ 21%]
+tests/unit/test_bundle_service.py::test_gi_region_absent_without_region PASSED [ 25%]
+tests/unit/test_bundle_service.py::test_manifest_lists_every_part_with_version_and_etag PASSED [ 28%]
+tests/unit/test_bundle_service.py::test_reference_returns_only_changed_parts PASSED [ 32%]
+tests/unit/test_bundle_service.py::test_part_body_gi_region_missing PASSED [ 35%]
+tests/unit/test_bundle_service.py::test_etag_is_stable_and_content_bound PASSED [ 39%]
+tests/unit/test_bundle_service.py::test_parse_since PASSED               [ 42%]
+tests/unit/test_bundle_service.py::test_parse_since_rejects_malformed[plots] PASSED [ 46%]
+tests/unit/test_bundle_service.py::test_parse_since_rejects_malformed[plots:x] PASSED [ 50%]
+tests/unit/test_bundle_service.py::test_parse_since_rejects_malformed[plots:1:2] PASSED [ 53%]
+tests/unit/test_bundle_service.py::test_parse_since_rejects_malformed[42] PASSED [ 57%]
+tests/unit/test_bundle_service.py::test_changed_parts_compares_each_part_on_its_own PASSED [ 60%]
+tests/unit/test_bundle_service.py::test_etag_matches_if_none_match_forms PASSED [ 64%]
+tests/unit/test_bundle_service.py::test_farmer_profile_is_an_allow_list PASSED [ 67%]
+tests/unit/test_pull_service.py::test_cursor_round_trip PASSED           [ 71%]
+tests/unit/test_pull_service.py::test_bad_cursor_is_validation_error[not base64!] PASSED [ 75%]
+tests/unit/test_pull_service.py::test_bad_cursor_is_validation_error[W10] PASSED [ 78%]
+tests/unit/test_pull_service.py::test_bad_cursor_is_validation_error[WyIyMDI2LTAzLTA1VDA4OjAwOjAwKzAwOjAwIiwgImZkMDE5MjNiLTE2NzEtNDE5Ny1hNWE5LWVlZWJjZGU1OGU2] PASSED [ 82%]
+tests/unit/test_pull_service.py::test_bad_cursor_is_validation_error[WyIyMDI2LTAzLTA1VDA4OjAwOjAwIiwgIjRjZmZhYTM0LWJjYWYtNDk5OC1hZGJjLTNjZGJmYjQ3OWNmNyJd] PASSED [ 85%]
+tests/unit/test_pull_service.py::test_merge_page_orders_across_tables_and_reports_more PASSED [ 89%]
+tests/unit/test_pull_service.py::test_photo_pending_after_24_hours_only PASSED [ 92%]
+tests/unit/test_pull_service.py::test_presign_get_signs_public_endpoint PASSED [ 96%]
+tests/unit/test_pull_service.py::test_signed_variants_presigns_webp_and_drops_original PASSED [100%]
+
+============================== 28 passed in 1.35s ==============================
+exit=0

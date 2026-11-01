@@ -1,0 +1,53 @@
+# NOTE (Verifier): first live run, kept for the record. Lines 1 and 2 are valid. Line 3 is NOT valid here: my script
+# backdated the inserted flag 5 min (copied from the integration test), but another Verifier was writing to this QA
+# farmer at the same time (lots and intakes at 17:22:4x UTC), so the cursor was already past the flag and the pull
+# correctly skipped it (a full drain without cursor does list it). Rerun on a private farmer: 03-live-b07.log.
+$ cd apps/api && uv run python ../../docs/agents/qa/B07/logs/live_b07.py
+# sign-in +919000000011 on device ab9d6fdd-d768-41cc-8967-70a4247b8580
+$ POST http://localhost:8000/v1/auth/otp/request
+  body: {"phone":"+919000000011"}
+-> HTTP 204  etag=None
+  
+$ POST http://localhost:8000/v1/auth/otp/verify
+  body: {"phone":"+919000000011","code":"123456","device_id":"ab9d6fdd-d768-41cc-8967-70a4247b8580","platform":"android"}
+-> HTTP 200  etag=None
+  {"kind": "session", "access_token": "<redacted>", "refresh_token": "<redacted>", "expires_in": 900, "roles": ["farmer"], "fpo_id": "01a197e0-9a48-7db7-b773-fa2ebdcb4597"}
+== 1. matching If-None-Match -> 304 (manifest and every part)
+$ GET http://localhost:8000/v1/sync/bundle
+-> HTTP 200  etag=None
+  {"parts": {"plots": {"version": 45, "etag": "\"491cf3a637e6ad74\""}, "crops": {"version": 2, "etag": "\"a5bf0eafe31b0e78\""}, "inputs": {"version": 41, "etag": "\"4faa3f409a3bfb7f\""}, "standards": {"version": 3, "etag": "\"b995dddba766330b\""}, "gi_region": {"version": 1, "etag": "\"0bfa370652a97402\""}, "farmer_profile": {"version": 225675376716436, "etag": "\"cd4024a9ea946177\""}, "villages": {"version": 0, "etag": "\"025a92c68b4f6d76\""}, "fields": {"version": 58279897173940, "etag": "\"350158918fb4169b\""}, "prompts": {"version": 277866301682226, "etag": "\"fcb7ca34f23270a0\""}, "images": {"version": 83832315455047, "etag": "\"4c3ebb6226470368\""}, "calendar": {"version": 65536994951793, "etag": "\"3b9b054dc271904a\""}}}
+RESULT line1 manifest: If-None-Match None -> HTTP 200, body 680 B
+RESULT line1 part=plots: 200 etag==manifest True, 1016 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=crops: 200 etag==manifest True, 461 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=inputs: 200 etag==manifest True, 1317 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=standards: 200 etag==manifest True, 3966 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=gi_region: 200 etag==manifest True, 684 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=farmer_profile: 200 etag==manifest True, 180 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=villages: 200 etag==manifest True, 15 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=fields: 200 etag==manifest True, 17143 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=prompts: 200 etag==manifest True, 14 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=images: 200 etag==manifest True, 13 B; matching -> HTTP 304 (0 B); stale -> 200
+RESULT line1 part=calendar: 200 etag==manifest True, 15 B; matching -> HTTP 304 (0 B); stale -> 200
+
+== 2. standards part carries the full profile rules JSON per active version
+$ GET http://localhost:8000/v1/sync/bundle/standards
+-> HTTP 200  etag="b995dddba766330b"
+  {"profiles": {"01a197e0-99b6-76ae-b6ac-d666725ef32e": {"yield": {"note": "illustrative; calibrate after season 1", "hold_margin_pct": 30.0, "warn_margin_pct": 20.0, "ceiling_kg_per_acre": 1000.0}, "grades": ["Special", "Standard"], "standard": {"name": "AGMARK Grading and Marking Rules \u2014 Dry Ch ...
+  sql> select json_object_agg(sp.crop_id, v.rules) from standards_profile_versions v join standards_profiles sp on sp.id = v.profile_id where v.version_no = (select max(version_no) from standards_profile_versions w where w.profile_id = v.profile_id)
+  =>  '{ "01a197e0-99b6-76ae-b6ac-d666725ef32e" : {"yield": {"note": "illustrative; calibrate after season 1", "hold_margin_pct": 30.0, "warn_margin_pct": 20.0, "ceiling_kg_per_acre": 1000.0}, "grades": ["Special", "Standard"], "standard": {"name": "AGMARK Grading and Marking Rules — Dry Chillies and Capsi'
+  sql> select sp.crop_id, v.version_no, v.status from standards_profile_versions v join standards_profiles sp on sp.id=v.profile_id
+  =>  '01a197e0-99b6-76ae-b6ac-d666725ef32e|1|published'
+RESULT line2 crop 01a197e0-99b6-76ae-b6ac-d666725ef32e: bundle rules == DB rules: True; top-level keys ['fail_grade', 'grades', 'lab_certified_requires', 'lot_gates', 'parameters', 'public_note', 'schema_version', 'standard', 'trail_rules', 'yield']
+  crops in DB ['01a197e0-99b6-76ae-b6ac-d666725ef32e'] vs bundle ['01a197e0-99b6-76ae-b6ac-d666725ef32e']
+
+== 3. pull after a new flag returns exactly that flag
+  QA farmer first drain: 57 changes ['event', 'flag', 'intake', 'lot']
+  seeded farmer first drain: 17 changes
+  QA farmer drain again before the flag: 0 changes
+  sql> insert into flags (id, fpo_id, subject_type, subject_id, rule_code, severity, details, dedupe_key, status, assigned_role, raised_at, created_at, updated_at) select '5d617765-d538-4f76-af44-55728de8ec0e', fpo_id, 'lot', id, 'quantity_mismatch', 'warn', '{"qa_verifier": true}', 'quantity_mismatch:8d9f
+  =>  '5d617765-d538-4f76-af44-55728de8ec0e\nINSERT 0 1'
+RESULT line3 QA farmer: [] (new flag id 5d617765-d538-4f76-af44-55728de8ec0e)
+RESULT line3 seeded farmer (other lots): []
+  sql> select device_id, last_pull_cursor is not null from sync_cursors where device_id in (select id from devices where user_id = (select user_id from farmers where id = '56a622ff-6789-4ae0-9a65-775491f5d2cf'))
+  =>  'f42cc6cb-da6b-4a43-8fc8-de239a0f3bac|t'
+exit=0
