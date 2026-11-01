@@ -700,7 +700,8 @@ export const handlers = [
       ? HttpResponse.json(session(`${MOCK_ACCESS_TOKEN}-${String(++issued)}`))
       : fail(401, 'unauthorized'),
   ),
-  http.post('/v1/auth/logout', () => {
+  http.post('/v1/auth/logout', ({ request }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
     mockState.signedIn = false;
     return new HttpResponse(null, { status: 204 });
   }),
