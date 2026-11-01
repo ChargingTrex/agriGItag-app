@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 85 % (64/75 items)
+Completion: 84 % (64/76 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -93,8 +93,9 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] P07 — Playwright e2e chain + axe — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirmed by Orchestrator — verifier: PASS live 2026-11-02 after P10 (docs/agents/qa/P07.md re-verify: chain 2/2 twice without reseed, 51.5 s / 61.1 s incl. OTP wait; axe 0 serious on 39 mock + 22 live checks)
 - [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer: — verifier:
 - [ ] Q02 — Portal verification: Vitest ≥ 80 % in features, Playwright chain, axe — wave 7 — worker: Opus Verifier — reviewer: —  verifier: CONDITIONAL 2026-11-02 (docs/agents/qa/Q02.md: features coverage 93.2 % overall, members 72.3 % → PlotMap.tsx untested → P11; Vitest 139/139; Playwright mock 6/6; live chain 2/2; 2 P2 issues Q02-1, Q02-2)
-- [ ] Q03 — Public page verification: W02 suite + backend-down serve from MinIO + old version retrieva — wave 7 — worker: — reviewer: — verifier:
-- [ ] Q04 — Backend verification: full pytest incl. e2e reference batch, locust p95, Schemathesis fuzz — wave 7 — worker: — reviewer: — verifier:
+- [ ] Q03 — Public page verification: W02 suite + backend-down serve from MinIO + old version retrieva — wave 7 — worker: Opus Verifier — reviewer: — verifier: CONDITIONAL 2026-11-02 (docs/agents/qa/Q03.md: backend-down serve from LocalStack 9/9 objects 200, old version via ?versionId 200, W02 Robot 11/11, BM-03 perf 98 / LCP 1.712 s / 20.4 KB, BM-16 LCP 0.535 s, BM-09 0 hits; P2 Q03-1: two public/page.robot placeholders)
+- [ ] Q04 — Backend verification: full pytest incl. e2e reference batch, locust p95, Schemathesis fuzz — wave 7 — worker: Opus Verifier — reviewer: — verifier: FAIL 2026-11-02 (docs/agents/qa/Q04.md: full pytest 781/781 incl. e2e; BM-07 p95 3100 ms vs 300 ms → Q04-3; fuzzer 5xx on /v1/sync/push Q04-1 (entry DB error fails the whole push) and Q04-2 (telemetry) → B21; note: stack image was pre-B20)
+- [ ] B21 — Sync push hardening + API latency (NUL/int32 validation at the push boundary, per-entry DB-error rejection, telemetry 422 not 500; BM-07: uvicorn workers / pool / profile) — wave 7 hotfix (Q04-1/2/3) — worker: Opus (in progress 2026-11-02) — reviewer: — verifier: locust rerun + fuzz rerun at Q05
 - [ ] Q05 — Release gate: benchmark sweep → `docs/agents/qa/benchmarks.json`, rubric, G5 report — wave 7 — worker: — reviewer: — verifier:
 - [ ] **Gate G5 signed** (docs/agents/gates/G5.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 - [x] **G5 condition (rulings 2026-10-31 §4) — met live 2026-11-01 (docs/agents/qa/B15.md):** B15, M02 r2 and M09 r2 all merged before any field device runs onboarding or assist mode; offline onboarding push `[farmer, assist_session, consent, plot]` → 4 × accepted, replay → 4 × duplicate, online timeout then sync → one farmer
