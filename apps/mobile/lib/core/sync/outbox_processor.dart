@@ -1,6 +1,7 @@
 // Push phase: send the signed-in user's saved entries to `POST /v1/sync/push` oldest first, in batches of at most 50
 // entries and 256 KB, and apply each entry's result (accepted / duplicate → confirmed with upload URLs; rejected →
-// needs_attention; stale_version → one more try). New farmers and offline assist sessions go first (D-031, D-032).
+// needs_attention; stale_version or a missing dependency → one more try). New farmers and offline assist sessions
+// go first (D-031, D-032, D-054).
 // Requirement: FR4; PLAN §13 A2 (tick only on server ack), A3 (client-UUID idempotency), A4 (≤ 50 entries or
 //   256 KB), A6 (retry policy), F1 (`metrics[]`); mobile-design.md §3; backend-design.md §3 (envelope, per-entry
 //   results, kinds `farmer` / `assist_session`, per-entry `assist_session_id`); Arch §Offline-first "Outbox queue";
@@ -9,6 +10,7 @@
 
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:math' show max;
 
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
@@ -34,6 +36,10 @@ const assistSessionKey = 'assist_session_id';
 
 /// `lastError` of an entry whose type the engine cannot send (not an event type, not a push kind).
 const unknownEntryType = 'unknown_entry_type';
+
+/// Per-entry rejection codes retried once before needs_attention: a version race (D-005) and a dependency the
+/// server did not have yet (D-054).
+const _retriedOnce = {'stale_version', 'not_found', 'assist_session_invalid'};
 
 /// Pushes the signed-in user's due entries, batch after batch, until none is due or a request fails.
 ///
@@ -224,7 +230,12 @@ Future<void> _applyResults(SyncContext c, List<OutboxBatchItem> sent, Map<String
     //   answers `duplicate`. A second `stale_version` is a real conflict (someone else took the number).
     //   ADV: no needs_attention for a race the server would resolve itself.  COMPROMISE: a real conflict waits one
     //   backoff longer before an officer sees it.
-    if (code == 'stale_version' && item.row.lastError != code) {
+    // DECISION D-054: the dependency codes `not_found` (farmer, event version 1, lot) and `assist_session_invalid`
+    //   are retried once too, after a backoff that holds back every later row (strict FIFO, OutboxDao.nextBatch).
+    //   ADV: an entry that overtook its dependency (another isolate, a reset `sending` row) is not lost; by the retry
+    //   every older row has been answered.  COMPROMISE: a truly missing dependency waits one backoff longer before
+    //   needs_attention; every other code (validation errors) is final at once.
+    if (_retriedOnce.contains(code) && item.row.lastError != code) {
       await c.db.outboxDao.markWaiting(
         item.row.seq,
         backoff: backoff(item.row.attempts + 1, c.random),
@@ -289,14 +300,15 @@ Future<void> _failed(SyncContext c, List<OutboxBatchItem> sent, Object error, Li
     developer.log('push refused ($code): ${sent.length} entries need attention', name: 'agritrace.sync');
     return;
   }
+  // One wait for the whole batch: the rows are retried together, in queue order (OutboxDao.nextBatch).
+  final wait = backoff(sent.map((i) => i.row.attempts).reduce(max) + 1, c.random, error);
   for (final i in sent) {
-    final wait = backoff(i.row.attempts + 1, c.random, error);
     await c.db.outboxDao.markWaiting(i.row.seq, backoff: wait, now: c.now(), error: code);
-    developer.log(
-      'push failed ($code); entry ${i.entry.entryId} retries in ${wait.inMilliseconds} ms',
-      name: 'agritrace.sync',
-    );
   }
+  developer.log(
+    'push failed ($code); ${sent.length} entries retry in ${wait.inMilliseconds} ms',
+    name: 'agritrace.sync',
+  );
 }
 
 /// Records the clock skew when the phone clock and [serverTime] differ by more than 10 minutes (mobile-design.md
