@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 86 % (66/77 items)
+Completion: 87 % (67/77 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -57,7 +57,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] P02 — Flags & plot review — wave 4 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirm — verifier: PASS 2/2 live (docs/agents/qa/P02.md, 2026-11-01)
 - [x] P04 — Batch detail, approve grading, publish, preview iframe, grey-button reasons — wave 4 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PASS 4/4 live incl. D-041 non-GI line (docs/agents/qa/P04.md)
 - [x] Q06 — Robot API suites implemented and green (48 placeholders in qa/robot/api → real tests on an isolated stack; G2 blocker) — wave 7 — worker: Opus QA Lead (1 round) — reviewer: Orchestrator (QA code; 67/67 twice, interrogate 100 %, qa/tests 110) — verifier: robot run docs/agents/qa/Q06/robot/ (merged 2026-11-02); Q06-1 P3 filed (consent audit rows lack fpo_id)
-- [ ] **Gate G2 signed** — readiness filed BLOCKED 2026-11-02 (Robot API suites green via Q06 ✓; B08-2 closed via B20 ✓; P01 live line built in P10, re-verify at Q02; mobile/portal Robot placeholders belong to G3/G4 scope) (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [ ] **Gate G2 signed** — readiness filed BLOCKED 2026-11-02 (Robot API suites green via Q06 ✓; portal P01–P04 Robot via Q07 ✓; B08-2 closed via B20 ✓; P01 live line PASS at Q02 ✓; mobile Robot placeholders belong to Q01/G3 → Architect-Gate ruling; signing in progress) (docs/agents/gates/G2.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G3 Mobile core
 
@@ -83,7 +83,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] B11 — Reporting + stubs — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PASS 4/4, BM-05 100 % completeness, 9 reference problems flagged (docs/agents/qa/B11.md)
 - [x] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (793 on main); device checks → Q01
 - [x] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (1 round) — reviewer: WEB PASS r1 — verifier: PASS live (docs/agents/qa/W03.md: 3G perf 0.98, LCP 1743 ms, 19.7 KB; 4G LCP 548 ms; privacy lint 0; og:url/og:image → B10 TODO)
-- [ ] Q07 — Portal Robot suites implemented and green (11 placeholders P01–P04 in qa/robot/portal → real Browser-library tests on an isolated stack; G4 Robot condition, also counted by gate-readiness G2) — wave 7 — worker: Opus QA Lead (in progress 2026-11-02) — reviewer: — verifier: robot run in docs/agents/qa/Q07/robot/
+- [x] Q07 — Portal Robot suites implemented and green (11 placeholders P01–P04 in qa/robot/portal → real Browser-library tests on an isolated stack; G4 Robot condition, also counted by gate-readiness G2) — wave 7 — worker: Opus QA Lead (1 round; round 2 for P05/P06/P08/P07/public placeholders in progress) — reviewer: Orchestrator (QA code; 12/12 twice, qa/tests 111, interrogate 100 %) — verifier: docs/agents/qa/Q07/robot/ (merged 2026-11-02); Q07-1 P3 filed (reload during session restore → refresh_reused)
 - [ ] **Gate G4 signed** (docs/agents/gates/G4.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G5 Pilot candidate
