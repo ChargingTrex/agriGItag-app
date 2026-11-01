@@ -1,0 +1,24 @@
+# Watcher started 16:18Z: poll notifications rows for user 01a197e0-9a5f-7b49-9864-b4c62d0c3cbf every 30 s until 4 rows (the two 03b rows + the two 03a tasks parked in 'unacked').
+# The two psql connection errors below are single failed polls (compose DB briefly unreachable); the loop continued.
+psql: error: connection to server at "localhost" (::1), port 5433 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5433 failed: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+2026-11-01T17:13:55Z
+   template_key   | lang | status |      provider_ref      |          created_at           
+------------------+------+--------+------------------------+-------------------------------
+ harvest_reminder | ta   | sent   | console                | 2026-11-01 16:14:34.635671+00
+ no_such_template | en   | failed | error:unknown_template | 2026-11-01 16:14:34.653059+00
+ no_such_template | en   | failed | error:unknown_template | 2026-11-01 17:13:54.15239+00
+ harvest_reminder | ta   | sent   | console                | 2026-11-01 17:13:54.220581+00
+(4 rows)
+
+0
+worker-1  | [2026-11-01 17:13:53,080: INFO/MainProcess] Task notifications.send[a06d28ac-f2ff-4f95-817d-77222c8e6168] received
+worker-1  | [2026-11-01 17:13:53,191: INFO/MainProcess] Task notifications.send[21e98d0a-f42f-40f1-989e-d328fdcf2146] received
+worker-1  | [2026-11-01 17:13:54,416: INFO/ForkPoolWorker-7] Task notifications.send[a06d28ac-f2ff-4f95-817d-77222c8e6168] succeeded in 1.0785814860000755s: 'failed'
+worker-1  | [2026-11-01 17:13:54,418: INFO/ForkPoolWorker-8] Task notifications.send[21e98d0a-f42f-40f1-989e-d328fdcf2146] succeeded in 1.0697801890000846s: 'sent'
+
+[exited with code 0]
+# Delivered to the old worker: 16:13:09.7Z (unacked_index score 1793549589.7). Redelivered: 17:13:53.1Z = 3643 s later (kombu default visibility_timeout 3600 s + restore poll).

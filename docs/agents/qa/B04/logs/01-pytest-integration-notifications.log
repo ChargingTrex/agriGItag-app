@@ -1,0 +1,25 @@
+# 2026-11-01T16:11:50Z 21:41  up 1 day, 21:14, 1 user, load averages: 6.38 11.79 53.53
+$ (cd apps/api) uv run pytest tests/integration/test_notifications.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 5 items
+
+tests/integration/test_notifications.py::test_eager_send_writes_sent_console_row PASSED [ 20%]
+tests/integration/test_notifications.py::test_unknown_template_fails_without_raising PASSED [ 40%]
+tests/integration/test_notifications.py::test_otp_request_end_to_end_redacts_code PASSED [ 60%]
+tests/integration/test_notifications.py::test_list_my_notifications_newest_first_with_cursor PASSED [ 80%]
+tests/integration/test_notifications.py::test_list_requires_sign_in PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/integration/test_notifications.py::test_eager_send_writes_sent_console_row
+  /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/lib/python3.12/site-packages/testcontainers/community/localstack/__init__.py:91: DeprecationWarning: The wait_for_logs function with string or callable predicates is deprecated and will be removed in a future version. Use structured wait strategies instead: container.waiting_for(LogMessageWaitStrategy('ready')) or container.waiting_for(LogMessageWaitStrategy(re.compile(r'pattern')))
+    wait_for_logs(self, r"Ready\.\n", timeout=timeout)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 5 passed, 1 warning in 23.37s =========================
+exit=0
+# 2026-11-01T16:12:18Z 21:42  up 1 day, 21:14, 1 user, load averages: 6.26 11.25 51.89

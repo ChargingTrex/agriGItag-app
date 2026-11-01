@@ -1,0 +1,17 @@
+# 2026-11-01T16:18:42Z epoch 1793549922: the two tasks enqueued at 16:13:05Z (03a log) while another agent recreated api/worker
+$ valkey-cli HLEN unacked
+2
+$ valkey-cli ZRANGE unacked_index 0 -1 WITHSCORES   (score = epoch the message was delivered to a worker)
+c8c7ab8c-ebf3-41a3-9a6a-c6c092335cb2
+1.7935495897168071e+9
+bc03a53b-13eb-4afa-9c73-47c871ad2c3d
+1.7935495900197036e+9
+$ valkey-cli HGETALL unacked | grep task/id
+"task": "notifications.send"
+"id": "21e98d0a-f42f-40f1-989e-d328fdcf2146"
+"task": "notifications.send"
+"id": "a06d28ac-f2ff-4f95-817d-77222c8e6168"
+$ git grep -n visibility_timeout -- apps/api infra
+exit=1 (no match: kombu default visibility_timeout = 3600 s applies)
+$ docker compose logs worker | grep 21e98d0a|a06d28ac   (new worker, up since 16:14:00Z)
+0

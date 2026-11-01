@@ -1,0 +1,34 @@
+# 2026-11-01T16:12:18Z 21:42  up 1 day, 21:14, 1 user, load averages: 6.26 11.25 51.89
+$ (cd apps/api) uv run pytest tests/unit/test_notifications_service.py tests/unit/test_notifications_templates.py -v -p no:cacheprovider -rfE
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /Users/fi-it/Documents/projects/agriGitag/apps/api/.venv/bin/python
+rootdir: /Users/fi-it/Documents/projects/agriGitag/apps/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.1, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 20 items
+
+tests/unit/test_notifications_service.py::test_provider_selection PASSED [  5%]
+tests/unit/test_notifications_service.py::test_otp_sent_with_code_redacted_in_row_and_log PASSED [ 10%]
+tests/unit/test_notifications_service.py::test_unknown_template_fails_without_raising PASSED [ 15%]
+tests/unit/test_notifications_service.py::test_missing_variable_and_unconfigured_sms_fail PASSED [ 20%]
+tests/unit/test_notifications_service.py::test_unknown_user_records_nothing PASSED [ 25%]
+tests/unit/test_notifications_service.py::test_eager_task_writes_sent_console_row PASSED [ 30%]
+tests/unit/test_notifications_service.py::test_failure_log_masks_task_arguments PASSED [ 35%]
+tests/unit/test_notifications_service.py::test_prod_refuses_missing_or_console_sms_provider[None] PASSED [ 40%]
+tests/unit/test_notifications_service.py::test_prod_refuses_missing_or_console_sms_provider[console] PASSED [ 45%]
+tests/unit/test_notifications_service.py::test_sms_provider_typo_fails_at_start_up PASSED [ 50%]
+tests/unit/test_notifications_templates.py::test_renders_tamil_and_english PASSED [ 55%]
+tests/unit/test_notifications_templates.py::test_unknown_language_falls_back_to_english PASSED [ 60%]
+tests/unit/test_notifications_templates.py::test_unknown_template_and_missing_variable_raise_key_error PASSED [ 65%]
+tests/unit/test_notifications_templates.py::test_redact_hides_only_secrets PASSED [ 70%]
+tests/unit/test_notifications_templates.py::test_every_template_is_documented_in_both_languages[flag_raised] PASSED [ 75%]
+tests/unit/test_notifications_templates.py::test_every_template_is_documented_in_both_languages[grade_given] PASSED [ 80%]
+tests/unit/test_notifications_templates.py::test_every_template_is_documented_in_both_languages[harvest_reminder] PASSED [ 85%]
+tests/unit/test_notifications_templates.py::test_every_template_is_documented_in_both_languages[otp] PASSED [ 90%]
+tests/unit/test_notifications_templates.py::test_every_template_is_documented_in_both_languages[payment_made] PASSED [ 95%]
+tests/unit/test_notifications_templates.py::test_every_template_is_documented_in_both_languages[sale_received] PASSED [100%]
+
+============================== 20 passed in 0.39s ==============================
+exit=0
+# 2026-11-01T16:12:21Z 21:42  up 1 day, 21:14, 1 user, load averages: 6.26 11.25 51.89

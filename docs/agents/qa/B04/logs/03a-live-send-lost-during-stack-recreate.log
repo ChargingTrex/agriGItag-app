@@ -1,0 +1,11 @@
+# 2026-11-01T16:13:05Z
+$ docker compose -f infra/docker-compose.yml exec -T api python - 01a197e0-9a5f-7b49-9864-b4c62d0c3cbf < docs/agents/qa/B04/logs/live_send.py
+enqueued harvest_reminder 21e98d0a-f42f-40f1-989e-d328fdcf2146
+enqueued no_such_template a06d28ac-f2ff-4f95-817d-77222c8e6168
+exit=0
+$ psql: notifications rows for that user
+ channel | template_key | lang | status | provider_ref | payload | has_sent_at | created_at 
+---------+--------------+------+--------+--------------+---------+-------------+------------
+(0 rows)
+
+$ docker compose logs worker (notifications lines)

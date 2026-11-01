@@ -1,0 +1,18 @@
+# 2026-11-01T16:14:32Z 21:44 up 1 day, 21:17, 1 user, load averages: 9.51 11.16 46.11
+$ docker compose -f infra/docker-compose.yml exec -T api python - 01a197e0-9a5f-7b49-9864-b4c62d0c3cbf < docs/agents/qa/B04/logs/live_send.py
+enqueued harvest_reminder 82e9715c-d720-4405-9686-5bdc13090fa6
+enqueued no_such_template 83a1c521-1f32-499d-b25b-803b3264959b
+exit=0
+$ psql: notifications rows for that user
+ channel |   template_key   | lang | status |      provider_ref      |            payload             | has_sent_at |          created_at           
+---------+------------------+------+--------+------------------------+--------------------------------+-------------+-------------------------------
+ console | harvest_reminder | ta   | sent   | console                | {"plot_name": "Verifier plot"} | t           | 2026-11-01 16:14:34.635671+00
+ console | no_such_template | en   | failed | error:unknown_template | {}                             | f           | 2026-11-01 16:14:34.653059+00
+(2 rows)
+
+$ docker compose logs worker (task lines)
+worker-1  |   . notifications.send
+worker-1  | [2026-11-01 16:14:34,327: INFO/MainProcess] Task notifications.send[82e9715c-d720-4405-9686-5bdc13090fa6] received
+worker-1  | [2026-11-01 16:14:34,332: INFO/MainProcess] Task notifications.send[83a1c521-1f32-499d-b25b-803b3264959b] received
+worker-1  | [2026-11-01 16:14:34,720: INFO/ForkPoolWorker-7] Task notifications.send[82e9715c-d720-4405-9686-5bdc13090fa6] succeeded in 0.3865879200002382s: 'sent'
+worker-1  | [2026-11-01 16:14:34,752: INFO/ForkPoolWorker-8] Task notifications.send[83a1c521-1f32-499d-b25b-803b3264959b] succeeded in 0.4188109500000792s: 'failed'
