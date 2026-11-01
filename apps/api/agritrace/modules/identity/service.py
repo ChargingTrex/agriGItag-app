@@ -90,6 +90,7 @@ from agritrace.modules.registry.models import Farmer
 __all__ = [
     "end_assist",
     "list_consents",
+    "list_devices",
     "logout",
     "me",
     "record_consent",
@@ -741,12 +742,16 @@ async def refresh(session: AsyncSession, token: str) -> SessionOut:
         device.refresh_token_hash, device.previous_refresh_token_hash, device.revoked_at is not None, token
     )
     account = await _account(session, user_id=device.user_id) if outcome == "ok" else None
-    # DECISION D-024 (amended 2026-11-02, B23): a sign-in lives at most SESSION_MAX_DAYS, however often it
-    #   refreshes; checked only for the current token, so a guessed one still changes nothing. A device never
-    #   stamped with `signed_in_at` (rows older than migration 0002) counts as expired: fail closed.
-    #   ADV: ASVS 3.3.2 L1; a lost phone is signed out within 30 days even if nobody revokes it.
-    #   COMPROMISE: farmers repeat the SMS code once a month, mid-season too.
-    max_age = timedelta(days=get_settings().session_max_days)
+    # DECISION D-024 (amended 2026-11-02, B23): a sign-in lives at most SESSION_MAX_DAYS (staff, 30) or
+    #   SESSION_MAX_DAYS_FARMER (farmer sessions, 90), however often it refreshes; checked only for the
+    #   current token, so a guessed one still changes nothing. A device never stamped with `signed_in_at`
+    #   (rows older than migration 0002) counts as expired: fail closed. Super-admins get the staff limit.
+    #   ADV: ASVS 3.3.2 L1 for staff; a lost phone is signed out within the limit even if nobody revokes it.
+    #   COMPROMISE: farmers deviate from ASVS 3.3.2 (90 > 30 days, UserFlows "log in once"; pending FPO/user
+    #     confirmation) and still repeat the SMS code once or twice a season.
+    settings = get_settings()
+    farmer = account is not None and account[1].role == Role.FARMER and not account[0].is_super_admin
+    max_age = timedelta(days=settings.session_max_days_farmer if farmer else settings.session_max_days)
     expired = outcome == "ok" and (device.signed_in_at is None or utcnow() - device.signed_in_at > max_age)
     if outcome in ("reused", "ok") and (account is None or expired):
         _sign_out(device)
@@ -779,6 +784,52 @@ async def logout(session: AsyncSession, caller: CurrentUser) -> None:
         await session.commit()
 
 
+async def _check_device_owner(session: AsyncSession, caller: CurrentUser, user_id: uuid.UUID) -> None:
+    """Allow device reads and revocation for the user themself, or an FPO admin of one of their FPOs.
+
+    Args:
+        session: database session.
+        caller: the signed-in caller.
+        user_id: the user whose devices are concerned.
+
+    Raises:
+        NotFoundError: the user holds no membership in the caller's FPO (checked before the role, so no other
+            tenant's id is confirmed).
+        ForbiddenError: another member and the caller is not an FPO admin.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+    """
+    if user_id == caller.user_id:
+        return
+    member = select(Membership.id).where(Membership.user_id == user_id, Membership.fpo_id == caller.fpo_id)
+    if await session.scalar(member.limit(1)) is None:
+        raise NotFoundError()
+    if caller.role != Role.FPO_ADMIN:
+        raise ForbiddenError()
+
+
+async def list_devices(session: AsyncSession, caller: CurrentUser, user_id: uuid.UUID) -> list[DeviceOut]:
+    """List a user's devices, newest first, so the one to revoke can be picked (D-024, B23 r2).
+
+    Args:
+        session: database session.
+        caller: the user themself, or an FPO admin of one of the user's FPOs.
+        user_id: the user.
+
+    Returns:
+        Every device row of the user, signed out ones included, newest first.
+
+    Raises:
+        NotFoundError: the user is outside the caller's FPO.
+        ForbiddenError: another member and the caller is not an FPO admin.
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+    """
+    await _check_device_owner(session, caller, user_id)
+    rows = await session.scalars(
+        select(Device).where(Device.user_id == user_id).order_by(Device.created_at.desc(), Device.id)
+    )
+    return [DeviceOut.model_validate(d, from_attributes=True) for d in rows]
+
+
 async def revoke_device(
     session: AsyncSession, caller: CurrentUser, device_id: uuid.UUID, reason: str | None
 ) -> None:
@@ -802,17 +853,12 @@ async def revoke_device(
     device = await session.get(Device, device_id, with_for_update=True)
     if device is None:
         raise NotFoundError()
-    if device.user_id != caller.user_id:
-        member = select(Membership.id).where(
-            Membership.user_id == device.user_id, Membership.fpo_id == caller.fpo_id
-        )
-        if await session.scalar(member.limit(1)) is None:
-            raise NotFoundError()
-        if caller.role != Role.FPO_ADMIN:
-            raise ForbiddenError()
+    await _check_device_owner(session, caller, device.user_id)
     if device.revoked_at is None:
         _sign_out(device)
     # Device is not `Audited` (refresh rotation would flood the log), so this action writes its own row.
+    # shortcut: request_id is not copied (no public getter on the audit context), as in registry `_audit`;
+    #   move the three hand-written inserts to one `core.audit` helper (TODO §8, B14).
     await session.execute(
         insert(AUDIT_LOG).values(
             id=uuid7(),

@@ -63,7 +63,14 @@ class Settings(BaseSettings):
         30,
         ge=1,
         description="Days after a device's OTP/PIN sign-in when its refresh is refused and the device signed "
-        "out, so the user signs in again (`session_expired`; ASVS 3.3.2 L1 wants at most 30; D-024).",
+        "out, so the user signs in again (`session_expired`; ASVS 3.3.2 L1 wants at most 30; D-024). "
+        "Applies to every staff session (and super-admins).",
+    )
+    session_max_days_farmer: int = Field(
+        90,
+        ge=1,
+        description="Same as `session_max_days` for farmer sessions: an accepted ASVS 3.3.2 deviation "
+        '(UserFlows "log in once"; D-024, pending FPO/user confirmation).',
     )
     # TODO(provider): add the real gateway's name to this Literal; until then ENV=prod cannot start.
     sms_provider: Literal["console"] | None = Field(

@@ -615,12 +615,12 @@ async def test_consent_response_carries_no_device_id(api: AsyncClient) -> None:
 # ---------------------------------------------------------------- B23 (SEC P1-1) and wave-7 P3 (B21)
 
 
-async def _age_sign_in(refresh_token: str, days: int) -> uuid.UUID:
-    """Move a device's last sign-in back in time.
+async def _age_sign_in(refresh_token: str, days: int | None) -> uuid.UUID:
+    """Move a device's last sign-in back in time, or clear it.
 
     Args:
         refresh_token: a refresh token of the device (its prefix names the device).
-        days: how many days ago the sign-in happened.
+        days: how many days ago the sign-in happened; None clears `signed_in_at` (a pre-0002 row).
 
     Returns:
         The device id.
@@ -633,34 +633,64 @@ async def _age_sign_in(refresh_token: str, days: int) -> uuid.UUID:
     async with get_sessionmaker()() as s:
         device = await s.get(Device, device_id)
         assert device is not None
-        device.signed_in_at = utcnow() - timedelta(days=days)
+        device.signed_in_at = None if days is None else utcnow() - timedelta(days=days)
         await s.commit()
     return device_id
 
 
-async def test_refresh_after_session_max_days_is_session_expired(api: AsyncClient) -> None:
-    """B23: a sign-in 31 days old refreshes to 401 `session_expired` and revokes the device; 29 days is fine.
+async def _refresh_code(api: AsyncClient, session: dict[str, Any]) -> str | None:
+    """Refresh a session and name the outcome.
+
+    Args:
+        api: the client.
+        session: a session body holding `refresh_token`.
+
+    Returns:
+        None on 200, else the error code.
+    """
+    r = await api.post("/v1/auth/refresh", json={"refresh_token": session["refresh_token"]})
+    return None if r.status_code == 200 else r.json()["error"]["code"]
+
+
+async def test_staff_refresh_after_session_max_days_is_session_expired(api: AsyncClient) -> None:
+    """B23: an officer's 31-day-old sign-in refreshes to 401 `session_expired`, device revoked; 29 days is ok.
+
+    Args:
+        api: the client.
+    """
+    seed = await _seed(Role.FIELD_OFFICER)
+    old = await _officer_session(api, seed)
+    device_id = await _age_sign_in(old["refresh_token"], 31)
+    assert await _refresh_code(api, old) == "session_expired"
+    async with get_sessionmaker()() as s:
+        device = await s.get(Device, device_id)
+    assert device is not None and device.revoked_at is not None and device.refresh_token_hash is None
+
+    recent = await _officer_session(api, seed | {"phone": await _new_phone(seed["user"])})
+    await _age_sign_in(recent["refresh_token"], 29)
+    assert await _refresh_code(api, recent) is None
+
+
+async def test_farmer_session_lasts_session_max_days_farmer(api: AsyncClient) -> None:
+    """B23 r2: a farmer refreshes at 31 days, not at 91; no `signed_in_at` counts as expired (fail closed).
 
     Args:
         api: the client.
     """
     seed = await _seed(Role.FARMER)
-    old = await _otp(api, seed["phone"])
-    device_id = await _age_sign_in(old["refresh_token"], 31)
-    r = await api.post("/v1/auth/refresh", json={"refresh_token": old["refresh_token"]})
-    assert (r.status_code, r.json()["error"]["code"]) == (401, "session_expired")
-    async with get_sessionmaker()() as s:
-        device = await s.get(Device, device_id)
-    assert device is not None and device.revoked_at is not None and device.refresh_token_hash is None
-
-    recent = await _otp(api, await _new_phone(seed["user"]))
-    await _age_sign_in(recent["refresh_token"], 29)
-    r = await api.post("/v1/auth/refresh", json={"refresh_token": recent["refresh_token"]})
-    assert r.status_code == 200 and r.json()["kind"] == "session"
+    month = await _otp(api, seed["phone"])
+    await _age_sign_in(month["refresh_token"], 31)
+    assert await _refresh_code(api, month) is None
+    season = await _otp(api, await _new_phone(seed["user"]))
+    await _age_sign_in(season["refresh_token"], 91)
+    assert await _refresh_code(api, season) == "session_expired"
+    unstamped = await _otp(api, await _new_phone(seed["user"]))
+    await _age_sign_in(unstamped["refresh_token"], None)
+    assert await _refresh_code(api, unstamped) == "session_expired"
 
 
 async def test_device_revoke_is_scoped_and_audited(api: AsyncClient) -> None:
-    """B23: an FPO admin revokes a member's device (refresh 401, audit row); other FPO 404; farmer 403.
+    """B23: an FPO admin lists and revokes a member's device (refresh 401, audit); other FPO 404; farmer 403.
 
     Args:
         api: the client.
@@ -686,9 +716,22 @@ async def test_device_revoke_is_scoped_and_audited(api: AsyncClient) -> None:
     r = await api.post(f"/v1/devices/{outsider_device}/revoke", headers=_bearer(admin_session))
     assert (r.status_code, r.json()["error"]["code"]) == (404, "not_found")
 
+    # r2 P2-1: the same check guards the device list the admin picks from.
+    member_devices = f"/v1/users/{member.id}/devices"
+    listed = await api.get(member_devices, headers=_bearer(admin_session))
+    assert listed.status_code == 200, listed.text
+    assert [(d["id"], d["revoked_at"]) for d in listed.json()] == [(str(member_device), None)]
+    assert listed.json()[0]["signed_in_at"] is not None
+    r = await api.get(f"/v1/users/{outsider['user']}/devices", headers=_bearer(admin_session))
+    assert (r.status_code, r.json()["error"]["code"]) == (404, "not_found")
+    r = await api.get(f"/v1/users/{admin['user']}/devices", headers=_bearer(member_session))
+    assert (r.status_code, r.json()["error"]["code"]) == (403, "forbidden")
+    assert (await api.get(member_devices, headers=_bearer(member_session))).status_code == 200
+
     revoke = f"/v1/devices/{member_device}/revoke"
     r = await api.post(revoke, json={"reason": "phone lost"}, headers=_bearer(admin_session))
     assert r.status_code == 204, r.text
+    assert (await api.get(member_devices, headers=_bearer(admin_session))).json()[0]["revoked_at"] is not None
     r = await api.post("/v1/auth/refresh", json={"refresh_token": member_session["refresh_token"]})
     assert (r.status_code, r.json()["error"]["code"]) == (401, "unauthorized")
     async with get_sessionmaker()() as s:

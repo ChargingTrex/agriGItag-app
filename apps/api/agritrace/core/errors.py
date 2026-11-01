@@ -635,7 +635,8 @@ async def _db_error(request: Request, exc: Exception) -> JSONResponse:
         503 `retry_later` with `Retry-After: 1`, or the `internal_error` envelope from `_unhandled`.
 
     Side effects:
-        Logs a WARNING for a retryable error; every other error with its traceback (through `_unhandled`).
+        Logs a WARNING (SQLSTATE, method, path; no database text) for a retryable or class-22 error; every
+        other error with its traceback (through `_unhandled`).
     """
     if getattr(getattr(exc, "orig", None), "sqlstate", None) in SQLSTATE_RETRYABLE:
         log.warning(
@@ -645,6 +646,10 @@ async def _db_error(request: Request, exc: Exception) -> JSONResponse:
     mapped = append_only_error(exc) or data_error(exc)
     if mapped is None:
         return await _unhandled(request, exc)
+    if isinstance(mapped, ValidationFailedError):
+        # Some class-22 errors are server bugs (a computed sum overflowing INTEGER): log it, no DB text.
+        sqlstate = getattr(getattr(exc, "orig", None), "sqlstate", None)
+        log.warning("data error %s on %s %s", sqlstate, request.method, request.url.path)
     return _envelope(mapped.status, mapped.code, mapped.detail_message, mapped.details)
 
 

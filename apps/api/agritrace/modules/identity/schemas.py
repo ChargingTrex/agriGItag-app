@@ -128,6 +128,10 @@ class DeviceOut(BaseModel):
     platform: str = Field(description="`android`, `ios` or `web`.")
     app_version: str | None = Field(description="App version last reported.")
     last_seen_at: datetime | None = Field(description="Last sign-in or token refresh from it.")
+    signed_in_at: datetime | None = Field(
+        None, description="Last OTP/PIN sign-in; the session ends `SESSION_MAX_DAYS` after it."
+    )
+    revoked_at: datetime | None = Field(None, description="When it was signed out; null while signed in.")
 
 
 class MeOut(BaseModel):

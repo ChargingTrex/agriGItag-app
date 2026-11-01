@@ -1424,6 +1424,32 @@
             "description": "`android`, `ios` or `web`.",
             "title": "Platform",
             "type": "string"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When it was signed out; null while signed in.",
+            "title": "Revoked At"
+          },
+          "signed_in_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Last OTP/PIN sign-in; the session ends `SESSION_MAX_DAYS` after it.",
+            "title": "Signed In At"
           }
         },
         "required": [
@@ -21319,6 +21345,103 @@
         "tags": [
           "events",
           "events"
+        ]
+      }
+    },
+    "/v1/users/{user_id}/devices": {
+      "get": {
+        "description": "List a user's devices (signed out ones included), newest first, to pick the one to revoke.\n\nArgs:\n    user_id: the user.\n    user: the caller (the user themself, or an FPO admin of the user's FPO).\n    session: database session.\n\nReturns:\n    The user's devices.\n\nRaises:\n    UnauthorizedError: not signed in.\n    ForbiddenError: another member and the caller is not an FPO admin.\n    NotFoundError: the user is outside the caller's FPO.",
+        "operationId": "device_list_v1_users__user_id__devices_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceOut"
+                  },
+                  "title": "Response Device List V1 Users  User Id  Devices Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "description": "`forbidden`: another member and the caller is not an FPO admin."
+          },
+          "404": {
+            "description": "`not_found`: the user is outside the caller's FPO."
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Device List",
+        "tags": [
+          "identity"
         ]
       }
     },

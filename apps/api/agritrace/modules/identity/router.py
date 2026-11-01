@@ -2,7 +2,7 @@
 
 Serves: FR1 (OTP sign-in), FR14 (roles), FR41 (consent), Arch §Security and privacy, UserFlows §Onboarding
 a farmer steps 1–2, UserFlows §Log in once, CLAUDE.md §6 (assist mode), D-005, D-020, D-022, D-024;
-B23 / SEC P1-1 (`POST /v1/devices/{device_id}/revoke`, `session_expired` on refresh).
+B23 / SEC P1-1 (`POST /v1/devices/{device_id}/revoke`, `GET /v1/users/{user_id}/devices`, `session_expired`).
 Callers: `agritrace.main` mounts `router` under `/v1` by discovery; the mobile app and portal through the
 generated clients; tests/integration/test_identity.py.
 """
@@ -26,6 +26,7 @@ from agritrace.modules.identity.schemas import (
     AssistStartIn,
     ConsentIn,
     ConsentOut,
+    DeviceOut,
     DeviceRevokeIn,
     MeOut,
     OtpRequestIn,
@@ -311,6 +312,35 @@ async def device_revoke(
         Revokes the device; writes the `device.revoke` audit row.
     """
     await service.revoke_device(session, user, device_id, body.reason if body else None)
+
+
+@router.get(
+    "/users/{user_id}/devices",
+    response_model=list[DeviceOut],
+    responses={
+        403: {"description": "`forbidden`: another member and the caller is not an FPO admin."},
+        404: {"description": "`not_found`: the user is outside the caller's FPO."},
+    },
+)
+async def device_list(user_id: uuid.UUID, user: Caller, session: Session) -> list[DeviceOut]:
+    """List a user's devices (signed out ones included), newest first, to pick the one to revoke.
+
+    Args:
+        user_id: the user.
+        user: the caller (the user themself, or an FPO admin of the user's FPO).
+        session: database session.
+
+    Returns:
+        The user's devices.
+
+    Raises:
+        UnauthorizedError: not signed in.
+        ForbiddenError: another member and the caller is not an FPO admin.
+        NotFoundError: the user is outside the caller's FPO.
+    """
+    # shortcut: one unpaged list; a user has a handful of phones (each reinstall adds one); page it if a
+    #   user ever collects dozens.
+    return await service.list_devices(session, user, user_id)
 
 
 @router.get("/me", response_model=MeOut)
