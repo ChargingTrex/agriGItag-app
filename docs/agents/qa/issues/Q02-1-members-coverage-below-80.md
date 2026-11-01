@@ -32,3 +32,5 @@ coverage does not count.
    satellite source added only after the toggle. Covers the logic, not the WebGL drawing.
 2. Or exclude `PlotMap.tsx` from the coverage `include` in `vite.config.ts` with a comment that the Playwright
    members spec covers it, and have the QA Lead accept that in the Q02 gate.
+
+**Resolution (Orchestrator, 2026-11-02):** P11 merged — `PlotMap.test.tsx` (2 tests); members 95.6 % statements / 99.3 % lines; full Vitest 141/141. Q02 → PASS on the coverage line.
