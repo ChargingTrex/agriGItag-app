@@ -312,9 +312,12 @@ describe('Batch detail', () => {
     renderApp(`/batches/${BATCH_ID}`, true);
     const publish = await screen.findByRole('button', { name: /^Publish/ });
     expect(publish).toBeDisabled();
-    expect(publish).toHaveAccessibleName(
-      'Publish: The grading has not been approved.; Final packing has not been signed off.; A second FPO admin must sign off this batch.',
-    );
+    // The name carries "checking holds" until the hold flags and lots load (fail closed), so wait it out.
+    await waitFor(() => {
+      expect(publish).toHaveAccessibleName(
+        'Publish: The grading has not been approved.; Final packing has not been signed off.; A second FPO admin must sign off this batch.',
+      );
+    });
     expect(
       screen.getByRole('button', {
         name: /^Sign off final packing: The grading has not been approved/,

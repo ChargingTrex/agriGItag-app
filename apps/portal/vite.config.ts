@@ -28,8 +28,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
-    // Room for several 5 s `findBy*` waits (src/test/setup.ts) on a loaded runner.
-    testTimeout: 30_000,
+    // Room for several slow `findBy*` waits (15 s cap each, src/test/setup.ts) on a loaded runner.
+    testTimeout: 60_000,
     // `npm test -- --coverage` prints to the console only, so no report folder lands in the tree (P02 gate:
     // ≥ 80 % in src/features/flags).
     coverage: {
