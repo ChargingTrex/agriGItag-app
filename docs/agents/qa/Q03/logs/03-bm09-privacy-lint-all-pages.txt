@@ -1,0 +1,32 @@
+ 1:02  up 2 days, 34 mins, 1 user, load averages: 9.82 12.41 18.86
+Mon Nov  2 01:02:17 IST 2026
+af67f30
+$ aws --endpoint-url http://localhost:4566 s3 ls --recursive s3://public-pages/
+2026-11-02 00:52:20       2496 batches/0598KCH0ZR3Y/data.json
+2026-11-02 00:52:20      13800 batches/0598KCH0ZR3Y/index.html
+2026-11-02 00:52:20        890 batches/0598KCH0ZR3Y/qr.png
+2026-11-01 22:55:01       5035 batches/GQ6QTKYZYVEP/data.json
+2026-11-01 22:55:01      19839 batches/GQ6QTKYZYVEP/index.html
+2026-11-01 22:55:01        864 batches/GQ6QTKYZYVEP/qr.png
+2026-11-02 00:53:18       2496 batches/QTC7PBGPAHGZ/data.json
+2026-11-02 00:53:18      13800 batches/QTC7PBGPAHGZ/index.html
+2026-11-02 00:53:18        818 batches/QTC7PBGPAHGZ/qr.png
+canaries: 22 values (users.phone with and without +91, plots.land_record_ref, id_documents.object_key, farmers.address.pin)
+$ python3 infra/scripts/privacy-lint.py batches/0598KCH0ZR3Y/ --canary <44 args>
+privacy-lint: 0 hit(s) in 2 file(s) scanned, 1 non-text skipped
+exit=0
+$ python3 infra/scripts/privacy-lint.py batches/GQ6QTKYZYVEP/ --canary <44 args>
+privacy-lint: 0 hit(s) in 2 file(s) scanned, 1 non-text skipped
+exit=0
+$ python3 infra/scripts/privacy-lint.py batches/QTC7PBGPAHGZ/ --canary <44 args>
+privacy-lint: 0 hit(s) in 2 file(s) scanned, 1 non-text skipped
+exit=0
+folders with hits: 0
+$ python3 infra/scripts/privacy-lint.py <all pages>
+privacy-lint: 0 hit(s) in 6 file(s) scanned, 3 non-text skipped
+exit=0
+ 1:02  up 2 days, 34 mins, 1 user, load averages: 9.82 12.41 18.86
+# negative control: copy of QTC7PBGPAHGZ/index.html with "<p>Call 98765 43210</p>" injected
+<scratch>/ctl/index.html:175:9: phone: <redacted>
+privacy-lint: 1 hit(s) in 1 file(s) scanned, 0 non-text skipped
+exit=1

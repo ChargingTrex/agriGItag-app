@@ -1,0 +1,44 @@
+Mon Nov  2 01:12:11 IST 2026
+## versions before
+batches/QTC7PBGPAHGZ/data.json	AaGX6dNwdBVu30P3W8P8fHUCNC5OlQ6p	True	2026-11-01T19:23:18+00:00	2496
+batches/QTC7PBGPAHGZ/index.html	AaGX6dNx099.tXn8Tp7pPSsF3kRry65f	True	2026-11-01T19:23:18+00:00	13800
+batches/QTC7PBGPAHGZ/qr.png	AaGX6dNvrU6veglFUg34O.9fxDEtmdrM	True	2026-11-01T19:23:18+00:00	818
+$ POST http://localhost:8000/v1/batches/ab39efb1-d7d7-47b1-860a-0cb462476e2e/rebuild
+{"id":"01a198a2-4895-7782-b1e6-efb2deac821c","batch_id":"ab39efb1-d7d7-47b1-860a-0cb462476e2e","build_no":2,"generation":2,"status":"queued","trigger":"rebuild","built_at":null,"html_key":null,"json_key":null,"qr_key":null,"error":null}
+-> HTTP 202
+latest build: 2 built None (after ~9 s)
+## versions after
+batches/QTC7PBGPAHGZ/data.json	AaGX6dNzMJsSurFVB8bDvZTfyRo5vv3J	True	2026-11-01T19:42:20+00:00	2496
+batches/QTC7PBGPAHGZ/data.json	AaGX6dNwdBVu30P3W8P8fHUCNC5OlQ6p	False	2026-11-01T19:23:18+00:00	2496
+batches/QTC7PBGPAHGZ/index.html	AaGX6dN06c0GXf2sfUUIT_RIWKHTHTQJ	True	2026-11-01T19:42:20+00:00	13800
+batches/QTC7PBGPAHGZ/index.html	AaGX6dNx099.tXn8Tp7pPSsF3kRry65f	False	2026-11-01T19:23:18+00:00	13800
+batches/QTC7PBGPAHGZ/qr.png	AaGX6dNy3k3WU.flma4cKmI87xCBUiE2	True	2026-11-01T19:42:20+00:00	818
+batches/QTC7PBGPAHGZ/qr.png	AaGX6dNvrU6veglFUg34O.9fxDEtmdrM	False	2026-11-01T19:23:18+00:00	818
+GET http://localhost:4566/public-pages/batches/QTC7PBGPAHGZ/index.html?versionId=AaGX6dNx099.tXn8Tp7pPSsF3kRry65f -> 200 13800 B
+  generation in page:   sha256: dbe0d7e96e252505
+GET http://localhost:4566/public-pages/batches/QTC7PBGPAHGZ/index.html?versionId=AaGX6dN06c0GXf2sfUUIT_RIWKHTHTQJ -> 200 13800 B
+  generation in page:   sha256: b6aa04263f8ef9c8
+data.json versionId=AaGX6dNzMJsSurFVB8bDvZTfyRo5vv3J footer.generation = 2
+data.json versionId=AaGX6dNwdBVu30P3W8P8fHUCNC5OlQ6p footer.generation = 1
+$ GET http://localhost:4566/public-pages/batches/QTC7PBGPAHGZ/index.html (no versionId) -> latest:
+200 13800 B
+Mon Nov  2 01:12:28 IST 2026
+## diff old (AaGX6dNx099...) vs new (AaGX6dN06c0...) index.html
+< <p>
+<span lang="ta">கடைசியாகப் புதுப்பிக்கப்பட்டது</span> / <span lang="en">Last updated</span>: <time datetime="2026-11-01T19:23:18.704021+00:00">1 Nov 2026, 19:23 UTC</time>
+</p>
+< <p>
+<span lang="ta">உருவாக்கம்</span> / <span lang="en">Generation</span>: <span id="gen">1</span> · <span lang="ta">பக்கப் பதிப்பு</span> / <span lang="en">Page version</span>: 1</p>
+</footer>
+> <p>
+<span lang="ta">கடைசியாகப் புதுப்பிக்கப்பட்டது</span> / <span lang="en">Last updated</span>: <time datetime="2026-11-01T19:42:18.283887+00:00">1 Nov 2026, 19:42 UTC</time>
+</p>
+> <p>
+299c299
+< <span lang="ta">கடைசியாகப் புதுப்பிக்கப்பட்டது</span> / <span lang="en">Last updated</span>: <time datetime="2026-11-01T19:23:18.704021+00:00">1 Nov 2026, 19:23 UTC</time>
+---
+> <span lang="ta">கடைசியாகப் புதுப்பிக்கப்பட்டது</span> / <span lang="en">Last updated</span>: <time datetime="2026-11-01T19:42:18.283887+00:00">1 Nov 2026, 19:42 UTC</time>
+302c302
+< <span lang="ta">உருவாக்கம்</span> / <span lang="en">Generation</span>: <span id="gen">1</span> · <span lang="ta">பக்கப் பதிப்பு</span> / <span lang="en">Page version</span>: 1</p>
+---
+> <span lang="ta">உருவாக்கம்</span> / <span lang="en">Generation</span>: <span id="gen">2</span> · <span lang="ta">பக்கப் பதிப்பு</span> / <span lang="en">Page version</span>: 2</p>

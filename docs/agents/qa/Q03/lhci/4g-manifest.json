@@ -1,0 +1,29 @@
+[
+  {
+    "url": "http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "<scratch>/lhci/4g/localhost-public_pages_batches_GQ6QTKYZYVEP_index_html-2026_11_01_19_44_18.report.html",
+    "jsonPath": "<scratch>/lhci/4g/localhost-public_pages_batches_GQ6QTKYZYVEP_index_html-2026_11_01_19_44_18.report.json",
+    "summary": {
+      "performance": 1
+    }
+  },
+  {
+    "url": "http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/index.html",
+    "isRepresentativeRun": false,
+    "htmlPath": "<scratch>/lhci/4g/localhost-public_pages_batches_GQ6QTKYZYVEP_index_html-2026_11_01_19_44_46.report.html",
+    "jsonPath": "<scratch>/lhci/4g/localhost-public_pages_batches_GQ6QTKYZYVEP_index_html-2026_11_01_19_44_46.report.json",
+    "summary": {
+      "performance": 1
+    }
+  },
+  {
+    "url": "http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/index.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "<scratch>/lhci/4g/localhost-public_pages_batches_GQ6QTKYZYVEP_index_html-2026_11_01_19_44_32.report.html",
+    "jsonPath": "<scratch>/lhci/4g/localhost-public_pages_batches_GQ6QTKYZYVEP_index_html-2026_11_01_19_44_32.report.json",
+    "summary": {
+      "performance": 1
+    }
+  }
+]

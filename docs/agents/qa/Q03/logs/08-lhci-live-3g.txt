@@ -1,0 +1,24 @@
+ 1:13  up 2 days, 45 mins, 1 user, load averages: 14.27 17.88 18.30
+Mon Nov  2 01:13:20 IST 2026
+$ npx lhci autorun --config=<scratch>/lighthouserc.3g.yml   # url: http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/index.html
+✅  .lighthouseci/ directory writable
+✅  Configuration file found
+✅  Chrome installation found
+Healthcheck passed!
+
+Running Lighthouse 3 time(s) on http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/index.html
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Done running Lighthouse!
+
+Checking assertions against 1 URL(s), 3 total run(s)
+
+All results processed!
+
+Dumping 3 reports to disk at <scratch>/lhci/3g...
+Done writing reports to disk.
+
+Done running autorun.
+exit=0
+ 1:14  up 2 days, 46 mins, 1 user, load averages: 16.38 18.35 18.48

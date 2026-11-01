@@ -1,0 +1,6 @@
+Q03: 0 real Robot test(s)
+NOT READY: 2 placeholder test(s) still tagged not-ready:
+  Q03  qa/robot/public/page.robot  Old Page Version Is Retrievable
+  Q03  qa/robot/public/page.robot  Page Is Served From Object Storage With The Backend Down
+gate-readiness Q03: FAIL
+exit=1

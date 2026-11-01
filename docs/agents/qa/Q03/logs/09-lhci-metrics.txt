@@ -1,0 +1,6 @@
+3g localhost-public_pages_batches perf 0.92 LCP_ms 1921 total_bytes 20386 requests 1 doc_transfer_B 20386
+3g localhost-public_pages_batches perf 0.98 LCP_ms 1710 total_bytes 20386 requests 1 doc_transfer_B 20386
+3g localhost-public_pages_batches perf 0.98 LCP_ms 1712 total_bytes 20386 requests 1 doc_transfer_B 20386
+4g localhost-public_pages_batches perf 1 LCP_ms 518 total_bytes 20386 requests 1 doc_transfer_B 20386
+4g localhost-public_pages_batches perf 1 LCP_ms 535 total_bytes 20386 requests 1 doc_transfer_B 20386
+4g localhost-public_pages_batches perf 1 LCP_ms 588 total_bytes 20386 requests 1 doc_transfer_B 20386

@@ -1,0 +1,13 @@
+GET /v1/partner/batches/GQ6QTKYZYVEP (no auth) -> 501 113 B
+GET /v1/partner/batches/GQ6QTKYZYVEP (admin token) -> 501 113 B
+GET /v1/public/batches/GQ6QTKYZYVEP -> 200 19839 B
+GET /v1/partner/batches/QTC7PBGPAHGZ (no auth) -> 501 113 B
+GET /v1/partner/batches/QTC7PBGPAHGZ (admin token) -> 501 113 B
+GET /v1/public/batches/QTC7PBGPAHGZ -> 200 13800 B
+GET /v1/partner/batches/0598KCH0ZR3Y (no auth) -> 501 113 B
+GET /v1/partner/batches/0598KCH0ZR3Y (admin token) -> 501 113 B
+GET /v1/public/batches/0598KCH0ZR3Y -> 200 13800 B
+{"error":{"code":"not_implemented_pilot","message":"This feature is not available in the pilot.","details":null}}
+$ python3 infra/scripts/privacy-lint.py <partner + public API bodies>
+privacy-lint: 0 hit(s) in 9 file(s) scanned, 0 non-text skipped
+exit=0

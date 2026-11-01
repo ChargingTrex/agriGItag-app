@@ -1,0 +1,13 @@
+{
+ "id": "BM-03",
+ "metrics": {
+  "performance_score": 98,
+  "lcp_s": 1.712,
+  "transfer_kb": 20.4
+ },
+ "scope": "Lighthouse 12.6.1 (lhci 0.15.1) median of 3 runs, repo lighthouserc.3g.yml (300 ms RTT, 700 kbit/s, 4x CPU, D-025) with url http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/index.html; runs 0.92/0.98/0.98, LCP 1921/1710/1712 ms, 20,386 B (1 request)",
+ "commit": "a51d071",
+ "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+ "recorded_at": "2026-11-01T19:44:10+00:00",
+ "evidence": "docs/agents/qa/Q03/logs/08-lhci-live-3g.txt, 09-lhci-metrics.txt, lhci/3g-manifest.json"
+}

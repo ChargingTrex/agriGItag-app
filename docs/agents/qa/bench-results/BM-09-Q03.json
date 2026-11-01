@@ -1,0 +1,11 @@
+{
+ "id": "BM-09",
+ "metrics": {
+  "hits": 0
+ },
+ "scope": "privacy-lint over every object in s3://public-pages (3 batches: 0598KCH0ZR3Y, GQ6QTKYZYVEP, QTC7PBGPAHGZ; 6 text files) with 22 DB canaries, before and after the Q03 rebuild; plus partner stub 501 and GET /v1/public/batches bodies (9 files): 0 hits. Negative control with an injected phone: 1 hit",
+ "commit": "a51d071",
+ "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+ "recorded_at": "2026-11-01T19:43:00+00:00",
+ "evidence": "docs/agents/qa/Q03/logs/03-bm09-privacy-lint-all-pages.txt, 06-bm09-privacy-lint-after-rebuild.txt, 07-bm09-partner-and-public-api.txt"
+}

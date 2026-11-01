@@ -1,0 +1,48 @@
+ 0:59  up 2 days, 31 mins, 1 user, load averages: 7.48 9.91 19.43
+Mon Nov  2 00:59:07 IST 2026
+4ce38d6
+==============================================================================
+Page :: Public batch page: render, privacy lint, HTML validity, size budget...
+==============================================================================
+Privacy Lint Passes The Clean Fixture And Catches The Dirty One ::... | PASS |
+------------------------------------------------------------------------------
+Fixture Renders Valid HTML :: html-validate (.htmlvalidate.mjs: st... | PASS |
+------------------------------------------------------------------------------
+Crop Name Is Bilingual :: The heading shows the fixture's Tamil cr... | PASS |
+------------------------------------------------------------------------------
+Every Quantity Carries A Unit :: Every <data class="q"> reads "<nu... | PASS |
+------------------------------------------------------------------------------
+Events Are In Date Order :: In every timeline (each lot, processin... | PASS |
+------------------------------------------------------------------------------
+No Temp Uploads Or Non Evidence Paths :: No temporary path anywher... | PASS |
+------------------------------------------------------------------------------
+Built Fixture Passes Privacy Lint With Canaries :: tools/check_out... | PASS |
+------------------------------------------------------------------------------
+Injected Phone Number Fails Privacy Lint :: A copy of the build wi... | PASS |
+------------------------------------------------------------------------------
+Initial HTML CSS And JS Are Under 100 KB :: `python -m agritrace_p... | PASS |
+------------------------------------------------------------------------------
+Lighthouse 3G Performance Is At Least 90 With LCP At Most 2 s :: l... | PASS |
+------------------------------------------------------------------------------
+Lighthouse Normal 4G Transfers Under 100 KB With LCP At Most 2.5 s... | PASS |
+------------------------------------------------------------------------------
+OG Tags Pass The Privacy Lint                                         | SKIP |
+Placeholder: written when W03 merges.
+------------------------------------------------------------------------------
+Tamil Renders With The System Font                                    | SKIP |
+Placeholder: written when W03 merges.
+------------------------------------------------------------------------------
+Page Is Served From Object Storage With The Backend Down              | SKIP |
+Placeholder: written when Q03 merges.
+------------------------------------------------------------------------------
+Old Page Version Is Retrievable                                       | SKIP |
+Placeholder: written when Q03 merges.
+------------------------------------------------------------------------------
+Page :: Public batch page: render, privacy lint, HTML validity, si... | PASS |
+15 tests, 11 passed, 0 failed, 4 skipped
+==============================================================================
+Output:  /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q0304/robot/output.xml
+Log:     /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q0304/robot/log.html
+Report:  /private/tmp/claude-501/-Users-fi-it-Documents-projects-agriGitag/1234289e-8332-4673-8beb-a187a8f85a38/scratchpad/q0304/robot/report.html
+exit=0
+ 1:01  up 2 days, 33 mins, 1 user, load averages: 11.78 13.28 19.66

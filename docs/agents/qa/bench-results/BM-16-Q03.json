@@ -1,0 +1,12 @@
+{
+ "id": "BM-16",
+ "metrics": {
+  "initial_kb": 20.4,
+  "lcp_s": 0.535
+ },
+ "scope": "Lighthouse median of 3, repo lighthouserc.4g.yml (60 ms RTT, 10 Mbit/s, 4x CPU) on the same LocalStack URL; LCP 518/535/588 ms; one document 20,386 B (HTML with inline CSS, no JS file, uncompressed)",
+ "commit": "a51d071",
+ "env": "compose stack (agritrace-api:dev image ed2d0b72 built 2026-11-01 23:53 IST, pre-B20; rebuild from main failed, see Q04/logs/00-make-up.txt), LocalStack 4.14.0, host load avg 12-24",
+ "recorded_at": "2026-11-01T19:44:50+00:00",
+ "evidence": "docs/agents/qa/Q03/logs/08-lhci-live-4g.txt, 09-lhci-metrics.txt, lhci/4g-manifest.json"
+}

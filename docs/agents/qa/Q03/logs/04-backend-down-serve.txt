@@ -1,0 +1,53 @@
+Mon Nov  2 01:11:03 IST 2026
+ 1:11  up 2 days, 43 mins, 1 user, load averages: 17.40 17.95 18.31
+$ docker compose -f infra/docker-compose.yml stop api worker
+ Container agritrace-api-1 Stopping 
+ Container agritrace-worker-1 Stopping 
+ Container agritrace-worker-1 Stopped 
+ Container agritrace-api-1 Stopped 
+db running Up 4 hours (healthy)
+mosquitto running Up 5 hours
+s3 running Up 5 hours (healthy)
+valkey running Up 5 hours (healthy)
+$ curl -s -m 5 localhost:8000/v1/healthz
+healthz http=000 (000 = connection refused)
+GET http://localhost:4566/public-pages/batches/QTC7PBGPAHGZ/index.html -> 200 13800 B 0.010118 s text/html; charset=utf-8
+GET http://localhost:4566/public-pages/batches/QTC7PBGPAHGZ/qr.png -> 200 818 B 0.008719 s image/png
+GET http://localhost:4566/public-pages/batches/QTC7PBGPAHGZ/data.json -> 200 2496 B 0.007158 s application/json
+GET http://localhost:4566/public-pages/batches/0598KCH0ZR3Y/index.html -> 200 13800 B 0.008653 s text/html; charset=utf-8
+GET http://localhost:4566/public-pages/batches/0598KCH0ZR3Y/qr.png -> 200 890 B 0.006622 s image/png
+GET http://localhost:4566/public-pages/batches/0598KCH0ZR3Y/data.json -> 200 2496 B 0.007560 s application/json
+GET http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/index.html -> 200 19839 B 0.006873 s text/html; charset=utf-8
+GET http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/qr.png -> 200 864 B 0.006716 s image/png
+GET http://localhost:4566/public-pages/batches/GQ6QTKYZYVEP/data.json -> 200 5035 B 0.004739 s application/json
+<title>விருதுநகர் சம்பா வத்தல் / VIRUDHUNAGAR SAMBA VATHAL · GI 883 · QTC7PBGPAHGZ</title>
+/dev/stdin: PNG image data, 410 x 410, 1-bit grayscale, non-interlaced
+$ docker compose -f infra/docker-compose.yml start api worker
+ Container agritrace-s3-1 Waiting 
+ Container agritrace-s3-1 Healthy 
+ Container agritrace-s3-init-1 Starting 
+ Container agritrace-s3-init-1 Started 
+ Container agritrace-db-1 Waiting 
+ Container agritrace-valkey-1 Waiting 
+ Container agritrace-s3-init-1 Waiting 
+ Container agritrace-db-1 Waiting 
+ Container agritrace-valkey-1 Waiting 
+ Container agritrace-s3-init-1 Waiting 
+ Container agritrace-db-1 Healthy 
+ Container agritrace-valkey-1 Healthy 
+ Container agritrace-valkey-1 Healthy 
+ Container agritrace-db-1 Healthy 
+ Container agritrace-s3-init-1 Exited 
+ Container agritrace-worker-1 Starting 
+ Container agritrace-s3-init-1 Exited 
+ Container agritrace-api-1 Starting 
+ Container agritrace-worker-1 Started 
+ Container agritrace-api-1 Started 
+healthz after start (12 s): {"db":"ok","redis":"ok","s3":"ok"}
+api running Up 15 seconds (healthy)
+db running Up 4 hours (healthy)
+mosquitto running Up 5 hours
+s3 running Up 5 hours (healthy)
+valkey running Up 5 hours (healthy)
+worker running Up 15 seconds
+Mon Nov  2 01:11:42 IST 2026
