@@ -76,6 +76,14 @@ def test_sowing_before_nursery_is_flagged_on_the_sowing() -> None:
     assert flag.details["missing"] == ["nursery"]
 
 
+def test_drying_between_two_pickings_is_not_a_flag() -> None:
+    """Drying on 15 Feb follows the first harvest (14 Feb); a later picking (4 Mar) must not flag it (B22)."""
+    days = [("nursery", "2025-09-05"), ("land_preparation", "2025-09-30"), ("sowing", "2025-10-20")]
+    picks = [("harvest", "2026-02-14"), ("drying", "2026-02-15"), ("harvest", "2026-03-04")]
+    events = tuple(_event(kind, on) for kind, on in [*days, *picks])
+    assert event_order.run(LotContext(LOT, SCHEMA, events)) == []
+
+
 def test_inorganic_declared_with_only_organic_inputs_is_a_contradiction() -> None:
     """Declared Inorganic, organic/bio inputs only, a pest event present → contradiction only."""
     ctx = LotContext(LOT, declared_tags=("inorganic",), input_categories=ORGANIC, has_pest_event=True)

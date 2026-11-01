@@ -12,6 +12,7 @@ from typing import Any
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.exc import OperationalError
 
 from agritrace.core.auth import CurrentUser, get_current_user
 from agritrace.core.db import get_session
@@ -229,14 +230,18 @@ async def test_escalation_reassigns_to_admin_and_locks_out_the_officer() -> None
         await resolve_from_sync(session, officer, {**data, "resolution": "fixed"})
 
 
-def test_check_event_task_retries_a_database_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A deadlock-like `OperationalError` in `rules.check_event` is retried, not dropped (audit wave-7 #3).
+@pytest.mark.parametrize(
+    "error",
+    [OperationalError("SELECT 1", {}, Exception("deadlock detected")), ConnectionRefusedError()],
+    ids=["deadlock", "postgres_down"],
+)
+def test_check_event_task_retries_a_database_error(monkeypatch: pytest.MonkeyPatch, error: Exception) -> None:
+    """A deadlock, or Postgres refusing the connection, in `rules.check_event` is retried (audit wave-7 #3).
 
     Args:
         monkeypatch: sets JWT_SECRET; replaces the task DB runner with one that fails once.
+        error: what the first run raises (SQLAlchemy does not wrap connect errors, so `OSError` too).
     """
-    from sqlalchemy.exc import OperationalError
-
     from agritrace.core.config import get_settings
 
     monkeypatch.setenv("JWT_SECRET", "unit-test-secret-of-at-least-32-bytes!")  # read by the Celery app
@@ -246,7 +251,7 @@ def test_check_event_task_retries_a_database_error(monkeypatch: pytest.MonkeyPat
     calls: list[uuid.UUID] = []
 
     def flaky(work: Any, event_id: uuid.UUID) -> list[str]:
-        """Stand-in for `run_db_task`: raise like a deadlock on the first call, succeed on the next.
+        """Stand-in for `run_db_task`: raise `error` on the first call, succeed on the next.
 
         Args:
             work: the service coroutine function (not run).
@@ -256,11 +261,11 @@ def test_check_event_task_retries_a_database_error(monkeypatch: pytest.MonkeyPat
             One rule code, from the second call on.
 
         Raises:
-            OperationalError: on the first call.
+            Exception: `error`, on the first call.
         """
         calls.append(event_id)
         if len(calls) == 1:
-            raise OperationalError("SELECT 1", {}, Exception("deadlock detected"))
+            raise error
         return ["event_off_plot"]
 
     monkeypatch.setattr(tasks, "run_db_task", flaky)

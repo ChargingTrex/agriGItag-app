@@ -32,11 +32,18 @@ def _uuid(value: str | None) -> uuid.UUID | None:
     return uuid.UUID(value) if value else None
 
 
-# A database error (deadlock 40P01, serialization 40001, dropped connection) would otherwise lose a check for
-#   good (audit wave-7 #3): retry 3 times with jittered backoff. Safe because a check is a full re-run that
-#   rolls back on error, and `store_flags` dedupes by `dedupe_key`, never reopening a reviewer's same-severity
-#   closure, so a second run changes nothing the first committed.
-RETRY = {"autoretry_for": (DBAPIError,), "max_retries": 3, "retry_backoff": True, "retry_jitter": True}
+# A database error (deadlock 40P01, serialization 40001, dropped connection: `DBAPIError`; connection refused
+#   or timed out at connect during a Postgres restart: plain `OSError`, which SQLAlchemy does not wrap) would
+#   otherwise lose a check for good (audit wave-7 #3): retry 3 times with jittered backoff. These tasks do no
+#   file or S3 I/O, so an `OSError` can only come from the database connection. Safe because a check is a full
+#   re-run that rolls back on error, and `store_flags` dedupes by `dedupe_key`, never reopening a reviewer's
+#   same-severity closure, so a second run changes nothing the first committed.
+RETRY = {
+    "autoretry_for": (DBAPIError, OSError),
+    "max_retries": 3,
+    "retry_backoff": True,
+    "retry_jitter": True,
+}
 
 
 # DECISION D-009: rule checks run as Celery tasks through `run_db_task`, after the entry is committed.
@@ -62,7 +69,7 @@ def check_event(
 
     Raises:
         ValueError: `event_id` is not a UUID.
-        sqlalchemy.exc.SQLAlchemyError: passed through; a `DBAPIError` is retried first (`RETRY`).
+        sqlalchemy.exc.SQLAlchemyError, OSError: passed through (`DBAPIError`, `OSError`: after `RETRY`).
 
     Side effects:
         Inserts, updates and closes flags; may set `lots.gi_eligible`.
@@ -82,7 +89,7 @@ def check_plot(plot_id: str) -> list[str]:
 
     Raises:
         ValueError: `plot_id` is not a UUID.
-        sqlalchemy.exc.SQLAlchemyError: passed through; a `DBAPIError` is retried first (`RETRY`).
+        sqlalchemy.exc.SQLAlchemyError, OSError: passed through (`DBAPIError`, `OSError`: after `RETRY`).
 
     Side effects:
         Inserts, updates and closes plot flags.
@@ -110,7 +117,7 @@ def check_lot(
 
     Raises:
         ValueError: an id is not a UUID.
-        sqlalchemy.exc.SQLAlchemyError: passed through; a `DBAPIError` is retried first (`RETRY`).
+        sqlalchemy.exc.SQLAlchemyError, OSError: passed through (`DBAPIError`, `OSError`: after `RETRY`).
 
     Side effects:
         Inserts, updates and closes flags; may set `lots.gi_eligible` and `lots.practice_tags`.
