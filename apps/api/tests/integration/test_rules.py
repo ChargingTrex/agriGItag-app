@@ -20,7 +20,7 @@ import sys
 import uuid
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -29,13 +29,14 @@ import pytest
 from geoalchemy2 import WKTElement
 from httpx import ASGITransport, AsyncClient
 from shapely.geometry import shape
-from sqlalchemy import select
+from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core.auth import CurrentUser, get_current_user
 from agritrace.core.db import get_sessionmaker
 from agritrace.core.enums import (
     ChangeKind,
+    EventStatus,
     EventSubject,
     EventType,
     FlagStatus,
@@ -446,6 +447,61 @@ async def test_hold_comes_back_after_auto_close(world: World) -> None:
             await s.refresh(lot)
             assert (flag.status, flag.severity, lot.gi_eligible) == (status, Severity.HOLD, eligible)
         assert (flag.resolution_reason_code, lot.gi_hold_reason) == (None, "flags: yield_over_ceiling")
+
+
+async def test_lot_rules_see_all_history_of_a_1500_event_lot(world: World) -> None:
+    """1,350 one-kg harvests sum to a hold; a drying dated before them all is out of order (B22 projection).
+
+    The lot also has an organic input (declared Inorganic → contradiction), an undone 500 kg harvest and a
+    harvest in quintals, which the kg sum must both leave out.
+
+    Args:
+        world: the seeded FPO.
+    """
+    async with get_sessionmaker()() as s:
+        for kind, on in [
+            (EventType.LAND_PREPARATION, "2025-09-01"),
+            (EventType.NURSERY, "2025-09-01"),
+            (EventType.SOWING, "2025-09-02"),
+        ]:
+            await _event(s, world, kind, on)
+        await _event(s, world, EventType.INPUT_APPLICATION, "2025-09-03", {"input_id": str(world.inputs[0])})
+        drying = await _event(s, world, EventType.DRYING, "2025-09-05")
+        undone = await _event(
+            s, world, EventType.HARVEST, "2025-10-01", {"quantity": {"value": 500, "unit": "kg"}}
+        )
+        await s.execute(update(Event).where(Event.id == undone).values(status=EventStatus.UNDONE))
+        payloads = [{"quantity": {"value": 1, "unit": "kg"}}] * 1350 + [
+            {"quantity": {"value": 9, "unit": "q"}}
+        ]
+        events, versions = [], []
+        for i, payload in enumerate(payloads):
+            day, eid = date(2025, 9, 10) + timedelta(days=i // 10), uuid7()
+            events.append(
+                dict(id=eid, fpo_id=world.fpo, subject_type=EventSubject.LOT, lot_id=world.lot,
+                     plot_id=world.plot, event_type=EventType.HARVEST, occurred_on=day)
+            )  # fmt: skip
+            versions.append(
+                dict(id=uuid7(), event_id=eid, version_no=1, payload=payload, occurred_on=day,
+                     device_time=NOW, server_received_at=NOW, entered_by_user_id=world.officer,
+                     change_kind=ChangeKind.CREATE)
+            )  # fmt: skip
+        await s.execute(insert(Event), events)
+        await s.execute(insert(EventVersion), versions)
+        await s.execute(
+            update(Event)
+            .where(Event.id.in_([e["id"] for e in events]))
+            .values(current_version_id=select(EventVersion.id).where(EventVersion.event_id == Event.id))
+        )
+        await s.commit()
+        assert len(await service.check_lot(s, world.lot)) > 0
+        [hold] = await _flags(s, world.lot, "yield_over_ceiling")
+        assert (hold.severity, hold.details["harvested_kg"]) == (Severity.HOLD, "1350")
+        [order] = await _flags(s, drying, "event_out_of_order")
+        assert order.details["missing"] == ["harvest"]
+        out_of_order = select(Flag).where(Flag.rule_code == "event_out_of_order", Flag.subject_id != drying)
+        assert (await s.scalars(out_of_order.where(Flag.fpo_id == world.fpo))).all() == []
+        assert await _flags(s, world.lot, "practice_tag_contradiction") != []
 
 
 def _pause_first(
