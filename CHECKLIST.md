@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 46 % (30/65 items)
+Completion: 48 % (31/65 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -17,8 +17,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 ## G0 Foundation
 
 - [x] B00 — Scaffold + infra + test harness — wave 0 — worker: Opus (4 rounds) — reviewer: BE r1/r2 PASS-PENDING-STACK → stack run 2026-11-01 — verifier: CONDITIONAL → PASS 2026-11-01 (docs/agents/qa/B00.md: all 4 lines pass live; the 2 P2 harness flakes B00-1/B00-2 fixed and merged in B17, combined suite 768/768)
-- [x] B17 — First live-stack fixes (seed `gi_eligible`, B13 head assertion, B14 audit payload, stack fixture env leak + idempotent CreateBucket) — hotfix — worker: Opus (1 round) — reviewer: Orchestrator (test-only + 1-line seed diff) — verifier: combined `pytest tests` 768/768 on the branch (merged 2026-11-01)
-- [ ] Q00 — Harness: compose stack, seed, Go AVD profile (API 27, 2 GB, 2 cores, 720×1280), network sc — wave 0 — worker: Opus (4 rounds) — reviewer: QA Lead r1/r2/r3 FAIL, r4 closure — verifier: CONDITIONAL (Docker lines deferred; docs/agents/qa/Q00.md)
+- [x] Q00 — Harness: compose stack, seed, Go AVD profile (API 27, 2 GB, 2 cores, 720×1280), network sc — wave 0 — worker: Opus (4 rounds) — reviewer: QA Lead r1/r2/r3 FAIL, r4 closure — verifier: CONDITIONAL → deferred Docker lines closed 2026-11-01 (docs/agents/qa/Q00.md: stack, seed, healthz.robot, robot-smoke re-enactment PASS; Q00-2 checklist-structure test fixed by moving the B17 row; identity.robot `not-ready` tags → G2 work)
 - [ ] **Gate G0 signed** (docs/agents/gates/G0.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G1 Contract
@@ -79,6 +78,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 ## G5 Pilot candidate
 
 - [ ] B12 — Demo seed, e2e, client generation — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PENDING (merged conditionally 2026-10-31; e2e, make seed and integration tests deferred to the stack)
+- [x] B17 — First live-stack fixes (seed `gi_eligible`, B13 head assertion, B14 audit payload, stack fixture env leak + idempotent CreateBucket) — wave 7 hotfix — worker: Opus (1 round) — reviewer: Orchestrator (test-only + 1-line seed diff) — verifier: combined `pytest tests` 768/768 on the branch (merged 2026-11-01)
 - [ ] M13 — Hardening & release: low-storage purge, background sync proof, in-app update, size budget, — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: MOB/SEC PASS r1 + 2 P2 micro-patches confirmed by Orchestrator — verifier: PENDING (merged 2026-11-01; 803 Flutter tests green on main after merge, analyzer clean; APK/AAB size not measured under host load → Verifier on an idle host or CI; device checks → Q01)
 - [ ] P07 — Playwright e2e chain + axe — wave 7 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirmed by Orchestrator — verifier: PENDING (merged 2026-11-01; mock chain green twice, axe 0 serious on 20 screens, 120 Vitest green on the branch; live chain `E2E_LIVE=1` → Verifier)
 - [ ] Q01 — Flutter verification: widget/golden/integration on Go + API 34 AVDs, offline/online matrix — wave 7 — worker: — reviewer: — verifier:
