@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 62 % (44/71 items)
+Completion: 63 % (45/71 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -75,7 +75,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 ## G4 Portal + Publish
 
 - [x] B10 — Publishing — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS-PENDING-STACK r1 — verifier: PASS 6/6, BM-09 0 hits on the published page (docs/agents/qa/B10.md)
-- [ ] B18 — Audit P2 fixes at trust boundaries (presigned PUT bound to declared Content-Length + size ceiling; publish runs the privacy linter and fails the build on a hit; linter patterns for R.S. No., Tamil survey label, spaced coordinates, dotted phones) — wave 6 hotfix — worker: Opus (in progress 2026-11-01) — reviewer: — verifier:
+- [x] B18 — Audit P2 fixes at trust boundaries (presigned PUT bound to declared Content-Length + size ceiling; publish runs the privacy linter and fails the build on a hit; linter patterns for R.S. No., Tamil survey label, spaced coordinates, dotted phones) — wave 6 hotfix — worker: Opus (1 round + micro-patch) — reviewer: BE/SEC PASS r1 + micro-patch confirmed by Orchestrator — verifier: unit 623 + integration 29 + qa 109 on the branch; live lint-on-publish check → next stack rebuild (merged 2026-11-01)
 - [x] B11 — Reporting + stubs — wave 6 — worker: Opus (1 round + micro-patch) — reviewer: BE PASS-PENDING-STACK r1 — verifier: PASS 4/4, BM-05 100 % completeness, 9 reference problems flagged (docs/agents/qa/B11.md)
 - [x] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (793 on main); device checks → Q01
 - [ ] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (1 round) — reviewer: WEB PASS r1 — verifier: PENDING (merged 2026-10-31; 76 pytest + privacy lint + html-validate green; Lighthouse 3G re-run and print dialogs deferred)
