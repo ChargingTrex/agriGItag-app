@@ -1,10 +1,13 @@
 /**
- * Session state for the portal: who is signed in, sign-in/sign-out, silent refresh through the httpOnly
- * cookie (before expiry, and once after a 401), and the API client bound to the access token.
+ * Session state for the portal: who is signed in, sign-in/sign-out (with an error when the server cannot
+ * sign the device out), silent refresh through the httpOnly cookie (before expiry, and once after a 401),
+ * and the API client bound to the access token.
  * Serves: FR14 role-based access, D-024 session model, D-022 web transport, plan §7.3 P00 (auth guard) and
- * P01 (final B02 contract). Called by: src/AppProviders.tsx (provider), src/auth/RequireAuth.tsx,
- * src/auth/LoginPage.tsx, src/layout/AppLayout.tsx and screens (`useAuth`).
+ * P01 (final B02 contract), P09 (sign-out that cannot fail silently). Called by: src/AppProviders.tsx
+ * (provider), src/auth/RequireAuth.tsx, src/auth/LoginPage.tsx, src/layout/AppLayout.tsx and screens (`useAuth`).
  */
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
@@ -17,7 +20,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createApiClient, type ApiClient } from '../api/client';
-import { ApiError } from '../api/errors';
+import { ApiError, errorMessage } from '../api/errors';
 import { logout, refreshSession, type SessionOut } from './authApi';
 
 /** A signed-in session exactly as the API returned it (`refresh_token` is null on the web). */
@@ -34,7 +37,10 @@ export interface AuthContextValue {
   session: Session | null | undefined;
   /** Stores a completed session (after OTP and, for office roles, PIN). */
   signIn: (session: Session) => void;
-  /** Signs the device out on the server, clears the session and every cached query. */
+  /**
+   * Signs the device out on the server, then clears the session and every cached query; when the server
+   * cannot be reached the session stays and an error is shown.
+   */
   signOut: () => void;
   /** Typed API client that sends the current token; a 401 tries the refresh cookie once, then signs out. */
   api: ApiClient;
@@ -73,21 +79,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const recoveringFor = useRef<string | null>(null);
   const recovered = useRef<{ token: string; at: number } | null>(null);
 
+  // The message of the last sign-out that failed; null when there is none to show.
+  const [signOutError, setSignOutError] = useState<string | null>(null);
+
   const signOut = useCallback(() => {
-    // Best effort: a dead token (the usual reason for signing out) cannot log out anyway.
-    if (tokenRef.current) void logout(tokenRef.current).catch(() => undefined);
-    store(null);
-    queryClient.clear();
+    const token = tokenRef.current;
+    /**
+     * Revokes the device on the server. A dead access token gets a 401, so it trades the refresh cookie for
+     * a live one first; when the cookie is dead too nothing is left to revoke.
+     * @returns Resolves when the device is signed out on the server (or had nothing left to sign out).
+     * @throws {ApiError} Any refusal of logout other than a 401, or of the retried logout.
+     * @throws {TypeError} When the network request fails.
+     */
+    const revoke = async () => {
+      if (!token) return;
+      try {
+        await logout(token);
+      } catch (error) {
+        if (!(error instanceof ApiError && error.status === 401)) throw error;
+        const next = await refreshSession().catch(() => null);
+        if (next) await logout(next.access_token);
+      }
+    };
+    revoke().then(
+      () => {
+        setSignOutError(null);
+        store(null);
+        queryClient.clear();
+      },
+      // Clearing only the local state would leave the cookie and device binding alive for the next person.
+      (error: unknown) => {
+        setSignOutError(errorMessage(error));
+      },
+    );
   }, [queryClient, store]);
 
   /**
-   * Ends the session when the server rejected the refresh; keeps it on a network error (the next call or
-   * timer tries again), so a Wi-Fi blip or a waking laptop does not sign the user out.
+   * Ends the session when the server refused the refresh (401/403); keeps it on a network error, 5xx or 429
+   * (the next call or timer tries again), so a Wi-Fi blip or an API restart does not sign the user out.
    * @param error Whatever `refreshSession` rejected with.
    */
   const endIfRejected = useCallback(
     (error: unknown) => {
-      if (error instanceof ApiError) signOut();
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) signOut();
       else recoveringFor.current = null;
     },
     [signOut],
@@ -106,6 +140,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         recovered.current?.token === token &&
         Date.now() - recovered.current.at < LOOP_WINDOW_MS
       ) {
+        // Sign-out now waits for the server, so mark the token to keep concurrent 401s to one logout.
+        recoveringFor.current = token;
         signOut();
         return;
       }
@@ -154,7 +190,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({ session, signIn: store, signOut, api }),
     [session, store, signOut, api],
   );
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <Snackbar
+        open={signOutError !== null}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          severity="error"
+          onClose={() => {
+            setSignOutError(null);
+          }}
+        >
+          Could not sign out. {signOutError}
+        </Alert>
+      </Snackbar>
+    </AuthContext.Provider>
+  );
 }
 
 /**

@@ -1,9 +1,9 @@
 /**
  * Tests how the portal keeps a session: a 401 from a data call tries the refresh cookie once and signs out
  * only when that is refused (one logout for several concurrent 401s); the scheduled refresh runs 60 s before
- * expiry and survives a network error; "Start again" leaves the PIN step.
+ * expiry and survives a network error or a 503; "Start again" leaves the PIN step.
  * Serves: D-024 session model, docs/api/conventions.md "Refresh", plan §7.3 P01 (review r1 P2-2, P3-4,
- * P3-7, P3-8). Called by: Vitest (`npm test`).
+ * P3-7, P3-8), P09 (audit wave 0-2 finding 5). Called by: Vitest (`npm test`).
  */
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -117,6 +117,26 @@ describe('scheduled refresh', () => {
   it('keeps the session when the scheduled refresh hits a network error', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true });
     server.use(refreshOnceThen(() => HttpResponse.error()));
+    const logouts = countRequests('/v1/auth/logout');
+    renderApp('/', true);
+    await screen.findByRole('heading', { name: 'Dashboard' });
+
+    await vi.advanceTimersByTimeAsync(841_000);
+
+    expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(logouts.n).toBe(0);
+  });
+
+  it('keeps the session when the scheduled refresh gets a 503', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true });
+    server.use(
+      refreshOnceThen(() =>
+        HttpResponse.json(
+          { error: { code: 'internal_error', message: 'x', details: null } },
+          { status: 503 },
+        ),
+      ),
+    );
     const logouts = countRequests('/v1/auth/logout');
     renderApp('/', true);
     await screen.findByRole('heading', { name: 'Dashboard' });
