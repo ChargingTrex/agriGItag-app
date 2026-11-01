@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 91 % (73/80 items)
+Completion: 92 % (74/80 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -74,7 +74,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] P05 — Labels PDF + CSV exports (unit column FR58) — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 + micro-patch confirmed by Orchestrator — verifier: PASS 2/2 live (docs/agents/qa/P05.md)
 - [x] P06 — Dashboard + FPO settings. Dashboard = stage-progress tiles (Land prep, Nursery, Sowing, In — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS r1 — verifier: PASS 5/5 live 2026-11-02 (docs/agents/qa/P06.md + Q07 round 2: audit search shows actor, wrong_quantity and reason text after B20)
 - [x] P08 — Master data uploads: CSV import for farmers, villages, inputs with template download, dry- — wave 5 — worker: Opus (1 round + micro-patch) — reviewer: WEB PASS-PENDING-STACK r1 — verifier: PASS 3/3 live (docs/agents/qa/P08.md)
-- [ ] **Gate G3 signed** — readiness filed BLOCKED 2026-11-02 (Q01 not started: Go AVD; P05/P06/P08 Robot placeholders → Q07 r2; P06 line 5 → Q07 r2; AAB download size → bundletool run; note: the size budget is D-002/§13 D1 = APK ≤ 100 MiB hard / 40 target, AAB download ≤ 30 MiB — not the source doc's 'APK < 30 MB') (docs/agents/gates/G3.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [ ] **Gate G3 signed** — BLOCKED 2026-11-02 on two human-gated items only (docs/agents/gates/G3.md e257e84): Q01 Go-AVD device checks (ruled a G3 condition) and the AAB download size (bundletool CLI jar); portal Robot + P06 line 5 cleared by Q07 r2 (size ruling: D-002/§13 D1 bind; note: the size budget is D-002/§13 D1 = APK ≤ 100 MiB hard / 40 target, AAB download ≤ 30 MiB — not the source doc's 'APK < 30 MB') (docs/agents/gates/G3.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G4 Portal + Publish
 
@@ -84,7 +84,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] M12 — Notifications + deep links (FCM/APNs, local reminders from calendar bundle) — wave 6 — worker: Opus (2 rounds) — reviewer: MOB FAIL r1 / r2 Orchestrator confirm — verifier: Orchestrator-run suite PASS (793 on main); device checks → Q01
 - [x] W03 — Tamil/English labels, print CSS, OG tags (no personal data), unpublished/404 variant, stat — wave 6 — worker: Opus (1 round) — reviewer: WEB PASS r1 — verifier: PASS live (docs/agents/qa/W03.md: 3G perf 0.98, LCP 1743 ms, 19.7 KB; 4G LCP 548 ms; privacy lint 0; og:url/og:image → B10 TODO)
 - [x] Q07 — Portal Robot suites implemented and green (11 placeholders P01–P04 in qa/robot/portal → real Browser-library tests on an isolated stack; G4 Robot condition, also counted by gate-readiness G2) — wave 7 — worker: Opus QA Lead (2 rounds: P01–P04 12/12, then all 22 remaining non-mobile placeholders 45/45 on a fresh seed; evidence scrubbed of phones; Q07-2 P3 filed) — reviewer: Orchestrator (QA code; 12/12 twice, qa/tests 111, interrogate 100 %) — verifier: docs/agents/qa/Q07/robot/ (merged 2026-11-02); Q07-1 P3 filed (reload during session restore → refresh_reused)
-- [ ] **Gate G4 signed** — readiness filed BLOCKED 2026-11-02 (P05/P06/P08 portal Robot placeholders + 2 page.robot placeholders → Q07 r2; P06 line 5) (docs/agents/gates/G4.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
+- [x] **Gate G4 signed** 2026-11-02 by the Architect-Gate at 50b7229 (docs/agents/gates/G4.md; Robot portal/public 45/45 via Q07, P06 line 5 live, Playwright chain, Lighthouse 98, privacy lint 0, error-codes regenerated) — history: (docs/agents/gates/G4.md: acceptance green, /ponytail-audit no P1, Robot suites green, LIBRARIES.md in sync, error-codes.md regenerated)
 
 ## G5 Pilot candidate
 
