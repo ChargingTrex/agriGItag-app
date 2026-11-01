@@ -227,3 +227,46 @@ async def test_escalation_reassigns_to_admin_and_locks_out_the_officer() -> None
     assert await resolve_from_sync(session, officer, data) == (flag.id, False)  # retried push: duplicate
     with pytest.raises(Exception, match="FPO admin"):
         await resolve_from_sync(session, officer, {**data, "resolution": "fixed"})
+
+
+def test_check_event_task_retries_a_database_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A deadlock-like `OperationalError` in `rules.check_event` is retried, not dropped (audit wave-7 #3).
+
+    Args:
+        monkeypatch: sets JWT_SECRET; replaces the task DB runner with one that fails once.
+    """
+    from sqlalchemy.exc import OperationalError
+
+    from agritrace.core.config import get_settings
+
+    monkeypatch.setenv("JWT_SECRET", "unit-test-secret-of-at-least-32-bytes!")  # read by the Celery app
+    get_settings.cache_clear()
+    from agritrace.modules.rules_flags import tasks
+
+    calls: list[uuid.UUID] = []
+
+    def flaky(work: Any, event_id: uuid.UUID) -> list[str]:
+        """Stand-in for `run_db_task`: raise like a deadlock on the first call, succeed on the next.
+
+        Args:
+            work: the service coroutine function (not run).
+            event_id: the event.
+
+        Returns:
+            One rule code, from the second call on.
+
+        Raises:
+            OperationalError: on the first call.
+        """
+        calls.append(event_id)
+        if len(calls) == 1:
+            raise OperationalError("SELECT 1", {}, Exception("deadlock detected"))
+        return ["event_off_plot"]
+
+    monkeypatch.setattr(tasks, "run_db_task", flaky)
+    event_id = uuid.uuid4()
+    try:
+        assert tasks.check_event.apply(kwargs={"event_id": str(event_id)}).get() == ["event_off_plot"]
+        assert calls == [event_id, event_id]
+    finally:
+        get_settings.cache_clear()  # no later test sees the secret set here
