@@ -496,7 +496,7 @@ class RetryLaterError(AppError):
     """Postgres aborted the transaction to break a deadlock or a serialization conflict (QA issue B08-2)."""
 
     code, status, message_key = "retry_later", 503, "error.retry_later"
-    message = "The server was busy with a conflicting change; nothing was saved."
+    message = "The server was busy with a conflicting change; this change was not saved."
     fix = "Send the same request again (same client_id) after `Retry-After` seconds."
 
 
