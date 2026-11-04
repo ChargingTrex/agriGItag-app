@@ -33,7 +33,7 @@ Nothing. No agents running, no worktrees open (`git worktree list` = main only),
 ## 4. Blockers only a human can clear
 
 1. **Git remote / push** (see §1).
-2. **Android Go AVD** for Q01 (system image download, several GB).
+2. **Android 8 Go image** for Q01: an AVD `agritrace_go` (API 36.1 stand-in with the Go constraints) exists and Q01 runs on it; the API 27 image needs `sdkmanager --licenses` by a human (TODO line).
 3. **bundletool CLI jar** (`bundletool-all-1.18.3.jar` from GitHub releases on PATH as `bundletool`) then `cd apps/mobile && tool/size_check.sh` for the AAB download size (≤ 30 MiB).
 4. **Product confirmations:** farmers keep a session **90 days** before re-entering an SMS code (staff 30; B23/D-024, `SESSION_MAX_DAYS_FARMER`); GI 883 taluk list from GI Journal 200; 3-dp public map rounding; 15 % `grading_loss_warn_pct` default (D-030); farm area and grade readings `public` (D-034); the Sell-QR compromise on shared phones (D-029); retention periods in the DPDP runbook (proposals, FPO board signs).
 5. **Firebase/APNs** (M12) and an SMS provider (`core/config.py`) before `ENV=prod`.
