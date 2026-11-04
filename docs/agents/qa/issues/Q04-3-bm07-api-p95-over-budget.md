@@ -29,3 +29,9 @@ Slowest names: `POST /v1/sync/push (new)` p95 2.9 to 4.4 s; `GET /v1/batches` p9
 ## Resolution (B21 `WEB_CONCURRENCY=4`, re-verified by Q05 2026-11-02): budget met, still open as a flaky P2
 
 The test was the shared stack rebuilt from main `06b71f4` (1 uvicorn master + 4 workers), with Q04's locustfile, 50 users and 60 s. Run 1: p95 4200 ms, while the agritrace-q07 project restarted on the same host. Run 2: p95 380 ms, with one ~5 s stall across the whole host. **Run 3: p50 49 / p95 230 / p99 1000 ms, 35.2 RPS, 0 failures → PASS** (`docs/agents/qa/bench-results/BM-07-Q05-run3.json`, `Q05/logs/05-locust-bm07-run3.txt`). The budget was met only on the third run, so the rubric rerun rule keeps this as **P2: sensitive to host noise and to the rules backlog**. Each 60 s run leaves 400–1,000 `rules.check_event` tasks queued against lots of 1,100–1,725 events. The worker then runs at 400–590 % CPU and Postgres at 100–460 %. Remaining fix: the incremental `rules.check_event` (TODO, rules_flags). After that, rerun on the shared stack.
+
+## 2026-11-04 (G5 condition B Verifier): counted re-run not started, still open
+The counted first-attempt run after B22/B23 was held back and is still unspent. From 17:23Z to 17:59Z the host
+swapped (14.3–14.7 GB of 15.4 GB swap used, ≤ 101 MB free) at load 248–727. The api's uvicorn supervisor restarted
+its children 34 times. Rules queue 0. Details and the steps to rerun: [Q04/bm07-2026-11-04.md](../Q04/bm07-2026-11-04.md).
+No new latency data, so the P2 stays open until the run passes on a quiet host.
