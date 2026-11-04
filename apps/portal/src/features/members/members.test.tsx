@@ -1,9 +1,9 @@
 /**
  * Tests the Members feature against the MSW mock API: approve without reload, roster cursor paging and
  * search, farmer detail with the masked phone and its audited reveal (dropped on leaving or switching
- * farmer), plot detail (map mocked: jsdom has no WebGL), processors create, and `bbox`.
+ * farmer), the farmer's devices with an admin-only revoke (P12), plot detail (map mocked: jsdom has no WebGL), processors create, and `bbox`.
  * Serves: plan §7.3 P01 acceptance "approve → active without reload", FR8, FR28, FR70, gap analysis
- * "Processor management", P01 "phone masked except audited reveal" (P10). Called by: Vitest (`npm test`).
+ * "Processor management", P01 "phone masked except audited reveal" (P10), B23 device revoke (P12). Called by: Vitest (`npm test`).
  */
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -202,6 +202,41 @@ describe('Farmer and plot detail', () => {
     await user.click(await screen.findByRole('button', { name: 'Reveal number' }));
     expect(await screen.findByText('Your role does not allow this action.')).toBeInTheDocument();
     expect(screen.getByText('Mobile: XXXXXX0010')).toBeInTheDocument();
+  });
+
+  it('lists the farmer devices for an FPO admin: one active, one signed out', async () => {
+    renderApp(`/members/${MOCK_ACTIVE_FARMER_ID}`, true);
+
+    expect(await screen.findByText(/android 1\.0\.0, signed in .*: active/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/android 0\.9\.0, signed in .*: signed out 21 Oct 2026/),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Revoke' })).toHaveLength(1);
+  });
+
+  it('revokes a device with the reason and shows it signed out', async () => {
+    const user = userEvent.setup();
+    renderApp(`/members/${MOCK_ACTIVE_FARMER_ID}`, true);
+
+    await user.click(await screen.findByRole('button', { name: 'Revoke' }));
+    await user.type(screen.getByLabelText('Reason (optional)'), 'phone lost');
+    await user.click(screen.getByRole('button', { name: 'Sign out device' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Revoke' })).not.toBeInTheDocument();
+    });
+    expect(screen.getByText(/android 1\.0\.0, .*: signed out/)).toBeInTheDocument();
+    expect(mockState.revokes).toEqual([
+      { deviceId: 'dd000000-0000-7000-8000-000000000001', reason: 'phone lost' },
+    ]);
+  });
+
+  it('shows no Devices section to a field officer', async () => {
+    mockState.roles = ['field_officer'];
+    renderApp(`/members/${MOCK_ACTIVE_FARMER_ID}`, true);
+
+    expect(await screen.findByText('Mobile: XXXXXX0010')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Devices' })).not.toBeInTheDocument();
   });
 
   it('shows the plot location status, declared vs walked area and the map with the GI outline', async () => {
