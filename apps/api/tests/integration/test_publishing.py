@@ -3,8 +3,8 @@
 Serves: B10 acceptance, one test per line: after publish objects exist and `generation` matches; HTML has no
 phone/survey/`temp_uploads`; revoked name consent → "Farmer 2"; correction → new build_no, old S3 versions
 kept; QR decodes to `{PUBLIC_BASE_URL}/b/<code>`; events ascending. Also the dev proxy, labels, lot QR and the
-rebuild gate; a privacy-lint hit fails the build with nothing written (B18). FR12, FR15-FR17, FR62, FR63,
-plan §13 E3, CLAUDE.md §6, D-007.
+rebuild gate; a privacy-lint hit fails the build with nothing written (B18); a DPDP erasure rebuilds the page
+as "Farmer N" (B24, D-065). FR12, FR15-FR17, FR62, FR63, plan §13 E3, CLAUDE.md §6, D-007.
 Callers: pytest (`make test`); needs Docker (containers from tests/conftest.py `stack`). Uses the seeded
 `world` of tests/integration/conftest.py and the helpers of test_lots_batches.py; the recorded
 `publishing.build_page` message is run through the real task.
@@ -432,3 +432,27 @@ async def test_privacy_lint_hit_fails_the_build_and_writes_nothing(world: tuple[
         Bucket=get_settings().s3_bucket_public, Prefix=f"batches/{batch['code']}/"
     )
     assert listed["KeyCount"] == 0
+
+
+async def test_erasure_rebuilds_the_page_as_farmer_n(world: tuple[World, AsyncClient]) -> None:
+    """B24: erasing the farmer queues an `erase` build, scrubs the old snapshot; the new page says "Farmer 1".
+
+    Args:
+        world: seeded FPO and client (fixture).
+    """
+    w, client = world
+    farmer = await _make_publishable(w)
+    batch = await _publish(w, client, "100")
+    assert "Muthu" in _get(f"batches/{batch['code']}/index.html")["Body"].decode()
+    body = {"reason": "DPDP-2026-002", "confirm": True}
+    assert (await client.post(f"/v1/farmers/{farmer}/erase", json=body)).status_code == 204
+    async with get_sessionmaker()() as s:
+        query = (
+            select(PageBuild).where(PageBuild.batch_id == uuid.UUID(batch["id"])).order_by(PageBuild.build_no)
+        )
+        first, second = (await s.scalars(query)).all()
+    assert (second.trigger, second.status) == ("erase", "queued")
+    assert [lot["farmer_name"] for lot in first.snapshot["lots"]] == [None]
+    await _run_last_build(w)
+    html = _get(f"batches/{batch['code']}/index.html")["Body"].decode()
+    assert "Farmer 1" in html and "Muthu" not in html

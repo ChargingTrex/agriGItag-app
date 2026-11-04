@@ -7,7 +7,8 @@ Each route checks the role, calls one service function, commits, and (for plots)
 Serves: Stage 0 (onboarding), FR14 (roles), FR24 (tenant scoping), FR27–FR32, FR53–FR56, FR64–FR72,
 backend-design.md §1 registry row, D-020 (`/v1`, additive), PLAN "Gap analysis" (Master data uploads,
 ID capture, SHG groups), D-017; B14 (portal gaps found by P01, PLAN gap analysis "Members", FR8, FR14,
-FR53, FR70): masked phone and audited reveal, reject, farmer plots, farmer search and `?fields=`, FPO bbox.
+FR53, FR70): masked phone and audited reveal, reject, farmer plots, farmer search and `?fields=`, FPO bbox;
+B24 (DPDP Act 2023, docs/ops/dpdp-data-subject-runbook.md, D-065): audited farmer export and erasure.
 Callers: `agritrace.main.create_app` mounts `router` under `/v1` by discovery (D-004); the mobile app and
 portal through the generated clients.
 """
@@ -25,9 +26,12 @@ from agritrace.core.db import get_session
 from agritrace.core.enums import FarmerStatus, Role
 from agritrace.core.errors import FeatureDisabledError
 from agritrace.core.schemas import Page
+from agritrace.modules.lots_batches import service as lots_service
 from agritrace.modules.registry import imports, service
 from agritrace.modules.registry.schemas import (
     CropOut,
+    FarmerErase,
+    FarmerExport,
     FarmerIn,
     FarmerOut,
     FarmerPatch,
@@ -452,6 +456,76 @@ async def reject_farmer(farmer_id: FarmerId, body: FarmerReject, session: Sessio
     out = await service.reject_farmer(session, user, farmer_id, body)
     await session.commit()
     return out
+
+
+@router.get(
+    "/farmers/{farmer_id}/export",
+    response_model=FarmerExport,
+    summary="Export everything stored about a farmer (FPO admin, audited; DPDP access request)",
+)
+async def export_farmer(
+    farmer_id: FarmerId, response: Response, session: Session, user: Admin
+) -> FarmerExport:
+    """Return the farmer's personal data as one JSON document, with 15-minute file links (runbook §1).
+
+    Includes the full phone and the walked boundary, so it goes to the farmer only; the runbook's redaction
+    step applies before anything is given to a third party. Sent with `Cache-Control: no-store`.
+
+    \f
+    Args:
+        farmer_id: farmer id.
+        response: used to set `Cache-Control: no-store`.
+        session: database session.
+        user: the caller (FPO admin).
+
+    Returns:
+        The export.
+
+    Raises:
+        ForbiddenError: not an FPO admin (403).
+        NotFoundError: missing or another FPO's.
+
+    Side effects:
+        Commits an `audit_log` row `farmer.export` (row counts only).
+    """
+    out = await service.export_farmer(session, user, farmer_id)
+    await session.commit()
+    response.headers["Cache-Control"] = "no-store"
+    return out
+
+
+@router.post(
+    "/farmers/{farmer_id}/erase",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Erase a farmer's personal data (FPO admin, audited; DPDP erasure request)",
+)
+async def erase_farmer(farmer_id: FarmerId, body: FarmerErase, session: Session, user: Admin) -> None:
+    """Anonymise the farmer, withdraw their consents, end their sign-in, delete their ID documents (D-065).
+
+    The traceability record (events, lots, batches, consents, audit trail) stays, carrying only ids; the
+    farmer's published pages are rebuilt and show "Farmer N". Repeating the call changes nothing (204 again).
+    Export first (`GET /v1/farmers/{id}/export`): this cannot be undone.
+
+    \f
+    Args:
+        farmer_id: farmer id.
+        body: reason (request reference) and `confirm: true`.
+        session: database session.
+        user: the caller (FPO admin).
+
+    Raises:
+        ForbiddenError: not an FPO admin (403).
+        NotFoundError: missing or another FPO's.
+        botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError, RuntimeError: S3 could not delete
+            the ID documents; nothing was committed (500), repeat the call.
+
+    Side effects:
+        See `service.erase_farmer`; commits, then enqueues `publishing.build_page` per rebuilt batch page.
+    """
+    builds = await service.erase_farmer(session, user, farmer_id, body)
+    await session.commit()
+    for build in builds:
+        await lots_service.enqueue_page_build(build)
 
 
 @router.get("/farmers/{farmer_id}/plots", response_model=Page[PlotOut], summary="List a farmer's plots")
