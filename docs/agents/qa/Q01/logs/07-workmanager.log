@@ -1,0 +1,62 @@
+## dumpsys jobscheduler: the app's job
+  JOB androidx.work.systemjobscheduler:u0a219/10: 3903431 #BackgroundWorker#@androidx.work.systemjobscheduler@in.agritrace.agritrace/androidx.work.impl.background.systemjob.SystemJobService
+    u0a219 tag=*job*r/#BackgroundWorker#@androidx.work.systemjobscheduler@in.agritrace.agritrace/androidx.work.impl.background.systemjob.SystemJobService
+    Source: uid=u0a219 user=0 pkg=in.agritrace.agritrace
+    JobInfo:
+      Service: in.agritrace.agritrace/androidx.work.impl.background.systemjob.SystemJobService
+      Priority: 300 [DEFAULT]
+      Requires: charging=false batteryNotLow=false deviceIdle=false
+      Has media backup exemption=false 
+      Extras: mParcelledData.dataSize=248
+      Network type: NetworkRequest [ NONE id=0, [ Capabilities: INTERNET&TRUSTED&VALIDATED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10219 UnderlyingNetworks: Null] ]
+      Minimum latency: +25m49s304ms
+      Backoff: policy=1 initial=+30s0ms
+      Has early constraint
+      Trace tag: BackgroundWorker
+    Required constraints: TIMING_DELAY CONNECTIVITY FLEXIBILITY [0x90200000]
+    Dynamic constraints:
+    Satisfied constraints: FLEXIBILITY DEVICE_NOT_DOZING BACKGROUND_NOT_RESTRICTED WITHIN_QUOTA [0x3600000]
+    Unsatisfied constraints: TIMING_DELAY CONNECTIVITY [0x90000000]
+    Num Required Flexible constraints: 0
+    Num Dropped Flexible constraints: 0
+    Constraint history:
+      -44s695ms = FLEXIBILITY [0x200000]
+      -44s695ms = FLEXIBILITY BACKGROUND_NOT_RESTRICTED [0x600000]
+      -44s695ms = FLEXIBILITY DEVICE_NOT_DOZING BACKGROUND_NOT_RESTRICTED [0x2600000]
+      -44s695ms = FLEXIBILITY DEVICE_NOT_DOZING BACKGROUND_NOT_RESTRICTED WITHIN_QUOTA [0x3600000]
+    Uid: active
+    Tracking: CONNECTIVITY TIME QUOTA
+    Implicit constraints:
+      readyNotDozing: true
+      readyNotRestrictedInBg: true
+      readyComponentEnabled: true
+    Started with foreground flag: false
+    Standby bucket: ACTIVE
+    Enqueue time: -44s695ms
+    Run time: earliest=+25m4s609ms, latest=none, original latest=none
+    Restricted due to: none.
+    Ready: false (job=false user=true !restricted=true !pending=true !active=true !backingup=true comp=true)
+
+PrefetchController:
+  Cached launch times:
+
+## force run (airplane mode, API down): cmd jobscheduler run -f in.agritrace.agritrace 10
+Thu Nov  5 00:44:49 IST 2026
+Could not find job 10 in package in.agritrace.agritrace / user 0
+11-05 00:03:43.320 13469 13485 D JobScheduler: executeRunCommand(): in.agritrace.agritrace/null/0 10 s=false f=true
+## job id is now 10 (WorkManager re-enqueues the periodic work with a new job id); force run
+Thu Nov  5 00:45:19 IST 2026
+Could not find job 10 in package in.agritrace.agritrace / user 0
+11-05 00:04:14.183 13469 14610 D JobScheduler: executeRunCommand(): in.agritrace.agritrace/null/0 10 s=false f=true
+## retry with the namespace: cmd jobscheduler run -f -n androidx.work.systemjobscheduler in.agritrace.agritrace 10
+Thu Nov  5 00:45:56 IST 2026
+Running job [FORCED]
+11-05 00:04:51.277 13469 14221 D JobScheduler: executeRunCommand(): in.agritrace.agritrace/androidx.work.systemjobscheduler/0 10 s=false f=true
+11-05 00:04:51.291 20037 20037 D WM-SystemJobService: onStartJob for WorkGenerationalId(workSpecId=5a399f21-027f-4e04-aa2a-84e9e27c365e, generation=7)
+11-05 00:04:51.307 20037 20057 D WM-Processor: Processor: processing WorkGenerationalId(workSpecId=5a399f21-027f-4e04-aa2a-84e9e27c365e, generation=7)
+11-05 00:04:51.310 20037 20057 D WM-WorkerWrapper: Delaying execution for dev.fluttercommunity.workmanager.BackgroundWorker because it is being executed before schedule.
+11-05 00:04:51.313 20037 20057 D WM-WorkerWrapper: Status for 5a399f21-027f-4e04-aa2a-84e9e27c365e is ENQUEUED; not doing any work and rescheduling for later execution
+11-05 00:04:51.324 20037 20037 D WM-Processor: Processor 5a399f21-027f-4e04-aa2a-84e9e27c365e executed; reschedule = true
+11-05 00:04:51.327 20037 20037 D WM-SystemJobService: 5a399f21-027f-4e04-aa2a-84e9e27c365e executed on JobScheduler
+11-05 00:04:51.338 20037 20052 D WM-GreedyScheduler: Cancelling work ID 5a399f21-027f-4e04-aa2a-84e9e27c365e
+11-05 00:04:51.359 20037 20052 D WM-SystemJobScheduler: Scheduling work ID 5a399f21-027f-4e04-aa2a-84e9e27c365eJob ID 11

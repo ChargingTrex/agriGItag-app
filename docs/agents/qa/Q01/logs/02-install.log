@@ -1,0 +1,15 @@
+23:50  up 1 day, 20:17, 1 user, load averages: 296.06 389.09 469.12
+adb: failed to install apps/mobile/build/app/outputs/flutter-apk/app-profile.apk: cmd: Failure calling service package: Broken pipe (32)
+Performing Streamed Install
+adb install -r -g apps/mobile/build/app/outputs/flutter-apk/app-profile.apk  0.05s user 0.17s system 0% cpu 36.585 total
+23:50  up 1 day, 20:18, 1 user, load averages: 238.60 366.14 457.63
+Can't find service: package
+== retry
+23:51  up 1 day, 20:19, 1 user, load averages: 197.14 336.79 441.64
+Performing Streamed Install
+Success
+adb install -r -g apps/mobile/build/app/outputs/flutter-apk/app-profile.apk  0.05s user 0.19s system 1% cpu 14.457 total
+23:52  up 1 day, 20:19, 1 user, load averages: 161.81 322.17 434.59
+    versionCode=1 minSdk=26 targetSdk=36
+    versionName=0.1.0
+    pkgFlags=[ DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA ]

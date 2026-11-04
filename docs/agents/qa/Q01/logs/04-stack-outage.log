@@ -1,0 +1,8 @@
+# 2026-11-04T19:06:08Z stack outage observed during Q01
+API localhost:8001 refused (curl 000) from ~18:55Z; Docker VM console: EXT4-fs (vda1) failed to convert unwritten extents -- potential data loss (error -5); Docker VM process gone; docker CLI hangs.
+Emulator console reported 'virtual device is stopped' at the same time (resumed with 'adb emu avd start').
+/dev/disk1s5   466Gi   433Gi   4.5Gi    99%    4.4M   47M    8%   /System/Volumes/Data
+vm.swapusage: total = 14336.00M  used = 13192.50M  free = 1143.50M  (encrypted)
+[ 6523.168591] EXT4-fs (vda1): failed to convert unwritten extents to written extents -- potential data loss!  (inode 132759, error -5)
+[ 6523.301863] EXT4-fs (vda1): failed to convert unwritten extents to written extents -- potential data loss!  (inode 6955, error -5)
+[ 6523.302501] EXT4-fs (vda1): failed to convert unwritten extents to written extents -- potential data loss!  (inode 7182, error -5)

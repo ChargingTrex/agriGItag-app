@@ -1,0 +1,46 @@
+# BM-13 airplane save; farmer A +919000000092, Harvest Field 1, 6 bags
+ 0:36  up 1 day, 21:03, 1 user, load averages: 31.14 17.76 44.71
+1
+Active default network: none
+tap ^Take photo$ @ 280 1040
+00:36:51.842856000
+|Back [0,48][112,160]
+|Harvest [144,76][296,132]
+|Hold the phone up, finding your location [32,192][688,720]
+|Play voice [48,592][160,704]
+|Call officer [32,752][544,864]
+|Play voice [576,752][688,864]
+OK
+OK
+|Back [0,48][112,160]
+|Harvest [144,76][296,132]
+|Hold the phone up, finding your location [32,192][688,720]
+|Play voice [48,592][160,704]
+|Call officer [32,752][544,864]
+|Play voice [576,752][688,864]
+## GPS: no fix reached the app in airplane mode (emulator geo fix sent 7x; dumpsys: gps/fused ProviderRequest OFF); 'Save anyway' shown after the 60 s wait
+tap ^Save anyway$ @ 288 808
+|Harvest [32,76][184,132]
+|All sent [632,76][688,132]
+|Play voice [48,208][160,320]
+|Harvest, 6 bags, today. Correct? [192,239][672,289]
+|Correct [32,784][528,912]
+|Play voice [560,784][688,912]
+|Retake [32,944][544,1056]
+|Play voice [576,944][688,1056]
+|Call officer [32,1088][544,1200]
+|Play voice [576,1088][688,1200]
+## tap Correct (airplane mode on)
+tap ^Correct$ @ 280 848
+|Saved [32,76][151,132]
+|2 waiting to send [606,76][688,132]
+|Saved. Will send when signal comes. [32,416][688,560]
+|Play voice [48,432][160,544]
+|Home [32,592][528,720]
+|Play voice [560,592][688,720]
+|Undo [32,752][544,864]
+|Play voice [576,752][688,864]
+|Call officer [32,896][544,1008]
+|Play voice [576,896][688,1008]
+tap issued after 37.145 s; saved screen read back 7.212 s after the tap (includes one uiautomator dump)
+ 0:42  up 1 day, 21:10, 1 user, load averages: 17.09 18.93 35.98

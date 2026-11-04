@@ -1,0 +1,56 @@
+# M08 undo at 24 h - 1 min: entry 01a1a7d4-578d-735c harvest, device_time 2026-11-05T00:01:13.548+05:30, undo_deadline +24 h
+Fri Nov  6 00:00:13 IST 2026
+Status: ok
+WaitTime: 6858
+tap ^Log$ @ 288 824
+## History at 23:59 after the save
+|Back [0,48][112,160]
+|Log event [144,74][335,134]
+|What did you do on the farm today? [32,192][688,336]
+|Play voice [48,208][160,320]
+|Land prep [32,368][344,714]
+|Play voice [132,586][244,698]
+|Nursery [376,368][688,712]
+|Play voice [476,584][588,696]
+|Sowing [32,746][344,1090]
+|Play voice [132,962][244,1074]
+|Fertiliser, spray [376,746][688,1092]
+|Play voice [476,964][588,1076]
+|Harvest [32,1124][344,1280]
+|Drying [376,1124][688,1280]
+## History list (clock 2026-11-06 00:00:13)
+|Back [0,48][112,160]
+|History [144,76][284,132]
+|What you logged. Tap one to see it. [32,192][688,336]
+|Play voice [48,208][160,320]
+|Harvest / 5 Nov [32,352][688,530]
+|Not sent [208,458][404,514]
+|Call officer [32,562][544,674]
+|Play voice [576,562][688,674]
+tap ^Harvest @ 360 441
+## entry detail
+|Back [0,48][112,160]
+|Harvest [144,76][296,132]
+|Harvest, 5 Nov. [32,368][688,512]
+|No voice [48,384][160,496]
+|Not sent [32,544][228,600]
+|Only the field officer can correct this now. [32,632][688,776]
+|Play voice [48,648][160,760]
+|Call officer [32,808][544,920]
+|Play voice [576,808][688,920]
+Fri Nov  6 00:02:04 IST 2026
+## retry: the first attempt reached the detail at 00:02 (after the deadline) -> 'Only the field officer can correct this now' (correct for > 24 h)
+Fri Nov  6 00:00:13 IST 2026
+Fri Nov  6 00:00:18 IST 2026
+## entry detail at 24 h - ~55 s
+|Back [0,48][112,160]
+|Harvest [144,76][296,132]
+|Harvest, 5 Nov. [32,368][688,512]
+|No voice [48,384][160,496]
+|Not sent [32,544][228,600]
+|Undo [32,632][544,744]
+|Play voice [576,632][688,744]
+|Call officer [32,776][544,888]
+|Play voice [576,776][688,888]
+Fri Nov  6 00:00:21 IST 2026
+## clock restored to host time: Thu Nov  5 00:49:58 IST 2026 (host Thu Nov  5 00:49:58 IST 2026)

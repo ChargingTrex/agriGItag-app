@@ -1,0 +1,175 @@
+# flutter test integration_test/farmer_flows_test.dart -d emulator-5554 (debug, fakes at camera/GPS/compressor seams)
+ 0:50  up 1 day, 21:17, 1 user, load averages: 7.56 10.68 24.19
+/dev/disk1s5   466Gi   434Gi   4.6Gi    99%    4.4M   48M    8%   /System/Volumes/Data
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 91.0.0 (111.0.0 available)
+  analyzer 8.4.1 (14.7.0 available)
+  archive 4.5.2 (4.6.0 available)
+  build 4.0.7 (5.0.0 available)
+  build_config 1.3.3 (1.4.0 available)
+  build_daemon 4.1.2 (4.1.7 available)
+  build_runner 2.15.1 (2.17.1 available)
+  built_collection 5.1.1 (6.0.0 available)
+  camera 0.12.0+2 (0.12.2 available)
+  camera_android_camerax 0.7.2 (0.7.6+1 available)
+  camera_avfoundation 0.10.3 (0.11.1 available)
+  camera_platform_interface 2.14.0 (2.15.0 available)
+  camera_web 0.3.5+6 (0.3.5+7 available)
+  characters 1.4.0 (1.4.1 available)
+  cli_util 0.4.2 (0.6.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  connectivity_plus 7.3.1 (7.3.2 available)
+  coverage 1.15.1 (1.16.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  dart_style 3.1.3 (3.1.14 available)
+  dbus 0.7.15 (0.8.0 available)
+  drift 2.31.0 (2.35.3 available)
+  drift_dev 2.31.0 (2.35.2 available)
+  drift_flutter 0.2.8 (0.3.1 available)
+  flutter_riverpod 3.3.2 (3.4.3 available)
+  frontend_server_client 4.1.0 (4.2.0 available)
+  go_router 17.5.0 (18.1.2 available)
+  gsettings 0.2.8 (0.2.9 available)
+  hooks 2.0.2 (2.2.0 available)
+  intl 0.20.2 (0.20.3 available)
+  jni 1.1.1 (1.1.2 available)
+  matcher 0.12.17 (0.12.20 available)
+  material_color_utilities 0.11.1 (0.13.1 available)
+  meta 1.17.0 (1.19.0 available)
+  mobile_scanner 7.4.3 (7.5.0 available)
+  nm 0.5.0 (0.6.0 available)
+  objective_c 9.5.0 (9.6.3 available)
+  package_config 2.2.0 (3.0.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  platform 3.1.6 (3.2.0 available)
+  qr 3.0.3 (4.0.1 available)
+  record 6.2.1 (7.1.2 available)
+  record_android 1.5.2 (2.2.0 available)
+  record_ios 1.2.1 (2.1.1 available)
+  record_linux 1.3.1 (2.1.3 available)
+  record_macos 1.2.2 (2.1.1 available)
+  record_platform_interface 1.6.0 (2.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  record_web 1.3.0 (2.1.3 available)
+  record_windows 1.0.7 (2.3.0 available)
+  riverpod 3.3.2 (3.4.3 available)
+  source_gen 4.2.4 (4.3.1 available)
+  sqlite3 2.9.4 (3.8.0 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.43.1 (0.45.1 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  synchronized 3.4.0 (3.5.0 available)
+  test 1.26.3 (1.33.0 available)
+  test_api 0.7.7 (0.7.15 available)
+  test_core 0.6.12 (0.6.21 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  url_launcher_android 6.3.30 (6.3.33 available)
+  vector_math 2.2.0 (2.4.4 available)
+  web 1.1.1 (1.1.2 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+66 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/fi-it/Documents/projects/agriGitag/apps/mobile/integration_test/farmer_flows_test.dart
+Running Gradle task 'assembleDebug'...                          
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: /Users/fi-it/.pub-cache/hosted/pub.dev/geolocator_android-5.2.1/android/src/main/java/com/baseflow/geolocator/location/LocationMapper.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+Running Gradle task 'assembleDebug'...                            167.1s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...           6.1s
+00:00 +0 -1: loading /Users/fi-it/Documents/projects/agriGitag/apps/mobile/integration_test/farmer_flows_test.dart [E]
+  Failed to load "/Users/fi-it/Documents/projects/agriGitag/apps/mobile/integration_test/farmer_flows_test.dart": WebSocketChannelException: HttpException: Connection closed before full header was received, uri = http://127.0.0.1:65241/84JaNJXNkNQ=/ws
+  
+00:00 +0 -1: Some tests failed.
+flutter test integration_test/farmer_flows_test.dart -d emulator-5554 -r   13.96s user 5.63s system 10% cpu 3:08.71 total
+exit=1
+ 0:53  up 1 day, 21:20, 1 user, load averages: 26.52 20.98 25.92
+/dev/disk1s5   466Gi   436Gi   1.8Gi   100%    4.4M   19M   19%   /System/Volumes/Data
+
+# RERUN 1 (logcat cleared first; run 1 failed to load: VM service WebSocket closed, app force-stopped 0.5 s after start)
+ 0:53  up 1 day, 21:21, 1 user, load averages: 20.62 20.00 25.46
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 91.0.0 (111.0.0 available)
+  analyzer 8.4.1 (14.7.0 available)
+  archive 4.5.2 (4.6.0 available)
+  build 4.0.7 (5.0.0 available)
+  build_config 1.3.3 (1.4.0 available)
+  build_daemon 4.1.2 (4.1.7 available)
+  build_runner 2.15.1 (2.17.1 available)
+  built_collection 5.1.1 (6.0.0 available)
+  camera 0.12.0+2 (0.12.2 available)
+  camera_android_camerax 0.7.2 (0.7.6+1 available)
+  camera_avfoundation 0.10.3 (0.11.1 available)
+  camera_platform_interface 2.14.0 (2.15.0 available)
+  camera_web 0.3.5+6 (0.3.5+7 available)
+  characters 1.4.0 (1.4.1 available)
+  cli_util 0.4.2 (0.6.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  connectivity_plus 7.3.1 (7.3.2 available)
+  coverage 1.15.1 (1.16.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  dart_style 3.1.3 (3.1.14 available)
+  dbus 0.7.15 (0.8.0 available)
+  drift 2.31.0 (2.35.3 available)
+  drift_dev 2.31.0 (2.35.2 available)
+  drift_flutter 0.2.8 (0.3.1 available)
+  flutter_riverpod 3.3.2 (3.4.3 available)
+  frontend_server_client 4.1.0 (4.2.0 available)
+  go_router 17.5.0 (18.1.2 available)
+  gsettings 0.2.8 (0.2.9 available)
+  hooks 2.0.2 (2.2.0 available)
+  intl 0.20.2 (0.20.3 available)
+  jni 1.1.1 (1.1.2 available)
+  matcher 0.12.17 (0.12.20 available)
+  material_color_utilities 0.11.1 (0.13.1 available)
+  meta 1.17.0 (1.19.0 available)
+  mobile_scanner 7.4.3 (7.5.0 available)
+  nm 0.5.0 (0.6.0 available)
+  objective_c 9.5.0 (9.6.3 available)
+  package_config 2.2.0 (3.0.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  platform 3.1.6 (3.2.0 available)
+  qr 3.0.3 (4.0.1 available)
+  record 6.2.1 (7.1.2 available)
+  record_android 1.5.2 (2.2.0 available)
+  record_ios 1.2.1 (2.1.1 available)
+  record_linux 1.3.1 (2.1.3 available)
+  record_macos 1.2.2 (2.1.1 available)
+  record_platform_interface 1.6.0 (2.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  record_web 1.3.0 (2.1.3 available)
+  record_windows 1.0.7 (2.3.0 available)
+  riverpod 3.3.2 (3.4.3 available)
+  source_gen 4.2.4 (4.3.1 available)
+  sqlite3 2.9.4 (3.8.0 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.43.1 (0.45.1 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  synchronized 3.4.0 (3.5.0 available)
+  test 1.26.3 (1.33.0 available)
+  test_api 0.7.7 (0.7.15 available)
+  test_core 0.6.12 (0.6.21 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  url_launcher_android 6.3.30 (6.3.33 available)
+  vector_math 2.2.0 (2.4.4 available)
+  web 1.1.1 (1.1.2 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+66 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/fi-it/Documents/projects/agriGitag/apps/mobile/integration_test/farmer_flows_test.dart
+Running Gradle task 'assembleDebug'...                             56.1s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...         436.0s
+Error: ADB exited with exit code -15
+
+No tests ran.
+# RERUN 1 stopped by the Verifier at 01:02:09: host disk at 344 MiB free during the install; coordinator asked to close for the day

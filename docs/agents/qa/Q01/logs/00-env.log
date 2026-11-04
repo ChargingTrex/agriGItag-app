@@ -1,0 +1,100 @@
+22:42  up 1 day, 19:10, 1 user, load averages: 534.88 298.17 146.11
+Wed Nov  4 17:12:29 UTC 2026
+== boot_completed at
+Wed Nov  4 23:23:07 IST 2026
+23:23  up 1 day, 19:50, 1 user, load averages: 374.35 407.42 441.31
+emulator launched 22:43, boot_completed observed 23:22
+16
+36
+x86_64
+
+Physical size: 720x1280
+Physical density: 320
+MemTotal:        2014484 kB
+MemFree:           73268 kB
+2
+Filesystem       Size Used Avail Use% Mounted on
+/dev/block/dm-56 5.8G 738M  4.9G  13% /data/user/0
+avd.ini.displayname = AgriTrace Go profile (API 36.1 stand-in, 2 GB, 2 cores, 720x1280)
+disk.dataPartition.size = 6442450944
+hw.lcd.density = 320
+hw.lcd.height = 1280
+hw.lcd.width = 720
+hw.ramSize = 2048
+image.sysdir.1 = system-images/android-36.1/google_apis_playstore/x86_64/
+showDeviceFrame = yes
+vm.swapusage: total = 15360.00M  used = 14676.00M  free = 684.00M  (encrypted)
+d3b72743737645f21204158a1a0873f2e4b2a755
+Flutter 3.38.4 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision 66dd93f9a2 (11 months ago) • 2025-12-03 14:56:10 -0800
+Engine • hash 360877569ab6632a564a0a8a815b2e0fe5ae294a (revision a5cb96369e) (10 months ago) • 2025-12-03 20:56:06.000Z
+com.google.android.googlequicksearchbox: Package com.google.android.googlequicksearchbox new state: disabled-user
+com.android.vending: Package com.android.vending new state: disabled-user
+com.google.android.apps.youtube.music: Package com.google.android.apps.youtube.music new state: disabled-user
+com.google.android.youtube: Package com.google.android.youtube new state: disabled-user
+com.google.android.apps.photos: Package com.google.android.apps.photos new state: disabled-user
+com.google.android.apps.maps: Package com.google.android.apps.maps new state: disabled-user
+com.google.android.gm: Package com.google.android.gm new state: disabled-user
+com.google.android.apps.messaging: Package com.google.android.apps.messaging new state: disabled-user
+com.google.android.apps.wellbeing: Package com.google.android.apps.wellbeing new state: disabled-user
+com.google.android.apps.docs: Package com.google.android.apps.docs new state: disabled-user
+com.google.android.videos: 
+Exception occurred while executing 'disable-user':
+java.lang.IllegalArgumentException: Unknown package: com.google.android.videos
+	at com.android.server.pm.PackageManagerService.setEnabledSettings(PackageManagerService.java:4004)
+	at com.android.server.pm.PackageManagerService.-$$Nest$msetEnabledSettings(PackageManagerService.java:0)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.setApplicationEnabledSetting(PackageManagerService.java:5898)
+	at com.android.server.pm.PackageManagerShellCommand.runSetEnabledSetting(PackageManagerShellCommand.java:2421)
+	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:293)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:38)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:6721)
+	at android.os.Binder.shellCommand(Binder.java:1183)
+	at android.os.Binder.onTransact(Binder.java:961)
+	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4666)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:6705)
+	at android.os.Binder.execTransactInternal(Binder.java:1478)
+	at android.os.Binder.execTransact(Binder.java:1418)
+com.google.android.apps.tachyon: 
+Exception occurred while executing 'disable-user':
+java.lang.IllegalArgumentException: Unknown package: com.google.android.apps.tachyon
+	at com.android.server.pm.PackageManagerService.setEnabledSettings(PackageManagerService.java:4004)
+	at com.android.server.pm.PackageManagerService.-$$Nest$msetEnabledSettings(PackageManagerService.java:0)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.setApplicationEnabledSetting(PackageManagerService.java:5898)
+	at com.android.server.pm.PackageManagerShellCommand.runSetEnabledSetting(PackageManagerShellCommand.java:2421)
+	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:293)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:38)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:6721)
+	at android.os.Binder.shellCommand(Binder.java:1183)
+	at android.os.Binder.onTransact(Binder.java:961)
+	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4666)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:6705)
+	at android.os.Binder.execTransactInternal(Binder.java:1478)
+	at android.os.Binder.execTransact(Binder.java:1418)
+com.google.android.calendar: Package com.google.android.calendar new state: disabled-user
+com.google.android.apps.chromecast.app: 
+Exception occurred while executing 'disable-user':
+java.lang.IllegalArgumentException: Unknown package: com.google.android.apps.chromecast.app
+	at com.android.server.pm.PackageManagerService.setEnabledSettings(PackageManagerService.java:4004)
+	at com.android.server.pm.PackageManagerService.-$$Nest$msetEnabledSettings(PackageManagerService.java:0)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.setApplicationEnabledSetting(PackageManagerService.java:5898)
+	at com.android.server.pm.PackageManagerShellCommand.runSetEnabledSetting(PackageManagerShellCommand.java:2421)
+	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:293)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:38)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:6721)
+	at android.os.Binder.shellCommand(Binder.java:1183)
+	at android.os.Binder.onTransact(Binder.java:961)
+	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4666)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:6705)
+	at android.os.Binder.execTransactInternal(Binder.java:1478)
+	at android.os.Binder.execTransact(Binder.java:1418)
+com.android.chrome: Package com.android.chrome new state: disabled-user
+com.google.android.as: Package com.google.android.as new state: disabled-user
+com.google.android.settings.intelligence: Package com.google.android.settings.intelligence new state: disabled-user
+com.google.android.apps.nexuslauncher.wallpaper: 
+com.google.android.apps.wallpaper: Package com.google.android.apps.wallpaper new state: disabled-user
+com.google.android.tts: Package com.google.android.tts new state: disabled-user
+com.google.android.apps.turbo: 
+com.google.android.as.oss: Package com.google.android.as.oss new state: disabled-user

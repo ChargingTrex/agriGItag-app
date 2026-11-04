@@ -1,0 +1,10 @@
+entry_id                              entry_type  status  entered_by_user_id                    device_time                        location_status
+------------------------------------  ----------  ------  ------------------------------------  ---------------------------------  ---------------
+01a1a7d4-578d-735c-9733-493cd40e2723  harvest     saved   01a19825-2b86-7b94-a524-e89c962a4c6e  2026-11-05T00:01:13.548488 +05:30  none           
+media_id                              entry_id                              kind   bytes  upload_status  purged_at
+------------------------------------  ------------------------------------  -----  -----  -------------  ---------
+01a1a7d4-578f-75d6-b86e-1aa7e189d53a  01a1a7d4-578d-735c-9733-493cd40e2723  photo  69219  pending                 
+seq  kind   ref_id                                owner_user_id                         attempts  status   last_error
+---  -----  ------------------------------------  ------------------------------------  --------  -------  ----------
+1    entry  01a1a7d4-578d-735c-9733-493cd40e2723  01a19825-2b86-7b94-a524-e89c962a4c6e  0         waiting            
+2    media  01a1a7d4-578f-75d6-b86e-1aa7e189d53a  01a19825-2b86-7b94-a524-e89c962a4c6e  0         waiting            

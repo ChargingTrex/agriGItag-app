@@ -1,0 +1,50 @@
+# cold start: am force-stop then am start -W (profile build, dev entry, API_BASE_URL=http://10.0.2.2:8001), signed-out state
+## warm-up first launch after install (not counted)
+23:52  up 1 day, 20:19, 1 user, load averages: 138.44 311.89 429.63
+## run 1
+23:52  up 1 day, 20:19, 1 user, load averages: 134.28 305.21 425.88
+## run 2
+23:52  up 1 day, 20:20, 1 user, load averages: 155.23 301.48 422.44
+## run 3
+23:52  up 1 day, 20:20, 1 user, load averages: 136.86 290.26 416.32
+
+# first launch after install: Status timeout, WaitTime 45809 ms at load ~140 (first-run dexopt + host swapping); not counted
+## run 1 (signed out, opens on sign-in)
+23:55  up 1 day, 20:23, 1 user, load averages: 65.32 198.11 356.31
+Status: timeout
+LaunchState: UNKNOWN (-1)
+WaitTime: 31995
+## run 2 (signed out, opens on sign-in)
+23:56  up 1 day, 20:24, 1 user, load averages: 57.89 173.35 337.17
+Status: timeout
+LaunchState: UNKNOWN (-1)
+WaitTime: 21437
+## run 3 (signed out, opens on sign-in)
+23:57  up 1 day, 20:24, 1 user, load averages: 60.50 159.81 324.71
+Status: timeout
+LaunchState: UNKNOWN (-1)
+WaitTime: 26413
+
+# signed in as farmer +919000000011 (opens on farmer home); 2026-11-05
+## run 1
+host:  0:17  up 1 day, 20:45, 1 user, load averages: 23.39 46.97 126.47
+guest loadavg: 30.09 35.08 31.14 42/2070 18241
+Status: timeout
+LaunchState: UNKNOWN (-1)
+WaitTime: 16187
+## run 2
+host:  0:18  up 1 day, 20:45, 1 user, load averages: 25.86 45.32 123.12
+guest loadavg: 30.77 34.73 31.17 30/2063 18397
+Status: timeout
+LaunchState: UNKNOWN (-1)
+WaitTime: 14557
+## run 3
+host:  0:18  up 1 day, 20:46, 1 user, load averages: 19.60 42.29 119.78
+guest loadavg: 28.31 33.90 31.00 14/2043 18526
+Status: timeout
+LaunchState: UNKNOWN (-1)
+WaitTime: 13538
+## ActivityTaskManager Displayed lines
+11-04 23:36:46.561 13469 13490 I ActivityTaskManager: Displayed in.agritrace.agritrace/.MainActivity for user 0: +17s739ms
+11-04 23:37:17.702 13469 13490 I ActivityTaskManager: Displayed in.agritrace.agritrace/.MainActivity for user 0: +18s316ms
+11-04 23:37:40.309 13469 13490 I ActivityTaskManager: Displayed in.agritrace.agritrace/.MainActivity for user 0: +13s768ms

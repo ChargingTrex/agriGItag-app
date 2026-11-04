@@ -1,0 +1,29 @@
+# storage prompt: fill /data to < 100 MB free with fallocate, restart app, expect 'Phone is full' sheet
+ 0:43  up 1 day, 21:11, 1 user, load averages: 9.55 16.27 33.54
+host qcow2 before: 1741815808
+/dev/block/dm-56   6082144 1357832   4582100  23% /data/user/0
+fallocate 4629155840 bytes
+app-can-write
+rc=0
+-rw-r--r-- 1 shell shell 4629155840 2026-11-05 00:02 /data/local/tmp/q01fill
+/dev/block/dm-56   6082144 5878500     61432  99% /data/user/0
+host qcow2 after: 1741815808
+Status: ok
+WaitTime: 6849
+## screen after restart
+|Scrim [0,0][720,640]
+|No voice [48,912][160,1024]
+|Phone is full. Send your entries now? [192,919][672,1017]
+|Send now [32,1072][528,1200]
+|Play voice [560,1072][688,1200]
+## media files after the check (pending photo must remain)
+total 96
+drwx------ 2 u0_a219 u0_a219  4096 2026-11-04 23:55 .
+drwxrwx--x 3 u0_a219 u0_a219  4096 2026-11-05 00:02 ..
+-rw------- 1 u0_a219 u0_a219 69219 2026-11-04 23:55 CAP1455543105766927462_1600.jpg
+-rw------- 1 u0_a219 u0_a219  3947 2026-11-04 23:55 CAP1455543105766927462_thumb.jpg
+media_id                              upload_status  purged_at  local_path                                                                     
+------------------------------------  -------------  ---------  -------------------------------------------------------------------------------
+01a1a7d4-578f-75d6-b86e-1aa7e189d53a  pending                   /data/user/0/in.agritrace.agritrace/files/media/CAP1455543105766927462_1600.jpg
+/dev/block/dm-56   6082144 1269752   4670180  22% /data/user/0
+fill removed
