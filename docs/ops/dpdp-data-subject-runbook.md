@@ -1,5 +1,6 @@
-<!-- Purpose: manual runbook to export, erase or anonymise one farmer's personal data under India's DPDP Act
-2023, without breaking the append-only traceability record. Serves: SEC review P1-2 (ASVS 8.3.2, item 8-4),
+<!-- Purpose: runbook to export, erase or anonymise one farmer's personal data under India's DPDP Act 2023,
+without breaking the append-only traceability record: the audited routes first (B24, D-065), manual SQL as the
+fallback. Serves: SEC review P1-2 (ASVS 8.3.2, item 8-4),
 TODO.md §4 "Compliance (F5, DPDP Act 2023)", Arch §Security, privacy and consent, CLAUDE.md §6, D-005, D-008.
 Readers: the FPO data officer (approves) and the on-call engineer (runs the commands). -->
 
@@ -21,6 +22,17 @@ below starts with:
 ```
 
 ## 1. Export one farmer's data
+
+An FPO admin of the farmer's FPO calls the audited route (B24). It writes an `audit_log` row `farmer.export`:
+
+```bash
+curl -fsS -H "Authorization: Bearer $ADMIN_TOKEN" "$API/v1/farmers/$FARMER_ID/export" > farmer-export.json
+jq -r '(.id_documents[], .evidence_photos[]) | "\(.object_key) \(.url)"' farmer-export.json |
+  while read -r k u; do mkdir -p "export/$(dirname "$k")"; curl -fsS -o "export/$k" "$u"; done
+```
+
+The file links expire after 15 minutes (`links_expire_at`). If they expire, call the route again. The JSON
+holds the same sections as the SQL below. Keep the SQL as the fallback when the API is down:
 
 ```sql
 \pset tuples_only on
@@ -55,7 +67,8 @@ SELECT jsonb_pretty(jsonb_build_object(
 \o
 ```
 
-Then fetch the files (`FPO_ID` is `farmers.fpo_id`; ID-document keys are `<fpo_id>/<farmer_id>/<doc>.<ext>`):
+With the SQL fallback, fetch the files yourself (`FPO_ID` is `farmers.fpo_id`; ID-document keys are
+`<fpo_id>/<farmer_id>/<doc>.<ext>`):
 
 ```bash
 aws s3 cp --recursive "s3://id-docs/$FPO_ID/$FARMER_ID/" export/id-docs/
@@ -75,15 +88,36 @@ jq 'del(.user, .id_documents, .audit_log, .assist_sessions, .plots[]?.land_recor
     | .plots[]?.pin.coordinates |= map(. * 1000 | round / 1000)' farmer-export.json > third-party.json
 ```
 
-TODO (owner **B24**): an audited FPO-admin route `GET /v1/farmers/{id}/export` replaces this section.
-
 ## 2. Erase or anonymise on request
 
 1. Run §1 first and offer the copy to the farmer. Ask the field officer to sync the farmer's phone. After
    step 2 the device is signed out, and any unsent entries stay on the phone (D-029).
-2. Run one transaction. Read each row count before `COMMIT`. The `consent_records` update writes the same
-   column as `POST /v1/consents/{id}/revoke`. Raw SQL bypasses the ORM audit listener, so the last statement
-   writes the audit row.
+2. An FPO admin of the farmer's FPO calls the audited route (B24, D-065). `reason` is kept for good in the
+   audit trail, so write the request reference and approver there, never personal data:
+
+```bash
+curl -fsS -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"reason": "DPDP-2026-001, approved by the data officer", "confirm": true}' \
+  "$API/v1/farmers/$FARMER_ID/erase"   # 204; a second call is also 204 and changes nothing
+```
+
+   In one transaction, the route runs the SQL below. It changes nothing in `events`, `event_versions` or the
+   audit rows already written. In `consent_records` it sets only `revoked_at`. Then it deletes every
+   `id-docs` object (all versions) under `<fpo_id>/<farmer_id>/`, so step 3 is covered. It also queues a page
+   build (`trigger = erase`) for each published batch with the farmer's lots, so step 4's
+   `POST /v1/batches/{id}/rebuild` is covered.
+   The audit row `farmer.erase` holds the reason and the row counts. Read it with
+   `SELECT diff FROM audit_log WHERE action = 'farmer.erase' AND entity_id = :'fid';`.
+   It differs from the SQL in five ways. Page snapshots lose the name and `gi_authorised_user_no` by lot
+   code, not by name. `farmers.gi_authorised_user_no` is cleared too. `farmers.address` keeps the village,
+   block, taluk, district and state, and loses only `pin`. If the address is cleared, the rebuilt page fails
+   its place check and the old page, which still shows the name, stays online. With the SQL fallback, use
+   `address = address - 'pin'` instead of `address = NULL`. The farmer membership is deleted. If
+   the account still has another membership (an office role, or a farmer of another FPO), the `users` row,
+   its OTP challenges and notifications are kept, and the data officer handles that account by hand.
+   Use the SQL only when the API is down. Read each row count before `COMMIT`. The `consent_records` update
+   writes the same column as `POST /v1/consents/{id}/revoke`. Raw SQL bypasses the ORM audit listener, so
+   the last statement writes the audit row.
 
 ```sql
 BEGIN;
@@ -111,13 +145,15 @@ INSERT INTO audit_log (id, at, action, entity_type, entity_id, diff)
 COMMIT;
 ```
 
-3. Delete the ID documents: `aws s3 rm --recursive "s3://id-docs/$FPO_ID/$FARMER_ID/"`. If `id-docs` is
-   versioned on AWS, also delete the old versions, as in step 4.
+3. SQL fallback only (the route already did this): delete the ID documents with
+   `aws s3 rm --recursive "s3://id-docs/$FPO_ID/$FARMER_ID/"`. If `id-docs` is versioned on AWS, also delete
+   the old versions, as in step 4.
 4. Rebuild the public pages. Find the batches with
    `SELECT DISTINCT b.id, b.code FROM batches b JOIN batch_shares s ON s.batch_id = b.id WHERE s.farmer_id = :'fid' AND b.status = 'published';`.
-   For each one, an FPO admin calls `POST /v1/batches/{id}/rebuild`. Poll `GET /v1/batches/{id}/builds` until
-   the build reads `built`. The consent is now withdrawn, so the page shows "Farmer N" (W01/B10). The build
-   invalidates CloudFront by itself. Then delete the older page versions that still hold the name:
+   With the SQL fallback, an FPO admin calls `POST /v1/batches/{id}/rebuild` for each one (the route has
+   already queued them). Poll `GET /v1/batches/{id}/builds` until the latest build reads `built`. The consent
+   is now withdrawn, so the page shows "Farmer N" (W01/B10). The build invalidates CloudFront by itself.
+   Then delete the older page versions that still hold the name. The route does not do this step:
 
 ```bash
 for k in index.html data.json; do
@@ -148,8 +184,6 @@ done
   for rows whose `entity_id` is the farmer, their user or their plots, then `ENABLE TRIGGER`. This depends on
   the DB role split (deployment checklist, SEC 7-4).
 
-TODO (owner **B24**): an audited FPO-admin route `POST /v1/farmers/{id}/erase` runs steps 2-4 as one job.
-
 ## 3. Retention defaults
 
 No source document fixes retention periods. The Architecture says only "nothing is hard-deleted except on a
@@ -158,7 +192,7 @@ them; the data officer then records the signed table in `TODO.md`.
 
 | Data | Proposed default | Approves |
 |---|---|---|
-| `otp_challenges` | Purge 30 days after expiry. TODO (owner **B24**): no purge job exists. | Data officer |
+| `otp_challenges` | Purge 30 days after expiry: Celery beat task `registry.purge_otp_challenges`, daily 02:30 UTC, `OTP_RETENTION_DAYS` (B24). Needs a beat process (`celery -A agritrace.worker beat`) | Data officer |
 | `id_documents` and `id-docs` | Delete once the farmer is verified, and always when the farmer leaves | Data officer |
 | Phone, name, address (`users`, `farmers`) | While a member. Erase on request, or 1 year after leaving | FPO board |
 | Traceability record, `evidence`, `audit_log`, `consent_records` | Last batch's `best_before_date` + the certification audit window; personal data scrubbed as in §2 | FPO board + compliance owner |
