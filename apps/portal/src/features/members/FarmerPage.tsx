@@ -21,7 +21,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { unwrap } from '../../api/client';
 import { errorMessage } from '../../api/errors';
@@ -48,6 +48,8 @@ function DevicesSection({ userId }: { userId: string }) {
   const queryClient = useQueryClient();
   const [target, setTarget] = useState<string | null>(null);
   const [reason, setReason] = useState('');
+  // The Revoke button that opened the dialog is gone after success, so focus moves to the heading.
+  const heading = useRef<HTMLHeadingElement>(null);
   const queryKey = ['devices', userId];
   const devices = useQuery({
     queryKey,
@@ -67,13 +69,21 @@ function DevicesSection({ userId }: { userId: string }) {
     onSuccess: () => {
       setTarget(null);
       setReason('');
+      heading.current?.focus();
       return queryClient.invalidateQueries({ queryKey });
     },
   });
 
   return (
     <section aria-labelledby="devices-heading">
-      <Typography id="devices-heading" component="h2" variant="h6" gutterBottom>
+      <Typography
+        id="devices-heading"
+        ref={heading}
+        tabIndex={-1}
+        component="h2"
+        variant="h6"
+        gutterBottom
+      >
         Devices
       </Typography>
       {devices.isError && <Alert severity="error">{errorMessage(devices.error)}</Alert>}
@@ -93,6 +103,7 @@ function DevicesSection({ userId }: { userId: string }) {
                 <Button
                   onClick={() => {
                     revoke.reset();
+                    setReason('');
                     setTarget(device.id);
                   }}
                 >
@@ -118,6 +129,7 @@ function DevicesSection({ userId }: { userId: string }) {
               setReason(event.target.value);
             }}
             fullWidth
+            slotProps={{ htmlInput: { maxLength: 500 } }}
             sx={{ mt: 1 }}
           />
           {revoke.isError && <Alert severity="error">{errorMessage(revoke.error)}</Alert>}
