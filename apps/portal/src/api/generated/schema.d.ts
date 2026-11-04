@@ -3127,6 +3127,13 @@ export interface components {
                 [key: string]: unknown;
             }[];
             /**
+             * Devices
+             * @description The account's devices (platform, app version, last seen), without the token hashes.
+             */
+            devices: {
+                [key: string]: unknown;
+            }[];
+            /**
              * Event Versions
              * @description Versions of events on the farmer's plots and lots, or entered by or for the farmer, payload as stored; `gps` as GeoJSON. Photos are listed in `evidence_photos`, not inlined.
              */
@@ -3135,7 +3142,7 @@ export interface components {
             }[];
             /**
              * Evidence Photos
-             * @description Photos of those versions: `bucket`, `object_key` and `url`, a presigned GET.
+             * @description Photos of those versions and readings: `bucket`, `object_key`, `url` (presigned GET).
              */
             evidence_photos: {
                 [key: string]: unknown;
@@ -3175,10 +3182,24 @@ export interface components {
                 [key: string]: unknown;
             }[];
             /**
+             * Notifications
+             * @description Messages sent to the farmer's account (payload without secrets); erasure deletes them.
+             */
+            notifications: {
+                [key: string]: unknown;
+            }[];
+            /**
              * Plots
              * @description Plots, land record reference included; `pin` and `walked_boundary` as GeoJSON.
              */
             plots: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Quality Readings
+             * @description Quality readings of the farmer's lots (moisture etc.); `gps` as GeoJSON.
+             */
+            quality_readings: {
                 [key: string]: unknown;
             }[];
             /**

@@ -1995,6 +1995,15 @@
             "title": "Consents",
             "type": "array"
           },
+          "devices": {
+            "description": "The account's devices (platform, app version, last seen), without the token hashes.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Devices",
+            "type": "array"
+          },
           "event_versions": {
             "description": "Versions of events on the farmer's plots and lots, or entered by or for the farmer, payload as stored; `gps` as GeoJSON. Photos are listed in `evidence_photos`, not inlined.",
             "items": {
@@ -2005,7 +2014,7 @@
             "type": "array"
           },
           "evidence_photos": {
-            "description": "Photos of those versions: `bucket`, `object_key` and `url`, a presigned GET.",
+            "description": "Photos of those versions and readings: `bucket`, `object_key`, `url` (presigned GET).",
             "items": {
               "additionalProperties": true,
               "type": "object"
@@ -2052,6 +2061,15 @@
             "title": "Lots",
             "type": "array"
           },
+          "notifications": {
+            "description": "Messages sent to the farmer's account (payload without secrets); erasure deletes them.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Notifications",
+            "type": "array"
+          },
           "plots": {
             "description": "Plots, land record reference included; `pin` and `walked_boundary` as GeoJSON.",
             "items": {
@@ -2059,6 +2077,15 @@
               "type": "object"
             },
             "title": "Plots",
+            "type": "array"
+          },
+          "quality_readings": {
+            "description": "Quality readings of the farmer's lots (moisture etc.); `gps` as GeoJSON.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Quality Readings",
             "type": "array"
           },
           "user": {
@@ -2086,6 +2113,9 @@
           "batch_shares",
           "event_versions",
           "evidence_photos",
+          "quality_readings",
+          "notifications",
+          "devices",
           "assist_sessions",
           "audit_log",
           "links_expire_at"

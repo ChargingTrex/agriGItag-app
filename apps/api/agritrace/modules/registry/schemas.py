@@ -324,7 +324,16 @@ class FarmerExport(BaseModel):
         "payload as stored; `gps` as GeoJSON. Photos are listed in `evidence_photos`, not inlined."
     )
     evidence_photos: list[Row] = Field(
-        description="Photos of those versions: `bucket`, `object_key` and `url`, a presigned GET."
+        description="Photos of those versions and readings: `bucket`, `object_key`, `url` (presigned GET)."
+    )
+    quality_readings: list[Row] = Field(
+        description="Quality readings of the farmer's lots (moisture etc.); `gps` as GeoJSON."
+    )
+    notifications: list[Row] = Field(
+        description="Messages sent to the farmer's account (payload without secrets); erasure deletes them."
+    )
+    devices: list[Row] = Field(
+        description="The account's devices (platform, app version, last seen), without the token hashes."
     )
     assist_sessions: list[Row] = Field(description="Assist sessions for the farmer, without the GPS fix.")
     audit_log: list[Row] = Field(

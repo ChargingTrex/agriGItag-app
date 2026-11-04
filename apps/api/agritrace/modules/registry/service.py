@@ -1797,11 +1797,12 @@ _EXPORT_SQL = text(
     WITH f AS (SELECT * FROM farmers WHERE id = CAST(:fid AS uuid)),
          my_plots AS (SELECT id FROM plots WHERE farmer_id = (SELECT id FROM f)),
          my_lots AS (SELECT id FROM lots WHERE farmer_id = (SELECT id FROM f)),
+         -- Not `entered_by_user_id`: an officer-farmer's account entered others' events too (B24-r1 P1).
          my_versions AS (
            SELECT v.* FROM event_versions v JOIN events e ON e.id = v.event_id
            WHERE e.plot_id IN (SELECT id FROM my_plots) OR e.lot_id IN (SELECT id FROM my_lots)
-              OR v.on_behalf_of_farmer_id = (SELECT id FROM f)
-              OR v.entered_by_user_id = (SELECT user_id FROM f))
+              OR v.on_behalf_of_farmer_id = (SELECT id FROM f)),
+         my_readings AS (SELECT * FROM quality_readings WHERE lot_id IN (SELECT id FROM my_lots))
     SELECT jsonb_build_object(
       'farmer', (SELECT to_jsonb(f) FROM f),
       'user', (SELECT to_jsonb(u) - 'pin_hash' FROM users u WHERE u.id = (SELECT user_id FROM f)),
@@ -1824,7 +1825,15 @@ _EXPORT_SQL = text(
       'evidence_photos', COALESCE((SELECT jsonb_agg(jsonb_build_object('bucket', p.bucket,
                                                                        'object_key', p.object_key))
                                    FROM evidence_photos p
-                                   WHERE p.event_version_id IN (SELECT id FROM my_versions)), '[]'),
+                                   WHERE p.event_version_id IN (SELECT id FROM my_versions)
+                                      OR p.quality_reading_id IN (SELECT id FROM my_readings)), '[]'),
+      'quality_readings', COALESCE((SELECT jsonb_agg(to_jsonb(q) - 'gps' || jsonb_build_object(
+                                      'gps', ST_AsGeoJSON(q.gps)::jsonb)) FROM my_readings q), '[]'),
+      'notifications', COALESCE((SELECT jsonb_agg(to_jsonb(n)) FROM notifications n
+                                 WHERE n.user_id = (SELECT user_id FROM f)), '[]'),
+      'devices', COALESCE((SELECT jsonb_agg(to_jsonb(d) - 'refresh_token_hash'
+                                                         - 'previous_refresh_token_hash')
+                           FROM devices d WHERE d.user_id = (SELECT user_id FROM f)), '[]'),
       'assist_sessions', COALESCE((SELECT jsonb_agg(to_jsonb(a) - 'started_gps') FROM assist_sessions a
                                    WHERE a.farmer_id = (SELECT id FROM f)), '[]'),
       'audit_log', COALESCE((SELECT jsonb_agg(to_jsonb(a) - 'gps') FROM audit_log a

@@ -41,10 +41,12 @@ holds the same sections as the SQL below. Keep the SQL as the fallback when the 
 WITH f AS (SELECT * FROM farmers WHERE id = :'fid'),
      my_plots AS (SELECT id FROM plots WHERE farmer_id = :'fid'),
      my_lots AS (SELECT id FROM lots WHERE farmer_id = :'fid'),
+     -- Never by entered_by_user_id: an officer-farmer's account also entered other farmers' events.
      my_versions AS (
        SELECT v.* FROM event_versions v JOIN events e ON e.id = v.event_id
        WHERE e.plot_id IN (SELECT id FROM my_plots) OR e.lot_id IN (SELECT id FROM my_lots)
-          OR v.on_behalf_of_farmer_id = :'fid' OR v.entered_by_user_id = (SELECT user_id FROM f))
+          OR v.on_behalf_of_farmer_id = :'fid'),
+     my_readings AS (SELECT * FROM quality_readings WHERE lot_id IN (SELECT id FROM my_lots))
 SELECT jsonb_pretty(jsonb_build_object(
   'farmer', (SELECT to_jsonb(f) FROM f),
   'user', (SELECT to_jsonb(u) - 'pin_hash' FROM users u WHERE u.id = (SELECT user_id FROM f)),
@@ -59,7 +61,13 @@ SELECT jsonb_pretty(jsonb_build_object(
   'event_versions', (SELECT jsonb_agg(to_jsonb(v) - 'gps' || jsonb_build_object('gps', ST_AsGeoJSON(v.gps)::jsonb))
                      FROM my_versions v),
   'evidence_photos', (SELECT jsonb_agg(jsonb_build_object('bucket', p.bucket, 'object_key', p.object_key))
-                      FROM evidence_photos p WHERE p.event_version_id IN (SELECT id FROM my_versions)),
+                      FROM evidence_photos p WHERE p.event_version_id IN (SELECT id FROM my_versions)
+                                                OR p.quality_reading_id IN (SELECT id FROM my_readings)),
+  'quality_readings', (SELECT jsonb_agg(to_jsonb(q) - 'gps' || jsonb_build_object('gps', ST_AsGeoJSON(q.gps)::jsonb))
+                       FROM my_readings q),
+  'notifications', (SELECT jsonb_agg(to_jsonb(n)) FROM notifications n WHERE n.user_id = (SELECT user_id FROM f)),
+  'devices', (SELECT jsonb_agg(to_jsonb(d) - 'refresh_token_hash' - 'previous_refresh_token_hash')
+              FROM devices d WHERE d.user_id = (SELECT user_id FROM f)),
   'assist_sessions', (SELECT jsonb_agg(to_jsonb(a) - 'started_gps') FROM assist_sessions a WHERE a.farmer_id = :'fid'),
   'audit_log', (SELECT jsonb_agg(to_jsonb(a) - 'gps') FROM audit_log a
                 WHERE a.on_behalf_of_farmer_id = :'fid' OR a.entity_id = :'fid'
@@ -83,15 +91,16 @@ jq -r '.evidence_photos[]? | "\(.bucket) \(.object_key)"' farmer-export.json |
   Never give the phone, ID documents, survey number or exact boundary (CLAUDE.md §6). Round pins to 3 dp:
 
 ```bash
-jq 'del(.user, .id_documents, .audit_log, .assist_sessions, .plots[]?.land_record_ref,
-        .plots[]?.walked_boundary, .event_versions[]?.gps)
+jq 'del(.user, .id_documents, .audit_log, .assist_sessions, .notifications, .devices, .plots[]?.land_record_ref,
+        .plots[]?.walked_boundary, .event_versions[]?.gps, .quality_readings[]?.gps)
     | .plots[]?.pin.coordinates |= map(. * 1000 | round / 1000)' farmer-export.json > third-party.json
 ```
 
 ## 2. Erase or anonymise on request
 
 1. Run §1 first and offer the copy to the farmer. Ask the field officer to sync the farmer's phone. After
-   step 2 the device is signed out, and any unsent entries stay on the phone (D-029).
+   step 2 the device is signed out, and any unsent entries stay on the phone (D-029). Wait 15 minutes after the
+   last ID-document capture: an upload link issued before the erasure works that long (TODO B24-r1 P3-7).
 2. An FPO admin of the farmer's FPO calls the audited route (B24, D-065). `reason` is kept for good in the
    audit trail, so write the request reference and approver there, never personal data:
 
@@ -108,34 +117,39 @@ curl -fsS -X POST -H "Authorization: Bearer $ADMIN_TOKEN" -H 'Content-Type: appl
    `POST /v1/batches/{id}/rebuild` is covered.
    The audit row `farmer.erase` holds the reason and the row counts. Read it with
    `SELECT diff FROM audit_log WHERE action = 'farmer.erase' AND entity_id = :'fid';`.
-   It differs from the SQL in five ways. Page snapshots lose the name and `gi_authorised_user_no` by lot
-   code, not by name. `farmers.gi_authorised_user_no` is cleared too. `farmers.address` keeps the village,
-   block, taluk, district and state, and loses only `pin`. If the address is cleared, the rebuilt page fails
-   its place check and the old page, which still shows the name, stays online. With the SQL fallback, use
-   `address = address - 'pin'` instead of `address = NULL`. The farmer membership is deleted. If
-   the account still has another membership (an office role, or a farmer of another FPO), the `users` row,
-   its OTP challenges and notifications are kept, and the data officer handles that account by hand.
-   Use the SQL only when the API is down. Read each row count before `COMMIT`. The `consent_records` update
-   writes the same column as `POST /v1/consents/{id}/revoke`. Raw SQL bypasses the ORM audit listener, so
-   the last statement writes the audit row.
+   On a retry after a failed commit, `id_doc_objects_deleted` counts only what that call deleted, so `0` is
+   expected: the first call already removed the objects.
+   Use the SQL below only when the API is down. It does the same as the route. Read each row count before
+   `COMMIT`. The `consent_records` update writes the same column as `POST /v1/consents/{id}/revoke`. Raw SQL
+   bypasses the ORM audit listener, so the last statement writes the audit row.
 
 ```sql
 BEGIN;
-UPDATE page_builds pb SET snapshot = jsonb_set(pb.snapshot, '{lots}', (
-    SELECT jsonb_agg(CASE WHEN l->>'farmer_name' = (SELECT name FROM farmers WHERE id = :'fid')
-                          THEN jsonb_set(l, '{farmer_name}', 'null') ELSE l END ORDER BY n)
-    FROM jsonb_array_elements(pb.snapshot->'lots') WITH ORDINALITY AS t(l, n)))
-  WHERE pb.snapshot ? 'lots' AND pb.batch_id IN (SELECT batch_id FROM batch_shares WHERE farmer_id = :'fid');
+-- Snapshots: null the name and GI number on the farmer's own lots, matched by lot code (not by name).
+UPDATE page_builds pb SET snapshot = jsonb_set(pb.snapshot, '{lots}', COALESCE((
+    SELECT jsonb_agg(CASE WHEN l->>'lot_code' IN (SELECT code FROM lots WHERE farmer_id = :'fid')
+                          THEN l || jsonb_build_object('farmer_name', NULL, 'gi_authorised_user_no', NULL)
+                          ELSE l END ORDER BY n)
+    FROM jsonb_array_elements(pb.snapshot->'lots') WITH ORDINALITY AS t(l, n)), '[]'::jsonb))
+  WHERE jsonb_typeof(pb.snapshot->'lots') = 'array'
+    AND pb.batch_id IN (SELECT batch_id FROM batch_shares WHERE farmer_id = :'fid');
 UPDATE consent_records SET revoked_at = now(), updated_at = now() WHERE farmer_id = :'fid' AND revoked_at IS NULL;
+DELETE FROM memberships WHERE user_id = (SELECT user_id FROM farmers WHERE id = :'fid')
+  AND fpo_id = (SELECT fpo_id FROM farmers WHERE id = :'fid') AND role = 'farmer';
+-- Stop here for users/devices/otp_challenges/notifications (skip the next five statements) when this is not 0:
+-- the account is also an officer, or a farmer of another FPO, and is kept.
+SELECT count(*) FROM memberships WHERE user_id = (SELECT user_id FROM farmers WHERE id = :'fid');
 UPDATE devices SET revoked_at = now(), refresh_token_hash = NULL, previous_refresh_token_hash = NULL
-  WHERE user_id = (SELECT user_id FROM farmers WHERE id = :'fid');
+  WHERE user_id = (SELECT user_id FROM farmers WHERE id = :'fid') AND revoked_at IS NULL;
 DELETE FROM otp_challenges
   WHERE phone = (SELECT u.phone FROM users u JOIN farmers f ON f.user_id = u.id WHERE f.id = :'fid');
 DELETE FROM notifications WHERE user_id = (SELECT user_id FROM farmers WHERE id = :'fid');
 UPDATE users SET phone = 'erased:' || id, name = 'Erased farmer', name_local = NULL, pin_hash = NULL,
                  status = 'suspended' WHERE id = (SELECT user_id FROM farmers WHERE id = :'fid');
-UPDATE farmers SET name = 'Erased ' || code, name_local = NULL, photo_key = NULL, address = NULL,
-                   status = 'suspended' WHERE id = :'fid';
+-- The address keeps village/block/taluk/district/state: with address = NULL the rebuilt page fails its place
+-- check and the old page, with the name, stays online.
+UPDATE farmers SET name = 'Erased ' || code, name_local = NULL, photo_key = NULL, address = address - 'pin',
+                   gi_authorised_user_no = NULL, status = 'suspended' WHERE id = :'fid';
 UPDATE plots SET land_record_ref = NULL WHERE farmer_id = :'fid';
 UPDATE plot_revisions SET snapshot = snapshot - 'land_record_ref'
   WHERE plot_id IN (SELECT id FROM plots WHERE farmer_id = :'fid');
@@ -175,7 +189,8 @@ done
   withdrawn.
 - `plots.pin` and `walked_boundary` are the GI-region evidence. They never reach a public page (CLAUDE.md §6).
 - `evidence` photos are under object lock (D-008) until the retention ends. If a photo shows the person, the
-  data officer records it, and the photo is deleted when the lock ends.
+  data officer records it, and the photo is deleted when the lock ends. The same holds for voice notes
+  (`.ogg`/`.m4a` evidence objects), which keep the farmer's voice.
 - **Residual:** `audit_log.diff` (create and update rows of `users`, `farmers` and `plots`) and the free text in
   `event_versions.reason_text` and `payload` keep the old phone, name, address and survey number. Both are
   immutable (trigger `audit_log_append_only`). TODO (owner **Architect-Gate + SEC**): rule on a D-005 exception

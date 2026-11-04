@@ -6,7 +6,8 @@ One test per acceptance line of docs/agents/acceptance/B14.md: masked phone and 
 (plots, else the GI region); round 2 (review B14-r1 P2-R): a rejected farmer's old token gets 401 and a
 new OTP sign-in gets 403 `account_inactive`. B24 (DPDP runbook, D-065): the export's shape, scope (403/404)
 and audit row; erasure (PII replaced, consent withdrawn, id-docs objects gone, append-only rows unchanged,
-a repeat is a no-op); the daily `otp_challenges` purge.
+a repeat is a no-op); the daily `otp_challenges` purge. B24 round 2 (review B24-r1 P1, P3-4): an
+officer-farmer's export holds only his own entries, and erasing him keeps his officer account.
 Serves: FR8, FR14, FR53, FR70, PLAN gap analysis "Members", D-017, D-020, D-065.
 Callers: pytest (`make test`); needs Docker (PostGIS, Valkey, LocalStack from tests/conftest.py `stack`).
 Reuses the seeding fixtures and helpers of test_registry.py (same folder, imported by module name).
@@ -16,10 +17,12 @@ import asyncio
 import secrets
 import uuid
 from datetime import timedelta
+from decimal import Decimal
 from typing import Any
 
 import pytest
 import test_registry
+from geoalchemy2 import WKTElement
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select, text
 from test_registry import REFERENCE, Caller, _as, _farmer, _plot, _region
@@ -28,13 +31,15 @@ from agritrace.core import storage
 from agritrace.core.auth import CurrentUser
 from agritrace.core.config import get_settings
 from agritrace.core.db import get_sessionmaker
-from agritrace.core.enums import ConsentType, Role
+from agritrace.core.enums import ChangeKind, ConsentType, EventSubject, EventType, PinMethod, Role
 from agritrace.core.ids import uuid7
 from agritrace.core.time import utcnow
 from agritrace.main import create_app
-from agritrace.modules.identity.models import ConsentRecord, OtpChallenge, User
+from agritrace.modules.events.models import Event, EventVersion, EvidencePhoto
+from agritrace.modules.identity.models import ConsentRecord, Device, Membership, OtpChallenge, User
 from agritrace.modules.identity.service import hash_otp
-from agritrace.modules.registry.models import Farmer, IdDocument, Village
+from agritrace.modules.lots_batches.models import Lot
+from agritrace.modules.registry.models import Crop, Farmer, IdDocument, Plot, Village
 
 pytestmark = pytest.mark.integration
 ids, api = test_registry.ids, test_registry.api  # the seeding fixtures, shared with B03's tests
@@ -260,6 +265,113 @@ async def _personal_data(farmer: dict[str, Any], ids: dict[str, Any]) -> dict[st
     return {"consent": consent.id, "key": key, "user": user_id}
 
 
+async def _officer(ids: dict[str, Any]) -> tuple[uuid.UUID, str]:
+    """Create a field officer of FPO A with a fresh phone (each test gets its own account).
+
+    Args:
+        ids: the seeded ids.
+
+    Returns:
+        The officer's user id and phone.
+
+    Side effects:
+        Inserts a `users` and a `memberships` row; commits.
+    """
+    phone = _phone()
+    async with get_sessionmaker()() as s:
+        user = User(phone=phone, name="Officer Ravi")
+        s.add(user)
+        await s.flush()
+        s.add(Membership(user_id=user.id, fpo_id=ids["fpo_a"], role=Role.FIELD_OFFICER))
+        await s.commit()
+        return user.id, phone
+
+
+async def _entry_with_photo(
+    ids: dict[str, Any], farmer_id: str, entered_by: uuid.UUID, on_behalf: str | None
+) -> tuple[uuid.UUID, str]:
+    """Insert a plot, lot, event, version and evidence photo for one farmer, entered by `entered_by`.
+
+    Args:
+        ids: the seeded ids.
+        farmer_id: owner of the plot and lot.
+        entered_by: the user who entered the version.
+        on_behalf: the farmer the entry was made for in assist mode, or None.
+
+    Returns:
+        The version id and the photo's object key.
+
+    Side effects:
+        Inserts a crop, plot, lot, event, event version and evidence photo; commits.
+    """
+    now = utcnow()
+    async with get_sessionmaker()() as s:
+        crop = Crop(
+            code=f"C_{secrets.token_hex(4)}", name_en="Samba Vathal", event_schema={}, gi_tag_id=ids["gi_tag"]
+        )
+        plot = Plot(
+            id=uuid7(),
+            fpo_id=ids["fpo_a"],
+            farmer_id=uuid.UUID(farmer_id),
+            code="P-01",
+            pin=WKTElement("POINT(78.13 9.56)", srid=4326),
+            pin_method=PinMethod.LIVE_GPS,
+            pin_device_time=now,
+            pin_server_received_at=now,
+            declared_area_acres=Decimal("1.5"),
+        )
+        s.add_all([crop, plot])
+        await s.flush()
+        lot = Lot(
+            fpo_id=ids["fpo_a"],
+            farmer_id=plot.farmer_id,
+            plot_id=plot.id,
+            crop_id=crop.id,
+            season_label="2026",
+            code=f"LOT{secrets.token_hex(4).upper()}",
+        )
+        s.add(lot)
+        await s.flush()
+        event = Event(
+            id=uuid7(),
+            fpo_id=ids["fpo_a"],
+            subject_type=EventSubject.LOT,
+            lot_id=lot.id,
+            plot_id=plot.id,
+            event_type=EventType.HARVEST,
+            occurred_on=now.date(),
+        )
+        s.add(event)
+        await s.flush()
+        version = EventVersion(
+            id=uuid7(),
+            event_id=event.id,
+            version_no=1,
+            payload={},
+            occurred_on=now.date(),
+            device_time=now,
+            server_received_at=now,
+            entered_by_user_id=entered_by,
+            on_behalf_of_farmer_id=uuid.UUID(on_behalf) if on_behalf else None,
+            change_kind=ChangeKind.CREATE,
+        )
+        s.add(version)
+        await s.flush()
+        key = f"{ids['fpo_a']}/{version.id}.jpg"
+        s.add(
+            EvidencePhoto(
+                event_version_id=version.id,
+                bucket=get_settings().s3_bucket_evidence,
+                object_key=key,
+                content_type="image/jpeg",
+                size_bytes=10,
+                sha256_client="0" * 64,
+            )
+        )
+        await s.commit()
+        return version.id, key
+
+
 async def _rows(sql: str, **params: Any) -> list[dict[str, Any]]:
     """Read rows as dicts.
 
@@ -295,7 +407,16 @@ async def test_export_shape_scope_and_audit(api: tuple[AsyncClient, Caller], ids
     [iddoc] = doc["id_documents"]
     assert iddoc["object_key"] == data["key"] and f"/id-docs/{data['key']}" in iddoc["url"]
     assert iddoc["url"].split("?")[1].count("X-Amz-Signature") == 1
-    for section in ("plots", "lots", "intakes", "batch_shares", "event_versions", "evidence_photos"):
+    empty = (
+        "plots",
+        "lots",
+        "intakes",
+        "batch_shares",
+        "event_versions",
+        "evidence_photos",
+        "quality_readings",
+    )
+    for section in empty + ("notifications", "devices"):
         assert doc[section] == []
     assert doc["links_expire_at"]
     [diff] = await _audit(farmer["id"], "farmer.export")
@@ -306,6 +427,58 @@ async def test_export_shape_scope_and_audit(api: tuple[AsyncClient, Caller], ids
     assert (await client.get(f"/v1/farmers/{farmer['id']}/export")).status_code == 403
     _as(caller, ids, "admin_b", "fpo_b", Role.FPO_ADMIN)
     assert (await client.get(f"/v1/farmers/{farmer['id']}/export")).status_code == 404
+
+
+async def test_officer_farmer_export_holds_only_own_entries(
+    api: tuple[AsyncClient, Caller], ids: dict[str, Any]
+) -> None:
+    """An officer-farmer's export has his own version and photo, not those he entered for other farmers.
+
+    Args:
+        api: client and caller holder.
+        ids: the seeded ids.
+    """
+    client, caller = api
+    officer, phone = await _officer(ids)
+    own_farmer = await _farmer(client, caller, ids, phone=phone)  # linked to the officer's account
+    other = await _farmer(client, caller, ids)
+    own_version, own_key = await _entry_with_photo(ids, own_farmer["id"], officer, None)
+    other_version, other_key = await _entry_with_photo(ids, other["id"], officer, other["id"])
+    out = await client.get(f"/v1/farmers/{own_farmer['id']}/export")
+    assert out.status_code == 200, out.text
+    doc = out.json()
+    assert doc["user"]["id"] == str(officer)
+    assert [v["id"] for v in doc["event_versions"]] == [str(own_version)]
+    [photo] = doc["evidence_photos"]
+    assert photo["object_key"] == own_key and f"/evidence/{own_key}" in photo["url"]
+    assert str(other_version) not in out.text and other_key not in out.text
+
+
+async def test_erase_keeps_an_account_with_another_membership(
+    api: tuple[AsyncClient, Caller], ids: dict[str, Any]
+) -> None:
+    """Erasing an officer's farmer record anonymises the farmer but keeps the officer's login and devices.
+
+    Args:
+        api: client and caller holder.
+        ids: the seeded ids.
+    """
+    client, caller = api
+    officer, phone = await _officer(ids)
+    farmer = await _farmer(client, caller, ids, phone=phone)
+    async with get_sessionmaker()() as s:
+        s.add(Device(id=uuid.uuid4(), user_id=officer, platform="android", refresh_token_hash="h"))
+        await s.commit()
+    body = {"reason": "DPDP-2026-003", "confirm": True}
+    assert (await client.post(f"/v1/farmers/{farmer['id']}/erase", json=body)).status_code == 204
+    [diff] = await _audit(farmer["id"], "farmer.erase")
+    assert diff["user_erased"] is False and diff["devices_revoked"] == 0
+    [u] = await _rows("SELECT phone, name, status FROM users WHERE id = :u", u=officer)
+    assert (u["phone"], u["status"]) == (phone, "active")
+    [d] = await _rows("SELECT revoked_at, refresh_token_hash FROM devices WHERE user_id = :u", u=officer)
+    assert d == {"revoked_at": None, "refresh_token_hash": "h"}
+    [f] = await _rows("SELECT name FROM farmers WHERE id = :f", f=uuid.UUID(farmer["id"]))
+    assert f["name"] == f"Erased {farmer['code']}"
 
 
 async def test_erase_anonymises_and_keeps_append_only_rows(

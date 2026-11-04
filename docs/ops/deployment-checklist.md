@@ -55,6 +55,11 @@ a setting value). Ids in brackets are rows of `docs/agents/reviews/SEC-asvs-l1.m
 - [ ] **CloudFront invalidation on publish (PLAN §13 E3).** Set `CLOUDFRONT_DISTRIBUTION_ID` on the **worker**
   (the build runs there) and on the api. Give the worker's IAM role `cloudfront:CreateInvalidation` on that
   distribution. Set `PUBLIC_BASE_URL` to the CDN domain. Check that a rebuild shows the new page within 60 s.
+- [ ] **Celery beat (B24, DPDP runbook §3).** Exactly **one** worker task runs the embedded beat, which fires
+  the daily `registry.purge_otp_challenges`:
+  `command: celery -A agritrace.worker worker --beat --schedule /tmp/celerybeat-schedule --loglevel=INFO`.
+  The schedule file goes in `/tmp`, because the image's user `app` cannot write in `/app`. Every other worker
+  task runs without `--beat`. Check the worker log for `beat: Starting...`.
 
 ## Database
 
