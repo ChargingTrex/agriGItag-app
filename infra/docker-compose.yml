@@ -115,7 +115,8 @@ services:
   worker:
     build: *api-build
     image: agritrace-api:dev
-    command: celery -A agritrace.worker worker --loglevel=INFO
+    # B24: one worker also runs beat (daily otp_challenges purge); the schedule file lives in /tmp because /app is root-owned.
+    command: celery -A agritrace.worker worker --beat --schedule /tmp/celerybeat-schedule --loglevel=INFO
     environment: *app-env
     depends_on:
       db: {condition: service_healthy}
