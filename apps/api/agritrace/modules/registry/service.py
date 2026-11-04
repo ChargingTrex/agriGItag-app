@@ -34,11 +34,11 @@ from geoalchemy2 import WKBElement, WKTElement
 from geoalchemy2.shape import to_shape
 from pydantic import ValidationError
 from shapely.geometry import Point
-from sqlalchemy import ColumnElement, Row, func, insert, inspect, or_, select, text, tuple_
+from sqlalchemy import ColumnElement, Row, func, inspect, or_, select, text, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import fieldconfig, storage, task_names
-from agritrace.core.audit import AUDIT_LOG
+from agritrace.core.audit import write_audit
 from agritrace.core.auth import CurrentUser
 from agritrace.core.config import get_settings
 from agritrace.core.enums import ConsentType, FarmerStatus, LocationStatus, PinMethod, Role
@@ -1566,42 +1566,6 @@ def parse_fields(raw: str, allowed: set[str]) -> set[str]:
     return names
 
 
-async def _audit(
-    session: AsyncSession, user: CurrentUser, action: str, entity_id: uuid.UUID, diff: dict[str, Any]
-) -> None:
-    """Write one explicit `audit_log` row about a farmer (actions the flush listener cannot see).
-
-    Args:
-        session: open database session.
-        user: the caller (actor, assist session, device).
-        action: e.g. `farmer.phone_reveal`, `farmer.reject`.
-        entity_id: the farmer.
-        diff: what to record (reason codes; never the phone itself).
-
-    Raises:
-        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
-
-    Side effects:
-        Inserts an `audit_log` row in the caller's transaction (FR25).
-    """
-    # shortcut: request_id is not copied (no public getter on the audit context), as in events (B06);
-    #   add a getter in core when the audit export (B10) needs it.
-    await session.execute(
-        insert(AUDIT_LOG).values(
-            id=uuid7(),
-            at=utcnow(),
-            actor_user_id=user.user_id,
-            on_behalf_of_farmer_id=user.on_behalf_of_farmer_id,
-            assist_session_id=user.assist_session_id,
-            device_id=user.device_id,
-            action=action,
-            entity_type="farmers",
-            entity_id=entity_id,
-            diff=diff,
-        )
-    )
-
-
 async def reveal_phone(session: AsyncSession, user: CurrentUser, farmer_id: uuid.UUID) -> FarmerPhoneOut:
     """Show an FPO admin a farmer's full phone number and record that it was shown (D-017 `internal`).
 
@@ -1622,7 +1586,7 @@ async def reveal_phone(session: AsyncSession, user: CurrentUser, farmer_id: uuid
     """
     farmer = await _farmer_in_scope(session, user, farmer_id)
     phone = await _account_phone(session, farmer)
-    await _audit(session, user, "farmer.phone_reveal", farmer.id, {})
+    await write_audit(session, user, "farmer.phone_reveal", "farmers", farmer.id, {})
     return FarmerPhoneOut(farmer_id=farmer.id, phone=phone)
 
 
@@ -1708,7 +1672,7 @@ async def reject_farmer(
     farmer.status = FarmerStatus.SUSPENDED
     await session.flush()
     access = await _end_farmer_access(session, farmer)
-    await _audit(session, user, "farmer.reject", farmer.id, body.model_dump() | access)
+    await write_audit(session, user, "farmer.reject", "farmers", farmer.id, body.model_dump() | access)
     await session.refresh(farmer)
     return await _farmer_view(session, farmer)
 
