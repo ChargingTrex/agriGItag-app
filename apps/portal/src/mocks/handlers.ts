@@ -6,7 +6,8 @@
  * GI re-check, second sign-off, features, `/v1/me`; FR9, FR29, FR60), P04 (batch list, readings, grade,
  * instruments, standards profile, grading approve, final packing, publish, builds with a simulated worker, rebuild,
  * qr.png, labels.pdf; FR15, FR48, FR49, FR62), P05 (binary labels.pdf, audit-export.csv; FR21, FR58) and P08
- * (field config, import templates and CSV imports with dry run; gap analysis "Master data uploads").
+ * (field config, import templates and CSV imports with dry run; gap analysis "Master data uploads") and P12
+ * (a member's devices and their revoke; B23).
  * Called by: src/mocks/browser.ts, src/test/setup.ts (Node server), tests (MOCK_* constants, `mockState`,
  * `resetMockData`).
  *
@@ -75,6 +76,8 @@ export const MOCK_PENDING_FARMER_ID = farmerId(1);
 export const MOCK_ACTIVE_FARMER_ID = farmerId(10);
 /** Farmers in the seed: 2 pending, 1 suspended, the rest active. More than one page of 50. */
 export const MOCK_FARMER_COUNT = 57;
+/** User id of MOCK_ACTIVE_FARMER_ID's app login; it owns the seed devices (P12). */
+export const MOCK_FARMER_USER_ID = 'a0000000-0000-7000-8000-000000000010';
 /** User id of the signed-in office user (`GET /v1/me`); tests switch it to act as a second admin. */
 export const MOCK_USER_ID = 'a0000000-0000-7000-8000-000000000001';
 /** The PRD §12 reference lots, received, GI eligible: 100, 200 and 20 kg. */
@@ -121,6 +124,10 @@ export const mockState = {
   imports: [] as { kind: string; dryRun: boolean; text: string }[],
   /** The `users.is_super_admin` flag: adds `super_admin` to the session roles and `/v1/me`; villages need it. */
   superAdmin: false,
+  /** Devices per user id (`GET /v1/users/{id}/devices`); revoke sets `revoked_at`. */
+  devices: seedDevices(),
+  /** Every `POST /v1/devices/{id}/revoke` received, in order, with its reason. */
+  revokes: [] as { deviceId: string; reason: string | null }[],
 };
 
 /** Restores the seed state (called after every test). */
@@ -141,6 +148,35 @@ export function resetMockData(): void {
   mockState.holdBuilds = false;
   mockState.userId = MOCK_USER_ID;
   mockState.features = seedFeatures();
+  mockState.devices = seedDevices();
+  mockState.revokes = [];
+}
+
+/**
+ * The seed devices: MOCK_FARMER_USER_ID has one signed-in Android phone and one signed-out one.
+ * @returns Devices keyed by user id.
+ */
+function seedDevices(): Record<string, Schemas['DeviceOut'][]> {
+  return {
+    [MOCK_FARMER_USER_ID]: [
+      {
+        id: 'dd000000-0000-7000-8000-000000000001',
+        platform: 'android',
+        app_version: '1.0.0',
+        signed_in_at: '2026-11-01T08:00:00Z',
+        last_seen_at: '2026-11-03T08:00:00Z',
+        revoked_at: null,
+      },
+      {
+        id: 'dd000000-0000-7000-8000-000000000002',
+        platform: 'android',
+        app_version: '0.9.0',
+        signed_in_at: '2026-10-01T08:00:00Z',
+        last_seen_at: '2026-10-20T08:00:00Z',
+        revoked_at: '2026-10-21T08:00:00Z',
+      },
+    ],
+  };
 }
 
 /**
@@ -344,7 +380,7 @@ function seedFarmers(): FarmerOut[] {
     return {
       id: farmerId(n),
       fpo_id: MOCK_FPO_ID,
-      user_id: null,
+      user_id: n === 10 ? MOCK_FARMER_USER_ID : null,
       code: `VSV-${String(n).padStart(4, '0')}`,
       name: n === 1 ? 'Muthu Kumar' : `Farmer ${String(n).padStart(2, '0')}`,
       name_local: n === 1 ? 'முத்து குமார்' : null,
@@ -740,6 +776,30 @@ export const handlers = [
       phone: `+91987650${farmer.phone_masked.slice(-4)}`,
     };
     return HttpResponse.json(out);
+  }),
+  // Devices (B23): the user themself or an FPO admin; the server writes the `device.revoke` audit row.
+  http.get('/v1/users/:userId/devices', ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    const userId = String(params['userId']);
+    if (userId !== mockState.userId && !mockState.roles.includes('fpo_admin')) {
+      return fail(403, 'forbidden');
+    }
+    return HttpResponse.json(mockState.devices[userId] ?? []);
+  }),
+  http.post('/v1/devices/:deviceId/revoke', async ({ request, params }) => {
+    if (!authed(request)) return fail(401, 'unauthorized');
+    if (!mockState.roles.includes('fpo_admin')) return fail(403, 'forbidden');
+    const device = Object.values(mockState.devices)
+      .flat()
+      .find((item) => item.id === params['deviceId']);
+    if (!device) return fail(404, 'not_found');
+    const { reason } = await body(request);
+    mockState.revokes.push({
+      deviceId: device.id,
+      reason: typeof reason === 'string' ? reason : null,
+    });
+    device.revoked_at ??= new Date().toISOString();
+    return new HttpResponse(null, { status: 204 });
   }),
   http.post('/v1/farmers/:farmerId/approve', ({ request, params }) => {
     if (!authed(request)) return fail(401, 'unauthorized');

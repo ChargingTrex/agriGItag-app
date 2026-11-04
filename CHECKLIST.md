@@ -1,6 +1,6 @@
 # AgriTrace — Checklist
 
-Completion: 93 % (77/83 items)
+Completion: 94 % (78/83 items)
 
 Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged. `python3 infra/scripts/checklist-progress.py` rewrites the line above.
 
@@ -49,7 +49,7 @@ Tick an item only after Reviewer PASS and Verifier PASS and the branch is merged
 - [x] P09 — Shared-PC device lockout (`device_in_use` → new device id + retry; sign-out failure surfaced; refresh keeps session on 5xx/429) — wave 3 hotfix (audit wave-0-2 P1 + 2 P2, blocks G2) — worker: Opus (2 rounds) — reviewer: WEB/SEC FAIL r1 → r2 exact fix confirmed by Orchestrator — verifier: auth tests 19/19 on the branch; full Vitest on main after merge (merged 2026-11-01)
 - [x] P10 — Portal live fixes: masked phone + audited Reveal (P01 on B14), P07 chain assertion (P07-1) and live mode (P07-2: 204 body, OTP limit, create a batch on QA lots) — wave 7 hotfix — worker: Opus (1 round + micro-patch) — reviewer: WEB/SEC PASS r1 + micro-patch confirmed by Orchestrator — verifier: Vitest 138, Playwright mock 6/6 ×2, live chain 2/2 (15.4 s / 59.8 s) on the branch; P01/P07 live lines re-verify at Q02 (merged 2026-11-02)
 - [x] P11 — PlotMap Vitest test (members coverage 72.3 → 95.6 %; Q02-1) — wave 7 hotfix — worker: Opus (1 round) — reviewer: Orchestrator (test-only) — verifier: full Vitest 141/141 on the branch (merged 2026-11-02)
-- [ ] P12 — Portal device management (admin-only Devices section: list `GET /v1/users/{id}/devices`, Revoke with reason) — wave 8 — worker: Opus (in progress 2026-11-04) — reviewer: — verifier:
+- [x] P12 — Portal device management (admin-only Devices section: list `GET /v1/users/{id}/devices`, Revoke with reason) — wave 8 — worker: Opus (1 round + P3 patch) — reviewer: WEB/SEC PASS r1 (0 P1/P2) — verifier: members Vitest 19/19 on the branch; full portal suite on main at the next quiet-host run (merged 2026-11-04)
 - [x] P03 — Ready lots → Create batch: tick, running total, share %, greyed lots with reason, non-GI t — wave 3 — worker: Opus (2 rounds) — reviewer: WEB FAIL r1 / r2 Orchestrator confirm — verifier: PASS 4/4 live incl. shares 31.25/62.5/6.25 (docs/agents/qa/P03.md)
 - [x] B14 — Registry API gaps found by the portal (phone_masked + audited reveal, reject, farmer plots, village filter/search, FPO bbox) — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK — verifier: PASS 5/5 (docs/agents/qa/B14.md)
 - [x] B07 — Reference bundle + sync pull — wave 4 — worker: Opus (2 rounds) — reviewer: BE PASS-PENDING-STACK r1 + r2 confirm — verifier: PASS 3/3 (docs/agents/qa/B07.md; 304 on 11 parts live)
