@@ -2,7 +2,8 @@
 
 Covers: `alembic upgrade head` + `alembic check` clean with 0003; CSV with 2 bad rows → 200, accepted n-2,
 dry run writes nothing, commit writes only the valid rows, a second commit is a no-op (idempotent, rows
-reported `import_row_exists` / `farmer_phone_taken`); villages import super-admin only (sample fixture
+reported `import_row_exists` / `farmer_phone_taken`); a NUL cell and a number out of range are row rejections,
+not a whole-file error (B25); villages import super-admin only (sample fixture
 `seed/fixtures/villages_virudhunagar.csv`, LGD codes `SAMPLE…` are not real codes); demo tenant drops a
 disabled plot field; `plots.gi_tag_id` preferred over the single-GI fallback when two GI tags have regions.
 Serves: D-017, FR53, FR56, FR64–FR67, PLAN "Gap analysis" (Master data uploads), acceptance/B13.md.
@@ -234,6 +235,34 @@ async def test_inputs_import_dry_run_commit_and_rerun(
     assert again["accepted"] == 0
     assert [r["code"] for r in again["rejected"]].count("import_row_exists") == 3
     assert await _count(InputMaster, mine) == before + 3
+
+
+async def test_database_data_errors_are_row_rejections(
+    api: tuple[AsyncClient, Caller], ids: dict[str, Any]
+) -> None:
+    """A NUL cell and a pack size beyond NUMERIC(12,3) (SQLSTATE class 22) reject only their rows (B25).
+
+    Args:
+        api: client and caller holder.
+        ids: the seeded ids.
+    """
+    client, caller = api
+    _as(caller, ids, "admin_other", "other")
+    tag = secrets.token_hex(4)
+    csv_body = (
+        f"name_en,category,unit,pack_size\n"
+        f"Good A {tag},chemical_fertilizer,kg,50\n"
+        f"Bad\0name {tag},chemical_fertilizer,kg,1\n"
+        f"Huge {tag},chemical_fertilizer,kg,10000000000000\n"
+        f"Good B {tag},organic_fertilizer,kg,25\n"
+    ).encode()
+    mine = InputMaster.fpo_id == ids["other"]
+    before = await _count(InputMaster, mine)
+    report = await _upload(client, "inputs", csv_body, dry_run=False)
+    assert report["accepted"] == 2
+    rejected = [(r["row"], r["code"], r["field"]) for r in report["rejected"]]
+    assert rejected == [(3, "validation_error", None), (4, "validation_error", None)]
+    assert await _count(InputMaster, mine) == before + 2
 
 
 async def test_villages_then_farmers_import(api: tuple[AsyncClient, Caller], ids: dict[str, Any]) -> None:
