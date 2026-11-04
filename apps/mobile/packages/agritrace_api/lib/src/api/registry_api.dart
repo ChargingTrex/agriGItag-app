@@ -11,6 +11,8 @@ import 'package:dio/dio.dart';
 import 'package:agritrace_api/src/api_util.dart';
 import 'package:agritrace_api/src/model/crop_out.dart';
 import 'package:agritrace_api/src/model/error_envelope.dart';
+import 'package:agritrace_api/src/model/farmer_erase.dart';
+import 'package:agritrace_api/src/model/farmer_export.dart';
 import 'package:agritrace_api/src/model/farmer_in.dart';
 import 'package:agritrace_api/src/model/farmer_out.dart';
 import 'package:agritrace_api/src/model/farmer_patch.dart';
@@ -1107,6 +1109,180 @@ class RegistryApi {
     }
 
     return Response<GiRegionVersionOut>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Erase a farmer&#39;s personal data (FPO admin, audited; DPDP erasure request)
+  /// Anonymise the farmer, withdraw their consents, end their sign-in, delete their ID documents (D-065).  The traceability record (events, lots, batches, consents, audit trail) stays, carrying only ids; the farmer&#39;s published pages are rebuilt and show \&quot;Farmer N\&quot;. Repeating the call changes nothing (204 again). Export first (&#x60;GET /v1/farmers/{id}/export&#x60;): this cannot be undone.
+  ///
+  /// Parameters:
+  /// * [farmerId] - Farmer id.
+  /// * [farmerErase]
+  /// * [xAssistSession] - Open assist session id (field officer entering data for a farmer).
+  /// * [xRequestId] - Client request id, copied to audit rows.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future]
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<void>> eraseFarmerV1FarmersFarmerIdErasePost({
+    required String farmerId,
+    required FarmerErase farmerErase,
+    String? xAssistSession,
+    String? xRequestId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/farmers/{farmer_id}/erase'.replaceAll(
+        '{' r'farmer_id' '}',
+        encodeQueryParameter(_serializers, farmerId, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'x-assist-session': xAssistSession,
+        r'x-request-id': xRequestId,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'AccessToken',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(FarmerErase);
+      _bodyData = _serializers.serialize(farmerErase, specifiedType: _type);
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return _response;
+  }
+
+  /// Export everything stored about a farmer (FPO admin, audited; DPDP access request)
+  /// Return the farmer&#39;s personal data as one JSON document, with 15-minute file links (runbook §1).  Includes the full phone and the walked boundary, so it goes to the farmer only; the runbook&#39;s redaction step applies before anything is given to a third party. Sent with &#x60;Cache-Control: no-store&#x60;.
+  ///
+  /// Parameters:
+  /// * [farmerId] - Farmer id.
+  /// * [xAssistSession] - Open assist session id (field officer entering data for a farmer).
+  /// * [xRequestId] - Client request id, copied to audit rows.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [FarmerExport] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<FarmerExport>> exportFarmerV1FarmersFarmerIdExportGet({
+    required String farmerId,
+    String? xAssistSession,
+    String? xRequestId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/farmers/{farmer_id}/export'.replaceAll(
+        '{' r'farmer_id' '}',
+        encodeQueryParameter(_serializers, farmerId, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        r'x-assist-session': xAssistSession,
+        r'x-request-id': xRequestId,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'AccessToken',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    FarmerExport? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(FarmerExport),
+            ) as FarmerExport;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<FarmerExport>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

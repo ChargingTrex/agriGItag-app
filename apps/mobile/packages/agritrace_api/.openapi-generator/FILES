@@ -39,6 +39,8 @@ doc/EventStatus.md
 doc/EventSubject.md
 doc/EventType.md
 doc/EventsApi.md
+doc/FarmerErase.md
+doc/FarmerExport.md
 doc/FarmerIn.md
 doc/FarmerOut.md
 doc/FarmerPatch.md
@@ -288,6 +290,8 @@ lib/src/model/event_photo_out.dart
 lib/src/model/event_status.dart
 lib/src/model/event_subject.dart
 lib/src/model/event_type.dart
+lib/src/model/farmer_erase.dart
+lib/src/model/farmer_export.dart
 lib/src/model/farmer_in.dart
 lib/src/model/farmer_out.dart
 lib/src/model/farmer_patch.dart

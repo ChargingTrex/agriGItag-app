@@ -60,6 +60,8 @@ export 'package:agritrace_api/src/model/event_photo_out.dart';
 export 'package:agritrace_api/src/model/event_status.dart';
 export 'package:agritrace_api/src/model/event_subject.dart';
 export 'package:agritrace_api/src/model/event_type.dart';
+export 'package:agritrace_api/src/model/farmer_erase.dart';
+export 'package:agritrace_api/src/model/farmer_export.dart';
 export 'package:agritrace_api/src/model/farmer_in.dart';
 export 'package:agritrace_api/src/model/farmer_out.dart';
 export 'package:agritrace_api/src/model/farmer_patch.dart';

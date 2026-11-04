@@ -50,6 +50,8 @@ import 'package:agritrace_api/src/model/event_photo_out.dart';
 import 'package:agritrace_api/src/model/event_status.dart';
 import 'package:agritrace_api/src/model/event_subject.dart';
 import 'package:agritrace_api/src/model/event_type.dart';
+import 'package:agritrace_api/src/model/farmer_erase.dart';
+import 'package:agritrace_api/src/model/farmer_export.dart';
 import 'package:agritrace_api/src/model/farmer_in.dart';
 import 'package:agritrace_api/src/model/farmer_out.dart';
 import 'package:agritrace_api/src/model/farmer_patch.dart';
@@ -269,6 +271,8 @@ part 'serializers.g.dart';
   EventStatus,
   EventSubject,
   EventType,
+  FarmerErase,
+  FarmerExport,
   FarmerIn,
   FarmerOut,
   FarmerPatch,
@@ -489,6 +493,12 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltMap, [FullType(String), FullType(PartVersion)]),
         () => MapBuilder<String, PartVersion>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [
+          FullType(BuiltMap, [FullType(String), FullType(JsonObject)])
+        ]),
+        () => ListBuilder<BuiltMap<String, JsonObject>>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PracticeTag)]),

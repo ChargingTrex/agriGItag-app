@@ -19,6 +19,8 @@ Method | HTTP request | Description
 [**createProcessorV1ProcessorsPost**](RegistryApi.md#createprocessorv1processorspost) | **POST** /v1/processors | Register a processor
 [**createProducerGroupV1ProducerGroupsPost**](RegistryApi.md#createproducergroupv1producergroupspost) | **POST** /v1/producer-groups | Create a producer group (flag producer_groups)
 [**createRegionVersionV1GiTagsGiTagIdRegionVersionsPost**](RegistryApi.md#createregionversionv1gitagsgitagidregionversionspost) | **POST** /v1/gi-tags/{gi_tag_id}/region-versions | Upload a GI region version (super-admin)
+[**eraseFarmerV1FarmersFarmerIdErasePost**](RegistryApi.md#erasefarmerv1farmersfarmeriderasepost) | **POST** /v1/farmers/{farmer_id}/erase | Erase a farmer&#39;s personal data (FPO admin, audited; DPDP erasure request)
+[**exportFarmerV1FarmersFarmerIdExportGet**](RegistryApi.md#exportfarmerv1farmersfarmeridexportget) | **GET** /v1/farmers/{farmer_id}/export | Export everything stored about a farmer (FPO admin, audited; DPDP access request)
 [**getFarmerV1FarmersFarmerIdGet**](RegistryApi.md#getfarmerv1farmersfarmeridget) | **GET** /v1/farmers/{farmer_id} | Read a farmer
 [**getFpoV1FposFpoIdGet**](RegistryApi.md#getfpov1fposfpoidget) | **GET** /v1/fpos/{fpo_id} | Read an FPO with its map frame (bbox)
 [**getPlotV1PlotsPlotIdGet**](RegistryApi.md#getplotv1plotsplotidget) | **GET** /v1/plots/{plot_id} | Read a plot
@@ -512,6 +514,101 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **eraseFarmerV1FarmersFarmerIdErasePost**
+> eraseFarmerV1FarmersFarmerIdErasePost(farmerId, farmerErase, xAssistSession, xRequestId)
+
+Erase a farmer's personal data (FPO admin, audited; DPDP erasure request)
+
+Anonymise the farmer, withdraw their consents, end their sign-in, delete their ID documents (D-065).  The traceability record (events, lots, batches, consents, audit trail) stays, carrying only ids; the farmer's published pages are rebuilt and show \"Farmer N\". Repeating the call changes nothing (204 again). Export first (`GET /v1/farmers/{id}/export`): this cannot be undone.
+
+### Example
+```dart
+import 'package:agritrace_api/api.dart';
+
+final api = AgritraceApi().getRegistryApi();
+final String farmerId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Farmer id.
+final FarmerErase farmerErase = ; // FarmerErase | 
+final String xAssistSession = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Open assist session id (field officer entering data for a farmer).
+final String xRequestId = xRequestId_example; // String | Client request id, copied to audit rows.
+
+try {
+    api.eraseFarmerV1FarmersFarmerIdErasePost(farmerId, farmerErase, xAssistSession, xRequestId);
+} on DioException catch (e) {
+    print('Exception when calling RegistryApi->eraseFarmerV1FarmersFarmerIdErasePost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **farmerId** | **String**| Farmer id. | 
+ **farmerErase** | [**FarmerErase**](FarmerErase.md)|  | 
+ **xAssistSession** | **String**| Open assist session id (field officer entering data for a farmer). | [optional] 
+ **xRequestId** | **String**| Client request id, copied to audit rows. | [optional] 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[AccessToken](../README.md#AccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **exportFarmerV1FarmersFarmerIdExportGet**
+> FarmerExport exportFarmerV1FarmersFarmerIdExportGet(farmerId, xAssistSession, xRequestId)
+
+Export everything stored about a farmer (FPO admin, audited; DPDP access request)
+
+Return the farmer's personal data as one JSON document, with 15-minute file links (runbook §1).  Includes the full phone and the walked boundary, so it goes to the farmer only; the runbook's redaction step applies before anything is given to a third party. Sent with `Cache-Control: no-store`.
+
+### Example
+```dart
+import 'package:agritrace_api/api.dart';
+
+final api = AgritraceApi().getRegistryApi();
+final String farmerId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Farmer id.
+final String xAssistSession = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Open assist session id (field officer entering data for a farmer).
+final String xRequestId = xRequestId_example; // String | Client request id, copied to audit rows.
+
+try {
+    final response = api.exportFarmerV1FarmersFarmerIdExportGet(farmerId, xAssistSession, xRequestId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling RegistryApi->exportFarmerV1FarmersFarmerIdExportGet: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **farmerId** | **String**| Farmer id. | 
+ **xAssistSession** | **String**| Open assist session id (field officer entering data for a farmer). | [optional] 
+ **xRequestId** | **String**| Client request id, copied to audit rows. | [optional] 
+
+### Return type
+
+[**FarmerExport**](FarmerExport.md)
+
+### Authorization
+
+[AccessToken](../README.md#AccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

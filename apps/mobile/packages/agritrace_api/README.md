@@ -146,6 +146,8 @@ Class | Method | HTTP request | Description
 [*RegistryApi*](doc/RegistryApi.md) | [**createProcessorV1ProcessorsPost**](doc/RegistryApi.md#createprocessorv1processorspost) | **POST** /v1/processors | Register a processor
 [*RegistryApi*](doc/RegistryApi.md) | [**createProducerGroupV1ProducerGroupsPost**](doc/RegistryApi.md#createproducergroupv1producergroupspost) | **POST** /v1/producer-groups | Create a producer group (flag producer_groups)
 [*RegistryApi*](doc/RegistryApi.md) | [**createRegionVersionV1GiTagsGiTagIdRegionVersionsPost**](doc/RegistryApi.md#createregionversionv1gitagsgitagidregionversionspost) | **POST** /v1/gi-tags/{gi_tag_id}/region-versions | Upload a GI region version (super-admin)
+[*RegistryApi*](doc/RegistryApi.md) | [**eraseFarmerV1FarmersFarmerIdErasePost**](doc/RegistryApi.md#erasefarmerv1farmersfarmeriderasepost) | **POST** /v1/farmers/{farmer_id}/erase | Erase a farmer&#39;s personal data (FPO admin, audited; DPDP erasure request)
+[*RegistryApi*](doc/RegistryApi.md) | [**exportFarmerV1FarmersFarmerIdExportGet**](doc/RegistryApi.md#exportfarmerv1farmersfarmeridexportget) | **GET** /v1/farmers/{farmer_id}/export | Export everything stored about a farmer (FPO admin, audited; DPDP access request)
 [*RegistryApi*](doc/RegistryApi.md) | [**getFarmerV1FarmersFarmerIdGet**](doc/RegistryApi.md#getfarmerv1farmersfarmeridget) | **GET** /v1/farmers/{farmer_id} | Read a farmer
 [*RegistryApi*](doc/RegistryApi.md) | [**getFpoV1FposFpoIdGet**](doc/RegistryApi.md#getfpov1fposfpoidget) | **GET** /v1/fpos/{fpo_id} | Read an FPO with its map frame (bbox)
 [*RegistryApi*](doc/RegistryApi.md) | [**getPlotV1PlotsPlotIdGet**](doc/RegistryApi.md#getplotv1plotsplotidget) | **GET** /v1/plots/{plot_id} | Read a plot
@@ -212,6 +214,8 @@ Class | Method | HTTP request | Description
  - [EventStatus](doc/EventStatus.md)
  - [EventSubject](doc/EventSubject.md)
  - [EventType](doc/EventType.md)
+ - [FarmerErase](doc/FarmerErase.md)
+ - [FarmerExport](doc/FarmerExport.md)
  - [FarmerIn](doc/FarmerIn.md)
  - [FarmerOut](doc/FarmerOut.md)
  - [FarmerPatch](doc/FarmerPatch.md)
