@@ -1,21 +1,27 @@
 /**
  * Farmer detail: profile, masked mobile number with an audited "Reveal" for FPO admins, onboarding status
  * (approve when pending), GI authorised-user status, the farmer's plots with their GI location status, and a
- * link to the open flags on those plots.
+ * link to the open flags on those plots; for FPO admins, the farmer's app devices with a Revoke (P12).
  * Serves: FR8 (approval), FR62 (GI authorised-user number), FR70 (flags of the farmer's plots), P01 acceptance
  * "phone masked except audited reveal" (B14 `phone_masked`, `GET /v1/farmers/{id}/phone`; P10), Dataflow
  * Stage 0, plan §7.3 P01 (farmer detail) and P02 (link to open flags), gap analysis "Multiple farm lands per
- * farmer" (B14 `GET /v1/farmers/{id}/plots`). Called by: src/AppRoutes.tsx (`/members/:farmerId`).
+ * farmer" (B14 `GET /v1/farmers/{id}/plots`), B23 lost-phone sign-out (`GET /v1/users/{id}/devices`,
+ * `POST /v1/devices/{id}/revoke`; the server writes the `device.revoke` audit row). Called by: src/AppRoutes.tsx (`/members/:farmerId`).
  */
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { unwrap } from '../../api/client';
 import { errorMessage } from '../../api/errors';
@@ -32,6 +38,126 @@ export const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
 /**
+ * The user's app devices, newest first, each signed-in one with a Revoke that asks for an optional reason.
+ * @param props Component props.
+ * @param props.userId The farmer's app login (`FarmerOut.user_id`).
+ * @returns The section; list and revoke errors show as alerts.
+ */
+function DevicesSection({ userId }: { userId: string }) {
+  const { api } = useAuth();
+  const queryClient = useQueryClient();
+  const [target, setTarget] = useState<string | null>(null);
+  const [reason, setReason] = useState('');
+  // The Revoke button that opened the dialog is gone after success, so focus moves to the heading.
+  const heading = useRef<HTMLHeadingElement>(null);
+  const queryKey = ['devices', userId];
+  const devices = useQuery({
+    queryKey,
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET('/v1/users/{user_id}/devices', { params: { path: { user_id: userId } }, signal }),
+      ),
+  });
+  const revoke = useMutation({
+    mutationFn: (deviceId: string) =>
+      unwrap(
+        api.POST('/v1/devices/{device_id}/revoke', {
+          params: { path: { device_id: deviceId } },
+          body: { reason: reason.trim() || null },
+        }),
+      ),
+    onSuccess: () => {
+      setTarget(null);
+      setReason('');
+      heading.current?.focus();
+      return queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  return (
+    <section aria-labelledby="devices-heading">
+      <Typography
+        id="devices-heading"
+        ref={heading}
+        tabIndex={-1}
+        component="h2"
+        variant="h6"
+        gutterBottom
+      >
+        Devices
+      </Typography>
+      {devices.isError && <Alert severity="error">{errorMessage(devices.error)}</Alert>}
+      {devices.isSuccess && devices.data.length === 0 && (
+        <Typography color="text.secondary">No device has signed in.</Typography>
+      )}
+      {devices.isSuccess && (
+        <Stack spacing={1} sx={{ alignItems: 'start' }}>
+          {devices.data.map((device) => (
+            <Stack key={device.id} direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+              <Typography>
+                {device.platform} {device.app_version ?? ''}, signed in{' '}
+                {device.signed_in_at ? shortDate(device.signed_in_at) : 'never'}:{' '}
+                {device.revoked_at ? `signed out ${shortDate(device.revoked_at)}` : 'active'}
+              </Typography>
+              {!device.revoked_at && (
+                <Button
+                  onClick={() => {
+                    revoke.reset();
+                    setReason('');
+                    setTarget(device.id);
+                  }}
+                >
+                  Revoke
+                </Button>
+              )}
+            </Stack>
+          ))}
+        </Stack>
+      )}
+      <Dialog
+        open={target !== null}
+        onClose={() => {
+          setTarget(null);
+        }}
+      >
+        <DialogTitle>Sign this device out?</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Reason (optional)"
+            value={reason}
+            onChange={(event) => {
+              setReason(event.target.value);
+            }}
+            fullWidth
+            slotProps={{ htmlInput: { maxLength: 500 } }}
+            sx={{ mt: 1 }}
+          />
+          {revoke.isError && <Alert severity="error">{errorMessage(revoke.error)}</Alert>}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setTarget(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={revoke.isPending}
+            onClick={() => {
+              if (target) revoke.mutate(target);
+            }}
+          >
+            Sign out device
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </section>
+  );
+}
+
+/**
  * The farmer detail page for the `:farmerId` route parameter.
  * @returns The page, a progress bar while loading, or the error message.
  */
@@ -40,6 +166,7 @@ export function FarmerPage() {
   const { api, session } = useAuth();
   const approve = useApproveFarmer();
   // Same role as the server's check (B14: FPO admin only); the server writes the audit row on every call.
+  // It also gates the Devices section: B23 lets only an FPO admin list and revoke another member's devices.
   const canReveal = session?.roles.includes('fpo_admin') === true;
   // The number lives only in this mutation's state: `gcTime: 0` drops it from the mutation cache as soon as
   // the page unmounts, and the effect below clears it (and any refusal) when the route moves to another
@@ -141,6 +268,8 @@ export function FarmerPage() {
           </Button>
         </Stack>
       )}
+
+      {canReveal && f.user_id && <DevicesSection userId={f.user_id} />}
 
       <section aria-labelledby="plots-heading">
         <Typography id="plots-heading" component="h2" variant="h6" gutterBottom>
