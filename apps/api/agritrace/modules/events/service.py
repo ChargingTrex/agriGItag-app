@@ -35,7 +35,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import storage, task_names
-from agritrace.core.audit import AUDIT_LOG, AuditContext, reset_audit_context, set_audit_context
+from agritrace.core.audit import AuditContext, reset_audit_context, set_audit_context, write_audit
 from agritrace.core.auth import CurrentUser, assist_session_farmer
 from agritrace.core.config import get_settings
 from agritrace.core.enums import ChangeKind, EventStatus, PhotoStatus, Role
@@ -525,33 +525,18 @@ async def _add_version(
                 for p, row in zip(v.photos, pending, strict=True)
             ],
         )
-    await session.execute(
-        insert(AUDIT_LOG).values(
-            id=uuid7(),
-            at=now,
-            actor_user_id=user.user_id,
-            on_behalf_of_farmer_id=user.on_behalf_of_farmer_id,
-            assist_session_id=user.assist_session_id,
-            device_id=user.device_id,
-            gps=f"SRID=4326;POINT({v.gps.lon} {v.gps.lat})" if v.gps else None,
-            action=action,
-            entity_type="event_versions",
-            entity_id=version_id,
-            # shortcut: request_id is not copied (the audit context has no public getter); add one in core
-            #   when the audit export (B10) needs to join push requests.
-            diff={
-                "event_id": str(v.event_id),
-                "event_type": v.event_type.value,
-                "version_no": v.version_no,
-                "change_kind": v.change_kind,
-                # B20: the audit search shows why a correction or undo was made (P06); creates carry none.
-                **{k: r for k, r in (("reason_code", v.reason_code), ("reason_text", v.reason_text)) if r},
-                # The phone-declared EXIF lives here, append-only; the verify task fills the photo's
-                # exif_* columns with what it reads, so both are kept and neither is overwritten.
-                "photos": [p.model_dump(mode="json", exclude={"sha256", "size_bytes"}) for p in v.photos],
-            },
-        )
-    )
+    diff = {
+        "event_id": str(v.event_id),
+        "event_type": v.event_type.value,
+        "version_no": v.version_no,
+        "change_kind": v.change_kind,
+        # B20: the audit search shows why a correction or undo was made (P06); creates carry none.
+        **{k: r for k, r in (("reason_code", v.reason_code), ("reason_text", v.reason_text)) if r},
+        # The phone-declared EXIF lives here, append-only; the verify task fills the photo's
+        # exif_* columns with what it reads, so both are kept and neither is overwritten.
+        "photos": [p.model_dump(mode="json", exclude={"sha256", "size_bytes"}) for p in v.photos],
+    }
+    await write_audit(session, user, action, "event_versions", version_id, diff, v.gps)
     clocks = v.clocks.model_copy(update={"server_received_at": now})
     return Written(version_id, v.event_id, created=True, pending=pending, hints=skew_hints(clocks))
 

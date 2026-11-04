@@ -26,12 +26,12 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 from geoalchemy2 import WKTElement
 from pydantic import ValidationError
-from sqlalchemy import insert, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import task_names
-from agritrace.core.audit import AUDIT_LOG, AuditContext, set_audit_context
+from agritrace.core.audit import AuditContext, set_audit_context, write_audit
 from agritrace.core.auth import (
     ACCESS_TTL,
     PIN_TOKEN_TTL,
@@ -857,22 +857,8 @@ async def revoke_device(
     if device.revoked_at is None:
         _sign_out(device)
     # Device is not `Audited` (refresh rotation would flood the log), so this action writes its own row.
-    # shortcut: request_id is not copied (no public getter on the audit context), as in registry `_audit`;
-    #   move the three hand-written inserts to one `core.audit` helper (TODO §8, B14).
-    await session.execute(
-        insert(AUDIT_LOG).values(
-            id=uuid7(),
-            at=utcnow(),
-            actor_user_id=caller.user_id,
-            on_behalf_of_farmer_id=caller.on_behalf_of_farmer_id,
-            assist_session_id=caller.assist_session_id,
-            device_id=caller.device_id,
-            action="device.revoke",
-            entity_type="devices",
-            entity_id=device.id,
-            diff={"user_id": str(device.user_id), "reason": reason},
-        )
-    )
+    diff = {"user_id": str(device.user_id), "reason": reason}
+    await write_audit(session, caller, "device.revoke", "devices", device.id, diff)
     await session.commit()
 
 

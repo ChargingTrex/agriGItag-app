@@ -7,24 +7,29 @@ Serves: FR25 (audit trail with edit history), FR59 (person vs system entries), C
 recorded on every entry), Dataflow Stage 11 (audit / compliance review), D-005.
 Callers: models that inherit `Audited` (modules/*/models.py); identity (B02) calls `set_audit_context`
 once per request from the JWT, `X-Device-Id` and `X-Assist-Session`; Celery tasks may set an actor-less
-context (system). Read by reporting's audit export (B10). tests/unit/test_audit.py,
-tests/integration/test_schema.py.
+context (system). `write_audit` is the one helper for explicit rows the listener cannot see (registry
+phone reveal / reject, events sync push, identity device revoke; B25). Read by reporting's audit export
+(B10). tests/unit/test_audit.py, tests/integration/test_schema.py.
 """
 
 import json
 import uuid
 from contextvars import ContextVar, Token
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from geoalchemy2 import Geography
 from sqlalchemy import DateTime, Text, Uuid, column, event, insert, inspect, table
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstanceState, Session, UOWTransaction
 
 from agritrace.core.ids import uuid7
 from agritrace.core.schemas import GeoPoint
 from agritrace.core.time import utcnow
+
+if TYPE_CHECKING:  # core.auth imports this module (set_audit_context); only the type is needed here
+    from agritrace.core.auth import CurrentUser
 
 # Columns the listener writes. identity/models.py `AuditLog` owns the table; core may not import a module
 # (D-004), so this lightweight handle names the same columns (tests/unit/test_audit.py keeps them in step).
@@ -217,3 +222,50 @@ def _write_audit_rows(session: Session, _flush_context: UOWTransaction) -> None:
     rows = audit_rows(session)
     if rows:
         session.connection().execute(insert(AUDIT_LOG), rows)
+
+
+async def write_audit(
+    session: AsyncSession,
+    caller: "CurrentUser",
+    action: str,
+    entity_type: str,
+    entity_id: uuid.UUID,
+    diff: dict[str, Any],
+    gps: GeoPoint | None = None,
+) -> None:
+    """Write one explicit `audit_log` row for an action the flush listener cannot see (FR25, B25).
+
+    Used for Core `INSERT`s, reads worth recording and rows of models that are not `Audited`.
+
+    Args:
+        session: open database session.
+        caller: the signed-in caller (actor, on-behalf-of farmer, assist session, device).
+        action: e.g. `farmer.phone_reveal`, `event_version.create`, `device.revoke`.
+        entity_type: the table the row describes, e.g. `farmers`.
+        entity_id: the described row.
+        diff: what to record (never a phone number or credential).
+        gps: where the action happened, when the caller sent a position.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+
+    Side effects:
+        Inserts an `audit_log` row in the caller's transaction.
+    """
+    # shortcut: request_id is not copied (registry `_audit`, events B06 and identity B23 never did); read
+    #   `_context` here when the audit export (B10) needs to join rows to requests.
+    await session.execute(
+        insert(AUDIT_LOG).values(
+            id=uuid7(),
+            at=utcnow(),
+            actor_user_id=caller.user_id,
+            on_behalf_of_farmer_id=caller.on_behalf_of_farmer_id,
+            assist_session_id=caller.assist_session_id,
+            device_id=caller.device_id,
+            gps=f"SRID=4326;POINT({gps.lon} {gps.lat})" if gps else None,
+            action=action,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            diff=diff,
+        )
+    )

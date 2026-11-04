@@ -1,8 +1,9 @@
 """Master data CSV imports: farmers, villages, inputs, each with a row-level report; templates from the YAML.
 
 One parser per kind shares `_run`, the row-report helper. Every row runs inside a SAVEPOINT, so a rejected
-row leaves nothing behind; the router commits the whole file in one transaction, or rolls it back for a
-dry run (same code path, so the dry run sees exactly what a commit would do).
+row (including a value the database refuses, SQLSTATE class 22; B25) leaves nothing behind; the router
+commits the whole file in one transaction, or rolls it back for a dry run (same code path, so the dry run
+sees exactly what a commit would do).
 
 Serves: PLAN "Gap analysis" (Master data uploads: bulk CSV of farmers, villages, inputs), P08 (preview with
 row codes from docs/api/error-codes.md), FR53 (villages with LGD code, taluk, block, PIN), FR56 (inputs),
@@ -17,6 +18,7 @@ from typing import Any, Literal
 
 from pydantic import ValidationError
 from sqlalchemy import func, or_, select
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import fieldconfig
@@ -27,6 +29,7 @@ from agritrace.core.errors import (
     ImportRowInvalidError,
     ImportTooLargeError,
     ValidationFailedError,
+    data_error,
 )
 from agritrace.modules.registry import service
 from agritrace.modules.registry.models import InputMaster, Village
@@ -148,11 +151,12 @@ async def _run(
         dry_run: copied into the report.
 
     Returns:
-        Accepted count and rejected rows with their registered code and column.
+        Accepted count and rejected rows with their registered code and column (`validation_error` with
+        no column for a value the database refuses: NUL character, number out of range).
 
     Raises:
-        sqlalchemy.exc.SQLAlchemyError: unexpected database failure; the caller's rollback then discards
-            every row (no partial writes).
+        sqlalchemy.exc.SQLAlchemyError: unexpected database failure (not SQLSTATE class 22); the caller's
+            rollback then discards every row (no partial writes).
 
     Side effects:
         Writes the accepted rows into the session's transaction.
@@ -169,6 +173,11 @@ async def _run(
             rejected.append(
                 ImportRowError(row=line, code=ImportRowInvalidError.code, field=str(loc[0]) if loc else None)
             )
+        except DBAPIError as e:
+            # The savepoint is already rolled back, so the transaction is usable for the next row.
+            if (mapped := data_error(e)) is None:
+                raise
+            rejected.append(ImportRowError(row=line, code=mapped.code, field=None))
         else:
             accepted += 1
     return ImportReport(dry_run=dry_run, accepted=accepted, rejected=rejected)
