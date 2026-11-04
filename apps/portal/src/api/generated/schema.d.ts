@@ -923,6 +923,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/farmers/{farmer_id}/erase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Erase a farmer's personal data (FPO admin, audited; DPDP erasure request)
+         * @description Anonymise the farmer, withdraw their consents, end their sign-in, delete their ID documents (D-065).
+         *
+         *     The traceability record (events, lots, batches, consents, audit trail) stays, carrying only ids; the
+         *     farmer's published pages are rebuilt and show "Farmer N". Repeating the call changes nothing (204 again).
+         *     Export first (`GET /v1/farmers/{id}/export`): this cannot be undone.
+         */
+        post: operations["erase_farmer_v1_farmers__farmer_id__erase_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/farmers/{farmer_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export everything stored about a farmer (FPO admin, audited; DPDP access request)
+         * @description Return the farmer's personal data as one JSON document, with 15-minute file links (runbook §1).
+         *
+         *     Includes the full phone and the walked boundary, so it goes to the farmer only; the runbook's redaction
+         *     step applies before anything is given to a third party. Sent with `Cache-Control: no-store`.
+         */
+        get: operations["export_farmer_v1_farmers__farmer_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/farmers/{farmer_id}/id-documents": {
         parameters: {
             query?: never;
@@ -3027,6 +3074,142 @@ export interface components {
          * @enum {string}
          */
         EventType: "land_preparation" | "nursery" | "sowing" | "input_application" | "harvest" | "drying" | "packing" | "problem" | "intake" | "grading" | "final_packing";
+        /**
+         * FarmerErase
+         * @description An approved DPDP erasure request for one farmer (B24, runbook §2, D-065).
+         */
+        FarmerErase: {
+            /**
+             * Confirm
+             * @description Must be `true`: an erasure cannot be undone.
+             * @constant
+             */
+            confirm: true;
+            /**
+             * Reason
+             * @description Request reference and approver, e.g. `DPDP-2026-001, approved by the data officer`. Kept in the audit trail for good, so write no personal data in it.
+             */
+            reason: string;
+        };
+        /**
+         * FarmerExport
+         * @description Everything stored about one farmer, for a DPDP access request (B24, runbook §1).
+         *
+         *     Rows are the database columns as JSON (geometries as GeoJSON); officers appear only as ids.
+         */
+        FarmerExport: {
+            /**
+             * Assist Sessions
+             * @description Assist sessions for the farmer, without the GPS fix.
+             */
+            assist_sessions: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Audit Log
+             * @description Audit rows about the farmer, their account or plots, or made on their behalf; no GPS.
+             */
+            audit_log: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Batch Shares
+             * @description The farmer's shares in batches.
+             */
+            batch_shares: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Consents
+             * @description Consent records, withdrawn ones included.
+             */
+            consents: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Devices
+             * @description The account's devices (platform, app version, last seen), without the token hashes.
+             */
+            devices: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Event Versions
+             * @description Versions of events on the farmer's plots and lots, or entered by or for the farmer, payload as stored; `gps` as GeoJSON. Photos are listed in `evidence_photos`, not inlined.
+             */
+            event_versions: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Evidence Photos
+             * @description Photos of those versions and readings: `bucket`, `object_key`, `url` (presigned GET).
+             */
+            evidence_photos: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Farmer
+             * @description The `farmers` row.
+             */
+            farmer: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id Documents
+             * @description ID-document rows, each with `url`: a presigned GET of the image (id-docs bucket).
+             */
+            id_documents: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Intakes
+             * @description Processor intakes of those lots.
+             */
+            intakes: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Links Expire At
+             * Format: date-time
+             * @description When every presigned `url` stops working (15 min).
+             */
+            links_expire_at: string;
+            /**
+             * Lots
+             * @description The farmer's lots.
+             */
+            lots: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Notifications
+             * @description Messages sent to the farmer's account (payload without secrets); erasure deletes them.
+             */
+            notifications: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Plots
+             * @description Plots, land record reference included; `pin` and `walked_boundary` as GeoJSON.
+             */
+            plots: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Quality Readings
+             * @description Quality readings of the farmer's lots (moisture etc.); `gps` as GeoJSON.
+             */
+            quality_readings: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * User
+             * @description The sign-in account (`users` row, full phone, without `pin_hash`); null without one.
+             */
+            user: {
+                [key: string]: unknown;
+            } | null;
+        };
         /**
          * FarmerIn
          * @description A farmer onboarded by a field officer or admin (Stage 0, UserFlows §Onboarding a farmer).
@@ -10197,6 +10380,82 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_ConsentOut_"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    erase_farmer_v1_farmers__farmer_id__erase_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FarmerErase"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    export_farmer_v1_farmers__farmer_id__export_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Open assist session id (field officer entering data for a farmer). */
+                "x-assist-session"?: string | null;
+                /** @description Client request id, copied to audit rows. */
+                "x-request-id"?: string | null;
+            };
+            path: {
+                /** @description Farmer id. */
+                farmer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FarmerExport"];
                 };
             };
             /** @description Error */

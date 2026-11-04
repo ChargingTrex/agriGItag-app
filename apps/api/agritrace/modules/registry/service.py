@@ -10,10 +10,11 @@ D-019; B13: field-config hooks on farmer and plot creation, plots.gi_tag_id, fla
 and producer groups (PLAN "Gap analysis"); B14 (portal gaps found by P01, PLAN gap analysis "Members",
 FR8, FR14, FR53, FR70): masked phone and audited reveal, reject, farmer plot list, farmer search and
 `?fields=`, FPO bounding box. B15: farmer `client_id` and the sync `farmer` kind (D-031), the plot assist
-farmer check (D-032).
-Callers: registry router; other modules through `__all__` only (D-004): events sync push (B06, plots and,
-B15, farmers captured offline), rules_flags (B08, `event_within_plot`, `locate_point`), lots_batches (B09, GI
-re-check), publishing (B10, `format_address`), events bundle (B07, `simplify_region`).
+farmer check (D-032). B24 (DPDP Act 2023, docs/ops/dpdp-data-subject-runbook.md, D-065): data-subject export
+and erasure, the daily `otp_challenges` purge.
+Callers: registry router and tasks (B24 purge); other modules through `__all__` only (D-004): events sync push
+(B06, plots and, B15, farmers captured offline), rules_flags (B08, `event_within_plot`, `locate_point`),
+lots_batches (B09, GI re-check), publishing (B10, `format_address`), events bundle (B07, `simplify_region`).
 Functions flush but never commit: the caller owns the transaction (the router commits per request; the
 sync push commits per entry).
 """
@@ -28,20 +29,42 @@ import uuid
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
 from geoalchemy2 import WKBElement, WKTElement
 from geoalchemy2.shape import to_shape
 from pydantic import ValidationError
 from shapely.geometry import Point
-from sqlalchemy import ColumnElement, Row, func, inspect, or_, select, text, tuple_
+from sqlalchemy import (
+    ColumnElement,
+    CursorResult,
+    Executable,
+    Row,
+    delete,
+    func,
+    inspect,
+    or_,
+    select,
+    text,
+    tuple_,
+    update,
+)
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agritrace.core import fieldconfig, storage, task_names
-from agritrace.core.audit import write_audit
+from agritrace.core.audit import AUDIT_LOG, write_audit
 from agritrace.core.auth import CurrentUser
 from agritrace.core.config import get_settings
-from agritrace.core.enums import ConsentType, FarmerStatus, LocationStatus, PinMethod, Role
+from agritrace.core.enums import (
+    BatchStatus,
+    ConsentType,
+    FarmerStatus,
+    LocationStatus,
+    PinMethod,
+    Role,
+    UserStatus,
+)
 from agritrace.core.errors import (
     ClientIdConflictError,
     ConflictError,
@@ -57,7 +80,10 @@ from agritrace.core.errors import (
 from agritrace.core.ids import uuid7
 from agritrace.core.schemas import Address, GeoPoint, Page, Quantity
 from agritrace.core.time import utcnow
-from agritrace.modules.identity.models import ConsentRecord, Device, Membership, User
+from agritrace.modules.identity.models import ConsentRecord, Device, Membership, OtpChallenge, User
+from agritrace.modules.lots_batches.models import Batch, BatchShare
+from agritrace.modules.notifications.models import Notification
+from agritrace.modules.publishing.models import PageBuild
 from agritrace.modules.registry import geo
 from agritrace.modules.registry.geo import (
     GeoResult,
@@ -82,6 +108,8 @@ from agritrace.modules.registry.models import (
 )
 from agritrace.modules.registry.schemas import (
     CropOut,
+    FarmerErase,
+    FarmerExport,
     FarmerIn,
     FarmerOut,
     FarmerPatch,
@@ -1759,3 +1787,307 @@ async def get_fpo(session: AsyncSession, user: CurrentUser, fpo_id: uuid.UUID) -
         raise NotFoundError(details={"fpo_id": str(fpo_id)})
     bbox = await fpo_bbox(session, fpo.id) if super_admin or user.role in BBOX_ROLES else None
     return FpoOut.model_validate(fpo).model_copy(update={"bbox": bbox})
+
+
+# --- B24: DPDP data-subject export and erasure, OTP purge (docs/ops/dpdp-data-subject-runbook.md) ---------
+
+# Runbook §1 as one statement: every row about the farmer as JSON, geometries as GeoJSON, secrets left out.
+_EXPORT_SQL = text(
+    """
+    WITH f AS (SELECT * FROM farmers WHERE id = CAST(:fid AS uuid)),
+         my_plots AS (SELECT id FROM plots WHERE farmer_id = (SELECT id FROM f)),
+         my_lots AS (SELECT id FROM lots WHERE farmer_id = (SELECT id FROM f)),
+         -- Not `entered_by_user_id`: an officer-farmer's account entered others' events too (B24-r1 P1).
+         my_versions AS (
+           SELECT v.* FROM event_versions v JOIN events e ON e.id = v.event_id
+           WHERE e.plot_id IN (SELECT id FROM my_plots) OR e.lot_id IN (SELECT id FROM my_lots)
+              OR v.on_behalf_of_farmer_id = (SELECT id FROM f)),
+         my_readings AS (SELECT * FROM quality_readings WHERE lot_id IN (SELECT id FROM my_lots))
+    SELECT jsonb_build_object(
+      'farmer', (SELECT to_jsonb(f) FROM f),
+      'user', (SELECT to_jsonb(u) - 'pin_hash' FROM users u WHERE u.id = (SELECT user_id FROM f)),
+      'plots', COALESCE((SELECT jsonb_agg(to_jsonb(p) - 'pin' - 'walked_boundary' || jsonb_build_object(
+                  'pin', ST_AsGeoJSON(p.pin)::jsonb,
+                  'walked_boundary', ST_AsGeoJSON(p.walked_boundary)::jsonb))
+                FROM plots p WHERE p.farmer_id = (SELECT id FROM f)), '[]'),
+      'consents', COALESCE((SELECT jsonb_agg(to_jsonb(c)) FROM consent_records c
+                            WHERE c.farmer_id = (SELECT id FROM f)), '[]'),
+      'id_documents', COALESCE((SELECT jsonb_agg(to_jsonb(d)) FROM id_documents d
+                                WHERE d.farmer_id = (SELECT id FROM f)), '[]'),
+      'lots', COALESCE((SELECT jsonb_agg(to_jsonb(l)) FROM lots l
+                        WHERE l.farmer_id = (SELECT id FROM f)), '[]'),
+      'intakes', COALESCE((SELECT jsonb_agg(to_jsonb(i)) FROM lot_intakes i
+                           WHERE i.lot_id IN (SELECT id FROM my_lots)), '[]'),
+      'batch_shares', COALESCE((SELECT jsonb_agg(to_jsonb(s)) FROM batch_shares s
+                                WHERE s.farmer_id = (SELECT id FROM f)), '[]'),
+      'event_versions', COALESCE((SELECT jsonb_agg(to_jsonb(v) - 'gps' || jsonb_build_object(
+                                    'gps', ST_AsGeoJSON(v.gps)::jsonb)) FROM my_versions v), '[]'),
+      'evidence_photos', COALESCE((SELECT jsonb_agg(jsonb_build_object('bucket', p.bucket,
+                                                                       'object_key', p.object_key))
+                                   FROM evidence_photos p
+                                   WHERE p.event_version_id IN (SELECT id FROM my_versions)
+                                      OR p.quality_reading_id IN (SELECT id FROM my_readings)), '[]'),
+      'quality_readings', COALESCE((SELECT jsonb_agg(to_jsonb(q) - 'gps' || jsonb_build_object(
+                                      'gps', ST_AsGeoJSON(q.gps)::jsonb)) FROM my_readings q), '[]'),
+      'notifications', COALESCE((SELECT jsonb_agg(to_jsonb(n)) FROM notifications n
+                                 WHERE n.user_id = (SELECT user_id FROM f)), '[]'),
+      'devices', COALESCE((SELECT jsonb_agg(to_jsonb(d) - 'refresh_token_hash'
+                                                         - 'previous_refresh_token_hash')
+                           FROM devices d WHERE d.user_id = (SELECT user_id FROM f)), '[]'),
+      'assist_sessions', COALESCE((SELECT jsonb_agg(to_jsonb(a) - 'started_gps') FROM assist_sessions a
+                                   WHERE a.farmer_id = (SELECT id FROM f)), '[]'),
+      'audit_log', COALESCE((SELECT jsonb_agg(to_jsonb(a) - 'gps') FROM audit_log a
+                             WHERE a.on_behalf_of_farmer_id = (SELECT id FROM f)
+                                OR a.entity_id = (SELECT id FROM f) OR a.entity_id = (SELECT user_id FROM f)
+                                OR a.entity_id IN (SELECT id FROM my_plots)), '[]')) AS doc
+    """
+).columns(doc=JSONB)
+# Runbook §2: earlier page snapshots lose the name and GI number on the farmer's own lots, matched by lot code
+# rather than by name, so a namesake in the same batch keeps theirs.
+_SCRUB_PAGE_BUILDS_SQL = text(
+    """
+    UPDATE page_builds pb SET snapshot = jsonb_set(pb.snapshot, '{lots}', COALESCE((
+        SELECT jsonb_agg(CASE WHEN l->>'lot_code' IN (SELECT code FROM lots
+                                                      WHERE farmer_id = CAST(:fid AS uuid))
+                              THEN l || jsonb_build_object('farmer_name', NULL, 'gi_authorised_user_no', NULL)
+                              ELSE l END ORDER BY n)
+        FROM jsonb_array_elements(pb.snapshot->'lots') WITH ORDINALITY AS t(l, n)), '[]'::jsonb))
+    WHERE jsonb_typeof(pb.snapshot->'lots') = 'array'
+      AND pb.batch_id IN (SELECT batch_id FROM batch_shares WHERE farmer_id = CAST(:fid AS uuid))
+    """
+)
+_SCRUB_PLOT_REVISIONS_SQL = text(
+    "UPDATE plot_revisions SET snapshot = snapshot - 'land_record_ref' "
+    "WHERE plot_id IN (SELECT id FROM plots WHERE farmer_id = CAST(:fid AS uuid)) "
+    "AND snapshot->'land_record_ref' IS NOT NULL"
+)
+ERASED_USER_NAME = "Erased farmer"
+
+
+async def export_farmer(session: AsyncSession, user: CurrentUser, farmer_id: uuid.UUID) -> FarmerExport:
+    """Collect everything stored about one farmer for a DPDP access request (runbook §1).
+
+    Args:
+        session: open database session.
+        user: the caller (FPO admin; the router checks the role).
+        farmer_id: the farmer.
+
+    Returns:
+        The rows as JSON, with a presigned GET (`ID_DOC_URL_TTL_S`) on every ID document and evidence photo.
+
+    Raises:
+        NotFoundError: missing or another FPO's (never 403, FR24).
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+
+    Side effects:
+        Inserts an `audit_log` row `farmer.export` with the row count per section (no values); signs URLs
+        (no network call).
+    """
+    farmer = await _farmer_in_scope(session, user, farmer_id)
+    doc: dict[str, Any] = await session.scalar(_EXPORT_SQL, {"fid": farmer.id})
+    iddocs = get_settings().s3_bucket_iddocs
+    for d in doc["id_documents"]:
+        d["url"] = storage.presign_get(d["object_key"], ID_DOC_URL_TTL_S, bucket=iddocs)
+    for p in doc["evidence_photos"]:
+        p["url"] = storage.presign_get(p["object_key"], ID_DOC_URL_TTL_S, bucket=p["bucket"])
+    counts = {k: len(v) for k, v in doc.items() if isinstance(v, list)}
+    await write_audit(session, user, "farmer.export", "farmers", farmer.id, {"rows": counts})
+    expires = utcnow() + timedelta(seconds=ID_DOC_URL_TTL_S)
+    return FarmerExport.model_validate(doc | {"links_expire_at": expires})
+
+
+def _delete_id_doc_objects(prefix: str) -> int:
+    """Delete every object and object version under one farmer's prefix in the id-docs bucket (runbook §2.3).
+
+    Args:
+        prefix: `<fpo_id>/<farmer_id>/`.
+
+    Returns:
+        How many object versions (and delete markers) were deleted.
+
+    Raises:
+        botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError: S3 refused or is unreachable.
+        RuntimeError: S3 answered but refused to delete some of the objects.
+
+    Side effects:
+        Deletes S3 objects, every version, so a versioned bucket keeps no copy either.
+    """
+    s3, bucket, deleted = storage.client(), get_settings().s3_bucket_iddocs, 0
+    for page in s3.get_paginator("list_object_versions").paginate(Bucket=bucket, Prefix=prefix):
+        targets = [
+            {"Key": v["Key"], "VersionId": v["VersionId"]}
+            for v in page.get("Versions", []) + page.get("DeleteMarkers", [])
+        ]
+        if targets:  # a page holds at most 1,000, the delete_objects limit
+            result = s3.delete_objects(Bucket=bucket, Delete={"Objects": targets, "Quiet": True})
+            if result.get("Errors"):
+                raise RuntimeError(
+                    f"id-docs refused to delete {len(result['Errors'])} objects under {prefix}"
+                )
+            deleted += len(targets)
+    return deleted
+
+
+async def _changed(session: AsyncSession, statement: Executable, params: dict[str, Any] | None = None) -> int:
+    """Run an UPDATE or DELETE and count the rows it touched.
+
+    Args:
+        session: open database session.
+        statement: the statement.
+        params: bind values for a `text()` statement.
+
+    Returns:
+        The row count the database reported.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+    """
+    result = cast("CursorResult[Any]", await session.execute(statement, params))
+    return result.rowcount
+
+
+async def erase_farmer(
+    session: AsyncSession, user: CurrentUser, farmer_id: uuid.UUID, body: FarmerErase
+) -> list[PageBuild]:
+    """Erase a farmer's personal data on an approved DPDP request (runbook §2 steps 2-4, D-065).
+
+    Args:
+        session: open database session.
+        user: the caller (FPO admin; the router checks the role).
+        farmer_id: the farmer.
+        body: the reason (request reference) and the confirmation.
+
+    Returns:
+        The queued page builds of the farmer's published batches, for the caller to enqueue after the commit;
+        empty when the farmer was already erased (a repeat call does nothing).
+
+    Raises:
+        NotFoundError: missing or another FPO's (never 403, FR24).
+        botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError: S3 refused or is unreachable
+            while deleting ID documents; nothing is committed, so the call can simply be repeated.
+        RuntimeError: S3 refused to delete some ID-document objects (same: nothing committed).
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+
+    Side effects:
+        In the caller's transaction: scrubs the farmer's name and GI number from earlier `page_builds`
+        snapshots; withdraws every open consent (`revoked_at` only); ends the farmer membership and, with none
+        left, the devices (`_end_farmer_access`); with no membership left, deletes the account's OTP
+        challenges and notifications and anonymises the `users` row; anonymises the `farmers` row (the
+        address keeps its village-level parts, the PIN code goes) and the plots' land record reference (also
+        in `plot_revisions`); deletes the `id_documents` rows; queues a page build per published batch;
+        inserts one `audit_log` row `farmer.erase` (reason and counts). Deletes the farmer's id-docs objects
+        in S3 before returning. Never writes `events`, `event_versions`, existing `audit_log`
+        rows, or any `consent_records` column but `revoked_at`.
+    """
+    farmer = await _farmer_in_scope(session, user, farmer_id)
+    await session.refresh(farmer, with_for_update=True)  # two erasures of one farmer run one at a time
+    erased = select(AUDIT_LOG.c.id).where(
+        AUDIT_LOG.c.action == "farmer.erase", AUDIT_LOG.c.entity_id == farmer.id
+    )
+    if await session.scalar(erased.limit(1)) is not None:
+        return []
+    # DECISION D-065: erasure writes Core UPDATE/DELETE statements, not ORM attribute changes, and records one
+    #   `farmer.erase` audit row with counts only; placeholders `Erased <code>`, `Erased farmer` and
+    #   `erased:<user id>` keep the NOT NULL and unique columns valid; the address keeps its village-level
+    #   parts (only `pin` goes), else the rebuilt page fails its `place` check and the old page stays up.
+    #   ADV: the flush listener would copy each old name, phone and address into the append-only `audit_log`
+    #     diff ([old, new]), re-creating the data being erased; lots and pages stay readable ("Farmer N").
+    #   COMPROMISE: no per-column audit trail of the erasure (counts only); PII already in old audit diffs and
+    #     event free text stays until the D-005 exception ruling (runbook §2 "Residual").
+    fid, now = {"fid": farmer.id}, utcnow()
+    revoke = (
+        update(ConsentRecord)
+        .where(ConsentRecord.farmer_id == farmer.id, ConsentRecord.revoked_at.is_(None))
+        .values(revoked_at=now, updated_at=now)
+    )
+    counts: dict[str, Any] = {
+        "page_builds_scrubbed": await _changed(session, _SCRUB_PAGE_BUILDS_SQL, fid),
+        "consents_revoked": await _changed(session, revoke),
+    }
+    counts |= await _end_farmer_access(session, farmer)
+    # An account that still holds another membership (an officer, or a farmer of another FPO) is kept: it is
+    # not this FPO's to erase (FR24).
+    user_id = farmer.user_id
+    if user_id is not None and await session.scalar(
+        select(Membership.id).where(Membership.user_id == user_id)
+    ):
+        user_id = None
+    counts["user_erased"] = user_id is not None
+    if user_id is not None:
+        phone = await session.scalar(select(User.phone).where(User.id == user_id))
+        otps = delete(OtpChallenge).where(OtpChallenge.phone == phone)
+        counts["otp_challenges_deleted"] = await _changed(session, otps)
+        notes = delete(Notification).where(Notification.user_id == user_id)
+        counts["notifications_deleted"] = await _changed(session, notes)
+        await session.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(
+                phone=f"erased:{user_id}",
+                name=ERASED_USER_NAME,
+                name_local=None,
+                pin_hash=None,
+                status=UserStatus.SUSPENDED,
+                updated_at=now,
+            )
+        )
+    await session.execute(
+        update(Farmer)
+        .where(Farmer.id == farmer.id)
+        .values(
+            name=f"Erased {farmer.code}",
+            name_local=None,
+            photo_key=None,
+            # Village-level parts stay: the public page's place and the GI taluk check need them (FR53).
+            address={k: v for k, v in (farmer.address or {}).items() if k != "pin"} or None,
+            gi_authorised_user_no=None,
+            status=FarmerStatus.SUSPENDED,
+            updated_at=now,
+        )
+    )
+    plots = update(Plot).where(Plot.farmer_id == farmer.id).values(land_record_ref=None, updated_at=now)
+    counts["plots_scrubbed"] = await _changed(session, plots)
+    counts["plot_revisions_scrubbed"] = await _changed(session, _SCRUB_PLOT_REVISIONS_SQL, fid)
+    docs = delete(IdDocument).where(IdDocument.farmer_id == farmer.id)
+    counts["id_documents_deleted"] = await _changed(session, docs)
+    # Same steps as publishing `rebuild` (not exported, D-004), per published batch with the farmer's lots.
+    shares = select(BatchShare.batch_id).where(BatchShare.farmer_id == farmer.id)
+    published = select(Batch).where(Batch.id.in_(shares), Batch.status == BatchStatus.PUBLISHED)
+    builds = []
+    for batch in (await session.scalars(published.order_by(Batch.id).with_for_update())).all():
+        batch.current_build_no += 1
+        n = batch.current_build_no
+        builds.append(
+            PageBuild(
+                batch_id=batch.id, build_no=n, generation=n, snapshot={}, status="queued", trigger="erase"
+            )
+        )
+    session.add_all(builds)
+    await session.flush()
+    counts["page_rebuilds"] = len(builds)
+    # S3 last, before the commit: a database error deletes nothing, an S3 error commits nothing.
+    prefix = f"{farmer.fpo_id}/{farmer.id}/"
+    counts["id_doc_objects_deleted"] = await asyncio.to_thread(_delete_id_doc_objects, prefix)
+    await write_audit(session, user, "farmer.erase", "farmers", farmer.id, {"reason": body.reason} | counts)
+    return builds
+
+
+async def purge_otp_challenges(session: AsyncSession) -> int:
+    """Delete OTP challenges that expired more than `OTP_RETENTION_DAYS` ago (runbook §3; daily task, B24).
+
+    Args:
+        session: open database session (committed here).
+
+    Returns:
+        How many rows were deleted.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: passed through from the database.
+
+    Side effects:
+        Deletes `otp_challenges` rows and commits.
+    """
+    cutoff = utcnow() - timedelta(days=get_settings().otp_retention_days)
+    deleted = await _changed(session, delete(OtpChallenge).where(OtpChallenge.expires_at < cutoff))
+    await session.commit()
+    return deleted

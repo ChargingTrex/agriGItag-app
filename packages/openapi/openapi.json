@@ -1932,6 +1932,197 @@
         "title": "EventType",
         "type": "string"
       },
+      "FarmerErase": {
+        "description": "An approved DPDP erasure request for one farmer (B24, runbook \u00a72, D-065).",
+        "properties": {
+          "confirm": {
+            "const": true,
+            "description": "Must be `true`: an erasure cannot be undone.",
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Request reference and approver, e.g. `DPDP-2026-001, approved by the data officer`. Kept in the audit trail for good, so write no personal data in it.",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "confirm"
+        ],
+        "title": "FarmerErase",
+        "type": "object"
+      },
+      "FarmerExport": {
+        "description": "Everything stored about one farmer, for a DPDP access request (B24, runbook \u00a71).\n\nRows are the database columns as JSON (geometries as GeoJSON); officers appear only as ids.",
+        "properties": {
+          "assist_sessions": {
+            "description": "Assist sessions for the farmer, without the GPS fix.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Assist Sessions",
+            "type": "array"
+          },
+          "audit_log": {
+            "description": "Audit rows about the farmer, their account or plots, or made on their behalf; no GPS.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Audit Log",
+            "type": "array"
+          },
+          "batch_shares": {
+            "description": "The farmer's shares in batches.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Batch Shares",
+            "type": "array"
+          },
+          "consents": {
+            "description": "Consent records, withdrawn ones included.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Consents",
+            "type": "array"
+          },
+          "devices": {
+            "description": "The account's devices (platform, app version, last seen), without the token hashes.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Devices",
+            "type": "array"
+          },
+          "event_versions": {
+            "description": "Versions of events on the farmer's plots and lots, or entered by or for the farmer, payload as stored; `gps` as GeoJSON. Photos are listed in `evidence_photos`, not inlined.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Event Versions",
+            "type": "array"
+          },
+          "evidence_photos": {
+            "description": "Photos of those versions and readings: `bucket`, `object_key`, `url` (presigned GET).",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Evidence Photos",
+            "type": "array"
+          },
+          "farmer": {
+            "additionalProperties": true,
+            "description": "The `farmers` row.",
+            "title": "Farmer",
+            "type": "object"
+          },
+          "id_documents": {
+            "description": "ID-document rows, each with `url`: a presigned GET of the image (id-docs bucket).",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Id Documents",
+            "type": "array"
+          },
+          "intakes": {
+            "description": "Processor intakes of those lots.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Intakes",
+            "type": "array"
+          },
+          "links_expire_at": {
+            "description": "When every presigned `url` stops working (15 min).",
+            "format": "date-time",
+            "title": "Links Expire At",
+            "type": "string"
+          },
+          "lots": {
+            "description": "The farmer's lots.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Lots",
+            "type": "array"
+          },
+          "notifications": {
+            "description": "Messages sent to the farmer's account (payload without secrets); erasure deletes them.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Notifications",
+            "type": "array"
+          },
+          "plots": {
+            "description": "Plots, land record reference included; `pin` and `walked_boundary` as GeoJSON.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Plots",
+            "type": "array"
+          },
+          "quality_readings": {
+            "description": "Quality readings of the farmer's lots (moisture etc.); `gps` as GeoJSON.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Quality Readings",
+            "type": "array"
+          },
+          "user": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The sign-in account (`users` row, full phone, without `pin_hash`); null without one.",
+            "title": "User"
+          }
+        },
+        "required": [
+          "farmer",
+          "user",
+          "plots",
+          "consents",
+          "id_documents",
+          "lots",
+          "intakes",
+          "batch_shares",
+          "event_versions",
+          "evidence_photos",
+          "quality_readings",
+          "notifications",
+          "devices",
+          "assist_sessions",
+          "audit_log",
+          "links_expire_at"
+        ],
+        "title": "FarmerExport",
+        "type": "object"
+      },
       "FarmerIn": {
         "description": "A farmer onboarded by a field officer or admin (Stage 0, UserFlows \u00a7Onboarding a farmer).",
         "properties": {
@@ -16022,6 +16213,187 @@
         "summary": "Consent List",
         "tags": [
           "identity"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}/erase": {
+      "post": {
+        "description": "Anonymise the farmer, withdraw their consents, end their sign-in, delete their ID documents (D-065).\n\nThe traceability record (events, lots, batches, consents, audit trail) stays, carrying only ids; the\nfarmer's published pages are rebuilt and show \"Farmer N\". Repeating the call changes nothing (204 again).\nExport first (`GET /v1/farmers/{id}/export`): this cannot be undone.",
+        "operationId": "erase_farmer_v1_farmers__farmer_id__erase_post",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FarmerErase"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Erase a farmer's personal data (FPO admin, audited; DPDP erasure request)",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/farmers/{farmer_id}/export": {
+      "get": {
+        "description": "Return the farmer's personal data as one JSON document, with 15-minute file links (runbook \u00a71).\n\nIncludes the full phone and the walked boundary, so it goes to the farmer only; the runbook's redaction\nstep applies before anything is given to a third party. Sent with `Cache-Control: no-store`.",
+        "operationId": "export_farmer_v1_farmers__farmer_id__export_get",
+        "parameters": [
+          {
+            "description": "Farmer id.",
+            "in": "path",
+            "name": "farmer_id",
+            "required": true,
+            "schema": {
+              "description": "Farmer id.",
+              "format": "uuid",
+              "title": "Farmer Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Open assist session id (field officer entering data for a farmer).",
+            "in": "header",
+            "name": "x-assist-session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Open assist session id (field officer entering data for a farmer).",
+              "title": "X-Assist-Session"
+            }
+          },
+          {
+            "description": "Client request id, copied to audit rows.",
+            "in": "header",
+            "name": "x-request-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Client request id, copied to audit rows.",
+              "title": "X-Request-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FarmerExport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "summary": "Export everything stored about a farmer (FPO admin, audited; DPDP access request)",
+        "tags": [
+          "registry"
         ]
       }
     },

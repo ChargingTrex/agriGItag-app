@@ -7,7 +7,8 @@ FR54 (farming type vs irrigation source), FR56 (input categories), FR58 (units),
 location), D-005 (client ids), D-017 (config-driven fields optional here), D-020 (additive changes);
 B13: village import rows, import reports, flag-gated ID documents and producer groups (FR53, FR56,
 PLAN "Gap analysis" Master data uploads); B14 (portal gaps found by P01, PLAN gap analysis "Members",
-FR8, FR14, FR53, FR70): masked phone and reveal, reject, FPO bounding box.
+FR8, FR14, FR53, FR70): masked phone and reveal, reject, FPO bounding box; B24 (DPDP Act 2023, runbook
+docs/ops/dpdp-data-subject-runbook.md): data-subject export and erasure.
 Callers: registry router and service only (other modules may not import schemas, D-004); OpenAPI
 generation (`agritrace.export_openapi`) builds the contract and the Dart/TS clients from these.
 """
@@ -293,6 +294,64 @@ class FarmerReject(BaseModel):
         description="Coded reason, e.g. `duplicate`, `not_a_member`, `outside_gi_area`, `incomplete`.",
     )
     reason_text: str | None = Field(None, max_length=500, description="Free-text explanation.")
+
+
+Row = dict[str, Any]
+
+
+class FarmerExport(BaseModel):
+    """Everything stored about one farmer, for a DPDP access request (B24, runbook §1).
+
+    Rows are the database columns as JSON (geometries as GeoJSON); officers appear only as ids.
+    """
+
+    farmer: Row = Field(description="The `farmers` row.")
+    user: Row | None = Field(
+        description="The sign-in account (`users` row, full phone, without `pin_hash`); null without one."
+    )
+    plots: list[Row] = Field(
+        description="Plots, land record reference included; `pin` and `walked_boundary` as GeoJSON."
+    )
+    consents: list[Row] = Field(description="Consent records, withdrawn ones included.")
+    id_documents: list[Row] = Field(
+        description="ID-document rows, each with `url`: a presigned GET of the image (id-docs bucket)."
+    )
+    lots: list[Row] = Field(description="The farmer's lots.")
+    intakes: list[Row] = Field(description="Processor intakes of those lots.")
+    batch_shares: list[Row] = Field(description="The farmer's shares in batches.")
+    event_versions: list[Row] = Field(
+        description="Versions of events on the farmer's plots and lots, or entered by or for the farmer, "
+        "payload as stored; `gps` as GeoJSON. Photos are listed in `evidence_photos`, not inlined."
+    )
+    evidence_photos: list[Row] = Field(
+        description="Photos of those versions and readings: `bucket`, `object_key`, `url` (presigned GET)."
+    )
+    quality_readings: list[Row] = Field(
+        description="Quality readings of the farmer's lots (moisture etc.); `gps` as GeoJSON."
+    )
+    notifications: list[Row] = Field(
+        description="Messages sent to the farmer's account (payload without secrets); erasure deletes them."
+    )
+    devices: list[Row] = Field(
+        description="The account's devices (platform, app version, last seen), without the token hashes."
+    )
+    assist_sessions: list[Row] = Field(description="Assist sessions for the farmer, without the GPS fix.")
+    audit_log: list[Row] = Field(
+        description="Audit rows about the farmer, their account or plots, or made on their behalf; no GPS."
+    )
+    links_expire_at: datetime = Field(description="When every presigned `url` stops working (15 min).")
+
+
+class FarmerErase(BaseModel):
+    """An approved DPDP erasure request for one farmer (B24, runbook §2, D-065)."""
+
+    reason: str = Field(
+        min_length=1,
+        max_length=500,
+        description="Request reference and approver, e.g. `DPDP-2026-001, approved by the data officer`. "
+        "Kept in the audit trail for good, so write no personal data in it.",
+    )
+    confirm: Literal[True] = Field(description="Must be `true`: an erasure cannot be undone.")
 
 
 # --- plots --------------------------------------------------------------------------------------------

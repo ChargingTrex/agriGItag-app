@@ -2,7 +2,7 @@
 
 Serves: Arch §Backend services (twelve-factor config), D-008 (bucket names), D-009 (Redis broker URL),
 D-024 (JWT secret, OTP dev code and daily cap, absolute session lifetime B23), FR7 (SMS provider, B04),
-plan §13 E3 (CDN, B10).
+plan §13 E3 (CDN, B10), B24 (OTP retention, DPDP runbook §3).
 Callers: `core.db`, `core.storage`, `core.auth`, identity service (B02), notifications providers (B04),
 `agritrace.main`, `agritrace.worker`, `alembic/env.py`, tests.
 Every variable is documented in `apps/api/.env.example`.
@@ -58,6 +58,12 @@ class Settings(BaseSettings):
 
     otp_daily_cap: int = Field(
         10, ge=1, description="Most OTP codes one phone may request in any 24 hours (SMS cost and guessing)."
+    )
+    otp_retention_days: int = Field(
+        30,
+        ge=1,
+        description="Days after expiry when a daily job deletes an OTP challenge (DPDP retention proposal, "
+        "docs/ops/dpdp-data-subject-runbook.md §3, B24); the challenges hold phone numbers.",
     )
     session_max_days: int = Field(
         30,

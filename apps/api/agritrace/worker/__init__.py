@@ -1,9 +1,10 @@
 """Celery application for background jobs (photo verification, rule checks, page builds, notifications).
 
 Serves: D-009 (Celery on Redis), D-004 (same package as the API, second container), FR7 (notifications
-worker, B04), TODO B02-r1 P3-11 (no task arguments in logs: the OTP code travels in `payload.code`).
-Callers: `celery -A agritrace.worker worker` (infra/docker-compose.yml `worker`), modules' `tasks.py`
-(`@app.task(name=task_names.X)` and `run_db_task`), services enqueueing with
+worker, B04), TODO B02-r1 P3-11 (no task arguments in logs: the OTP code travels in `payload.code`),
+B24 (daily `otp_challenges` purge on Celery beat, DPDP runbook §3).
+Callers: `celery -A agritrace.worker worker` (infra/docker-compose.yml `worker`) and `... beat`, modules'
+`tasks.py` (`@app.task(name=task_names.X)` and `run_db_task`), services enqueueing with
 `app.send_task(task_names.X, ...)`, tests.
 """
 
@@ -14,6 +15,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any, Concatenate
 
 from celery import Celery
+from celery.schedules import crontab
 from celery.signals import worker_process_init
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
@@ -31,6 +33,11 @@ app = Celery("agritrace", broker=get_settings().redis_url)
 #   COMPROMISE: a task can run twice (crash after the side effect, before the ack), so every task must be
 #     idempotent or tolerate a duplicate; `notifications.send` may send one SMS twice in that window.
 app.conf.update(task_acks_late=True, task_reject_on_worker_lost=True)
+# Periodic jobs, run by `celery -A agritrace.worker beat` (or a worker started with `-B`).
+PURGE_OTP_CHALLENGES = "registry.purge_otp_challenges"  # DPDP retention, runbook §3 (B24)
+app.conf.beat_schedule = {
+    "purge-otp-challenges": {"task": PURGE_OTP_CHALLENGES, "schedule": crontab(hour=2, minute=30)},
+}
 # Lazy: each `agritrace.modules.<name>.tasks` is imported when the worker starts, if the module has one.
 MODULES = [f"agritrace.modules.{m.name}" for m in pkgutil.iter_modules(agritrace.modules.__path__)]
 app.autodiscover_tasks(MODULES)
